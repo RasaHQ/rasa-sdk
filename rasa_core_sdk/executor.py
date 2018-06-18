@@ -138,7 +138,7 @@ class ActionExecutor(object):
     @staticmethod
     def _create_api_response(events, messages):
         return{
-            "events": [e.as_dict() for e in events] if events else [],
+            "events": events if events else [],
             "responses": messages
         }
 

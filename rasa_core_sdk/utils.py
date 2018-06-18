@@ -3,6 +3,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import inspect
+
 from typing import Any, List
 
 
@@ -26,3 +28,14 @@ def configure_colored_logging(loglevel):
             fmt='%(asctime)s %(levelname)-8s %(name)s  - %(message)s',
             level_styles=level_styles,
             field_styles=field_styles)
+
+
+def arguments_of(func):
+    """Return the parameters of the function `func` as a list of their names."""
+
+    try:
+        # python 3.x is used
+        return inspect.signature(func).parameters.keys()
+    except AttributeError:
+        # python 2.x is used
+        return inspect.getargspec(func).args
