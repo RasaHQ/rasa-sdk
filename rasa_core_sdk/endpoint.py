@@ -33,6 +33,12 @@ def create_argument_parser():
             type=str,
             help="enable CORS for the passed origin. "
                  "Use * to whitelist all origins")
+    parser.add_argument(
+            '--actions',
+            type=str,
+            default=None,
+            help="name of action package to be loaded"
+    )
 
     return parser
 
@@ -69,7 +75,8 @@ if __name__ == '__main__':
     arg_parser = create_argument_parser()
     cmdline_args = arg_parser.parse_args()
 
-    app = endpoint_app(cors_origins=cmdline_args.cors)
+    app = endpoint_app(cors_origins=cmdline_args.cors,
+                       action_package_name=cmdline_args.actions)
 
     http_server = WSGIServer(('0.0.0.0', cmdline_args.port), app)
 

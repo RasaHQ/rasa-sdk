@@ -17,7 +17,7 @@ run-core:
 	python -m rasa_core.run --nlu models/nlu/current --core models/dialogue --debug --endpoints endpoints.yml
 
 run-actions:
-	python main.py
+	python -m rasa_core_sdk.endpoint --actions myactions
 
 run:
 	make run-actions&

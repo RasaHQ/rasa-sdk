@@ -32,6 +32,14 @@ class CollectingDispatcher(object):
 
         self.messages.append(message)
 
+    def utter_message(self, text):
+        # type: (Text) -> None
+        """"Send a text to the output channel"""
+
+        message = {"text": text}
+
+        self.messages.append(message)
+
     def utter_button_message(self, text, buttons, **kwargs):
         # type: (Text, List[Dict[Text, Any]], **Any) -> None
         """Sends a message with buttons to the output channel."""
@@ -113,7 +121,7 @@ class ActionExecutor(object):
         :type package: str | module
         :rtype: dict[str, types.ModuleType]
         """
-        if isinstance(package, str):
+        if isinstance(package, basestring):
             package = importlib.import_module(package)
         if not getattr(package, '__path__', None):
             return
@@ -128,7 +136,6 @@ class ActionExecutor(object):
     def register_package(self, package):
 
         self._import_submodules(package)
-
         actions = utils.all_subclasses(Action)
 
         for action in actions:
