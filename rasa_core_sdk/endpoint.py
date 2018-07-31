@@ -75,12 +75,15 @@ if __name__ == '__main__':
     arg_parser = create_argument_parser()
     cmdline_args = arg_parser.parse_args()
 
+    logging.basicConfig(level=logging.DEBUG)
+
+    logger.info("Starting action endpoint server...")
     app = endpoint_app(cors_origins=cmdline_args.cors,
                        action_package_name=cmdline_args.actions)
 
     http_server = WSGIServer(('0.0.0.0', cmdline_args.port), app)
 
     http_server.start()
-    logger.info("Action endpoint is up and running.")
+    logger.info("Action endpoint is up and running. on {}".format(http_server.address))
 
     http_server.serve_forever()

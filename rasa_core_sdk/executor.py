@@ -8,7 +8,7 @@ import inspect
 import logging
 import pkgutil
 
-from builtins import str
+import six
 from typing import Text
 
 from rasa_core_sdk import utils, Action, Tracker
@@ -103,7 +103,7 @@ class ActionExecutor(object):
                             "a function, use `register_function` instead.")
 
     def register_function(self, name, f):
-        logger.debug("Registered function for '{}'.".format(name))
+        logger.info("Registered function for '{}'.".format(name))
         valid_keys = utils.arguments_of(f)
         if len(valid_keys) < 3:
             raise Exception("You can only register functions that take "
@@ -121,7 +121,7 @@ class ActionExecutor(object):
         :type package: str | module
         :rtype: dict[str, types.ModuleType]
         """
-        if isinstance(package, basestring):
+        if isinstance(package, six.string_types):
             package = importlib.import_module(package)
         if not getattr(package, '__path__', None):
             return
@@ -134,8 +134,12 @@ class ActionExecutor(object):
                 self._import_submodules(full_name)
 
     def register_package(self, package):
+        try:
+            self._import_submodules(package)
+        except ImportError as e:
+            logger.exception("Failed to register package '{}'."
+                             "".format(package))
 
-        self._import_submodules(package)
         actions = utils.all_subclasses(Action)
 
         for action in actions:
