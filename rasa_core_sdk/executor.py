@@ -12,6 +12,7 @@ import six
 from typing import Text
 
 from rasa_core_sdk import utils, Action, Tracker
+from rasa_core_sdk.forms import NewFormAction, Form
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +88,7 @@ class CollectingDispatcher(object):
 class ActionExecutor(object):
     def __init__(self):
         self.actions = {}
+        self.forms = {}
 
     def register_action(self, action):
         if inspect.isclass(action):
@@ -101,6 +103,11 @@ class ActionExecutor(object):
             raise Exception("You can only register instances or subclasses of "
                             "type Action. If you want to directly register "
                             "a function, use `register_function` instead.")
+
+    def register_form(self, form):
+        logger.info("Registered form for '{}'.".format(form))
+        self.forms[form.name] = form
+        self.register_action(NewFormAction())
 
     def register_function(self, name, f):
         logger.info("Registered function for '{}'.".format(name))
@@ -143,8 +150,15 @@ class ActionExecutor(object):
         actions = utils.all_subclasses(Action)
 
         for action in actions:
-            if not action.__module__.startswith("rasa_core."):
+            # print(action)
+            if not action.__module__.startswith("rasa_core.") or True:
                 self.register_action(action)
+
+        forms = utils.all_subclasses(Form)
+
+        for form in forms:
+            if not form.__module__.startswith("rasa_core_sdk"):
+                self.register_form(form())
 
     @staticmethod
     def _create_api_response(events, messages):
@@ -155,6 +169,8 @@ class ActionExecutor(object):
 
     def run(self, action_call):
         action_name = action_call.get("next_action")
+        print(self.actions)
+        exit()
         if action_name:
             action = self.actions.get(action_name)
             if not action:
@@ -166,7 +182,7 @@ class ActionExecutor(object):
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
 
-            events = action(dispatcher, tracker, domain)
+            events = action(dispatcher, tracker, domain, self)
 
             return self._create_api_response(events, dispatcher.messages)
         else:
