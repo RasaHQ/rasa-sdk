@@ -177,18 +177,9 @@ class ActionExecutor(object):
 
             dispatcher = action_call.get("dispatcher", CollectingDispatcher())
             tracker_json = action_call.get("tracker")
-            if not action_call.get("recursive_flag", False):
-                tracker = Tracker.from_dict(tracker_json)
-            else:
-                tracker = tracker_json
+            tracker = Tracker.from_dict(tracker_json)
 
-            if action_name in domain['templates'].keys():
-                dispatcher.utter_template(action_name, tracker)
-                return self._create_api_response([], [])
-            elif action_name == 'action_listen':
-                return self._create_api_response([FormListen()], [])
-
-            elif not action:
+            if not action:
                 raise Exception("No registered Action found for name '{}'."
                                 "".format(action_name))
 

@@ -8,7 +8,7 @@ import logging
 import random
 
 from rasa_core_sdk import Action
-from rasa_core_sdk.events import SlotSet
+from rasa_core_sdk.events import SlotSet, FormListen
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +88,13 @@ class NewFormAction(Action):
     def run(self, dispatcher, tracker, domain, executor):
         form = executor.forms[tracker.active_form]
         next_action = form.next_action(tracker, domain)
-        return executor.run({"next_action": next_action, "domain": domain, "tracker": tracker, "recursive_flag": True, 'dispatcher':dispatcher})['events']
+        if next_action in domain['templates'].keys():
+            dispatcher.utter_template(next_action, tracker)
+            return []
+        elif next_action == 'action_listen':
+            return [FormListen()]
+        else:
+            return executor.actions[next_action](dispatcher, tracker, domain, executor)
 
 
 class Form(object):
