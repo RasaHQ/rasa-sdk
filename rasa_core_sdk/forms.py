@@ -80,87 +80,6 @@ class FreeTextFormField(FormField):
             return [SlotSet(self.slot_name, validated)]
         return []
 
-#
-# class FormAction(Action):
-#     RANDOMIZE = True
-#
-#     @staticmethod
-#     def required_fields():
-#         return []
-#
-#     def should_request_slot(self, tracker, slot_name):
-#         existing_val = tracker.get_slot(slot_name)
-#         return existing_val is None
-#
-#     def get_other_slots(self, tracker):
-#         requested_slot = tracker.get_slot(FORM_SLOT_NAME)
-#
-#         requested_entity = None
-#         for f in self.required_fields():
-#             if f.slot_name == requested_slot:
-#                 requested_entity = getattr(f, 'entity_name', None)
-#
-#         slot_events = []
-#         extracted_entities = {requested_entity}
-#
-#         for f in self.required_fields():
-#             if (isinstance(f, EntityFormField)
-#                     and f.slot_name != requested_slot
-#                     and f.entity_name not in extracted_entities):
-#                 slot_events.extend(f.extract(tracker))
-#                 extracted_entities.add(f.entity_name)
-#         return slot_events
-#
-#     def get_requested_slot(self, tracker):
-#         requested_slot = tracker.get_slot(FORM_SLOT_NAME)
-#
-#         required = self.required_fields()
-#
-#         if self.RANDOMIZE:
-#             random.shuffle(required)
-#
-#         if requested_slot is None:
-#             return []
-#         else:
-#             fields = [f
-#                       for f in required
-#                       if f.slot_name == requested_slot]
-#
-#             if len(fields) == 1:
-#                 return fields[0].extract(tracker)
-#             else:
-#                 logger.debug("Unable to extract value "
-#                              "for requested slot: {}".format(requested_slot))
-#                 return []
-#
-#     def run(self, dispatcher, tracker, domain, executor):
-#
-#         events = (self.get_requested_slot(tracker) +
-#                   self.get_other_slots(tracker))
-#
-#         temp_tracker = tracker.copy()
-#         for e in events:
-#             temp_tracker.update(e)
-#
-#         for field in self.required_fields():
-#             if self.should_request_slot(temp_tracker, field.slot_name):
-#
-#                 dispatcher.utter_template(
-#                         "utter_ask_{}".format(field.slot_name),
-#                         tracker)
-#
-#                 events.append(SlotSet(FORM_SLOT_NAME, field.slot_name))
-#                 return events
-#
-#         # there is nothing more to request, so we can submit
-#         events_from_submit = self.submit(dispatcher, temp_tracker, domain) or []
-#
-#         return events + events_from_submit
-#
-#     def submit(self, dispatcher, tracker, domain):
-#         raise NotImplementedError(
-#             "a form action must implement a submit method")
-
 
 class NewFormAction(Action):
     def name(self):
@@ -169,7 +88,7 @@ class NewFormAction(Action):
     def run(self, dispatcher, tracker, domain, executor):
         form = executor.forms[tracker.active_form]
         next_action = form.next_action(tracker, domain)
-        return executor.run({"next_action":next_action})
+        return executor.run({"next_action": next_action, "domain": domain, "tracker": tracker, "recursive_flag": True, 'dispatcher':dispatcher})
 
 
 class Form(object):
@@ -300,8 +219,6 @@ class SimpleForm(Form):
         if self.current_failures > self.max_turns:
             self.queue = [self.failure_action, self.finish_action]
             return self._run_through_queue(domain)
-
-        print(tracker.latest_message)
 
         intent = tracker.latest_message['intent']['name'].replace('form_', '', 1)
         self._update_requirements(tracker)

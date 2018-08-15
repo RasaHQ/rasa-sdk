@@ -169,19 +169,34 @@ class ActionExecutor(object):
 
     def run(self, action_call):
         action_name = action_call.get("next_action")
-        print(self.actions)
-        exit()
+
         if action_name:
             logger.debug("Received request to run '{}'".format(action_name))
             action = self.actions.get(action_name)
-            if not action:
+            domain = action_call.get("domain", {})
+
+            dispatcher = action_call.get("dispatcher", CollectingDispatcher())
+            tracker_json = action_call.get("tracker")
+            if not action_call.get("recursive_flag", False):
+                tracker = Tracker.from_dict(tracker_json)
+            else:
+                tracker = tracker_json
+
+            if action_name in domain['templates'].keys():
+                dispatcher.utter_template(action_name, tracker)
+                return []
+            elif action_name == 'action_listen':
+                return []
+
+            elif not action:
                 raise Exception("No registered Action found for name '{}'."
                                 "".format(action_name))
 
-            tracker_json = action_call.get("tracker")
-            domain = action_call.get("domain", {})
-            tracker = Tracker.from_dict(tracker_json)
-            dispatcher = CollectingDispatcher()
+
+
+            # print(list(domain['templates'].keys()))
+            # exit()
+
 
             events = action(dispatcher, tracker, domain, self)
             logger.debug("Successfully ran '{}'".format(action_name))
