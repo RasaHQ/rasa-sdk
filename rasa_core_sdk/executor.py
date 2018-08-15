@@ -12,6 +12,7 @@ import six
 from typing import Text
 
 from rasa_core_sdk import utils, Action, Tracker
+from rasa_core_sdk.events import FormListen
 from rasa_core_sdk.forms import NewFormAction, Form
 
 logger = logging.getLogger(__name__)
@@ -150,7 +151,6 @@ class ActionExecutor(object):
         actions = utils.all_subclasses(Action)
 
         for action in actions:
-            # print(action)
             if not action.__module__.startswith("rasa_core.") or True:
                 self.register_action(action)
 
@@ -183,19 +183,13 @@ class ActionExecutor(object):
 
             if action_name in domain['templates'].keys():
                 dispatcher.utter_template(action_name, tracker)
-                return []
+                return self._create_api_response([], [])
             elif action_name == 'action_listen':
-                return []
+                return self._create_api_response([FormListen()], [])
 
             elif not action:
                 raise Exception("No registered Action found for name '{}'."
                                 "".format(action_name))
-
-
-
-            # print(list(domain['templates'].keys()))
-            # exit()
-
 
             events = action(dispatcher, tracker, domain, self)
 

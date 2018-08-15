@@ -26,7 +26,7 @@ class StartFormAction(Action):
 
 class EndFormAction(Action):
     def name(self):
-        return "end_form"
+        return "deactivate_plan"
 
     def run(self, dispatcher, tracker, domain, executor):
         return [EndForm()]

@@ -130,7 +130,6 @@ def AgentUttered(text=None, data=None, timestamp=None):
 
 # noinspection PyPep8Naming
 def StartForm(form_name, timestamp=None):
-    print('this is working')
     return {
         "event": 'start_form',
         "form_name": form_name,
@@ -142,5 +141,13 @@ def StartForm(form_name, timestamp=None):
 def EndForm(timestamp=None):
     return {
         "event": "end_form",
+        "timestamp": timestamp
+    }
+
+
+# noinspection PyPep8Naming
+def FormListen(timestamp=None):
+    return {
+        "event": "form_listen",
         "timestamp": timestamp
     }
