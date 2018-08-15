@@ -88,7 +88,7 @@ class NewFormAction(Action):
     def run(self, dispatcher, tracker, domain, executor):
         form = executor.forms[tracker.active_form]
         next_action = form.next_action(tracker, domain)
-        return executor.run({"next_action": next_action, "domain": domain, "tracker": tracker, "recursive_flag": True, 'dispatcher':dispatcher})
+        return executor.run({"next_action": next_action, "domain": domain, "tracker": tracker, "recursive_flag": True, 'dispatcher':dispatcher})['events']
 
 
 class Form(object):

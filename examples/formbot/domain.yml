@@ -14,6 +14,7 @@ actions:
 - utter_goodbye
 - my_custom_action
 - start_restaurant
+- deactivate_plan
 - end_form
 - utter_explain_details_restaurant
 - utter_suggest_restaurant
@@ -21,10 +22,18 @@ actions:
 - utter_ask_people
 - utter_ask_location
 - utter_ask_price
+- form_action
 slots:
   test:
     type: text
-
+  cuisine:
+    type: text
+  people:
+    type: text
+  location:
+    type: text
+  price:
+    type: text
 templates:
   utter_greet:
   - text: "Hey! How are you?"
