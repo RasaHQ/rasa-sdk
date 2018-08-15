@@ -1,0 +1,40 @@
+version: '3'
+services:
+  app:
+    image: "app"
+    container_name: "app"
+    expose:
+    - "5001"
+    depends_on:
+      - core
+
+  core:
+    image: "rasa/rasa_core"
+    container_name: "rasa_core"
+    expose:
+    - "5005"
+    depends_on:
+      - nlu
+      - mongo
+
+  nlu:
+    image: "rasa/rasa_nlu"
+    container_name: "nlu"
+    expose:
+    - "5000"
+
+  mongo:
+    image: "mongo:3.7-jessie"
+    container_name: "mongo"
+    expose:
+    - "27017"
+    volumes:
+    - ./mongo:/data/db
+
+  duckling:
+    image: "rasa/duckling:latest"
+    container_name: "duckling"
+    expose:
+    - "8000"
+
+

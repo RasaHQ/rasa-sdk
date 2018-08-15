@@ -156,6 +156,7 @@ class ActionExecutor(object):
     def run(self, action_call):
         action_name = action_call.get("next_action")
         if action_name:
+            logger.debug("Received request to run '{}'".format(action_name))
             action = self.actions.get(action_name)
             if not action:
                 raise Exception("No registered Action found for name '{}'."
@@ -167,7 +168,7 @@ class ActionExecutor(object):
             dispatcher = CollectingDispatcher()
 
             events = action(dispatcher, tracker, domain)
-
+            logger.debug("Successfully ran '{}'".format(action_name))
             return self._create_api_response(events, dispatcher.messages)
         else:
             logger.warning("Received an action call without an action.")

@@ -43,8 +43,7 @@ def create_argument_parser():
     return parser
 
 
-def endpoint_app(base_url="/webhook",
-                 cors_origins=None,
+def endpoint_app(cors_origins=None,
                  action_package_name=None
                  ):
     app = Flask(__name__)
@@ -57,11 +56,18 @@ def endpoint_app(base_url="/webhook",
 
     CORS(app, resources={r"/*": {"origins": cors_origins}})
 
-    @app.route(base_url,
+    @app.route("/health",
+               methods=['GET', 'OPTIONS'])
+    @cross_origin(origins=cors_origins)
+    def health():
+        """Ping endpoint to check if the server is running and well."""
+        return jsonify({"status": "ok"})
+
+    @app.route("/webhook",
                methods=['POST', 'OPTIONS'])
     @cross_origin()
     def webhook():
-        """Check if the server is running and responds with the version."""
+        """Webhook to retrieve action calls."""
         action_call = request.json
         response = executor.run(action_call)
 
@@ -84,6 +90,7 @@ if __name__ == '__main__':
     http_server = WSGIServer(('0.0.0.0', cmdline_args.port), app)
 
     http_server.start()
-    logger.info("Action endpoint is up and running. on {}".format(http_server.address))
+    logger.info("Action endpoint is up and running. on {}"
+                "".format(http_server.address))
 
     http_server.serve_forever()

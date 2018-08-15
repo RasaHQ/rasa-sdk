@@ -38,7 +38,7 @@ templates:
   - text: "Great carry on!"
 
   utter_custom_template:
-  - text: "YES!"
+  - text: "Hey there from my custom action!"
 
   utter_goodbye:
   - text: "Bye"
