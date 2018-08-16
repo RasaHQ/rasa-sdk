@@ -9,7 +9,7 @@ import random
 
 from rasa_core_sdk import Action
 from rasa_core_sdk.events import SlotSet, FormListen
-from rasa_core.policies import FORM_ACTION_NAME
+from rasa_core.constants import FORM_ACTION_NAME
 
 logger = logging.getLogger(__name__)
 
