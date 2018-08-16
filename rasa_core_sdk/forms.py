@@ -9,8 +9,10 @@ import random
 
 from rasa_core_sdk import Action
 from rasa_core_sdk.events import SlotSet, FormListen
+from rasa_core.policies import FORM_ACTION_NAME
 
 logger = logging.getLogger(__name__)
+
 
 # this slot is used to store information needed
 # to do the form handling, needs to be part
@@ -83,7 +85,7 @@ class FreeTextFormField(FormField):
 
 class NewFormAction(Action):
     def name(self):
-        return 'form_action'
+        return FORM_ACTION_NAME
 
     def run(self, dispatcher, tracker, domain, executor):
         form = executor.forms[tracker.active_form]
@@ -226,7 +228,7 @@ class SimpleForm(Form):
             self.queue = [self.failure_action, self.finish_action]
             return self._run_through_queue(domain)
 
-        intent = tracker.latest_message['intent']['name'].replace('form_', '', 1)
+        intent = tracker.latest_message['intent']['name']#.replace('form_', '', 1)
         self._update_requirements(tracker)
 
         if intent in self.exit_dict.keys():
