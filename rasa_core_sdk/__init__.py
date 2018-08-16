@@ -28,10 +28,11 @@ class Tracker(object):
                        state.get("slots", {}),
                        state.get("latest_message", {}),
                        state.get("events"),
-                       state.get("paused"), state.get("active_form", None))
+                       state.get("paused"),
+                       state.get("active_form", None))
 
-    def __init__(self, sender_id, slots,
-                 latest_message, events, paused, active_form):
+    def __init__(self, sender_id, slots, latest_message,
+                 events, paused, active_form):
         """Initialize the tracker."""
 
         # list of previously seen events

@@ -149,13 +149,11 @@ class ActionExecutor(object):
                              "".format(package))
 
         actions = utils.all_subclasses(Action)
-
         for action in actions:
             if not action.__module__.startswith("rasa_core."):
                 self.register_action(action)
 
         forms = utils.all_subclasses(Form)
-
         for form in forms:
             if not form.__module__.startswith("rasa_core_sdk"):
                 self.register_form(form())
@@ -169,18 +167,15 @@ class ActionExecutor(object):
 
     def run(self, action_call):
         action_name = action_call.get("next_action")
-
         if action_name:
             action = self.actions.get(action_name)
-            domain = action_call.get("domain", {})
-
-            dispatcher = action_call.get("dispatcher", CollectingDispatcher())
-            tracker_json = action_call.get("tracker")
-            tracker = Tracker.from_dict(tracker_json)
-
             if not action:
                 raise Exception("No registered Action found for name '{}'."
                                 "".format(action_name))
+            tracker_json = action_call.get("tracker")
+            domain = action_call.get("domain", {})
+            tracker = Tracker.from_dict(tracker_json)
+            dispatcher = CollectingDispatcher()
 
             events = action(dispatcher, tracker, domain, self)
 

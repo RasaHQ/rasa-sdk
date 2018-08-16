@@ -13,7 +13,6 @@ from rasa_core.policies import FORM_ACTION_NAME
 
 logger = logging.getLogger(__name__)
 
-
 # this slot is used to store information needed
 # to do the form handling, needs to be part
 # of the domain
