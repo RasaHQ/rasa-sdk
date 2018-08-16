@@ -151,7 +151,7 @@ class ActionExecutor(object):
         actions = utils.all_subclasses(Action)
 
         for action in actions:
-            if not action.__module__.startswith("rasa_core.") or True:
+            if not action.__module__.startswith("rasa_core."):
                 self.register_action(action)
 
         forms = utils.all_subclasses(Form)
