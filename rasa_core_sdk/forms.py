@@ -243,7 +243,7 @@ class SimpleForm(Form):
             self._chitchat_queue(intent, tracker)
             return self._run_through_queue(domain
                                            )
-        elif intent == self.details_intent:
+        elif self.details_intent and intent == self.details_intent:
             self._details_queue(intent, tracker)
             return self._run_through_queue(domain)
 
