@@ -187,12 +187,14 @@ class SimpleForm(Form):
         return still_to_ask
 
     def _run_through_queue(self, domain):
+        #take next action in the queue
         if self.queue == []:
             return None
         else:
             return self.queue.pop(0)
 
     def _question_queue(self, question):
+        # the default question queue will ask for the slot and then listen
         queue = [self.slot_dict[question]['ask_utt'], 'action_listen']
         if 'follow_up_action' in self.slot_dict[self.last_question].keys():
             queue.append(self.slot_dict[self.last_question]['follow_up_action'])
@@ -213,6 +215,7 @@ class SimpleForm(Form):
         self.queue = [self.exit_dict[intent]]
 
     def _decide_next_question(self, still_to_ask, tracker):
+        # in the default setting this will ask the first (highest priority) slot, but can be overridden
         return still_to_ask[0]
 
     def next_action(self, tracker, domain):
@@ -220,14 +223,15 @@ class SimpleForm(Form):
 
         out = self._run_through_queue(domain)
         if out is not None:
-            # There are still actions in the queue
+            # There are still actions in the queue, do the next one
             return out
+
         self.current_failures += 1
         if self.current_failures > self.max_turns:
             self.queue = [self.failure_action, self.finish_action]
             return self._run_through_queue(domain)
 
-        intent = tracker.latest_message['intent']['name']#.replace('form_', '', 1)
+        intent = tracker.latest_message['intent']['name']
         self._update_requirements(tracker)
 
         if intent in self.exit_dict.keys():
@@ -235,29 +239,22 @@ class SimpleForm(Form):
             self._exit_queue(intent, tracker)
             return self._run_through_queue(domain)
 
-        elif intent in self.chitchat_dict.keys() and tracker.latest_action_name not in self.chitchat_dict.values():
+        elif intent in self.chitchat_dict.keys():
             self._chitchat_queue(intent, tracker)
-            return self._run_through_queue(domain)
-        elif intent == self.details_intent and tracker.latest_action_name != self.slot_dict[self.last_question].get('clarify_utt', None):
+            return self._run_through_queue(domain
+                                           )
+        elif intent == self.details_intent:
             self._details_queue(intent, tracker)
             return self._run_through_queue(domain)
 
         still_to_ask = self.check_unfilled_slots(tracker)
 
         if len(still_to_ask) == 0:
-            self.queue = [self.finish_action, 'action_listen']
+            # if all the slots have been filled then queue finish actions
+            self.queue = [self.finish_action]
             return self._run_through_queue(domain)
         else:
+            # otherwise just ask to fill slots
             self.last_question = self._decide_next_question(still_to_ask, tracker)
             self.queue = self._question_queue(self.last_question)
             return self._run_through_queue(domain)
-
-    def as_dict(self):
-        return {"name": self.name,
-                "required_slots": self.slot_dict,
-                "finish_action": self.finish_action,
-                "exit_dict": self.exit_dict,
-                "chitchat_dict": self.chitchat_dict,
-                "details_intent": self.details_intent,
-                "rules": self.rules_yaml,
-                "max_turns": self.max_turns}
