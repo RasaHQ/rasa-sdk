@@ -43,6 +43,10 @@ class Tracker(object):
 
         self._paused = paused
 
+        # latest_message is `parse_data`,
+        # which is a dict: {"intent": UserUttered.intent,
+        #                   "entities": UserUttered.entities,
+        #                   "text": text}
         self.latest_message = latest_message if latest_message else {}
 
     def current_state(self, should_include_events=False):
