@@ -57,8 +57,10 @@ class TestForm(SimpleForm):
         }
 
         failure_action = 'utter_human_hand_off'
-        super(TestForm, self).__init__(name, slot_dict, finish_action, exit_dict, chitchat_dict, details_intent,
-                                             rules, failure_action=failure_action)
+        super(TestForm, self).__init__(name, slot_dict,
+                                       finish_action, exit_dict,
+                                       chitchat_dict, details_intent,
+                                       rules, failure_action=failure_action)
 
 
 def test_endpoint():
@@ -66,17 +68,18 @@ def test_endpoint():
 
 
 def test_next_action():
-    slots = {'price':None, "cuisine":None, "people":None, "location":None}
+    slots = {'price': None, "cuisine": None,
+             "people": None, "location": None}
     latest_message = {"intent": {"name": "greet"}}
     tracker = Tracker(UserMessage.DEFAULT_SENDER_ID, slots, latest_message,
-                 [], False, None)
+                      [], False, None)
     form = TestForm()
     assert form.next_action(tracker) == 'utter_ask_price'
     assert form.next_action(tracker) == 'action_listen'
 
     slots['price'] = 'high'
     tracker = Tracker(UserMessage.DEFAULT_SENDER_ID, slots, latest_message,
-                 [], False, None)
+                      [], False, None)
     assert form.next_action(tracker) == 'utter_ask_cuisine'
     assert form.next_action(tracker) == 'action_listen'
 
@@ -94,7 +97,8 @@ def test_next_action():
     assert form.next_action(tracker) == 'utter_ask_cuisine'
     assert form.next_action(tracker) == 'action_listen'
 
-    slots = {'price':'price', "cuisine":'cuisine', "people":'ppl', "location":'loc'}
+    slots = {'price': 'price', "cuisine": 'cuisine',
+             "people": 'ppl', "location": 'loc'}
 
     tracker = Tracker(UserMessage.DEFAULT_SENDER_ID, slots, latest_message,
                       [], False, None)
