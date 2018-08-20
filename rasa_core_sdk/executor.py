@@ -180,6 +180,7 @@ class ActionExecutor(object):
 
             events = action(dispatcher, tracker, domain, self)
             logger.debug("Successfully ran '{}'".format(action_name))
+
             return self._create_api_response(events, dispatcher.messages)
         else:
             logger.warning("Received an action call without an action.")
