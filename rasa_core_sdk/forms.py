@@ -187,7 +187,7 @@ class SimpleForm(Form):
         return still_to_ask
 
     def _run_through_queue(self):
-        #take next action in the queue
+        # take next action in the queue
         if self.queue == []:
             return None
         else:
@@ -235,7 +235,7 @@ class SimpleForm(Form):
 
         self.current_failures += 1
         if self.current_failures > self.max_turns:
-            self.queue = [self.failure_action, self.finish_action]
+            self.queue = [self.failure_action]
             return self._run_through_queue()
 
         intent = tracker.latest_message['intent']['name']
@@ -249,6 +249,7 @@ class SimpleForm(Form):
         elif intent in self.chitchat_dict.keys():
             self._chitchat_queue(intent, tracker)
             return self._run_through_queue()
+
         elif self.details_intent and intent == self.details_intent:
             self._details_queue(intent, tracker)
             return self._run_through_queue()
