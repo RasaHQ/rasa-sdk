@@ -26,30 +26,56 @@ class StartFormAction(Action):
 
 class EndFormAction(Action):
     def name(self):
-        return "deactivate_plan"
+        return "end_form"
 
     def run(self, dispatcher, tracker, domain, executor):
+        #request_hotel, goodbye, finished, etc.
         return [EndForm()]
 
 
 class RestaurantForm(SimpleForm):
     def __init__(self):
         name = 'restaurant_form'
-        slot_dict = {"price": {"ask_utt": "utter_ask_price", "clarify_utt": "utter_explain_price_restaurant", "priority":0},
-                     "cuisine": {"ask_utt": "utter_ask_cuisine", "clarify_utt": "utter_explain_cuisine_restaurant"},
-                     "people": {"ask_utt": "utter_ask_people", "clarify_utt": "utter_explain_people_restaurant"},
-                     "location": {"ask_utt": "utter_ask_location", "clarify_utt": "utter_explain_location_restaurant"}}
+        slot_dict = {
+            "price": {
+                "ask_utt": "utter_ask_price",
+                "clarify_utt": "utter_explain_price_restaurant",
+                "priority": 0
+            },
+            "cuisine": {
+                "ask_utt": "utter_ask_cuisine",
+                "clarify_utt": "utter_explain_cuisine_restaurant"
+            },
+            "people": {
+                "ask_utt": "utter_ask_people",
+                "clarify_utt": "utter_explain_people_restaurant"
+            },
+            "location": {
+                "ask_utt": "utter_ask_location",
+                "clarify_utt": "utter_explain_location_restaurant"
+            }
+        }
 
-        finish_action = "deactivate_plan"
+        finish_action = "end_form"
 
-        exit_dict = {"goodbye": "deactivate_plan",
-                     "request_hotel": "deactivate_plan_switch"}
+        exit_dict = {
+            "goodbye": "end_form",
+            "request_hotel": "end_form"
+        }
 
         chitchat_dict = {"chitchat": "utter_chitchat"}
 
         details_intent = "utter_ask_details"
 
-        rules = {"cuisine":{"mcdonalds": {'need':['location'], 'lose':['people', 'price']}}}
+        rules = {
+            "cuisine": {
+                "mcdonalds": {
+                              'need': ['location'],
+                              'lose': ['people', 'price']
+                              }
+            }
+        }
 
         failure_action = 'utter_human_hand_off'
-        super(RestaurantForm, self).__init__(name, slot_dict, finish_action, exit_dict, chitchat_dict, details_intent, rules, failure_action=failure_action)
+        super(RestaurantForm, self).__init__(name, slot_dict, finish_action, exit_dict, chitchat_dict, details_intent,
+                                             rules, failure_action=failure_action)
