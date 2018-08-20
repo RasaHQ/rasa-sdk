@@ -8,13 +8,9 @@ intents:
 
 actions:
 - utter_greet
-- utter_cheer_up
-- utter_did_that_help
 - utter_happy
 - utter_goodbye
-- my_custom_action
 - start_restaurant
-- deactivate_plan
 - end_form
 - utter_explain_details_restaurant
 - utter_suggest_restaurant
@@ -24,8 +20,6 @@ actions:
 - utter_ask_price
 - form_action
 slots:
-  test:
-    type: text
   cuisine:
     type: text
   people:
@@ -34,22 +28,8 @@ slots:
     type: text
   price:
     type: text
+
 templates:
-  utter_greet:
-  - text: "Hey! How are you?"
-    buttons:
-    - title: "great"
-      payload: "great"
-    - title: "super sad"
-      payload: "super sad"
-
-  utter_cheer_up:
-  - text: "Here is something to cheer you up:"
-    image: "https://i.imgur.com/nGF1K8f.jpg"
-
-  utter_did_that_help:
-  - text: "Did that help you?"
-
   utter_happy:
   - text: "Great carry on!"
 
@@ -61,11 +41,15 @@ templates:
 
   utter_book_hotel:
   - text: "Booked! Have a great trip!"
+
   utter_ask_cuisine:
   - text: "What kind of cuisine would you like?"
+
   utter_ask_people:
   - text: "How many people will you be?"
+
   utter_ask_location:
   - text: "Where?"
+
   utter_ask_price:
   - text: "What price range?"

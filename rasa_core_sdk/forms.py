@@ -88,7 +88,7 @@ class NewFormAction(Action):
 
     def run(self, dispatcher, tracker, domain, executor):
         form = executor.forms[tracker.active_form]
-        next_action = form.next_action(tracker, domain)
+        next_action = form.next_action(tracker)
         if next_action in domain['templates'].keys():
             dispatcher.utter_template(next_action, tracker)
             return []
@@ -101,8 +101,8 @@ class NewFormAction(Action):
 class Form(object):
     """Next action to be taken in response to a dialogue state."""
 
-    def next_action(self, tracker, domain):
-        # type: (DialogueStateTracker, Domain) -> List[Event]
+    def next_action(self, tracker):
+        # type: (DialogueStateTracker) -> List[Event]
         """
         Choose an action idx given the current state of the tracker and the form.
 
@@ -186,7 +186,7 @@ class SimpleForm(Form):
         still_to_ask = self._prioritise_questions(still_to_ask)
         return still_to_ask
 
-    def _run_through_queue(self, domain):
+    def _run_through_queue(self):
         #take next action in the queue
         if self.queue == []:
             return None
@@ -218,18 +218,25 @@ class SimpleForm(Form):
         # in the default setting this will ask the first (highest priority) slot, but can be overridden
         return still_to_ask[0]
 
-    def next_action(self, tracker, domain):
-        # type: (DialogueStateTracker, Domain) -> int
+    def next_action(self, tracker):
+        # type: (DialogueStateTracker) -> int
 
-        out = self._run_through_queue(domain)
+        out = self._run_through_queue()
         if out is not None:
             # There are still actions in the queue, do the next one
             return out
 
+        still_to_ask = self.check_unfilled_slots(tracker)
+
+        if len(still_to_ask) == 0:
+            # if all the slots have been filled then queue finish actions
+            self.queue = [self.finish_action]
+            return self._run_through_queue()
+
         self.current_failures += 1
         if self.current_failures > self.max_turns:
             self.queue = [self.failure_action, self.finish_action]
-            return self._run_through_queue(domain)
+            return self._run_through_queue()
 
         intent = tracker.latest_message['intent']['name']
         self._update_requirements(tracker)
@@ -237,24 +244,16 @@ class SimpleForm(Form):
         if intent in self.exit_dict.keys():
             # actions in this dict should deactivate this form in the tracker
             self._exit_queue(intent, tracker)
-            return self._run_through_queue(domain)
+            return self._run_through_queue()
 
         elif intent in self.chitchat_dict.keys():
             self._chitchat_queue(intent, tracker)
-            return self._run_through_queue(domain
-                                           )
+            return self._run_through_queue()
         elif self.details_intent and intent == self.details_intent:
             self._details_queue(intent, tracker)
-            return self._run_through_queue(domain)
+            return self._run_through_queue()
 
-        still_to_ask = self.check_unfilled_slots(tracker)
-
-        if len(still_to_ask) == 0:
-            # if all the slots have been filled then queue finish actions
-            self.queue = [self.finish_action]
-            return self._run_through_queue(domain)
-        else:
-            # otherwise just ask to fill slots
-            self.last_question = self._decide_next_question(still_to_ask, tracker)
-            self.queue = self._question_queue(self.last_question)
-            return self._run_through_queue(domain)
+        # otherwise just ask to fill slots
+        self.last_question = self._decide_next_question(still_to_ask, tracker)
+        self.queue = self._question_queue(self.last_question)
+        return self._run_through_queue()
