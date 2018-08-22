@@ -82,6 +82,7 @@ if __name__ == '__main__':
     cmdline_args = arg_parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger('matplotlib').setLevel(logging.WARN)
 
     logger.info("Starting action endpoint server...")
     app = endpoint_app(cors_origins=cmdline_args.cors,
