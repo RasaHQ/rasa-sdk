@@ -13,7 +13,7 @@ from typing import Text
 
 from rasa_core_sdk import utils, Action, Tracker
 from rasa_core_sdk.events import FormListen
-from rasa_core_sdk.forms import NewFormAction, Form
+from rasa_core_sdk.forms import FormAction, Form
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ class ActionExecutor(object):
     def register_form(self, form):
         logger.info("Registered form for '{}'.".format(form))
         self.forms[form.name] = form
-        self.register_action(NewFormAction())
+        self.register_action(FormAction())
 
     def register_function(self, name, f):
         logger.info("Registered function for '{}'.".format(name))

@@ -19,70 +19,7 @@ logger = logging.getLogger(__name__)
 FORM_SLOT_NAME = "requested_slot"
 
 
-class FormField(object):
-
-    def validate(self, value):
-        """Check if extracted value for a requested slot is valid.
-
-        Users should override this to implement custom validation logic,
-        returning None indicates a negative validation result, and the slot
-        will not be set.
-        """
-        return value
-
-
-class EntityFormField(FormField):
-
-    def __init__(self, entity_name, slot_name):
-        self.entity_name = entity_name
-        self.slot_name = slot_name
-
-    def extract(self, tracker):
-        value = next(tracker.get_latest_entity_values(self.entity_name), None)
-        validated = self.validate(value)
-        if validated is not None:
-            return [SlotSet(self.slot_name, validated)]
-        else:
-            return []
-
-
-class BooleanFormField(FormField):
-    """A form field that prompts the user for a yes or no answer.
-    The interpreter should map positive and negative answers to
-    the intents ``affirm_intent`` and ``deny_intent``.
-    """
-
-    def __init__(self, slot_name, affirm_intent, deny_intent):
-        self.slot_name = slot_name
-        self.affirm_intent = affirm_intent
-        self.deny_intent = deny_intent
-
-    def extract(self, tracker):
-
-        intent = tracker.latest_message.intent.get("name")
-        if intent == self.affirm_intent:
-            value = True
-        elif intent == self.deny_intent:
-            value = False
-        else:
-            return []
-
-        return [SlotSet(self.slot_name, value)]
-
-
-class FreeTextFormField(FormField):
-
-    def __init__(self, slot_name):
-        self.slot_name = slot_name
-
-    def extract(self, tracker):
-        validated = self.validate(tracker.latest_message.text)
-        if validated is not None:
-            return [SlotSet(self.slot_name, validated)]
-        return []
-
-
-class NewFormAction(Action):
+class FormAction(Action):
     def name(self):
         return FORM_ACTION_NAME
 
@@ -184,6 +121,9 @@ class SimpleForm(Form):
         current_filled_slots = [key for key, value in tracker.current_slot_values().items() if value is not None]
         still_to_ask = list(set(self.current_required) - set(current_filled_slots))
         still_to_ask = self._prioritise_questions(still_to_ask)
+        for slot in still_to_ask:
+            if slot not in tracker.current_slot_values().keys():
+                logger.warning("Slot {} not found in tracker, did you include it in your domain file?".format(slot))
         return still_to_ask
 
     def _run_through_queue(self):

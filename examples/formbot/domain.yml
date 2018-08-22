@@ -6,6 +6,7 @@ intents:
   - mood_great
   - mood_unhappy
   - request_restaurant
+  - ask_details
 
 actions:
 - utter_greet
@@ -21,6 +22,8 @@ actions:
 - utter_ask_price
 - utter_book_restaurant
 - form_action
+- utter_ask_vegetarian
+- utter_human_hand_off
 
 form_start_actions:
 - start_restaurant
@@ -33,6 +36,8 @@ slots:
   location:
     type: unfeaturized
   price:
+    type: unfeaturized
+  vegetarian:
     type: unfeaturized
   form_complete:
     type: bool
@@ -64,3 +69,24 @@ templates:
 
   utter_greet:
   - text: "Hi! Would you like to book a restaurant today?"
+
+  utter_ask_vegetarian:
+  - text: "Would you like the restaurant to have vegetarian options?"
+
+  utter_explain_cuisine:
+  - text: "I need to know what cuisine you want to eat to find you the best restaurant for you"
+
+  utter_explain_people:
+  - text: "I need to know how many people you want to bring"
+
+  utter_explain_location:
+  - text: "The earth is a big place!"
+
+  utter_explain_price:
+  - text: "I need to know how much you want to spend."
+
+  utter_explain_vegetarian:
+  - text: "some people prefer not to eat meat."
+
+  utter_human_hand_off:
+  - text: "Looks like we're having some issues, I will hand you off to a human"

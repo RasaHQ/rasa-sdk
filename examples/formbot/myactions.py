@@ -27,26 +27,47 @@ class EndFormAction(Action):
         return [SlotSet('form_complete', complete), EndForm()]
 
 
+class VegetarianParse(Action):
+    def name(self):
+        return "vegetarian_parse"
+
+    def run(self, dispatcher, tracker, domain, executor):
+        latest_intent = tracker.latest_message['intent']['name']
+        if latest_intent == 'affirm':
+            return [SlotSet('vegetarian', True)]
+        elif latest_intent == 'deny':
+            return [SlotSet('vegetarian', False)]
+        else:
+            return []
+
+
 class RestaurantForm(SimpleForm):
     def __init__(self):
         name = 'restaurant_form'
         fields = {
             "price": {
                 "ask_utt": "utter_ask_price",
-                "clarify_utt": "utter_explain_price_restaurant",
+                "clarify_utt": "utter_explain_price",
                 "priority": 0
             },
             "cuisine": {
                 "ask_utt": "utter_ask_cuisine",
-                "clarify_utt": "utter_explain_cuisine_restaurant"
+                "clarify_utt": "utter_explain_cuisine",
+
             },
             "people": {
                 "ask_utt": "utter_ask_people",
-                "clarify_utt": "utter_explain_people_restaurant"
+                "clarify_utt": "utter_explain_people"
             },
             "location": {
                 "ask_utt": "utter_ask_location",
-                "clarify_utt": "utter_explain_location_restaurant"
+                "clarify_utt": "utter_explain_location"
+            },
+            "vegetarian": {
+                "ask_utt": "utter_ask_vegetarian",
+                "clarify_utt": "utter_explain_vegetarian",
+                "follow_up_action": "vegetarian_parse",
+                'priority': 0
             }
         }
 
@@ -59,7 +80,7 @@ class RestaurantForm(SimpleForm):
 
         chitchat_intents = {"chitchat": "utter_chitchat"}
 
-        details_intent = "utter_ask_details"
+        details_intent = "ask_details"
 
         rules = {
             "cuisine": {
