@@ -61,3 +61,6 @@ templates:
 
   utter_ask_price:
   - text: "What price range?"
+
+  utter_greet:
+  - text: "Hi! Would you like to book a restaurant today?"
