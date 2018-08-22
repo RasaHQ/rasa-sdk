@@ -226,6 +226,7 @@ class SimpleForm(Form):
             # There are still actions in the queue, do the next one
             return out
 
+        self._update_requirements(tracker)
         still_to_ask = self.check_unfilled_slots(tracker)
 
         if len(still_to_ask) == 0:
@@ -239,7 +240,6 @@ class SimpleForm(Form):
             return self._run_through_queue()
 
         intent = tracker.latest_message['intent']['name']
-        self._update_requirements(tracker)
 
         if intent in self.exit_dict.keys():
             # actions in this dict should deactivate this form in the tracker

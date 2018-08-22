@@ -5,6 +5,7 @@ intents:
   - mood_deny
   - mood_great
   - mood_unhappy
+  - request_restaurant
 
 actions:
 - utter_greet
@@ -18,16 +19,23 @@ actions:
 - utter_ask_people
 - utter_ask_location
 - utter_ask_price
+- utter_book_restaurant
 - form_action
+
+form_start_actions:
+- start_restaurant
+
 slots:
   cuisine:
-    type: text
+    type: unfeaturized
   people:
-    type: text
+    type: unfeaturized
   location:
-    type: text
+    type: unfeaturized
   price:
-    type: text
+    type: unfeaturized
+  form_complete:
+    type: bool
 
 templates:
   utter_happy:
@@ -39,8 +47,8 @@ templates:
   utter_goodbye:
   - text: "Bye"
 
-  utter_book_hotel:
-  - text: "Booked! Have a great trip!"
+  utter_book_restaurant:
+  - text: "Booked! Have a great meal!"
 
   utter_ask_cuisine:
   - text: "What kind of cuisine would you like?"

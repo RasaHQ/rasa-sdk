@@ -7,14 +7,6 @@ from rasa_core_sdk import Action
 from rasa_core_sdk.events import SlotSet, StartForm, EndForm
 from rasa_core_sdk.forms import SimpleForm
 
-class MyCustomAction(Action):
-    def name(self):
-        return "my_custom_action"
-
-    def run(self, dispatcher, tracker, domain, executor):
-        dispatcher.utter_template("utter_custom_template", tracker)
-        return [SlotSet("test", 4)]
-
 
 class StartFormAction(Action):
     def name(self):
@@ -29,8 +21,10 @@ class EndFormAction(Action):
         return "end_form"
 
     def run(self, dispatcher, tracker, domain, executor):
-        #request_hotel, goodbye, finished, etc.
-        return [EndForm()]
+        form = executor.forms[tracker.active_form]
+        still_to_go = form.check_unfilled_slots(tracker)
+        complete = len(still_to_go) == 0
+        return [SlotSet('form_complete', complete), EndForm()]
 
 
 class RestaurantForm(SimpleForm):
