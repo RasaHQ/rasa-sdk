@@ -124,12 +124,12 @@ class Form(object):
 
 
 class SimpleForm(Form):
-    def __init__(self, name, slot_dict, finish_action, exit_dict=None, chitchat_dict=None, details_intent=None, rules=None, max_turns=10, failure_action=None):
+    def __init__(self, name, fields, finish_action, breakout_intents=None, chitchat_intents=None, details_intent=None, rules=None, max_turns=10, failure_action=None):
         self.name = name
-        self.slot_dict = slot_dict
-        self.required_slots = list(self.slot_dict.keys())
-        self.exit_dict = exit_dict
-        self.chitchat_dict = chitchat_dict
+        self.fields = fields
+        self.required_slots = list(self.fields.keys())
+        self.breakout_intents = breakout_intents
+        self.chitchat_intents = chitchat_intents
         self.finish_action = finish_action
         self.details_intent = details_intent
         self._validate_slots()
@@ -147,7 +147,7 @@ class SimpleForm(Form):
             self.failure_action = failure_action
 
     def _validate_slots(self):
-        for slot, values in self.slot_dict.items():
+        for slot, values in self.fields.items():
             if 'ask_utt' not in list(values.keys()):
                 logger.error('ask_utt not found for {} in form {}. An utterance is required to ask for a certain slot'.format(slot, self.name))
             if 'clarify_utt' not in list(values.keys()) and self.details_intent not in [None, []]:
@@ -177,7 +177,7 @@ class SimpleForm(Form):
 
     def _prioritise_questions(self, slots):
         #type: (list) -> (list)
-        return sorted(slots, key=lambda l: self.slot_dict[l].get('priority', 1E5))
+        return sorted(slots, key=lambda l: self.fields[l].get('priority', 1E5))
 
     def check_unfilled_slots(self, tracker):
         #type: (DialogueStateTracker) -> ([str])
@@ -195,24 +195,24 @@ class SimpleForm(Form):
 
     def _question_queue(self, question):
         # the default question queue will ask for the slot and then listen
-        queue = [self.slot_dict[question]['ask_utt'], 'action_listen']
-        if 'follow_up_action' in self.slot_dict[self.last_question].keys():
-            queue.append(self.slot_dict[self.last_question]['follow_up_action'])
+        queue = [self.fields[question]['ask_utt'], 'action_listen']
+        if 'follow_up_action' in self.fields[self.last_question].keys():
+            queue.append(self.fields[self.last_question]['follow_up_action'])
         return queue
 
     def _details_queue(self, intent, tracker):
         # details will perform the clarify utterance and then ask the question again
-        self.queue = [self.slot_dict[self.last_question]['clarify_utt']]
+        self.queue = [self.fields[self.last_question]['clarify_utt']]
         self.queue.extend(self._question_queue(self.last_question))
 
     def _chitchat_queue(self, intent, tracker):
         # chitchat queue will perform the chitchat action and return to the last question
-        self.queue = [self.chitchat_dict[intent]]
+        self.queue = [self.chitchat_intents[intent]]
         self.queue.extend(self._question_queue(self.last_question))
 
     def _exit_queue(self, intent, tracker):
         # If the exit dict is called, the form will be deactivated
-        self.queue = [self.exit_dict[intent]]
+        self.queue = [self.breakout_intents[intent]]
 
     def _decide_next_question(self, still_to_ask, tracker):
         # in the default setting this will ask the first (highest priority) slot, but can be overridden
@@ -241,12 +241,12 @@ class SimpleForm(Form):
 
         intent = tracker.latest_message['intent']['name']
 
-        if intent in self.exit_dict.keys():
+        if intent in self.breakout_intents.keys():
             # actions in this dict should deactivate this form in the tracker
             self._exit_queue(intent, tracker)
             return self._run_through_queue()
 
-        elif intent in self.chitchat_dict.keys():
+        elif intent in self.chitchat_intents.keys():
             self._chitchat_queue(intent, tracker)
             return self._run_through_queue()
 

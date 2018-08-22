@@ -63,10 +63,6 @@ class TestForm(SimpleForm):
                                        rules, failure_action=failure_action)
 
 
-def test_endpoint():
-    pass
-
-
 def test_next_action():
     slots = {'price': None, "cuisine": None,
              "people": None, "location": None}

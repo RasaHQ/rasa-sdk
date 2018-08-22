@@ -30,7 +30,7 @@ class EndFormAction(Action):
 class RestaurantForm(SimpleForm):
     def __init__(self):
         name = 'restaurant_form'
-        slot_dict = {
+        fields = {
             "price": {
                 "ask_utt": "utter_ask_price",
                 "clarify_utt": "utter_explain_price_restaurant",
@@ -52,12 +52,12 @@ class RestaurantForm(SimpleForm):
 
         finish_action = "end_form"
 
-        exit_dict = {
+        breakout_intents = {
             "goodbye": "end_form",
             "request_hotel": "end_form"
         }
 
-        chitchat_dict = {"chitchat": "utter_chitchat"}
+        chitchat_intents = {"chitchat": "utter_chitchat"}
 
         details_intent = "utter_ask_details"
 
@@ -71,5 +71,5 @@ class RestaurantForm(SimpleForm):
         }
 
         failure_action = 'utter_human_hand_off'
-        super(RestaurantForm, self).__init__(name, slot_dict, finish_action, exit_dict, chitchat_dict, details_intent,
+        super(RestaurantForm, self).__init__(name, fields, finish_action, breakout_intents, chitchat_intents, details_intent,
                                              rules, failure_action=failure_action)
