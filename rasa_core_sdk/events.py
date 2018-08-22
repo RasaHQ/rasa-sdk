@@ -68,7 +68,7 @@ def AllSlotsReset(timestamp=None):
 def ReminderScheduled(action_name, trigger_date_time, name=None,
                       kill_on_user_message=True, timestamp=None):
     return {
-        "event": "reset_slots",
+        "event": "reminder",
         "timestamp": timestamp,
         "action": action_name,
         "date_time": trigger_date_time.isoformat(),
@@ -90,6 +90,16 @@ def StoryExported(timestamp=None):
     return {
         "event": "export",
         "timestamp": timestamp,
+    }
+
+
+# noinspection PyPep8Naming
+def FollowupAction(name,
+                   timestamp=None):
+    return {
+        "event": "followup",
+        "timestamp": timestamp,
+        "name": name,
     }
 
 

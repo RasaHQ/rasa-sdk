@@ -28,10 +28,11 @@ class Tracker(object):
                        state.get("slots", {}),
                        state.get("latest_message", {}),
                        state.get("events"),
-                       state.get("paused"))
+                       state.get("paused"),
+                       state.get("followup_action"))
 
     def __init__(self, sender_id, slots,
-                 latest_message, events, paused):
+                 latest_message, events, paused, followup_action):
         """Initialize the tracker."""
 
         # list of previously seen events
@@ -40,6 +41,8 @@ class Tracker(object):
         self.sender_id = sender_id
         # slots that can be filled in this domain
         self.slots = slots
+
+        self.followup_action = followup_action
 
         self._paused = paused
 
