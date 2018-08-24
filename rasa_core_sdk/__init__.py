@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import copy
 import logging
 
 import typing
@@ -134,6 +135,14 @@ class Tracker(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def copy(self):
+        return Tracker(self.sender_id,
+                       copy.deepcopy(self.slots),
+                       copy.deepcopy(self.latest_message),
+                       copy.deepcopy(self.events),
+                       self._paused,
+                       self.followup_action)
 
 
 class Action(object):

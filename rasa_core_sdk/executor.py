@@ -9,7 +9,7 @@ import logging
 import pkgutil
 
 import six
-from typing import Text
+from typing import Text, List, Dict, Any
 
 from rasa_core_sdk import utils, Action, Tracker
 
@@ -41,7 +41,7 @@ class CollectingDispatcher(object):
         self.messages.append(message)
 
     def utter_button_message(self, text, buttons, **kwargs):
-        # type: (Text, List[Dict[Text, Any]], **Any) -> None
+        # type: (Text, List[Dict[Text, Any]], Any) -> None
         """Sends a message with buttons to the output channel."""
 
         message = {"text": text, "buttons": buttons}
@@ -57,11 +57,16 @@ class CollectingDispatcher(object):
 
         self.messages.append(message)
 
-    # TODO: TB - deprecate this function?
-    def utter_button_template(self, template, buttons, tracker,
-                              silent_fail=False,
-                              **kwargs):
-        # type: (Text, List[Dict[Text, Any]], **Any) -> None
+    # TODO: deprecate this function?
+    # noinspection PyUnusedLocal
+    def utter_button_template(self,
+                              template,  # type: Text
+                              buttons,  # type: List[Dict[Text, Any]]
+                              tracker,  # type: Tracker
+                              silent_fail=False,  # type: bool
+                              **kwargs  # type: Any
+                              ):
+        # type: (...) -> None
         """Sends a message template with buttons to the output channel."""
 
         message = {"template": template, "buttons": buttons}
@@ -69,11 +74,12 @@ class CollectingDispatcher(object):
 
         self.messages.append(message)
 
+    # noinspection PyUnusedLocal
     def utter_template(self,
                        template,  # type: Text
-                       tracker,
+                       tracker,  # type: Tracker
                        silent_fail=False,  # type: bool
-                       **kwargs  # type: ** Any
+                       **kwargs  # type: Any
                        ):
         # type: (...) -> None
         """"Send a message to the client based on a template."""
@@ -136,7 +142,7 @@ class ActionExecutor(object):
     def register_package(self, package):
         try:
             self._import_submodules(package)
-        except ImportError as e:
+        except ImportError:
             logger.exception("Failed to register package '{}'."
                              "".format(package))
 
@@ -148,7 +154,7 @@ class ActionExecutor(object):
 
     @staticmethod
     def _create_api_response(events, messages):
-        return{
+        return {
             "events": events if events else [],
             "responses": messages
         }

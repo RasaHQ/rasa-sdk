@@ -4,8 +4,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+from typing import Dict, Text, Any
 
 logger = logging.getLogger(__name__)
+
+EventType = Dict[Text, Any]
 
 
 # noinspection PyPep8Naming

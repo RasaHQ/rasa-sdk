@@ -6,9 +6,10 @@ from __future__ import unicode_literals
 
 import logging
 import random
+from typing import List, Text
 
-from rasa_core_sdk import Action
-from rasa_core_sdk.events import SlotSet
+from rasa_core_sdk import Action, Tracker
+from rasa_core_sdk.events import SlotSet, EventType
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ FORM_SLOT_NAME = "requested_slot"
 
 class FormField(object):
 
+    # noinspection PyMethodMayBeStatic
     def validate(self, value):
         """Check if extracted value for a requested slot is valid.
 
@@ -37,6 +39,8 @@ class EntityFormField(FormField):
         self.slot_name = slot_name
 
     def extract(self, tracker):
+        # type: (Tracker) -> List[EventType]
+
         value = next(tracker.get_latest_entity_values(self.entity_name), None)
         validated = self.validate(value)
         if validated is not None:
@@ -57,8 +61,9 @@ class BooleanFormField(FormField):
         self.deny_intent = deny_intent
 
     def extract(self, tracker):
+        # type: (Tracker) -> List[EventType]
 
-        intent = tracker.latest_message.intent.get("name")
+        intent = tracker.latest_message.get("intent", {}).get("name")
         if intent == self.affirm_intent:
             value = True
         elif intent == self.deny_intent:
@@ -75,24 +80,35 @@ class FreeTextFormField(FormField):
         self.slot_name = slot_name
 
     def extract(self, tracker):
-        validated = self.validate(tracker.latest_message.text)
+        # type: (Tracker) -> List[EventType]
+
+        validated = self.validate(tracker.latest_message.get("text"))
         if validated is not None:
             return [SlotSet(self.slot_name, validated)]
         return []
 
 
 class FormAction(Action):
+    def name(self):
+        # type: () -> Text
+        """Unique identifier of this form action."""
+
+        raise NotImplementedError
+
     RANDOMIZE = True
 
     @staticmethod
     def required_fields():
         return []
 
-    def should_request_slot(self, tracker, slot_name):
+    @staticmethod
+    def should_request_slot(tracker, slot_name):
         existing_val = tracker.get_slot(slot_name)
         return existing_val is None
 
     def get_other_slots(self, tracker):
+        # type: (Tracker) -> List[EventType]
+
         requested_slot = tracker.get_slot(FORM_SLOT_NAME)
 
         requested_entity = None
@@ -112,6 +128,8 @@ class FormAction(Action):
         return slot_events
 
     def get_requested_slot(self, tracker):
+        # type: (Tracker) -> List[EventType]
+
         requested_slot = tracker.get_slot(FORM_SLOT_NAME)
 
         required = self.required_fields()
@@ -140,7 +158,7 @@ class FormAction(Action):
 
         temp_tracker = tracker.copy()
         for e in events:
-            temp_tracker.update(e)
+            temp_tracker.slots[e["name"]] = e["value"]
 
         for field in self.required_fields():
             if self.should_request_slot(temp_tracker, field.slot_name):
@@ -159,4 +177,4 @@ class FormAction(Action):
 
     def submit(self, dispatcher, tracker, domain):
         raise NotImplementedError(
-            "a form action must implement a submit method")
+                "a form action must implement a submit method")
