@@ -14,6 +14,12 @@ To install the SDK run
 pip install rasa_core_sdk
 ```
 
+## Compatibility
+
+| SDK version   | compatible Rasa Core version           |
+|---------------|----------------------------------------|
+| `0.11.x`      | `>=0.11.x`                             |
+
 ## Usage
 
 Detailed instructions can be found in the Rasa Core Documentation about 
