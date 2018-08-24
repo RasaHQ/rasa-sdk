@@ -19,6 +19,7 @@ after_success:
 jobs:
   include:
   - stage: deploy
+    python: 3.6
     install: skip
     script: skip
     deploy:
