@@ -22,6 +22,7 @@ jobs:
     python: 3.6
     install: skip
     script: skip
+    server: https://pypi.python.org/pypi
     deploy:
       provider: pypi
       user: amn41
