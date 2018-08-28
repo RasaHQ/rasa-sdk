@@ -53,7 +53,7 @@ class CollectingDispatcher(object):
         # type: (Text) -> None
         """Send a message to the client with attachments."""
 
-        message = {"text": None, "attachement": attachment}
+        message = {"text": None, "attachment": attachment}
 
         self.messages.append(message)
 
