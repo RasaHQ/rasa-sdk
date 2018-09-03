@@ -149,8 +149,8 @@ class ActionExecutor(object):
         actions = utils.all_subclasses(Action)
 
         for action in actions:
-            if (not action.__module__.startswith("rasa_core.")  and 
-               not action.__module__.startswith("rasa_core_sdk.")):
+            if (not action.__module__.startswith("rasa_core.") and
+                    not action.__module__.startswith("rasa_core_sdk.")):
                 self.register_action(action)
 
     @staticmethod
