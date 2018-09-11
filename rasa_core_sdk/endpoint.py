@@ -85,10 +85,10 @@ if __name__ == '__main__':
     logging.getLogger('matplotlib').setLevel(logging.WARN)
 
     logger.info("Starting action endpoint server...")
-    app = endpoint_app(cors_origins=cmdline_args.cors,
-                       action_package_name=cmdline_args.actions)
+    edp_app = endpoint_app(cors_origins=cmdline_args.cors,
+                           action_package_name=cmdline_args.actions)
 
-    http_server = WSGIServer(('0.0.0.0', cmdline_args.port), app)
+    http_server = WSGIServer(('0.0.0.0', cmdline_args.port), edp_app)
 
     http_server.start()
     logger.info("Action endpoint is up and running. on {}"

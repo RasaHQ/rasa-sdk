@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import copy
 import logging
 
 import typing
@@ -29,10 +30,11 @@ class Tracker(object):
                        state.get("latest_message", {}),
                        state.get("events"),
                        state.get("paused"),
+                       state.get("followup_action"),
                        state.get("active_form", None))
 
-    def __init__(self, sender_id, slots, latest_message,
-                 events, paused, active_form):
+    def __init__(self, sender_id, slots,
+                 latest_message, events, paused, followup_action, active_form):
         """Initialize the tracker."""
 
         # list of previously seen events
@@ -41,6 +43,8 @@ class Tracker(object):
         self.sender_id = sender_id
         # slots that can be filled in this domain
         self.slots = slots
+
+        self.followup_action = followup_action
 
         self._paused = paused
 
@@ -134,6 +138,14 @@ class Tracker(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def copy(self):
+        return Tracker(self.sender_id,
+                       copy.deepcopy(self.slots),
+                       copy.deepcopy(self.latest_message),
+                       copy.deepcopy(self.events),
+                       self._paused,
+                       self.followup_action)
 
 
 class Action(object):

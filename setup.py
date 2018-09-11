@@ -27,6 +27,8 @@ install_requires = [
     'coloredlogs~=10.0',
     'flask~=1.0',
     'flask_cors~=3.0',
+    'gevent~=1.2',
+    'six~=1.11',
 ]
 
 extras_requires = {

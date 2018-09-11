@@ -20,6 +20,7 @@ after_success:
 jobs:
   include:
   - stage: deploy
+    python: 3.6
     install: skip
     script: skip
     deploy:
@@ -30,4 +31,4 @@ jobs:
         branch: master
         tags: true
       password:
-        secure: "ASDF"
+        secure: "a1ur/UMpxoPv6bTPC8Bgc9UVKG/FU8IZR2+dnr5oq3XGPP1WkyyEed95QrSQ+QNHgHPjSUMRxu1zuflQbxAW9i+y+1qLjKMHc1Xr1aUsuXIOjrTg62hKpB6Wx5hRBFPZXchU7mr6rVF7m+iQtK+dy0P7Qoffou603TzivYTDT1N9640gzlAWjeBjyC46KBjpXVJlIEaGNqiNCsbC7B0g3hCgdIIOmNGW+aoiZsy+LU6c/coADsly7CrHdld0GuGNxeHZDvVv6EJGkc8igLnmRsgoU9rlq/ZSlF3Ob8hXOzy20dm9XU+zTNcQglkyI6ebSOywrGtv4Rc6y+Ik5Qjg958Eujme7KephQ5l7hqkkp6kPMThhLHss7mH8hnxiFeTdMCrKZshektsSWNsYAV07cL9S52VOI47Nm7gpqXjtYhNu7MHbC/jio42k+wbZvVHNq71/S63ejosf1IO5pqlCajnSRHCaQH3mDrmuV9WyFgNL/Hdwp9do95XE+fyWAq3h/x6m7SxvzLbYQ+Km4fvlW5apb6XZLyFFXXaauxpLzPq5Cm/amrGx85+n9vH+PMtpu2mCmlgfCT3RV97AV9yNgGUvTMCVVXMV0n3EdX8tAGu7XkEbzDsxTAUSbJt3x+/d9gCn/FVStp02AcTlHgyFl+S6vta6Howp5nzY+KjZU0="

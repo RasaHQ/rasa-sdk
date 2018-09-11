@@ -6,9 +6,10 @@ from __future__ import unicode_literals
 
 import logging
 import random
+from typing import List, Text
 
-from rasa_core_sdk import Action
-from rasa_core_sdk.events import SlotSet, FormListen
+from rasa_core_sdk import Action, Tracker
+from rasa_core_sdk.events import SlotSet, FormListen, EventType
 from rasa_core.constants import FORM_ACTION_NAME
 
 logger = logging.getLogger(__name__)
