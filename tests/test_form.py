@@ -68,26 +68,26 @@ def test_next_action():
              "people": None, "location": None}
     latest_message = {"intent": {"name": "greet"}}
     tracker = Tracker(UserMessage.DEFAULT_SENDER_ID, slots, latest_message,
-                      [], False, None)
+                      [], False, None, None)
     form = TestForm()
     assert form.next_action(tracker) == 'utter_ask_price'
     assert form.next_action(tracker) == 'action_listen'
 
     slots['price'] = 'high'
     tracker = Tracker(UserMessage.DEFAULT_SENDER_ID, slots, latest_message,
-                      [], False, None)
+                      [], False, None, None)
     assert form.next_action(tracker) == 'utter_ask_cuisine'
     assert form.next_action(tracker) == 'action_listen'
 
     latest_message = {"intent": {"name": "utter_ask_details"}}
     tracker = Tracker(UserMessage.DEFAULT_SENDER_ID, slots, latest_message,
-                      [], False, None)
+                      [], False, None, None)
     assert form.next_action(tracker) == 'utter_explain_cuisine_restaurant'
     assert form.next_action(tracker) == 'utter_ask_cuisine'
     assert form.next_action(tracker) == 'action_listen'
     latest_message = {"intent": {"name": "chitchat"}}
     tracker = Tracker(UserMessage.DEFAULT_SENDER_ID, slots, latest_message,
-                      [], False, None)
+                      [], False, None, None)
 
     assert form.next_action(tracker) == 'utter_chitchat'
     assert form.next_action(tracker) == 'utter_ask_cuisine'
@@ -97,6 +97,6 @@ def test_next_action():
              "people": 'ppl', "location": 'loc'}
 
     tracker = Tracker(UserMessage.DEFAULT_SENDER_ID, slots, latest_message,
-                      [], False, None)
+                      [], False, None, None)
     form.next_action(tracker)
     assert form.next_action(tracker) == 'end_form'
