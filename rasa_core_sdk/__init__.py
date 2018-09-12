@@ -53,14 +53,9 @@ class Tracker(object):
         #                   "text": text}
         self.latest_message = latest_message if latest_message else {}
 
-    def current_state(self, should_include_events=False):
-        # type: (bool) -> Dict[Text, Any]
+    def current_state(self):
+        # type: () -> Dict[Text, Any]
         """Return the current tracker state as an object."""
-
-        if should_include_events:
-            evts = self.events
-        else:
-            evts = None
 
         if len(self.events) > 0:
             latest_event_time = self.events[-1].timestamp
@@ -73,7 +68,7 @@ class Tracker(object):
             "latest_message": self.latest_message,
             "latest_event_time": latest_event_time,
             "paused": self.is_paused(),
-            "events": evts
+            "events": self.events
         }
 
     def current_slot_values(self):
