@@ -38,16 +38,16 @@ class FormAction(Action):
         return existing_val is None
 
     def activate_if_required(self, tracker):
-        if tracker.active_form == self.name():
-            return []
-        else:
-            return [FormActivated(self.name())]
+        # if tracker.active_form == self.name():
+        #     return []
+        # else:
+        return [FormActivated(self.name())]
 
     def get_requested_slot(self, tracker):
 
         events = []
-        if tracker.latest_message.data["intent"] == "extracted_slot":
-            for key, val in tracker.latest_message.data["slots"].items():
+        if tracker.latest_message["intent"] == "extracted_slot":
+            for key, val in tracker.latest_message["slots"].items():
                 events.append([SlotSet(key, val)])
 
         return events
@@ -61,7 +61,7 @@ class FormAction(Action):
         for e in events:
             temp_tracker.slots[e["name"]] = e["value"]
 
-        for field in self.required_slots():
+        for slot in self.required_slots():
             if self.should_request_slot(temp_tracker, slot):
 
                 dispatcher.utter_template(

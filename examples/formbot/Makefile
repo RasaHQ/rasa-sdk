@@ -17,7 +17,7 @@ run-core:
 	python -m rasa_core.run --nlu models/nlu/current --core models/dialogue --debug --endpoints endpoints.yml
 
 run-actions:
-	python -m rasa_core_sdk.endpoint --actions myactions --slots myslots
+	python -m rasa_core_sdk.endpoint --actions actions
 
 run:
 	make run-actions&

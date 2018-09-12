@@ -7,15 +7,17 @@ slots:
     type: text
   num_people:
     type: text
+  requested_slot:
+    type: unfeaturized
 
 templates:
-  - utter_ask_num_people:
-    text: "how many people?"
-  - utter_ask_cuisine:
-    text: "what cuisine?"
-  - utter_noworries:
-    text: "you are welcome :)"
+  utter_ask_num_people:
+    - text: "how many people?"
+  utter_ask_cuisine:
+    - text: "what cuisine?"
+  utter_noworries:
+    - text: "you are welcome :)"
 
 actions:
-  utter_noworries
-  restaurant_form
+  - utter_noworries
+  - restaurant_form

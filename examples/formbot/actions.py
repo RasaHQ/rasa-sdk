@@ -1,4 +1,4 @@
-from rasa_core_sdk import FormAction
+from rasa_core_sdk.forms import FormAction
 
 
 class RestaurantForm(FormAction):
@@ -13,4 +13,3 @@ class RestaurantForm(FormAction):
     def submit(self, dispatcher, tracker, domain):
         dispatcher.utter_message("done!")
         return []
-

@@ -1,0 +1,30 @@
+%YAML 1.1
+---
+actions:
+- utter_noworries
+- restaurant_form
+config:
+  store_entities_as_slots: true
+entities: []
+intents:
+- thank:
+    use_entities: true
+- request_restaurant:
+    use_entities: true
+slots:
+  cuisine:
+    initial_value: null
+    type: rasa_core.slots.TextSlot
+  num_people:
+    initial_value: null
+    type: rasa_core.slots.TextSlot
+  requested_slot:
+    initial_value: null
+    type: rasa_core.slots.UnfeaturizedSlot
+templates:
+  utter_ask_cuisine:
+  - text: what cuisine?
+  utter_ask_num_people:
+  - text: how many people?
+  utter_noworries:
+  - text: you are welcome :)
