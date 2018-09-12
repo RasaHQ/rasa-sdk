@@ -1,0 +1,21 @@
+intents:
+  - thank
+  - request_restaurant
+
+slots:
+  cuisine:
+    type: text
+  num_people:
+    type: text
+
+templates:
+  - utter_ask_num_people:
+    text: "how many people?"
+  - utter_ask_cuisine:
+    text: "what cuisine?"
+  - utter_noworries:
+    text: "you are welcome :)"
+
+actions:
+  utter_noworries
+  restaurant_form

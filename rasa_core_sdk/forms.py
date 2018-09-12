@@ -61,14 +61,14 @@ class FormAction(Action):
         for e in events:
             temp_tracker.slots[e["name"]] = e["value"]
 
-        for field in self.required_fields():
-            if self.should_request_slot(temp_tracker, field.slot_name):
+        for field in self.required_slots():
+            if self.should_request_slot(temp_tracker, slot):
 
                 dispatcher.utter_template(
-                        "utter_ask_{}".format(field.slot_name),
+                        "utter_ask_{}".format(slot),
                         tracker)
 
-                events.append(SlotSet(FORM_SLOT_NAME, field.slot_name))
+                events.append(SlotSet(FORM_SLOT_NAME, slot))
                 return events
 
         # there is nothing more to request, so we can submit
