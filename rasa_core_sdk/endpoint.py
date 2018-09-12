@@ -11,6 +11,7 @@ from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
 from rasa_core_sdk.executor import ActionExecutor
+from rasa_core_sdk.validator import InputValidator
 
 DEFAULT_SERVER_PORT = 5055
 
@@ -39,12 +40,18 @@ def create_argument_parser():
             default=None,
             help="name of action package to be loaded"
     )
-
+    parser.add_argument(
+            '--slots',
+            type=str,
+            default=None,
+            help="name of action package to be loaded"
+    )
     return parser
 
 
 def endpoint_app(cors_origins=None,
-                 action_package_name=None
+                 action_package_name=None,
+                 slot_package_name=None
                  ):
     app = Flask(__name__)
 
@@ -53,6 +60,8 @@ def endpoint_app(cors_origins=None,
 
     executor = ActionExecutor()
     executor.register_package(action_package_name)
+    validator = InputValidator()
+    validator.register_package(slot_package_name)
 
     CORS(app, resources={r"/*": {"origins": cors_origins}})
 
@@ -73,6 +82,17 @@ def endpoint_app(cors_origins=None,
 
         return jsonify(response)
 
+    @app.route("/validate",
+               methods=['POST', 'OPTIONS'])
+    @cross_origin()
+    def validate():
+        """Webhook to retrieve action calls."""
+        data = request.json
+        response = validator.validate(data)
+
+        return jsonify(response)
+
+
     return app
 
 
@@ -86,7 +106,8 @@ if __name__ == '__main__':
 
     logger.info("Starting action endpoint server...")
     edp_app = endpoint_app(cors_origins=cmdline_args.cors,
-                           action_package_name=cmdline_args.actions)
+                           action_package_name=cmdline_args.actions,
+                           slot_package_name=cmdline_args.slots)
 
     http_server = WSGIServer(('0.0.0.0', cmdline_args.port), edp_app)
 

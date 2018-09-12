@@ -1,0 +1,4 @@
+
+
+class Slot(object):
+    pass
