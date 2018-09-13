@@ -1,5 +1,6 @@
 {
   "states": [
+    "intent_chitchat",
     "intent_inform",
     "intent_request_restaurant",
     "intent_thank",
@@ -9,6 +10,7 @@
     "prev_action_restart",
     "prev_action_default_fallback",
     "prev_utter_noworries",
-    "prev_restaurant_form"
+    "prev_restaurant_form",
+    "prev_utter_chitchat"
   ]
 }

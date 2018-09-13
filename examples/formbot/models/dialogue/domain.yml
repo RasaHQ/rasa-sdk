@@ -3,6 +3,7 @@
 actions:
 - utter_noworries
 - restaurant_form
+- utter_chitchat
 config:
   store_entities_as_slots: true
 entities:
@@ -14,6 +15,8 @@ intents:
 - request_restaurant:
     use_entities: true
 - inform:
+    use_entities: true
+- chitchat:
     use_entities: true
 slots:
   cuisine:
@@ -30,5 +33,7 @@ templates:
   - text: what cuisine?
   utter_ask_num_people:
   - text: how many people?
+  utter_chitchat:
+  - text: chitchat
   utter_noworries:
   - text: you are welcome :)

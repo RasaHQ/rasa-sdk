@@ -44,7 +44,8 @@ class FormAction(Action):
 
     def get_requested_slot(self, tracker):
         events = []
-        if tracker.latest_message["intent"].get("name") == "extracted_slot":
+        intent = tracker.latest_message["intent"].get("name")
+        if intent == "extracted_slot":
             for slot in tracker.latest_message["slots"]:
                 events.append(SlotSet(slot['name'], slot['value']))
 
