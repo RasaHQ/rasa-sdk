@@ -5,11 +5,15 @@ actions:
 - restaurant_form
 config:
   store_entities_as_slots: true
-entities: []
+entities:
+- cuisine
+- num_people
 intents:
 - thank:
     use_entities: true
 - request_restaurant:
+    use_entities: true
+- inform:
     use_entities: true
 slots:
   cuisine:

@@ -140,13 +140,13 @@ def AgentUttered(text=None, data=None, timestamp=None):
         "timestamp": timestamp,
     }
 
+
 # noinspection PyPep8Naming
-def FormActivated(name, timestamp=None):
+def FormActivated(form_name, timestamp=None):
     return {
         "event": "form_activated",
+        "form_name": form_name,
         "timestamp": timestamp,
-        "name": name,
-        "value": True,
     }
 
 
@@ -155,5 +155,4 @@ def FormDeactivated(timestamp=None):
     return {
         "event": "form_deactivated",
         "timestamp": timestamp,
-        "value": False,
     }

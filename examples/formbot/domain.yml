@@ -1,6 +1,11 @@
 intents:
   - thank
   - request_restaurant
+  - inform
+
+entities:
+  - cuisine
+  - num_people
 
 slots:
   cuisine:

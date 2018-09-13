@@ -1,7 +1,10 @@
 {
   "states": [
+    "intent_inform",
     "intent_request_restaurant",
     "intent_thank",
+    "entity_cuisine",
+    "entity_num_people",
     "slot_cuisine_0",
     "slot_num_people_0",
     "prev_action_listen",
