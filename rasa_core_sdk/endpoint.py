@@ -11,6 +11,7 @@ from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
 from rasa_core_sdk.executor import ActionExecutor
+from rasa_core_sdk import InputValidationError
 
 DEFAULT_SERVER_PORT = 5055
 
@@ -75,7 +76,14 @@ def endpoint_app(cors_origins=None,
     def webhook():
         """Webhook to retrieve action calls."""
         action_call = request.json
-        response = executor.run(action_call)
+        try:
+            response = executor.run(action_call)
+        except InputValidationError as e:
+            result = {"error": "could not validate input."}
+            result["payload"] = action_call
+            response = jsonify(result)
+            response.status_code = 400
+            return response
 
         return jsonify(response)
 

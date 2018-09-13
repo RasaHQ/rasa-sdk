@@ -157,6 +157,12 @@ class Action(object):
 
         raise NotImplementedError
 
+    def validate(self, tracker):
+        # type: (Tracker) -> Dict[Text, Any]
+        """"Validate the user input."""
+
+        raise InputValidationError("validation not implemented")
+
     def run(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[dict]
         """Execute the side effects of this action."""
@@ -165,3 +171,18 @@ class Action(object):
 
     def __str__(self):
         return "Action('{}')".format(self.name())
+
+
+class InputValidationError(Exception):
+    """Raised when form cannot validate user input
+
+    Attributes: 
+        message -- explanation why form could not validate user input
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
