@@ -9,9 +9,9 @@ entities:
 
 slots:
   cuisine:
-    type: text
+    type: unfeaturized
   num_people:
-    type: text
+    type: unfeaturized
   requested_slot:
     type: unfeaturized
 

@@ -18,10 +18,10 @@ intents:
 slots:
   cuisine:
     initial_value: null
-    type: rasa_core.slots.TextSlot
+    type: rasa_core.slots.UnfeaturizedSlot
   num_people:
     initial_value: null
-    type: rasa_core.slots.TextSlot
+    type: rasa_core.slots.UnfeaturizedSlot
   requested_slot:
     initial_value: null
     type: rasa_core.slots.UnfeaturizedSlot
