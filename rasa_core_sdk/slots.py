@@ -1,4 +1,0 @@
-
-
-class Slot(object):
-    pass
