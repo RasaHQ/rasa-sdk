@@ -11,7 +11,6 @@ from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
 from rasa_core_sdk.executor import ActionExecutor
-from rasa_core_sdk.validator import InputValidator
 
 DEFAULT_SERVER_PORT = 5055
 
@@ -60,8 +59,6 @@ def endpoint_app(cors_origins=None,
 
     executor = ActionExecutor()
     executor.register_package(action_package_name)
-    validator = InputValidator()
-    validator.register_package(slot_package_name)
 
     CORS(app, resources={r"/*": {"origins": cors_origins}})
 
@@ -79,16 +76,6 @@ def endpoint_app(cors_origins=None,
         """Webhook to retrieve action calls."""
         action_call = request.json
         response = executor.run(action_call)
-
-        return jsonify(response)
-
-    @app.route("/validate",
-               methods=['POST', 'OPTIONS'])
-    @cross_origin()
-    def validate():
-        """Webhook to retrieve action calls."""
-        data = request.json
-        response = validator.validate(data)
 
         return jsonify(response)
 
