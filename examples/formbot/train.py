@@ -19,11 +19,11 @@ if __name__ == '__main__':
                   policies=[MemoizationPolicy(),
                             FormPolicy()])
 
-    training_data = agent.load_data(training_data_file)
+    training_data = agent.load_data(training_data_file,
+                                    augmentation_factor=0)
 
     agent.train(
             training_data,
-            augmentation_factor=50,
             epochs=200,
             batch_size=10,
             validation_split=0.2

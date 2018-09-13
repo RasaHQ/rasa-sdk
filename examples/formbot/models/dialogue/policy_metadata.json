@@ -3,7 +3,7 @@
     "action_listen": {
       "slots": []
     },
-    "utter_noworries": {
+    "restaurant_form": {
       "slots": []
     }
   },
