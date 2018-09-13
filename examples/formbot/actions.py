@@ -1,5 +1,5 @@
 from rasa_core_sdk.forms import FormAction
-
+from rasa_core_sdk import InputValidationError
 
 class RestaurantForm(FormAction):
 
@@ -13,3 +13,6 @@ class RestaurantForm(FormAction):
     def submit(self, dispatcher, tracker, domain):
         dispatcher.utter_message("done!")
         return []
+
+    def run(self, dispatcher, tracker, domain):
+        raise InputValidationError("bad input")
