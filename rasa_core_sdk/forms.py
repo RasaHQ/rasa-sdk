@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 from typing import Text
 
-from rasa_core_sdk import Action
+from rasa_core_sdk import Action, InputValidationError
 from rasa_core_sdk.events import SlotSet, FormActivated, FormDeactivated
 
 logger = logging.getLogger(__name__)
