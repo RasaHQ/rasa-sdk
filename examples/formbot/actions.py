@@ -1,5 +1,5 @@
 from rasa_core_sdk.forms import FormAction
-from rasa_core_sdk import InputValidationError
+from rasa_core_sdk.forms import InputValidationError
 
 class RestaurantForm(FormAction):
 

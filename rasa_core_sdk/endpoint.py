@@ -11,7 +11,7 @@ from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
 from rasa_core_sdk.executor import ActionExecutor
-from rasa_core_sdk import InputValidationError
+from rasa_core_sdk.forms import InputValidationError
 
 DEFAULT_SERVER_PORT = 5055
 
