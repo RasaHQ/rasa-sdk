@@ -36,6 +36,12 @@ class FormAction(Action):
         existing_val = tracker.get_slot(slot_name)
         return existing_val is None
 
+    def validate(self, tracker):
+        # type: (Tracker) -> Dict[Text, Any]
+        """"Validate the user input."""
+
+        raise InputValidationError("validation not implemented")
+
     def activate_if_required(self, tracker):
         if tracker.active_form == self.name():
             return []

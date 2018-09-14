@@ -157,12 +157,6 @@ class Action(object):
 
         raise NotImplementedError
 
-    def validate(self, tracker):
-        # type: (Tracker) -> Dict[Text, Any]
-        """"Validate the user input."""
-
-        raise InputValidationError("validation not implemented")
-
     def run(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[dict]
         """Execute the side effects of this action."""
