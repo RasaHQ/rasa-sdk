@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 from typing import Text
 
-from rasa_core_sdk import Action, InputValidationError
+from rasa_core_sdk import Action
 from rasa_core_sdk.events import SlotSet, FormActivated, FormDeactivated
 
 logger = logging.getLogger(__name__)
@@ -16,6 +16,20 @@ logger = logging.getLogger(__name__)
 # to do the form handling, needs to be part
 # of the domain
 REQUESTED_SLOT = "requested_slot"
+
+
+class InputValidationError(Exception):
+    """Raised when form cannot validate user input
+
+    Attributes:
+        message -- explanation why form could not validate user input
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
 
 
 class FormAction(Action):

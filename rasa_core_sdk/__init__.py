@@ -165,18 +165,3 @@ class Action(object):
 
     def __str__(self):
         return "Action('{}')".format(self.name())
-
-
-class InputValidationError(Exception):
-    """Raised when form cannot validate user input
-
-    Attributes: 
-        message -- explanation why form could not validate user input
-    """
-
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return self.message
-
