@@ -31,10 +31,11 @@ class Tracker(object):
                        state.get("events"),
                        state.get("paused"),
                        state.get("followup_action"),
-                       state.get("active_form"))
+                       state.get("active_form"),
+                       state.get("latest_action_name"))
 
     def __init__(self, sender_id, slots,
-                 latest_message, events, paused, followup_action, active_form):
+                 latest_message, events, paused, followup_action, active_form, latest_action_name):
         """Initialize the tracker."""
 
         # list of previously seen events
@@ -54,6 +55,7 @@ class Tracker(object):
         #                   "text": text}
         self.latest_message = latest_message if latest_message else {}
         self.active_form = active_form
+        self.latest_action_name = latest_action_name
 
     def current_state(self, should_include_events=False):
         # type: (bool) -> Dict[Text, Any]
@@ -75,7 +77,9 @@ class Tracker(object):
             "latest_message": self.latest_message,
             "latest_event_time": latest_event_time,
             "paused": self.is_paused(),
-            "events": evts
+            "events": evts,
+            "active_form": self.active_form,
+            "latest_action_name": self.latest_action_name
         }
 
     def current_slot_values(self):
@@ -145,7 +149,8 @@ class Tracker(object):
                        copy.deepcopy(self.events),
                        self._paused,
                        self.followup_action,
-                       self.active_form)
+                       self.active_form,
+                       self.latest_action_name)
 
 
 class Action(object):
