@@ -54,7 +54,16 @@ class FormAction(Action):
         # type: (Tracker) -> Dict[Text, Any]
         """"Validate the user input."""
 
-        raise InputValidationError("validation not implemented")
+        events = []
+        entities = tracker.latest_message["entities"]
+        print(entities)
+        for e in entities:
+            if e.get("name") == tracker.slots[REQUESTED_SLOT]:
+                events.append(SlotSet(e['name'], e['value']))
+        if events:
+            return events
+        else:
+            raise InputValidationError("validation not implemented")
 
     def activate_if_required(self, tracker):
         if tracker.active_form == self.name():
@@ -62,18 +71,11 @@ class FormAction(Action):
         else:
             return [FormActivated(self.name())]
 
-    def get_requested_slot(self, tracker):
-        events = []
-        intent = tracker.latest_message["intent"].get("name")
-        if intent == "extracted_slot":
-            for slot in tracker.latest_message["slots"]:
-                events.append(SlotSet(slot['name'], slot['value']))
-
-        return events
-
     def run(self, dispatcher, tracker, domain):
-
-        events = self.get_requested_slot(tracker)
+        if tracker.active_form == self.name():
+            events = self.validate(tracker)
+        else:
+            events = []
         temp_tracker = tracker.copy()
         for e in events:
             temp_tracker.slots[e["name"]] = e["value"]
