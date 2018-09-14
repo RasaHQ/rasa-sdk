@@ -72,7 +72,8 @@ class FormAction(Action):
             return [FormActivated(self.name())]
 
     def run(self, dispatcher, tracker, domain):
-        if tracker.active_form == self.name():
+
+        if tracker.active_form == self.name() and tracker.latest_action_name == 'action_listen':
             events = self.validate(tracker)
         else:
             events = []
