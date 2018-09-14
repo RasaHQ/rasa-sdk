@@ -7,7 +7,7 @@
       "slots": []
     }
   },
-  "rasa_core": "0.12.0a1",
+  "rasa_core": "0.12.0a2",
   "python": "3.6.5",
   "max_histories": [
     5,

@@ -56,10 +56,10 @@ class FormAction(Action):
 
         events = []
         entities = tracker.latest_message["entities"]
-        print(entities)
+
         for e in entities:
-            if e.get("name") == tracker.slots[REQUESTED_SLOT]:
-                events.append(SlotSet(e['name'], e['value']))
+            if e.get("entity") == tracker.slots[REQUESTED_SLOT]:
+                events.append(SlotSet(e['entity'], e['value']))
         if events:
             return events
         else:

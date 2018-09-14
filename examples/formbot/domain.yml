@@ -13,8 +13,6 @@ slots:
     type: unfeaturized
   num_people:
     type: unfeaturized
-  requested_slot:
-    type: unfeaturized
 
 templates:
   utter_ask_num_people:
