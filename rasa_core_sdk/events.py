@@ -134,7 +134,7 @@ def ActionExecuted(action_name, timestamp=None):
 # noinspection PyPep8Naming
 def AgentUttered(text=None, data=None, timestamp=None):
     return {
-        "event": "action",
+        "event": "agent",
         "text": text,
         "data": data,
         "timestamp": timestamp,
