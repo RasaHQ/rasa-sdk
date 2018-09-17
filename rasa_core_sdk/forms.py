@@ -8,7 +8,7 @@ import logging
 from typing import Text
 
 from rasa_core_sdk import Action
-from rasa_core_sdk.events import SlotSet, FormActivated, FormDeactivated
+from rasa_core_sdk.events import SlotSet, FormActivated, FormDeactivated, FormIsBack
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,10 @@ class FormAction(Action):
 
     def activate_if_required(self, tracker):
         if tracker.active_form == self.name():
-            return []
+            if tracker.latest_action_name == 'action_listen':
+                return []
+            else:
+                return [FormIsBack()]
         else:
             return [FormActivated(self.name())]
 
@@ -77,6 +80,7 @@ class FormAction(Action):
             events = self.validate(tracker)
         else:
             events = []
+
         temp_tracker = tracker.copy()
         for e in events:
             temp_tracker.slots[e["name"]] = e["value"]

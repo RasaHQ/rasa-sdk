@@ -156,3 +156,11 @@ def FormDeactivated(timestamp=None):
         "event": "form_deactivated",
         "timestamp": timestamp,
     }
+
+
+# noinspection PyPep8Naming
+def FormIsBack(timestamp=None):
+    return {
+        "event": "form_is_back",
+        "timestamp": timestamp,
+    }
