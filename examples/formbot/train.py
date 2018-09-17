@@ -6,8 +6,9 @@ from __future__ import unicode_literals
 from rasa_core import utils
 from rasa_core.agent import Agent
 from rasa_core.policies.keras_policy import KerasPolicy
-from rasa_core.policies.memoization import MemoizationPolicy
+from rasa_core.policies.memoization import AugmentedMemoizationPolicy
 from rasa_core.policies.form_policy import FormPolicy
+from rasa_core.policies.fallback import FallbackPolicy
 
 if __name__ == '__main__':
     utils.configure_colored_logging(loglevel="INFO")
@@ -16,8 +17,9 @@ if __name__ == '__main__':
     model_path = 'models/dialogue'
 
     agent = Agent("domain.yml",
-                  policies=[MemoizationPolicy(),
-                            FormPolicy()])
+                  policies=[AugmentedMemoizationPolicy(),
+                            FormPolicy(),
+                            FallbackPolicy()])
 
     training_data = agent.load_data(training_data_file,
                                     augmentation_factor=0)
