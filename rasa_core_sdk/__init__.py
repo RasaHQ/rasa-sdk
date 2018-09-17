@@ -30,10 +30,11 @@ class Tracker(object):
                        state.get("latest_message", {}),
                        state.get("events"),
                        state.get("paused"),
-                       state.get("followup_action"))
+                       state.get("followup_action"),
+                       state.get("active_form", None))
 
     def __init__(self, sender_id, slots,
-                 latest_message, events, paused, followup_action):
+                 latest_message, events, paused, followup_action, active_form):
         """Initialize the tracker."""
 
         # list of previously seen events
@@ -52,6 +53,7 @@ class Tracker(object):
         #                   "entities": UserUttered.entities,
         #                   "text": text}
         self.latest_message = latest_message if latest_message else {}
+        self.active_form = active_form
 
     def current_state(self, should_include_events=False):
         # type: (bool) -> Dict[Text, Any]
@@ -73,7 +75,8 @@ class Tracker(object):
             "latest_message": self.latest_message,
             "latest_event_time": latest_event_time,
             "paused": self.is_paused(),
-            "events": evts
+            "events": evts,
+            "active_form": self.active_form
         }
 
     def current_slot_values(self):
@@ -154,7 +157,7 @@ class Action(object):
 
         raise NotImplementedError
 
-    def run(self, dispatcher, tracker, domain):
+    def run(self, dispatcher, tracker, domain, executor):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[dict]
         """Execute the side effects of this action."""
 

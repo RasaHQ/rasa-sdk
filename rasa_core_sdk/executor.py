@@ -12,6 +12,8 @@ import six
 from typing import Text, List, Dict, Any
 
 from rasa_core_sdk import utils, Action, Tracker
+from rasa_core_sdk.events import FormListen
+from rasa_core_sdk.forms import FormAction, Form
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +95,7 @@ class CollectingDispatcher(object):
 class ActionExecutor(object):
     def __init__(self):
         self.actions = {}
+        self.forms = {}
 
     def register_action(self, action):
         if inspect.isclass(action):
@@ -107,6 +110,11 @@ class ActionExecutor(object):
             raise Exception("You can only register instances or subclasses of "
                             "type Action. If you want to directly register "
                             "a function, use `register_function` instead.")
+
+    def register_form(self, form):
+        logger.info("Registered form for '{}'.".format(form))
+        self.forms[form.name] = form
+        self.register_action(FormAction())
 
     def register_function(self, name, f):
         logger.info("Registered function for '{}'.".format(name))
@@ -147,11 +155,15 @@ class ActionExecutor(object):
                              "".format(package))
 
         actions = utils.all_subclasses(Action)
-
         for action in actions:
             if (not action.__module__.startswith("rasa_core.") and
                     not action.__module__.startswith("rasa_core_sdk.")):
                 self.register_action(action)
+
+        forms = utils.all_subclasses(Form)
+        for form in forms:
+            if not form.__module__.startswith("rasa_core_sdk"):
+                self.register_form(form())
 
     @staticmethod
     def _create_api_response(events, messages):
@@ -168,14 +180,14 @@ class ActionExecutor(object):
             if not action:
                 raise Exception("No registered Action found for name '{}'."
                                 "".format(action_name))
-
             tracker_json = action_call.get("tracker")
             domain = action_call.get("domain", {})
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
 
-            events = action(dispatcher, tracker, domain)
+            events = action(dispatcher, tracker, domain, self)
             logger.debug("Successfully ran '{}'".format(action_name))
+
             return self._create_api_response(events, dispatcher.messages)
         else:
             logger.warning("Received an action call without an action.")
