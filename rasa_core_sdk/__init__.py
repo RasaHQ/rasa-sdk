@@ -57,14 +57,9 @@ class Tracker(object):
         self.active_form = active_form
         self.latest_action_name = latest_action_name
 
-    def current_state(self, should_include_events=False):
-        # type: (bool) -> Dict[Text, Any]
+    def current_state(self):
+        # type: () -> Dict[Text, Any]
         """Return the current tracker state as an object."""
-
-        if should_include_events:
-            evts = self.events
-        else:
-            evts = None
 
         if len(self.events) > 0:
             latest_event_time = self.events[-1].timestamp
@@ -77,7 +72,7 @@ class Tracker(object):
             "latest_message": self.latest_message,
             "latest_event_time": latest_event_time,
             "paused": self.is_paused(),
-            "events": evts,
+            "events": self.events,
             "active_form": self.active_form,
             "latest_action_name": self.latest_action_name
         }
