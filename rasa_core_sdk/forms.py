@@ -72,7 +72,7 @@ class FormAction(Action):
             else:
                 return [FormIsBack()]
         else:
-            return [FormActivated(self.name())]
+            return [FormActivated(self.name()), FormIsBack()]
 
     def run(self, dispatcher, tracker, domain):
 
@@ -87,9 +87,7 @@ class FormAction(Action):
         for slot in self.required_slots():
             if self.should_request_slot(temp_tracker, slot):
 
-                dispatcher.utter_template(
-                        "utter_ask_{}".format(slot),
-                        tracker)
+                dispatcher.utter_template("utter_ask_{}".format(slot), tracker)
 
                 events.append(SlotSet(REQUESTED_SLOT, slot))
 
