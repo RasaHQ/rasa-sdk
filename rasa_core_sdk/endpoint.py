@@ -71,7 +71,7 @@ def endpoint_app(cors_origins=None,
         action_call = request.json
         try:
             response = executor.run(action_call)
-        except InputValidationError as e:
+        except InputValidationError:
             result = {"error": "could not validate input."}
             result["payload"] = action_call
             response = jsonify(result)
@@ -79,7 +79,6 @@ def endpoint_app(cors_origins=None,
             return response
 
         return jsonify(response)
-
 
     return app
 

@@ -165,3 +165,17 @@ class Action(object):
 
     def __str__(self):
         return "Action('{}')".format(self.name())
+
+
+class ActionExecutionError(Exception):
+    """Raised when an action failes to execute
+
+    Attributes:
+        message -- explanation why the action failed to execute
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
