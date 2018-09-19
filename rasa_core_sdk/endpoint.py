@@ -73,8 +73,7 @@ def endpoint_app(cors_origins=None,
             response = executor.run(action_call)
         except ActionExecutionError as e:
             logger.error(str(e))
-            result = {"error": str(e),
-                      "action": action_call.get("next_action")}
+            result = {"error": str(e)}
             response = jsonify(result)
             response.status_code = 400
             return response
