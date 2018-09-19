@@ -50,8 +50,9 @@ class FormAction(Action):
             return events
         else:
             raise ActionExecutionError("Failed to validate slot {0} with "
-                                       "action {1}".format(REQUESTED_SLOT,
-                                                           self.name()))
+                                       "action {1}".format(
+                                                tracker.slots[REQUESTED_SLOT],
+                                                self.name()))
 
     def activate_if_required(self, tracker):
         if tracker.active_form == self.name():
