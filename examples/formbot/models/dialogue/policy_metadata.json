@@ -16,7 +16,7 @@
   ],
   "ensemble_name": "rasa_core.policies.ensemble.SimplePolicyEnsemble",
   "policy_names": [
-    "rasa_core.policies.memoization.MemoizationPolicy",
+    "rasa_core.policies.memoization.AugmentedMemoizationPolicy",
     "rasa_core.policies.form_policy.FormPolicy",
     "rasa_core.policies.fallback.FallbackPolicy"
   ]

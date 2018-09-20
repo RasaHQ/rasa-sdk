@@ -8,7 +8,7 @@ import logging
 from typing import Text
 
 from rasa_core_sdk import Action, ActionExecutionError
-from rasa_core_sdk.events import SlotSet, FormActivated, FormDeactivated, FormIsBack
+from rasa_core_sdk.events import SlotSet, Form, FormIsBack
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class FormAction(Action):
             else:
                 return [FormIsBack()]
         else:
-            return [FormActivated(self.name()), FormIsBack()]
+            return [Form(self.name()), FormIsBack()]
 
     def run(self, dispatcher, tracker, domain):
 
@@ -85,7 +85,7 @@ class FormAction(Action):
         # there is nothing more to request, so we can submit
         events_from_submit = self.submit(dispatcher, temp_tracker, domain) or []
 
-        return events + events_from_submit + [FormDeactivated()]
+        return events + events_from_submit + [Form(None)]
 
     def submit(self, dispatcher, tracker, domain):
         raise NotImplementedError(
