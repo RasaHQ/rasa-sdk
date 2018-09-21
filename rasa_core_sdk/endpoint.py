@@ -11,6 +11,7 @@ from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
 from rasa_core_sdk.executor import ActionExecutor
+from rasa_core.utils import ActionExecutionError
 
 DEFAULT_SERVER_PORT = 5055
 
@@ -68,14 +69,14 @@ def endpoint_app(cors_origins=None,
     def webhook():
         """Webhook to retrieve action calls."""
         action_call = request.json
-        # try:
-        response = executor.run(action_call)
-        # except ActionExecutionError as e:
-        #     logger.error(str(e))
-        #     result = {"error": str(e)}
-        #     response = jsonify(result)
-        #     response.status_code = 400
-        #     return response
+        try:
+            response = executor.run(action_call)
+        except ActionExecutionError as e:
+            logger.error(str(e))
+            result = {"error": str(e), "action_name": e.action_name}
+            response = jsonify(result)
+            response.status_code = 400
+            return response
 
         return jsonify(response)
 
