@@ -11,7 +11,7 @@ from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
 from rasa_core_sdk.executor import ActionExecutor
-from rasa_core.utils import ActionExecutionError
+from rasa_core.actions.action import ActionExecutionError
 
 DEFAULT_SERVER_PORT = 5055
 
