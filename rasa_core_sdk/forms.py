@@ -7,8 +7,9 @@ from __future__ import unicode_literals
 import logging
 from typing import Text
 
-from rasa_core_sdk import Action, ActionExecutionError
+from rasa_core_sdk import Action
 from rasa_core_sdk.events import SlotSet, Form
+from rasa_core.utils import ActionExecutionError
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class FormAction(Action):
             raise ActionExecutionError("Failed to validate slot {0} with "
                                        "action {1}".format(
                                                 tracker.slots[REQUESTED_SLOT],
-                                                self.name()))
+                                                self.name()), self.name())
 
     def activate_if_required(self, tracker):
         if tracker.active_form == self.name():
