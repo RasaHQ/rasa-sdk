@@ -9,7 +9,7 @@ from typing import Text
 
 from rasa_core_sdk import Action
 from rasa_core_sdk.events import SlotSet, Form
-from rasa_core.utils import ActionExecutionError
+from rasa_core.actions.action import ActionExecutionError
 
 logger = logging.getLogger(__name__)
 
