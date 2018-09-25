@@ -13,6 +13,11 @@ slots:
     type: unfeaturized
   num_people:
     type: unfeaturized
+  requested_slot:
+    type: categorical
+    values:
+      - cuisine
+      - num_people
 
 templates:
   utter_ask_num_people:

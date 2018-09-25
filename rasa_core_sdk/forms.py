@@ -78,12 +78,12 @@ class FormAction(Action):
 
                 events.append(SlotSet(REQUESTED_SLOT, slot))
 
-                return events + self.activate_if_required(tracker)
+                return self.activate_if_required(tracker) + events
 
         # there is nothing more to request, so we can submit
         events_from_submit = self.submit(dispatcher, temp_tracker, domain) or []
 
-        return events + events_from_submit + [Form(None)]
+        return events + events_from_submit + [Form(None)] + [SlotSet(REQUESTED_SLOT, None)]
 
     def submit(self, dispatcher, tracker, domain):
         raise NotImplementedError(

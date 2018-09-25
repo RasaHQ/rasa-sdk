@@ -27,7 +27,10 @@ slots:
     type: rasa_core.slots.UnfeaturizedSlot
   requested_slot:
     initial_value: null
-    type: rasa_core.slots.UnfeaturizedSlot
+    type: rasa_core.slots.CategoricalSlot
+    values:
+    - cuisine
+    - num_people
 templates:
   utter_ask_cuisine:
   - text: what cuisine?

@@ -5,19 +5,24 @@
     },
     "restaurant_form": {
       "slots": []
+    },
+    "utter_noworries": {
+      "slots": []
     }
   },
-  "rasa_core": "0.12.0a2",
+  "rasa_core": "0.12.0a4",
   "python": "3.6.6",
   "max_histories": [
-    5,
     null,
+    3,
+    3,
     null
   ],
   "ensemble_name": "rasa_core.policies.ensemble.SimplePolicyEnsemble",
   "policy_names": [
+    "rasa_core.policies.fallback.FallbackPolicy",
     "rasa_core.policies.memoization.MemoizationPolicy",
-    "rasa_core.policies.form_policy.FormPolicy",
-    "rasa_core.policies.fallback.FallbackPolicy"
+    "rasa_core.policies.keras_policy.KerasPolicy",
+    "rasa_core.policies.form_policy.FormPolicy"
   ]
 }

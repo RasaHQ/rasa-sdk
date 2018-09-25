@@ -6,6 +6,8 @@
     "intent_thank",
     "entity_cuisine",
     "entity_num_people",
+    "slot_requested_slot_0",
+    "slot_requested_slot_1",
     "prev_action_listen",
     "prev_action_restart",
     "prev_action_default_fallback",
