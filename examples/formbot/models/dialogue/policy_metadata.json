@@ -4,7 +4,9 @@
       "slots": []
     },
     "restaurant_form": {
-      "slots": []
+      "slots": [
+        "requested_slot"
+      ]
     },
     "utter_noworries": {
       "slots": []

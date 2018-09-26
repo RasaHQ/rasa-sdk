@@ -11,7 +11,7 @@ from rasa_core.policies.form_policy import FormPolicy
 from rasa_core.policies.fallback import FallbackPolicy
 
 if __name__ == '__main__':
-    utils.configure_colored_logging(loglevel="INFO")
+    utils.configure_colored_logging(loglevel="DEBUG")
 
     training_data_file = 'data/stories.md'
     model_path = 'models/dialogue'
