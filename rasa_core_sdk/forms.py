@@ -37,7 +37,7 @@ class FormAction(Action):
         existing_val = tracker.get_slot(slot_name)
         return existing_val is None
 
-    def validate(self, tracker):
+    def validate(self, dispatcher, tracker):
         # type: (Tracker) -> Dict[Text, Any]
         """"Validate the user input."""
 
@@ -64,7 +64,7 @@ class FormAction(Action):
     def run(self, dispatcher, tracker, domain):
 
         if tracker.active_form == self.name() and tracker.latest_action_name == 'action_listen':
-            events = self.validate(tracker)
+            events = self.validate(dispatcher, tracker)
         else:
             events = []
 
