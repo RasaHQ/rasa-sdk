@@ -37,7 +37,7 @@ class FormAction(Action):
         existing_val = tracker.get_slot(slot_name)
         return existing_val is None
 
-    def validate(self, dispatcher, tracker):
+    def validate(self, dispatcher, tracker, domain):
         # type: (Tracker) -> Dict[Text, Any]
         """"Validate the user input."""
 
@@ -64,13 +64,14 @@ class FormAction(Action):
     def run(self, dispatcher, tracker, domain):
 
         if tracker.active_form == self.name() and tracker.latest_action_name == 'action_listen':
-            events = self.validate(dispatcher, tracker)
+            events = self.validate(dispatcher, tracker, domain)
         else:
             events = []
 
         temp_tracker = tracker.copy()
         for e in events:
-            temp_tracker.slots[e["name"]] = e["value"]
+            if e['event'] == 'slot':
+                temp_tracker.slots[e["name"]] = e["value"]
         for slot in self.required_slots():
             if self.should_request_slot(temp_tracker, slot):
 
