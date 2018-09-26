@@ -9,6 +9,7 @@ config:
 entities:
 - cuisine
 - num_people
+forms: []
 intents:
 - thank:
     use_entities: true

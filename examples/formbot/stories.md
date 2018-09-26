@@ -1,8 +1,8 @@
 ## Generated Story 6616794937268014982
 * request_restaurant
     - restaurant_form
-    - slot{"requested_slot": "cuisine"}
     - form{"name": "restaurant_form"}
+    - slot{"requested_slot": "cuisine"}
 * chitchat
     - utter_chitchat
     - restaurant_form
@@ -16,6 +16,7 @@
     - slot{"num_people": "1"}
     - restaurant_form
     - slot{"num_people": "1"}
+    - slot{"requested_slot": null}
     - form{"name": null}
 * thank
     - utter_noworries
