@@ -26,8 +26,6 @@ class FormAction(Action):
 
         raise NotImplementedError
 
-    RANDOMIZE = False
-
     @staticmethod
     def required_slots():
         raise NotImplementedError
@@ -63,7 +61,8 @@ class FormAction(Action):
 
     def run(self, dispatcher, tracker, domain):
 
-        if tracker.active_form == self.name() and tracker.latest_action_name == 'action_listen':
+        if (tracker.active_form == self.name() and
+                tracker.latest_action_name == 'action_listen'):
             events = self.validate(dispatcher, tracker, domain)
         else:
             events = []
@@ -84,7 +83,8 @@ class FormAction(Action):
         # there is nothing more to request, so we can submit
         events_from_submit = self.submit(dispatcher, temp_tracker, domain) or []
 
-        return events + events_from_submit + [Form(None), SlotSet(REQUESTED_SLOT, None)]
+        return events + events_from_submit + [Form(None),
+                                              SlotSet(REQUESTED_SLOT, None)]
 
     def submit(self, dispatcher, tracker, domain):
         raise NotImplementedError(
