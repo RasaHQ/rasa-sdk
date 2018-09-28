@@ -149,4 +149,4 @@ class FormAction(Action):
         return events
 
     def __str__(self):
-        return "Form('{}')".format(self.name())
+        return "FormAction('{}')".format(self.name())
