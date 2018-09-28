@@ -53,7 +53,8 @@ class FormAction(Action):
             raise ActionExecutionError("Failed to validate slot {0} "
                                        "with action {1}"
                                        "".format(tracker.slots[REQUESTED_SLOT],
-                                                 self.name()), self.name())
+                                                 self.name()),
+                                       self.name())
 
     def submit(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
