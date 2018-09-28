@@ -7,9 +7,7 @@ import copy
 import logging
 
 import typing
-from typing import Dict, Text, Any, Optional, Iterator
-from typing import List
-
+from typing import Dict, Text, Any, Optional, Iterator, List
 
 logger = logging.getLogger(__name__)
 
@@ -155,13 +153,23 @@ class Action(object):
         # type: () -> Text
         """Unique identifier of this simple action."""
 
-        raise NotImplementedError
+        raise NotImplementedError("An action must implement a name")
 
     def run(self, dispatcher, tracker, domain):
-        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[dict]
+        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Execute the side effects of this action."""
 
-        raise NotImplementedError
+        raise NotImplementedError("An action must implement its run method")
 
     def __str__(self):
         return "Action('{}')".format(self.name())
+
+
+class ActionExecutionError(Exception):
+
+    def __init__(self, message, action_name):
+        self.message = message
+        self.action_name = action_name
+
+    def __str__(self):
+        return self.message
