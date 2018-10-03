@@ -111,6 +111,12 @@ class FormAction(Action):
 
         return [Form(None), SlotSet(REQUESTED_SLOT, None)]
 
+    def next_slot_to_request(self, tracker):
+        for slot in self.required_slots():
+            if self._should_request_slot(tracker, slot):
+                return slot
+        return None
+
     def run(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Execute the side effects of this form:
@@ -132,14 +138,12 @@ class FormAction(Action):
                 temp_tracker.slots[e["name"]] = e["value"]
 
         # request next slot
-        for slot in self.required_slots():
-            if self._should_request_slot(temp_tracker, slot):
+        slot = self.next_slot_to_request(temp_tracker)
+        if slot is not None:
+            dispatcher.utter_template("utter_ask_{}".format(slot), tracker)
+            events.append(SlotSet(REQUESTED_SLOT, slot))
+            return events
 
-                dispatcher.utter_template("utter_ask_{}".format(slot), tracker)
-
-                events.append(SlotSet(REQUESTED_SLOT, slot))
-
-                return events
 
         # there is nothing more to request, so we can submit
         events.extend(self.submit(dispatcher, temp_tracker, domain))
