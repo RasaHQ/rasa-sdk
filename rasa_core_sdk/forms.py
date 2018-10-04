@@ -40,42 +40,48 @@ class FormAction(Action):
                                   "that it has to fill")
 
     def slot_mapping(self):
-        # type: () -> Dict[Text: Union[Text, List[Text], Dict[Text: Any]]]
+        # type: () -> Dict[Text: Union[Text, Dict, List[Text, Dict]]]
         """A dictionary to map required slots to
-            - an extracted entity or a list of entities
+            - an extracted entity
             - a dictionary of intent: value pairs
-            - a whole message"""
+            - a whole message
+            or a list of all of them"""
 
         return dict(zip(self.required_slots(), self.required_slots()))
 
     # noinspection PyUnusedLocal
-    def extract(self, dispatcher, tracker, domain):
-        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> Optional[List[Dict]]
+    def extract(self,
+                dispatcher,  # type: CollectingDispatcher
+                tracker,  # type: Tracker
+                domain  # type: Dict[Text, Any]
+                ):
+        # type: (...) -> Optional[List[Dict]]
         """"Extract the user input else return an error"""
         slot_to_fill = tracker.slots[REQUESTED_SLOT]
 
         # map requested_slot to entity
-        slot_mapping = self.slot_mapping().get(slot_to_fill)
+        slot_mappings = self.slot_mapping().get(slot_to_fill)
 
-        if slot_mapping:
-            if isinstance(slot_mapping, dict):
-                intent = tracker.latest_message.get("intent", {}).get("name")
-                if intent in slot_mapping.keys():
-                    return [SlotSet(slot_to_fill, slot_mapping[intent])]
-            else:
-                required_entities = slot_mapping
-                if not isinstance(required_entities, list):
-                    required_entities = [required_entities]
+        if slot_mappings:
+            if not isinstance(slot_mappings, list):
+                slot_mappings = [slot_mappings]
 
-                for entity_name in required_entities:
+            for slot_mapping in slot_mappings:
+                if isinstance(slot_mapping, dict):
+                    intent = tracker.latest_message.get("intent",
+                                                        {}).get("name")
+                    if intent in slot_mapping.keys():
+                        return [SlotSet(slot_to_fill, slot_mapping[intent])]
+                else:
                     entity_value = next(tracker.get_latest_entity_values(
-                                            entity_name), None)
+                                            slot_mapping), None)
                     if entity_value is not None:
                         return [SlotSet(slot_to_fill, entity_value)]
 
-                if self.FREETEXT in required_entities:
-                    return [SlotSet(slot_to_fill,
-                                    tracker.latest_message.get("text"))]
+            # the whole text can be always extracted, so it is done in the end
+            if self.FREETEXT in slot_mappings:
+                return [SlotSet(slot_to_fill,
+                                tracker.latest_message.get("text"))]
 
         return None
 
