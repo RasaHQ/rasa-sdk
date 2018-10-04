@@ -41,8 +41,10 @@ class FormAction(Action):
 
     def slot_mapping(self):
         # type: () -> Dict[Text: Union[Text, List[Text], Dict[Text: Any]]]
-        """A dictionary to map required slots to extracted entities or
-            to intent:value pairs or free text"""
+        """A dictionary to map required slots to
+            - an extracted entity or a list of entities
+            - a dictionary of intent: value pairs
+            - a whole message"""
 
         return dict(zip(self.required_slots(), self.required_slots()))
 
