@@ -8,7 +8,7 @@ import logging
 import typing
 from typing import Dict, Text, Any, List, Union, Optional
 
-from rasa_core_sdk import Action, ActionExecutionRejected
+from rasa_core_sdk import Action, ActionExecutionRejection
 from rasa_core_sdk.events import SlotSet, Form
 
 logger = logging.getLogger(__name__)
@@ -96,10 +96,10 @@ class FormAction(Action):
         if events is not None:
             return events
         else:
-            raise ActionExecutionRejected(self.name(),
-                                          "Failed to validate slot {0} "
-                                          "with action {1}"
-                                          "".format(slot_to_fill, self.name()))
+            raise ActionExecutionRejection(self.name(),
+                                           "Failed to validate slot {0} "
+                                           "with action {1}"
+                                           "".format(slot_to_fill, self.name()))
 
     # noinspection PyUnusedLocal
     def request_next_slot(self,
