@@ -101,6 +101,23 @@ class FormAction(Action):
                                                  self.name()),
                                        self.name())
 
+    # noinspection PyUnusedLocal
+    def next_slot_to_request(self,
+                             dispatcher,  # type: CollectingDispatcher
+                             tracker,  # type: Tracker
+                             domain  # type: Dict[Text, Any]
+                             ):
+        # type: (...) -> Optional[List[Dict]]
+        """"Request the next slot and utter template if needed,
+            else return None"""
+
+        for slot in self.required_slots():
+            if self._should_request_slot(tracker, slot):
+                dispatcher.utter_template("utter_ask_{}".format(slot), tracker)
+                return [SlotSet(REQUESTED_SLOT, slot)]
+
+        return None
+
     def submit(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Define what the form has to do
@@ -147,12 +164,6 @@ class FormAction(Action):
 
         return [Form(None), SlotSet(REQUESTED_SLOT, None)]
 
-    def next_slot_to_request(self, tracker):
-        for slot in self.required_slots():
-            if self._should_request_slot(tracker, slot):
-                return slot
-        return None
-
     def run(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Execute the side effects of this form:
@@ -173,18 +184,16 @@ class FormAction(Action):
             if e['event'] == 'slot':
                 temp_tracker.slots[e["name"]] = e["value"]
 
-        # request next slot
-        slot = self.next_slot_to_request(temp_tracker)
-        if slot is not None:
-            dispatcher.utter_template("utter_ask_{}".format(slot), tracker)
-            events.append(SlotSet(REQUESTED_SLOT, slot))
-            return events
-
-
-        # there is nothing more to request, so we can submit
-        events.extend(self.submit(dispatcher, temp_tracker, domain))
-        # deactivate the form after submission
-        events.extend(self._deactivate())
+        next_slot_events = self.next_slot_to_request(dispatcher, temp_tracker,
+                                                     domain)
+        if next_slot_events is not None:
+            # request next slot
+            events.extend(next_slot_events)
+        else:
+            # there is nothing more to request, so we can submit
+            events.extend(self.submit(dispatcher, temp_tracker, domain))
+            # deactivate the form after submission
+            events.extend(self._deactivate())
 
         return events
 
