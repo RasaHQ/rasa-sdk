@@ -56,7 +56,7 @@ class FormAction(Action):
                 domain  # type: Dict[Text, Any]
                 ):
         # type: (...) -> Optional[List[Dict]]
-        """"Extract the user input else return an error"""
+        """"Extract requested slot from a user input else return None"""
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
         # map requested_slot to entity
@@ -88,7 +88,7 @@ class FormAction(Action):
     # noinspection PyUnusedLocal
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """"Extract the user input else return an error"""
+        """"Validate extracted requested slot else raise an error"""
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
         events = self.extract(dispatcher, tracker, domain)
