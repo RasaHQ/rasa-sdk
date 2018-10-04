@@ -185,7 +185,7 @@ class FormAction(Action):
                 temp_tracker.slots[e["name"]] = e["value"]
 
         next_slot_events = self.request_next_slot(dispatcher, temp_tracker,
-                                                     domain)
+                                                  domain)
         if next_slot_events is not None:
             # request next slot
             events.extend(next_slot_events)
