@@ -8,7 +8,7 @@ import logging
 import typing
 from typing import Dict, Text, Any, List, Union, Optional
 
-from rasa_core_sdk import Action, ActionExecutionError
+from rasa_core_sdk import Action, ActionExecutionRejected
 from rasa_core_sdk.events import SlotSet, Form
 
 logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class FormAction(Action):
                 ):
         # type: (...) -> Optional[List[Dict]]
         """"Extract the user input else return an error"""
-        slot_to_fill = tracker.slots[REQUESTED_SLOT]
+        slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
         # map requested_slot to entity
         slot_mappings = self.slot_mapping().get(slot_to_fill)
@@ -89,17 +89,17 @@ class FormAction(Action):
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """"Extract the user input else return an error"""
+        slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
         events = self.extract(dispatcher, tracker, domain)
 
         if events is not None:
             return events
         else:
-            raise ActionExecutionError("Failed to validate slot {0} "
-                                       "with action {1}"
-                                       "".format(tracker.slots[REQUESTED_SLOT],
-                                                 self.name()),
-                                       self.name())
+            raise ActionExecutionRejected(self.name(),
+                                          "Failed to validate slot {0} "
+                                          "with action {1}"
+                                          "".format(slot_to_fill, self.name()))
 
     # noinspection PyUnusedLocal
     def request_next_slot(self,

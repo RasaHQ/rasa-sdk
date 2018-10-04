@@ -3,6 +3,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from builtins import str
+
 import argparse
 import logging
 
@@ -11,7 +13,7 @@ from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
 from rasa_core_sdk.executor import ActionExecutor
-from rasa_core_sdk import ActionExecutionError
+from rasa_core_sdk import ActionExecutionRejected
 
 DEFAULT_SERVER_PORT = 5055
 
@@ -71,7 +73,7 @@ def endpoint_app(cors_origins=None,
         action_call = request.json
         try:
             response = executor.run(action_call)
-        except ActionExecutionError as e:
+        except ActionExecutionRejected as e:
             logger.error(str(e))
             result = {"error": str(e), "action_name": e.action_name}
             response = jsonify(result)

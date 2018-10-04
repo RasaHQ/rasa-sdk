@@ -148,3 +148,15 @@ def Form(name, timestamp=None):
         "name": name,
         "timestamp": timestamp,
     }
+
+
+# noinspection PyPep8Naming
+def ActionExecutionFailed(action_name, policy,
+                          policy_confidence, timestamp=None):
+    return {
+        "event": "action_execution_failed",
+        "action_name": action_name,
+        "policy": policy,
+        "policy_confidence": policy_confidence,
+        "timestamp": timestamp,
+    }

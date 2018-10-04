@@ -165,11 +165,11 @@ class Action(object):
         return "Action('{}')".format(self.name())
 
 
-class ActionExecutionError(Exception):
+class ActionExecutionRejected(Exception):
 
-    def __init__(self, message, action_name):
-        self.message = message
+    def __init__(self, action_name, message=None):
         self.action_name = action_name
+        self.message = message
 
     def __str__(self):
         return self.message
