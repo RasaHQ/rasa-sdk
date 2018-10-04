@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import typing
-from typing import Dict, Text, Any, List, Union
+from typing import Dict, Text, Any, List, Union, Optional
 
 from rasa_core_sdk import Action, ActionExecutionError
 from rasa_core_sdk.events import SlotSet, Form
@@ -23,6 +23,8 @@ REQUESTED_SLOT = "requested_slot"
 
 
 class FormAction(Action):
+    FREETEXT = 'FREETEXT'
+
     def name(self):
         # type: () -> Text
         """Unique identifier of the form"""
@@ -38,32 +40,55 @@ class FormAction(Action):
                                   "that it has to fill")
 
     def slot_mapping(self):
-        # type: () -> Dict[Text: Union[Text, List[Text]]]
-        """A dictionary to map required slots to extracted entities"""
+        # type: () -> Dict[Text: Union[Text, List[Text], Dict[Text: Any]]]
+        """A dictionary to map required slots to extracted entities or
+            to intent:value pairs or free text"""
 
         return dict(zip(self.required_slots(), self.required_slots()))
 
     # noinspection PyUnusedLocal
-    def validate(self, dispatcher, tracker, domain):
-        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """"Validate the user input else return an error"""
+    def extract(self, dispatcher, tracker, domain):
+        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> Optional[List[Dict]]
+        """"Extract the user input else return an error"""
         slot_to_fill = tracker.slots[REQUESTED_SLOT]
 
         # map requested_slot to entity
-        required_entities = self.slot_mapping().get(slot_to_fill)
+        slot_mapping = self.slot_mapping().get(slot_to_fill)
 
-        if required_entities:
-            if isinstance(required_entities, str):
-                required_entities = [required_entities]
+        if slot_mapping:
+            if slot_mapping == self.FREETEXT:
+                return [SlotSet(slot_to_fill,
+                                tracker.latest_message.get("text"))]
+            elif isinstance(slot_mapping, dict):
+                intent = tracker.latest_message.get("intent", {}).get("name")
+                if intent in slot_mapping.keys():
+                    return [SlotSet(slot_to_fill, slot_mapping[intent])]
+            else:
+                required_entities = slot_mapping
+                if not isinstance(required_entities, list):
+                    required_entities = [required_entities]
 
-            for e in tracker.latest_message["entities"]:
-                if e.get("entity") in required_entities:
-                    return [SlotSet(slot_to_fill, e['value'])]
+                for e in tracker.latest_message["entities"]:
+                    if e.get("entity") in required_entities:
+                        return [SlotSet(slot_to_fill, e['value'])]
 
-        raise ActionExecutionError("Failed to validate slot {0} "
-                                   "with action {1}"
-                                   "".format(slot_to_fill, self.name()),
-                                   self.name())
+        return None
+
+    # noinspection PyUnusedLocal
+    def validate(self, dispatcher, tracker, domain):
+        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
+        """"Extract the user input else return an error"""
+
+        events = self.extract(dispatcher, tracker, domain)
+
+        if events is not None:
+            return events
+        else:
+            raise ActionExecutionError("Failed to validate slot {0} "
+                                       "with action {1}"
+                                       "".format(tracker.slots[REQUESTED_SLOT],
+                                                 self.name()),
+                                       self.name())
 
     def submit(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
