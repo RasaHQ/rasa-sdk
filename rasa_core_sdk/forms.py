@@ -23,7 +23,7 @@ REQUESTED_SLOT = "requested_slot"
 
 
 class FormAction(Action):
-    FREETEXT = 'FREETEXT'
+    FREETEXT = '__FREETEXT__'
 
     def name(self):
         # type: () -> Text
@@ -58,10 +58,7 @@ class FormAction(Action):
         slot_mapping = self.slot_mapping().get(slot_to_fill)
 
         if slot_mapping:
-            if slot_mapping == self.FREETEXT:
-                return [SlotSet(slot_to_fill,
-                                tracker.latest_message.get("text"))]
-            elif isinstance(slot_mapping, dict):
+            if isinstance(slot_mapping, dict):
                 intent = tracker.latest_message.get("intent", {}).get("name")
                 if intent in slot_mapping.keys():
                     return [SlotSet(slot_to_fill, slot_mapping[intent])]
@@ -70,9 +67,15 @@ class FormAction(Action):
                 if not isinstance(required_entities, list):
                     required_entities = [required_entities]
 
-                for e in tracker.latest_message["entities"]:
-                    if e.get("entity") in required_entities:
-                        return [SlotSet(slot_to_fill, e['value'])]
+                for entity_name in required_entities:
+                    entity_value = next(tracker.get_latest_entity_values(
+                                            entity_name), None)
+                    if entity_value is not None:
+                        return [SlotSet(slot_to_fill, entity_value)]
+
+                if self.FREETEXT in required_entities:
+                    return [SlotSet(slot_to_fill,
+                                    tracker.latest_message.get("text"))]
 
         return None
 
