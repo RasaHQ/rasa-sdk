@@ -103,10 +103,10 @@ class FormAction(Action):
 
     # noinspection PyUnusedLocal
     def request_next_slot(self,
-                             dispatcher,  # type: CollectingDispatcher
-                             tracker,  # type: Tracker
-                             domain  # type: Dict[Text, Any]
-                             ):
+                          dispatcher,  # type: CollectingDispatcher
+                          tracker,  # type: Tracker
+                          domain  # type: Dict[Text, Any]
+                          ):
         # type: (...) -> Optional[List[Dict]]
         """"Request the next slot and utter template if needed,
             else return None"""
