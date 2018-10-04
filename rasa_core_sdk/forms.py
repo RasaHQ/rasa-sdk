@@ -45,7 +45,7 @@ class FormAction(Action):
             - an extracted entity
             - a dictionary of intent: value pairs
             - a whole message
-            or a list of all of them"""
+            or a list of all of them, where a first match will be picked"""
 
         return dict(zip(self.required_slots(), self.required_slots()))
 
