@@ -102,7 +102,7 @@ class FormAction(Action):
                                        self.name())
 
     # noinspection PyUnusedLocal
-    def next_slot_to_request(self,
+    def request_next_slot(self,
                              dispatcher,  # type: CollectingDispatcher
                              tracker,  # type: Tracker
                              domain  # type: Dict[Text, Any]
@@ -184,7 +184,7 @@ class FormAction(Action):
             if e['event'] == 'slot':
                 temp_tracker.slots[e["name"]] = e["value"]
 
-        next_slot_events = self.next_slot_to_request(dispatcher, temp_tracker,
+        next_slot_events = self.request_next_slot(dispatcher, temp_tracker,
                                                      domain)
         if next_slot_events is not None:
             # request next slot
