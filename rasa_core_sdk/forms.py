@@ -80,7 +80,7 @@ class FormAction(Action):
             for slot_mapping in slot_mappings:
                 if (not isinstance(slot_mapping, dict) or
                         slot_mapping.get("type") is None):
-                    raise ValueError("Provided incompatible slot_mapping")
+                    raise TypeError("Provided incompatible slot_mapping")
 
                 mapping_intent = slot_mapping.get("intent")
                 intent = tracker.latest_message.get("intent",
@@ -103,8 +103,8 @@ class FormAction(Action):
                                         tracker.latest_message.get("text"))]
 
                     else:
-                        raise TypeError('Provided slot_mapping["type"] '
-                                        'is not supported')
+                        raise ValueError('Provided slot_mapping["type"] '
+                                         'is not supported')
 
         return None
 
