@@ -106,7 +106,8 @@ class FormAction(Action):
             raise ActionExecutionRejection(self.name(),
                                            "Failed to validate slot {0} "
                                            "with action {1}"
-                                           "".format(slot_to_fill, self.name()))
+                                           "".format(slot_to_fill,
+                                                     self.name()))
 
     # noinspection PyUnusedLocal
     def request_next_slot(self,
