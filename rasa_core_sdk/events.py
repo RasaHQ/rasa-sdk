@@ -157,7 +157,7 @@ def ActionExecutionRejected(action_name, policy=None, confidence=None,
                             timestamp=None):
     return {
         "event": "action_execution_rejected",
-        "action_name": action_name,
+        "name": action_name,
         "policy": policy,
         "confidence": confidence,
         "timestamp": timestamp,
