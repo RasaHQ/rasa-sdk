@@ -42,9 +42,10 @@ class FormAction(Action):
     def slot_mapping(self):
         # type: () -> Dict[Text: Union[Text, Dict, List[Text, Dict]]]
         """A dictionary to map required slots to
-            - an extracted entity
-            - a dictionary of intent: value pairs
-            - a whole message
+            - an extracted entity;
+            - a dictionary of intent: value pairs,
+                if value is FREETEXT, use a whole message as value;
+            - a whole message;
             or a list of all of them, where a first match will be picked"""
 
         return dict(zip(self.required_slots(), self.required_slots()))
@@ -71,7 +72,13 @@ class FormAction(Action):
                     intent = tracker.latest_message.get("intent",
                                                         {}).get("name")
                     if intent in slot_mapping.keys():
-                        return [SlotSet(slot_to_fill, slot_mapping[intent])]
+                        if slot_mapping[intent] == self.FREETEXT:
+                            return [SlotSet(slot_to_fill,
+                                            tracker.latest_message.get(
+                                                "text"))]
+                        else:
+                            return [SlotSet(slot_to_fill,
+                                            slot_mapping[intent])]
                 else:
                     entity_value = next(tracker.get_latest_entity_values(
                                             slot_mapping), None)
