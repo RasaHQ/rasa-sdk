@@ -103,7 +103,8 @@ class FormAction(Action):
                                         tracker.latest_message.get("text"))]
 
                     else:
-                        raise TypeError("slot_mapping type is not supported")
+                        raise TypeError('Provided slot_mapping["type"] '
+                                        'is not supported')
 
         return None
 
