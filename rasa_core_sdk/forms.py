@@ -56,7 +56,7 @@ class FormAction(Action):
             - an extracted entity
             - intent: value pairs
             - a whole message
-            or a list of all of them, where a first match will be picked"""
+            or a list of them, where a first match will be picked"""
 
         return {slot: self.from_entity(slot) for slot in self.required_slots()}
 
