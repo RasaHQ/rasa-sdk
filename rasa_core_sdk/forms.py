@@ -23,7 +23,6 @@ REQUESTED_SLOT = "requested_slot"
 
 
 class FormAction(Action):
-    FREETEXT = '__FREETEXT__'
 
     def name(self):
         # type: () -> Text
@@ -39,16 +38,27 @@ class FormAction(Action):
         raise NotImplementedError("A form must implement required slots "
                                   "that it has to fill")
 
+    @staticmethod
+    def from_entity(entity, intent=None):
+        return {"type": "from_entity", "intent": intent, "entity": entity}
+
+    @staticmethod
+    def from_intent(intent, value):
+        return {"type": "from_intent", "intent": intent, "value": value}
+
+    @staticmethod
+    def from_text(intent=None):
+        return {"type": "from_text", "intent": intent}
+
     def slot_mapping(self):
         # type: () -> Dict[Text: Union[Text, Dict, List[Text, Dict]]]
         """A dictionary to map required slots to
-            - an extracted entity;
-            - a dictionary of intent: value pairs,
-                if value is FREETEXT, use a whole message as value;
-            - a whole message;
+            - an extracted entity
+            - intent: value pairs
+            - a whole message
             or a list of all of them, where a first match will be picked"""
 
-        return dict(zip(self.required_slots(), self.required_slots()))
+        return {slot: self.from_entity(slot) for slot in self.required_slots()}
 
     # noinspection PyUnusedLocal
     def extract(self,
@@ -68,27 +78,32 @@ class FormAction(Action):
                 slot_mappings = [slot_mappings]
 
             for slot_mapping in slot_mappings:
-                if isinstance(slot_mapping, dict):
-                    intent = tracker.latest_message.get("intent",
-                                                        {}).get("name")
-                    if intent in slot_mapping.keys():
-                        if slot_mapping[intent] == self.FREETEXT:
-                            return [SlotSet(slot_to_fill,
-                                            tracker.latest_message.get(
-                                                "text"))]
-                        else:
-                            return [SlotSet(slot_to_fill,
-                                            slot_mapping[intent])]
-                else:
-                    entity_value = next(tracker.get_latest_entity_values(
-                                            slot_mapping), None)
-                    if entity_value is not None:
-                        return [SlotSet(slot_to_fill, entity_value)]
+                if (not isinstance(slot_mapping, dict) or
+                        slot_mapping.get("type") is None):
+                    raise ValueError("Provided incompatible slot_mapping")
 
-            # the whole text can be always extracted, so it is done in the end
-            if self.FREETEXT in slot_mappings:
-                return [SlotSet(slot_to_fill,
-                                tracker.latest_message.get("text"))]
+                mapping_intent = slot_mapping.get("intent")
+                intent = tracker.latest_message.get("intent",
+                                                    {}).get("name")
+                if mapping_intent is None or mapping_intent == intent:
+                    mapping_type = slot_mapping["type"]
+
+                    if mapping_type == "from_entity":
+                        entity_value = next(tracker.get_latest_entity_values(
+                                slot_mapping.get("entity")), None)
+                        if entity_value is not None:
+                            return [SlotSet(slot_to_fill, entity_value)]
+
+                    elif mapping_type == "from_intent":
+                        return [SlotSet(slot_to_fill,
+                                        slot_mapping.get("value"))]
+
+                    elif mapping_type == "from_text":
+                        return [SlotSet(slot_to_fill,
+                                        tracker.latest_message.get("text"))]
+
+                    else:
+                        raise TypeError("slot_mapping type is not supported")
 
         return None
 
