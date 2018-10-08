@@ -160,6 +160,19 @@ class FormAction(Action):
         else:
             return [Form(self.name())]
 
+    @staticmethod
+    def _predicted_no_validation(tracker):
+        # type: (Tracker) -> bool
+        """Check whether previous call to the form was rejected"""
+        for e in reversed(tracker.events):
+            if e['event'] == 'action':
+                if e['name'] == 'action_no_form_validation':
+                    return True
+
+                break
+
+        return False
+
     def _validate_if_required(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Return a list of events from `self.validate`
@@ -168,7 +181,8 @@ class FormAction(Action):
             - the form is called after `action_listen`
         """
         if (tracker.active_form == self.name() and
-                tracker.latest_action_name == 'action_listen'):
+                tracker.latest_action_name == 'action_listen' and
+                not self._predicted_no_validation(tracker)):
             return self.validate(dispatcher, tracker, domain)
         else:
             return []
