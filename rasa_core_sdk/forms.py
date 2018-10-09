@@ -103,8 +103,9 @@ class FormAction(Action):
                                         tracker.latest_message.get("text"))]
 
                     else:
-                        raise ValueError('Provided slot_mapping["type"] '
-                                         'is not supported')
+                        raise NotImplementedError(
+                                'Provided slot_mapping["type"] '
+                                'is not supported')
 
         return None
 
