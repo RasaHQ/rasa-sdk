@@ -9,7 +9,6 @@ import logging
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
-
 from rasa_core_sdk.executor import ActionExecutor
 
 DEFAULT_SERVER_PORT = 5055
@@ -17,27 +16,34 @@ DEFAULT_SERVER_PORT = 5055
 logger = logging.getLogger(__name__)
 
 
+def action_arg(action):
+    if "/" in action:
+        return action.replace("/", ".")
+    else:
+        return action
+
+
 def create_argument_parser():
     """Parse all the command line arguments for the run script."""
 
     parser = argparse.ArgumentParser(
-            description='starts the action endpoint')
+        description='starts the action endpoint')
     parser.add_argument(
-            '-p', '--port',
-            default=DEFAULT_SERVER_PORT,
-            type=int,
-            help="port to run the server at")
+        '-p', '--port',
+        default=DEFAULT_SERVER_PORT,
+        type=int,
+        help="port to run the server at")
     parser.add_argument(
-            '--cors',
-            nargs='*',
-            type=str,
-            help="enable CORS for the passed origin. "
-                 "Use * to whitelist all origins")
+        '--cors',
+        nargs='*',
+        type=str,
+        help="enable CORS for the passed origin. "
+             "Use * to whitelist all origins")
     parser.add_argument(
-            '--actions',
-            type=str,
-            default=None,
-            help="name of action package to be loaded"
+        '--actions',
+        type=action_arg,
+        default=None,
+        help="name of action package to be loaded"
     )
 
     return parser
