@@ -16,9 +16,18 @@ DEFAULT_SERVER_PORT = 5055
 logger = logging.getLogger(__name__)
 
 
+def InvalidActionsFormat(Exception):
+    def __init__(self):
+        self.message = 'Invalid actions format. Actions file should be a python module and passed with module notation (e.g. directory.actions).'
+
+    def __str__(self):
+        return self.message
+
+
 def action_arg(action):
     if "/" in action:
-        return action.replace("/", ".")
+        raise argparse.ArgumentTypeError(
+            'Invalid actions format. Actions file should be a python module and passed with module notation (e.g. directory.actions).')
     else:
         return action
 
