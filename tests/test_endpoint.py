@@ -17,7 +17,10 @@ def test_arg_parser_actions_params_folder_style():
 
     with pytest.raises(BaseException) as e:
         cmdline_args = parser.parse_args(args)
-    assert e != None
+    if e is not None:
+        assert True
+    else:
+        assert False
 
 
 def test_arg_parser_actions_params_module_style():
