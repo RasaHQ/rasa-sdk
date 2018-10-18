@@ -13,6 +13,7 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 Added
 -----
+- added Dockerfile for rasa_core_sdk
 
 Changed
 -------
