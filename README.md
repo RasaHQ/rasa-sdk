@@ -37,7 +37,7 @@ Before starting the action server ensure that the folder containing your actions
 Then start the action server using:
 
 ```bash
-docker run --mount type=bind,source=<ABSOLUTE_PATH_TO_YOUR_ACTIONS>,target=/app/actions \
+docker run -p 5055:5055 --mount type=bind,source=<ABSOLUTE_PATH_TO_YOUR_ACTIONS>,target=/app/actions \
 	rasa/rasa_core_sdk:latest 
 ```
 
