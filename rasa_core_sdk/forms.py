@@ -31,8 +31,8 @@ class FormAction(Action):
         raise NotImplementedError("A form must implement a name")
 
     @staticmethod
-    def required_slots():
-        # type: () -> List[Text]
+    def required_slots(tracker):
+        # type: (Tracker) -> List[Text]
         """A list of required slots that the form has to fill"""
 
         raise NotImplementedError("A form must implement required slots "
@@ -51,14 +51,14 @@ class FormAction(Action):
         return {"type": "from_text", "intent": intent}
 
     def slot_mapping(self):
-        # type: () -> Dict[Text: Union[Text, Dict, List[Text, Dict]]]
+        # type: () -> Dict[Text: Union[Dict, List[Dict]]]
         """A dictionary to map required slots to
-            - an extracted entity
+            - an extracted entity (default behaviour)
             - intent: value pairs
             - a whole message
             or a list of them, where a first match will be picked"""
 
-        return {slot: self.from_entity(slot) for slot in self.required_slots()}
+        return {}
 
     # noinspection PyUnusedLocal
     def extract(self,
@@ -72,40 +72,41 @@ class FormAction(Action):
 
         # map requested_slot to entity
         slot_mappings = self.slot_mapping().get(slot_to_fill)
+        if not slot_mappings:
+            slot_mappings = self.from_entity(slot_to_fill)
 
-        if slot_mappings:
-            if not isinstance(slot_mappings, list):
-                slot_mappings = [slot_mappings]
+        if not isinstance(slot_mappings, list):
+            slot_mappings = [slot_mappings]
 
-            for slot_mapping in slot_mappings:
-                if (not isinstance(slot_mapping, dict) or
-                        slot_mapping.get("type") is None):
-                    raise TypeError("Provided incompatible slot_mapping")
+        for slot_mapping in slot_mappings:
+            if (not isinstance(slot_mapping, dict) or
+                    slot_mapping.get("type") is None):
+                raise TypeError("Provided incompatible slot_mapping")
 
-                mapping_intent = slot_mapping.get("intent")
-                intent = tracker.latest_message.get("intent",
-                                                    {}).get("name")
-                if mapping_intent is None or mapping_intent == intent:
-                    mapping_type = slot_mapping["type"]
+            mapping_intent = slot_mapping.get("intent")
+            intent = tracker.latest_message.get("intent",
+                                                {}).get("name")
+            if mapping_intent is None or mapping_intent == intent:
+                mapping_type = slot_mapping["type"]
 
-                    if mapping_type == "from_entity":
-                        entity_value = next(tracker.get_latest_entity_values(
-                                slot_mapping.get("entity")), None)
-                        if entity_value is not None:
-                            return [SlotSet(slot_to_fill, entity_value)]
+                if mapping_type == "from_entity":
+                    entity_value = next(tracker.get_latest_entity_values(
+                            slot_mapping.get("entity")), None)
+                    if entity_value is not None:
+                        return [SlotSet(slot_to_fill, entity_value)]
 
-                    elif mapping_type == "from_intent":
-                        return [SlotSet(slot_to_fill,
-                                        slot_mapping.get("value"))]
+                elif mapping_type == "from_intent":
+                    return [SlotSet(slot_to_fill,
+                                    slot_mapping.get("value"))]
 
-                    elif mapping_type == "from_text":
-                        return [SlotSet(slot_to_fill,
-                                        tracker.latest_message.get("text"))]
+                elif mapping_type == "from_text":
+                    return [SlotSet(slot_to_fill,
+                                    tracker.latest_message.get("text"))]
 
-                    else:
-                        raise NotImplementedError(
-                                'Provided slot_mapping["type"] '
-                                'is not supported')
+                else:
+                    raise NotImplementedError(
+                            'Provided slot_mapping["type"] '
+                            'is not supported')
 
         return None
 
@@ -136,7 +137,7 @@ class FormAction(Action):
         """"Request the next slot and utter template if needed,
             else return None"""
 
-        for slot in self.required_slots():
+        for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
                 dispatcher.utter_template("utter_ask_{}".format(slot), tracker)
                 return [SlotSet(REQUESTED_SLOT, slot)]
@@ -164,13 +165,12 @@ class FormAction(Action):
     @staticmethod
     def _predicted_no_validation(tracker):
         # type: (Tracker) -> bool
-        """Check whether previous call to the form was rejected"""
+        """Check whether validation should be skipped"""
         for e in reversed(tracker.events):
-            if e['event'] == 'action':
-                if e['name'] == 'action_no_form_validation':
-                    return True
-
-                break
+            if e['event'] == 'no_form_validation':
+                return True
+            elif e['event'] == 'action':
+                return False
 
         return False
 

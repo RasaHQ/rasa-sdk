@@ -153,6 +153,14 @@ def Form(name, timestamp=None):
 
 
 # noinspection PyPep8Naming
+def NoFormValidation(timestamp=None):
+    return {
+        "event": "no_form_validation",
+        "timestamp": timestamp,
+    }
+
+
+# noinspection PyPep8Naming
 def ActionExecutionRejected(action_name, policy=None, confidence=None,
                             timestamp=None):
     return {
