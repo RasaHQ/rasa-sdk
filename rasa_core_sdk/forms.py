@@ -120,9 +120,9 @@ class FormAction(Action):
         extracted_entities = {requested_entity}
 
         for f in self.required_fields():
-            if (isinstance(f, EntityFormField)
-                    and f.slot_name != requested_slot
-                    and f.entity_name not in extracted_entities):
+            if (isinstance(f, EntityFormField) and
+                    f.slot_name != requested_slot and
+                    f.entity_name not in extracted_entities):
                 slot_events.extend(f.extract(tracker))
                 extracted_entities.add(f.entity_name)
         return slot_events
