@@ -121,22 +121,25 @@ class FormAction(Action):
         logger.debug("Failed to extract")
         return None
 
-    # noinspection PyUnusedLocal
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """"Validate extracted requested slot else raise an error"""
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
         extracted_value = self.extract(dispatcher, tracker, domain)
-
-        if extracted_value is not None:
-            return [SlotSet(slot_to_fill, extracted_value)]
-        else:
+        if extracted_value is None:
+            # reject to execute the form action if nothing was extracted,
+            # it will allow other policies to predict another action
             raise ActionExecutionRejection(self.name(),
                                            "Failed to validate slot {0} "
                                            "with action {1}"
                                            "".format(slot_to_fill,
                                                      self.name()))
+
+        # add custom validation logic by subclassing this method
+
+        # validation succeed, set requested slot to extracted value
+        return [SlotSet(slot_to_fill, extracted_value)]
 
     # noinspection PyUnusedLocal
     def request_next_slot(self,
