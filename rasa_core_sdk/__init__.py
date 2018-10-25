@@ -33,7 +33,8 @@ class Tracker(object):
                        state.get("latest_action_name"))
 
     def __init__(self, sender_id, slots,
-                 latest_message, events, paused, followup_action, active_form, latest_action_name):
+                 latest_message, events, paused, followup_action,
+                 active_form, latest_action_name):
         """Initialize the tracker."""
 
         # list of previously seen events
