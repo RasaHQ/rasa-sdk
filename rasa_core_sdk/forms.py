@@ -80,9 +80,10 @@ class FormAction(Action):
                      "".format(slot_to_fill))
         logger.debug("... from user input '{}'".format(tracker.latest_message))
 
-        # map requested_slot to entity
+        # get mapping for requested slot
         requested_slot_mappings = self.slot_mappings().get(slot_to_fill)
         if not requested_slot_mappings:
+            # map requested slot to entity
             requested_slot_mappings = self.from_entity(slot_to_fill)
 
         if not isinstance(requested_slot_mappings, list):
