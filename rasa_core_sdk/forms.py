@@ -50,13 +50,18 @@ class FormAction(Action):
     def from_text(intent=None):
         return {"type": "from_text", "intent": intent}
 
-    def slot_mapping(self):
+    # noinspection PyMethodMayBeStatic
+    def slots_mappings(self):
         # type: () -> Dict[Text: Union[Dict, List[Dict]]]
         """A dictionary to map required slots to
-            - an extracted entity (default behaviour)
+            - an extracted entity
             - intent: value pairs
             - a whole message
-            or a list of them, where a first match will be picked"""
+            or a list of them, where a first match will be picked
+
+            Empty dict converted to extracted entity
+            with the same name as a slot
+        """
 
         return {}
 
@@ -71,33 +76,33 @@ class FormAction(Action):
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
         # map requested_slot to entity
-        slot_mappings = self.slot_mapping().get(slot_to_fill)
-        if not slot_mappings:
-            slot_mappings = self.from_entity(slot_to_fill)
+        requested_slot_mappings = self.slots_mappings().get(slot_to_fill)
+        if not requested_slot_mappings:
+            requested_slot_mappings = self.from_entity(slot_to_fill)
 
-        if not isinstance(slot_mappings, list):
-            slot_mappings = [slot_mappings]
+        if not isinstance(requested_slot_mappings, list):
+            requested_slot_mappings = [requested_slot_mappings]
 
-        for slot_mapping in slot_mappings:
-            if (not isinstance(slot_mapping, dict) or
-                    slot_mapping.get("type") is None):
+        for requested_slot_mapping in requested_slot_mappings:
+            if (not isinstance(requested_slot_mapping, dict) or
+                    requested_slot_mapping.get("type") is None):
                 raise TypeError("Provided incompatible slot_mapping")
 
-            mapping_intent = slot_mapping.get("intent")
+            mapping_intent = requested_slot_mapping.get("intent")
             intent = tracker.latest_message.get("intent",
                                                 {}).get("name")
             if mapping_intent is None or mapping_intent == intent:
-                mapping_type = slot_mapping["type"]
+                mapping_type = requested_slot_mapping["type"]
 
                 if mapping_type == "from_entity":
                     entity_value = next(tracker.get_latest_entity_values(
-                            slot_mapping.get("entity")), None)
+                            requested_slot_mapping.get("entity")), None)
                     if entity_value is not None:
                         return [SlotSet(slot_to_fill, entity_value)]
 
                 elif mapping_type == "from_intent":
                     return [SlotSet(slot_to_fill,
-                                    slot_mapping.get("value"))]
+                                    requested_slot_mapping.get("value"))]
 
                 elif mapping_type == "from_text":
                     return [SlotSet(slot_to_fill,
