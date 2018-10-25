@@ -51,7 +51,7 @@ class FormAction(Action):
         return {"type": "from_text", "intent": intent}
 
     # noinspection PyMethodMayBeStatic
-    def slots_mappings(self):
+    def slot_mappings(self):
         # type: () -> Dict[Text: Union[Dict, List[Dict]]]
         """A dictionary to map required slots to
             - an extracted entity
@@ -76,7 +76,7 @@ class FormAction(Action):
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
         # map requested_slot to entity
-        requested_slot_mappings = self.slots_mappings().get(slot_to_fill)
+        requested_slot_mappings = self.slot_mappings().get(slot_to_fill)
         if not requested_slot_mappings:
             requested_slot_mappings = self.from_entity(slot_to_fill)
 
