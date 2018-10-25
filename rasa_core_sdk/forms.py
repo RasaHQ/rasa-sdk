@@ -71,8 +71,10 @@ class FormAction(Action):
                 tracker,  # type: Tracker
                 domain  # type: Dict[Text, Any]
                 ):
-        # type: (...) -> Optional[List[Dict]]
-        """"Extract requested slot from a user input else return None"""
+        # type: (...) -> Optional[Any]
+        """Extract the value of requested slot from a user input
+            else return None
+        """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         logger.debug("Trying to extract requested slot '{}' ..."
                      "".format(slot_to_fill))
@@ -114,7 +116,7 @@ class FormAction(Action):
                 if value is not None:
                     logger.debug("Successfully extracted '{}'"
                                  "".format(value))
-                    return [SlotSet(slot_to_fill, value)]
+                    return value
 
         logger.debug("Failed to extract")
         return None
@@ -125,10 +127,10 @@ class FormAction(Action):
         """"Validate extracted requested slot else raise an error"""
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
-        events = self.extract(dispatcher, tracker, domain)
+        extracted_value = self.extract(dispatcher, tracker, domain)
 
-        if events is not None:
-            return events
+        if extracted_value is not None:
+            return [SlotSet(slot_to_fill, extracted_value)]
         else:
             raise ActionExecutionRejection(self.name(),
                                            "Failed to validate slot {0} "
