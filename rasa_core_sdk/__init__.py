@@ -165,7 +165,7 @@ class Action(object):
                 :class:`rasa_core_sdk.Tracker` property.
             domain (Dict[Text, Any]): the bot's domain
         Returns:
-            Dict[Event]: A dictionary of :class:`rasa_core_sdk.events.Event`
+            List[dict]: A dictionary of :class:`rasa_core_sdk.events.Event`
             instances that is returned through the endpoint
         """
 
