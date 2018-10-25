@@ -59,8 +59,8 @@ class FormAction(Action):
             - a whole message
             or a list of them, where a first match will be picked
 
-            Empty dict converted to extracted entity
-            with the same name as a slot
+            Empty dict is converted to a mapping of
+            the slot to the extracted entity with the same name
         """
 
         return {}
@@ -109,7 +109,7 @@ class FormAction(Action):
                                     tracker.latest_message.get("text"))]
 
                 else:
-                    raise NotImplementedError(
+                    raise ValueError(
                             'Provided slot_mapping["type"] '
                             'is not supported')
 
