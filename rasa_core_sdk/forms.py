@@ -106,7 +106,7 @@ class FormAction(Action):
 
             if (not isinstance(requested_slot_mapping, dict) or
                     requested_slot_mapping.get("type") is None):
-                raise TypeError("Provided incompatible slot_mapping")
+                raise TypeError("Provided incompatible slot mapping")
 
             mapping_intent = requested_slot_mapping.get("intent")
             intent = tracker.latest_message.get("intent",
@@ -123,7 +123,7 @@ class FormAction(Action):
                     value = tracker.latest_message.get("text")
                 else:
                     raise ValueError(
-                            'Provided slot_mapping["type"] '
+                            'Provided slot mapping type '
                             'is not supported')
 
                 if value is not None:
@@ -136,7 +136,7 @@ class FormAction(Action):
 
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """Validate extracted value of requested slo
+        """Validate extracted value of requested slot
             else reject to execute the form action
 
             Add custom validation and rejection logic
