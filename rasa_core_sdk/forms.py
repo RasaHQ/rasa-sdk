@@ -74,6 +74,9 @@ class FormAction(Action):
         # type: (...) -> Optional[List[Dict]]
         """"Extract requested slot from a user input else return None"""
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
+        logger.debug("Trying to extract requested slot '{}' ..."
+                     "".format(slot_to_fill))
+        logger.debug("... from user input '{}'".format(tracker.latest_message))
 
         # map requested_slot to entity
         requested_slot_mappings = self.slot_mappings().get(slot_to_fill)
@@ -84,6 +87,8 @@ class FormAction(Action):
             requested_slot_mappings = [requested_slot_mappings]
 
         for requested_slot_mapping in requested_slot_mappings:
+            logger.debug("Got mapping '{}'".format(requested_slot_mapping))
+
             if (not isinstance(requested_slot_mapping, dict) or
                     requested_slot_mapping.get("type") is None):
                 raise TypeError("Provided incompatible slot_mapping")
@@ -95,24 +100,23 @@ class FormAction(Action):
                 mapping_type = requested_slot_mapping["type"]
 
                 if mapping_type == "from_entity":
-                    entity_value = next(tracker.get_latest_entity_values(
-                            requested_slot_mapping.get("entity")), None)
-                    if entity_value is not None:
-                        return [SlotSet(slot_to_fill, entity_value)]
-
+                    value = next(tracker.get_latest_entity_values(
+                                requested_slot_mapping.get("entity")), None)
                 elif mapping_type == "from_intent":
-                    return [SlotSet(slot_to_fill,
-                                    requested_slot_mapping.get("value"))]
-
+                    value = requested_slot_mapping.get("value")
                 elif mapping_type == "from_text":
-                    return [SlotSet(slot_to_fill,
-                                    tracker.latest_message.get("text"))]
-
+                    value = tracker.latest_message.get("text")
                 else:
                     raise ValueError(
                             'Provided slot_mapping["type"] '
                             'is not supported')
 
+                if value is not None:
+                    logger.debug("Successfully extracted '{}'"
+                                 "".format(value))
+                    return [SlotSet(slot_to_fill, value)]
+
+        logger.debug("Failed to extract")
         return None
 
     # noinspection PyUnusedLocal
@@ -144,9 +148,11 @@ class FormAction(Action):
 
         for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
+                logger.debug("Request next slot '{}'".format(slot))
                 dispatcher.utter_template("utter_ask_{}".format(slot), tracker)
                 return [SlotSet(REQUESTED_SLOT, slot)]
 
+        logger.debug("No slots left to request")
         return None
 
     def submit(self, dispatcher, tracker, domain):
@@ -162,9 +168,15 @@ class FormAction(Action):
         """Return `Form` event with the name of the form
             if the form was called for the first time"""
 
+        if tracker.active_form is not None:
+            logger.debug("The form '{}' is active".format(tracker.active_form))
+        else:
+            logger.debug("There is no active form")
+
         if tracker.active_form == self.name():
             return []
         else:
+            logger.debug("Activate the form '{}'".format(self.name()))
             return [Form(self.name())]
 
     @staticmethod
@@ -173,6 +185,7 @@ class FormAction(Action):
         """Check whether validation should be skipped"""
         for e in reversed(tracker.events):
             if e['event'] == 'no_form_validation':
+                logger.debug("'NoFormValidation' event is present")
                 return True
             elif e['event'] == 'action':
                 return False
@@ -189,8 +202,10 @@ class FormAction(Action):
         if (tracker.active_form == self.name() and
                 tracker.latest_action_name == 'action_listen' and
                 not self._predicted_no_validation(tracker)):
+            logger.debug("Validate user input")
             return self.validate(dispatcher, tracker, domain)
         else:
+            logger.debug("Skip validation")
             return []
 
     @staticmethod
@@ -205,7 +220,7 @@ class FormAction(Action):
         # type: () -> List[Dict]
         """Return `Form` event with `None` as name to deactivate the form
             and reset the requested slot"""
-
+        logger.debug("Deactivating the form")
         return [Form(None), SlotSet(REQUESTED_SLOT, None)]
 
     def run(self, dispatcher, tracker, domain):
