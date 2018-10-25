@@ -123,7 +123,11 @@ class FormAction(Action):
 
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """"Validate extracted requested slot else raise an error"""
+        """"Validate extracted value of requested slot else raise an error
+
+            Add custom validation and rejection logic
+            by subclassing this method
+        """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
         extracted_value = self.extract(dispatcher, tracker, domain)
@@ -135,8 +139,6 @@ class FormAction(Action):
                                            "with action {1}"
                                            "".format(slot_to_fill,
                                                      self.name()))
-
-        # add custom validation logic by subclassing this method
 
         # validation succeed, set requested slot to extracted value
         return [SlotSet(slot_to_fill, extracted_value)]
