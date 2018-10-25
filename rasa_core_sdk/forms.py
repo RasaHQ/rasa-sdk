@@ -124,7 +124,7 @@ class FormAction(Action):
 
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """"Validate extracted value of requested slot else raise an error
+        """Validate extracted value of requested slot else raise an error
 
             Add custom validation and rejection logic
             by subclassing this method
@@ -151,7 +151,7 @@ class FormAction(Action):
                           domain  # type: Dict[Text, Any]
                           ):
         # type: (...) -> Optional[List[Dict]]
-        """"Request the next slot and utter template if needed,
+        """Request the next slot and utter template if needed,
             else return None"""
 
         for slot in self.required_slots(tracker):
