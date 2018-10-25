@@ -155,8 +155,9 @@ class Action(object):
         Execute the side effects of this action.
         Args:
             dispatcher (CollectingDispatcher): the dispatcher which is used to
-                send messages back to the user. Use ``dipatcher.utter_message()``
-                or any other :class:`rasa_core_sdk.executor.CollectingDispatcher`
+                send messages back to the user. Use
+                ``dipatcher.utter_message()`` or any other
+                :class:`rasa_core_sdk.executor.CollectingDispatcher`
                 method.
             tracker (Tracker): the state tracker for the current
                 user. You can access slot values using
