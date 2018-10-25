@@ -124,7 +124,8 @@ class FormAction(Action):
 
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """Validate extracted value of requested slot else raise an error
+        """Validate extracted value of requested slo
+            else reject to execute the form action
 
             Add custom validation and rejection logic
             by subclassing this method
@@ -202,10 +203,11 @@ class FormAction(Action):
 
     def _validate_if_required(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """Return a list of events from `self.validate`
+        """Return a list of events from `self.validate(...)`
             if validation is required:
             - the form is active
             - the form is called after `action_listen`
+            - `NoFormValidation` event is not present
         """
         if (tracker.active_form == self.name() and
                 tracker.latest_action_name == 'action_listen' and

@@ -167,6 +167,8 @@ class Action(object):
 
 
 class ActionExecutionRejection(Exception):
+    """Raising this exception will allow other policies
+        to predict another action"""
 
     def __init__(self, action_name, message=None):
         self.action_name = action_name
