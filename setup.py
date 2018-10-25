@@ -77,5 +77,6 @@ setup(
 )
 
 print("\nWelcome to Rasa Core SDK!")
-print("If any questions please visit documentation page https://docs.rasa.com/core")
+print("If any questions please visit "
+      "documentation page https://docs.rasa.com/core")
 print("or join community chat on https://gitter.im/RasaHQ/rasa_core")

@@ -60,7 +60,7 @@ class Tracker(object):
         """Return the current tracker state as an object."""
 
         if len(self.events) > 0:
-            latest_event_time = self.events[-1].timestamp
+            latest_event_time = self.events[-1].get("timestamp")
         else:
             latest_event_time = None
 

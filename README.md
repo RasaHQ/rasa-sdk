@@ -24,7 +24,41 @@ pip install rasa_core_sdk
 ## Usage
 
 Detailed instructions can be found in the Rasa Core Documentation about 
-[Custom Actions](https://rasa.com/docs/core/customactions.html).
+[Custom Actions](https://rasa.com/docs/core/customactions).
+
+## Docker 
+
+### Usage
+
+In order to start an action server using implemented custom actions, you can use the available Docker image `rasa/rasa_core_sdk:latest`.
+
+Before starting the action server ensure that the folder containing your actions is handled as Python module and therefore has to contain a file called `__init__.py`
+
+Then start the action server using:
+
+```bash
+docker run -p 5055:5055 --mount type=bind,source=<ABSOLUTE_PATH_TO_YOUR_ACTIONS>,target=/app/actions \
+	rasa/rasa_core_sdk:latest 
+```
+
+The action server is then avaible at `http://localhost:5055/webhook`. 
+
+### Custom Dependencies
+
+To add custom dependencies you enhance the given Docker image, e.g.:
+
+```
+FROM rasa/rasa_core_sdk:latest
+
+# To install system dependencies
+RUN apt-get update -qq && \
+    apt-get install -y <NAME_OF_REQUIRED_PACKAGE> && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    
+# To install packages from PyPI
+RUN pip install --no-cache-dir <A_REQUIRED_PACKAGE_ON_PYPI> 
+```
 
 ## License
 Licensed under the Apache License, Version 2.0. Copyright 2018 Rasa Technologies GmbH. [Copy of the license](LICENSE.txt).
