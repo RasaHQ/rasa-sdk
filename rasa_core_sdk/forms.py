@@ -40,14 +40,26 @@ class FormAction(Action):
 
     @staticmethod
     def from_entity(entity, intent=None):
+        # type: (Text, Optional[Text]) -> Dict[Text: Any]
+        """A dictionary to map required slots to
+            - an extracted entity
+        """
         return {"type": "from_entity", "intent": intent, "entity": entity}
 
     @staticmethod
     def from_intent(intent, value):
+        # type: (Optional[Text], Any) -> Dict[Text: Any]
+        """A dictionary to map required slots to
+            - intent: value pair
+        """
         return {"type": "from_intent", "intent": intent, "value": value}
 
     @staticmethod
     def from_text(intent=None):
+        # type: (Optional[Text]) -> Dict[Text: Any]
+        """A dictionary to map required slots to
+            - a whole message
+        """
         return {"type": "from_text", "intent": intent}
 
     # noinspection PyMethodMayBeStatic
