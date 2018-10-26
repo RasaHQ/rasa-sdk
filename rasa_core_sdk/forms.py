@@ -189,29 +189,17 @@ class FormAction(Action):
         """Return `Form` event with the name of the form
             if the form was called for the first time"""
 
-        if tracker.active_form is not None:
-            logger.debug("The form '{}' is active".format(tracker.active_form))
+        if tracker.active_form.get('name') is not None:
+            logger.debug("The form '{}' is active"
+                         "".format(tracker.active_form))
         else:
             logger.debug("There is no active form")
 
-        if tracker.active_form == self.name():
+        if tracker.active_form.get('name') == self.name():
             return []
         else:
             logger.debug("Activate the form '{}'".format(self.name()))
             return [Form(self.name())]
-
-    @staticmethod
-    def _predicted_no_validation(tracker):
-        # type: (Tracker) -> bool
-        """Check whether validation should be skipped"""
-        for e in reversed(tracker.events):
-            if e['event'] == 'no_form_validation':
-                logger.debug("'NoFormValidation' event is present")
-                return True
-            elif e['event'] == 'action':
-                return False
-
-        return False
 
     def _validate_if_required(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
@@ -219,11 +207,11 @@ class FormAction(Action):
             if validation is required:
             - the form is active
             - the form is called after `action_listen`
-            - `NoFormValidation` event is not present
+            - form validation was not cancelled
         """
-        if (tracker.active_form == self.name() and
+        if (tracker.active_form.get('name') == self.name() and
                 tracker.latest_action_name == 'action_listen' and
-                not self._predicted_no_validation(tracker)):
+                tracker.active_form.get('validate')):
             logger.debug("Validate user input")
             return self.validate(dispatcher, tracker, domain)
         else:

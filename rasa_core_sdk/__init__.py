@@ -29,7 +29,7 @@ class Tracker(object):
                        state.get("events"),
                        state.get("paused"),
                        state.get("followup_action"),
-                       state.get("active_form"),
+                       state.get("active_form", {}),
                        state.get("latest_action_name"))
 
     def __init__(self, sender_id, slots,

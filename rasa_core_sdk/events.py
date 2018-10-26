@@ -153,9 +153,10 @@ def Form(name, timestamp=None):
 
 
 # noinspection PyPep8Naming
-def NoFormValidation(timestamp=None):
+def FormValidation(validate, timestamp=None):
     return {
-        "event": "no_form_validation",
+        "event": "form_validation",
+        "validate": validate,
         "timestamp": timestamp,
     }
 
