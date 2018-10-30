@@ -151,7 +151,24 @@ class Action(object):
 
     def run(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[dict]
-        """Execute the side effects of this action."""
+        """
+        Execute the side effects of this action.
+        Args:
+            dispatcher (CollectingDispatcher): the dispatcher which is used to
+                send messages back to the user. Use
+                ``dipatcher.utter_message()`` or any other
+                :class:`rasa_core_sdk.executor.CollectingDispatcher`
+                method.
+            tracker (Tracker): the state tracker for the current
+                user. You can access slot values using
+                ``tracker.get_slot(slot_name)``, the most recent user message
+                is ``tracker.latest_message.text`` and any other
+                :class:`rasa_core_sdk.Tracker` property.
+            domain (Dict[Text, Any]): the bot's domain
+        Returns:
+            List[dict]: A dictionary of :class:`rasa_core_sdk.events.Event`
+            instances that is returned through the endpoint
+        """
 
         raise NotImplementedError
 
