@@ -117,7 +117,7 @@ class FormAction(Action):
                 if mapping_type == "from_entity":
                     # list is used to cover the case of list slot type
                     value = list(tracker.get_latest_entity_values(
-                                 requested_slot_mapping.get("entity")))
+                                    requested_slot_mapping.get("entity")))
                     if len(value) == 1:
                         value = value[0]
                 elif mapping_type == "from_intent":
