@@ -78,12 +78,12 @@ class FormAction(Action):
         return {}
 
     # noinspection PyUnusedLocal
-    def extract(self,
-                dispatcher,  # type: CollectingDispatcher
-                tracker,  # type: Tracker
-                domain  # type: Dict[Text, Any]
-                ):
-        # type: (...) -> Optional[Any]
+    def extract_requested_slot(self,
+                               dispatcher,  # type: CollectingDispatcher
+                               tracker,  # type: Tracker
+                               domain  # type: Dict[Text, Any]
+                               ):
+        # type: (...) -> Dict[Text: Any]
         """Extract the value of requested slot from a user input
             else return None
         """
@@ -130,35 +130,73 @@ class FormAction(Action):
                             'is not supported')
 
                 if value:
-                    logger.debug("Successfully extracted '{}'"
-                                 "".format(value))
-                    return value
+                    logger.debug("Successfully extracted '{}' "
+                                 "for requested slot '{}'"
+                                 "".format(value, slot_to_fill))
+                    return {slot_to_fill: value}
 
-        logger.debug("Failed to extract")
-        return None
+        logger.debug("Failed to extract requested slot '{}'"
+                     "".format(slot_to_fill))
+        return {}
+
+    # noinspection PyUnusedLocal
+    def extract_other_slots(self,
+                            dispatcher,  # type: CollectingDispatcher
+                            tracker,  # type: Tracker
+                            domain  # type: Dict[Text, Any]
+                            ):
+        # type: (...) -> Dict[Text: Any]
+        """Extract the values of the other slots
+            if they are set by corresponded entities from a user input
+            else return None
+        """
+        slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
+
+        slot_values = {}
+        for slot in self.required_slots(tracker):
+            # look for other slots
+            if slot != slot_to_fill:
+                # list is used to cover the case of list slot type
+                value = list(tracker.get_latest_entity_values(slot))
+                if len(value) == 1:
+                    value = value[0]
+
+                if value:
+                    logger.debug("Extracted '{}' "
+                                 "for extra slot '{}'"
+                                 "".format(value, slot))
+                    slot_values[slot] = value
+
+        return slot_values
 
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Validate extracted value of requested slot
             else reject to execute the form action
 
-            Add custom validation and rejection logic
-            by subclassing this method
+            Subclass this method to add custom validation and rejection logic
         """
+        # extract other slots that were not requested
+        # but set by corresponding entity
+        slot_values = self.extract_other_slots(dispatcher, tracker, domain)
+
+        # extract requested slot
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
+        if slot_to_fill:
+            slot_values.update(self.extract_requested_slot(dispatcher,
+                                                           tracker, domain))
+            if not slot_values:
+                # reject to execute the form action
+                # if some slot was requested but nothing was extracted
+                # it will allow other policies to predict another action
+                raise ActionExecutionRejection(self.name(),
+                                               "Failed to validate slot {0} "
+                                               "with action {1}"
+                                               "".format(slot_to_fill,
+                                                         self.name()))
 
-        extracted_value = self.extract(dispatcher, tracker, domain)
-        if extracted_value is None:
-            # reject to execute the form action if nothing was extracted,
-            # it will allow other policies to predict another action
-            raise ActionExecutionRejection(self.name(),
-                                           "Failed to validate slot {0} "
-                                           "with action {1}"
-                                           "".format(slot_to_fill,
-                                                     self.name()))
-
-        # validation succeed, set requested slot to extracted value
-        return [SlotSet(slot_to_fill, extracted_value)]
+        # validation succeed, set slots to extracted values
+        return [SlotSet(slot, value) for slot, value in slot_values.items()]
 
     # noinspection PyUnusedLocal
     def request_next_slot(self,
@@ -212,9 +250,8 @@ class FormAction(Action):
             - the form is called after `action_listen`
             - form validation was not cancelled
         """
-        if (tracker.active_form.get('name') == self.name() and
-                tracker.latest_action_name == 'action_listen' and
-                tracker.active_form.get('validate')):
+        if (tracker.latest_action_name == 'action_listen' and
+                tracker.active_form.get('validate', True)):
             logger.debug("Validate user input")
             return self.validate(dispatcher, tracker, domain)
         else:
@@ -251,6 +288,7 @@ class FormAction(Action):
         # validate user input
         events.extend(self._validate_if_required(dispatcher, tracker, domain))
 
+        # create temp tracker with populated slots from `validate` method
         temp_tracker = tracker.copy()
         for e in events:
             if e['event'] == 'slot':
