@@ -1,7 +1,7 @@
 ## Setup py requirements
 future==0.16.0
 typing==3.6.4
-requests==2.18.4
+requests==2.20.0
 ConfigArgParse==0.13.0
 coloredlogs==10.0
 flask==1.0.2
