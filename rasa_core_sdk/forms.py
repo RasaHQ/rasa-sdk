@@ -265,12 +265,11 @@ class FormAction(Action):
 
         return tracker.get_slot(slot_name) is None
 
-    @staticmethod
-    def _deactivate():
+    def _deactivate(self):
         # type: () -> List[Dict]
         """Return `Form` event with `None` as name to deactivate the form
             and reset the requested slot"""
-        logger.debug("Deactivating the form")
+        logger.debug("Deactivating the form '{}'".format(self.name()))
         return [Form(None), SlotSet(REQUESTED_SLOT, None)]
 
     def run(self, dispatcher, tracker, domain):
