@@ -69,7 +69,7 @@ class FormAction(Action):
             - an extracted entity
             - intent: value pairs
             - a whole message
-            or a list of them, where a first match will be picked
+            or a list of them, where the first match will be picked
 
             Empty dict is converted to a mapping of
             the slot to the extracted entity with the same name
