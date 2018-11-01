@@ -255,7 +255,7 @@ class FormAction(Action):
             logger.debug("Validating user input")
             return self.validate(dispatcher, tracker, domain)
         else:
-            logger.debug("Skip validation")
+            logger.debug("Skipping validation")
             return []
 
     @staticmethod
