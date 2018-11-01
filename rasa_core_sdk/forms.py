@@ -239,7 +239,7 @@ class FormAction(Action):
         if tracker.active_form.get('name') == self.name():
             return []
         else:
-            logger.debug("Activate the form '{}'".format(self.name()))
+            logger.debug("Activated the form '{}'".format(self.name()))
             return [Form(self.name())]
 
     def _validate_if_required(self, dispatcher, tracker, domain):
