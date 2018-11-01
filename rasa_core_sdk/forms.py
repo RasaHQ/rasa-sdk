@@ -33,7 +33,11 @@ class FormAction(Action):
     @staticmethod
     def required_slots(tracker):
         # type: (Tracker) -> List[Text]
-        """A list of required slots that the form has to fill"""
+        """A list of required slots that the form has to fill
+
+            Use `tracker` to request different list of slots
+            depending on the state of the dialogue
+        """
 
         raise NotImplementedError("A form must implement required slots "
                                   "that it has to fill")
