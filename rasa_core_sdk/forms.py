@@ -172,7 +172,7 @@ class FormAction(Action):
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Validate extracted value of requested slot
-            else reject to execute the form action
+            else reject execution of the form action
 
             Subclass this method to add custom validation and rejection logic
         """
