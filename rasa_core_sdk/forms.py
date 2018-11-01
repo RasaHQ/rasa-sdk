@@ -252,7 +252,7 @@ class FormAction(Action):
         """
         if (tracker.latest_action_name == 'action_listen' and
                 tracker.active_form.get('validate', True)):
-            logger.debug("Validate user input")
+            logger.debug("Validating user input")
             return self.validate(dispatcher, tracker, domain)
         else:
             logger.debug("Skip validation")
