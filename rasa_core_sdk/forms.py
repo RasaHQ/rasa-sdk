@@ -147,7 +147,7 @@ class FormAction(Action):
                             ):
         # type: (...) -> Dict[Text: Any]
         """Extract the values of the other slots
-            if they are set by corresponded entities from a user input
+            if they are set by corresponding entities from the user input
             else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
