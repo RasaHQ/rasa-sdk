@@ -225,8 +225,10 @@ def test_validate():
 
     events = form.validate(CollectingDispatcher(), tracker, {})
     # check that validation succeed
-    assert events == [SlotSet('some_other_slot', 'some_other_value'),
-                      SlotSet('some_slot', 'some_value')]
+    assert (events == [SlotSet('some_other_slot', 'some_other_value'),
+                       SlotSet('some_slot', 'some_value')] or
+            events == [SlotSet('some_slot', 'some_value'),
+                       SlotSet('some_other_slot', 'some_other_value')])
 
     tracker = Tracker('default', {'requested_slot': 'some_slot'},
                       {'entities': [{'entity': 'some_other_slot',
@@ -296,8 +298,10 @@ def test_validate_if_required():
 
     events = form._validate_if_required(CollectingDispatcher(), tracker, {})
     # check that validation was performed
-    assert events == [SlotSet('some_other_slot', 'some_other_value'),
-                      SlotSet('some_slot', 'some_value')]
+    assert (events == [SlotSet('some_other_slot', 'some_other_value'),
+                       SlotSet('some_slot', 'some_value')] or
+            events == [SlotSet('some_slot', 'some_value'),
+                       SlotSet('some_other_slot', 'some_other_value')])
 
     tracker = Tracker('default', {'requested_slot': 'some_slot'},
                       {'entities': [{'entity': 'some_slot',
