@@ -177,12 +177,12 @@ class FormAction(Action):
                                                         {}).get("name")
                     # check whether the slot should be filled
                     # by entity with the same name
-                    should_fill_slot = (other_slot_mapping ==
-                                        self.from_entity(entity=slot)
-                                        or
-                                        other_slot_mapping ==
-                                        self.from_entity(entity=slot,
-                                                         intent=intent))
+                    should_fill_slot = (
+                            other_slot_mapping ==
+                            self.from_entity(entity=slot) or
+                            other_slot_mapping ==
+                            self.from_entity(entity=slot, intent=intent)
+                    )
                     if should_fill_slot:
                         # list is used to cover the case of list slot type
                         value = list(tracker.get_latest_entity_values(slot))
