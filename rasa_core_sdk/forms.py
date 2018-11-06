@@ -81,6 +81,25 @@ class FormAction(Action):
 
         return {}
 
+    def get_mappings_for_slot(self, slot_to_fill):
+        # type: (Text) -> List[Dict[Text: Any]]
+        """Get mappings for requested slot"""
+        requested_slot_mappings = self.slot_mappings().get(slot_to_fill)
+        if not requested_slot_mappings:
+            # convert empty dict to map requested slot to entity by default
+            requested_slot_mappings = self.from_entity(slot_to_fill)
+
+        if not isinstance(requested_slot_mappings, list):
+            requested_slot_mappings = [requested_slot_mappings]
+
+        # check provided slot mappings
+        for requested_slot_mapping in requested_slot_mappings:
+            if (not isinstance(requested_slot_mapping, dict) or
+                    requested_slot_mapping.get("type") is None):
+                raise TypeError("Provided incompatible slot mapping")
+
+        return requested_slot_mappings
+
     # noinspection PyUnusedLocal
     def extract_requested_slot(self,
                                dispatcher,  # type: CollectingDispatcher
@@ -97,20 +116,10 @@ class FormAction(Action):
         logger.debug("... from user input '{}'".format(tracker.latest_message))
 
         # get mapping for requested slot
-        requested_slot_mappings = self.slot_mappings().get(slot_to_fill)
-        if not requested_slot_mappings:
-            # map requested slot to entity
-            requested_slot_mappings = self.from_entity(slot_to_fill)
-
-        if not isinstance(requested_slot_mappings, list):
-            requested_slot_mappings = [requested_slot_mappings]
+        requested_slot_mappings = self.get_mappings_for_slot(slot_to_fill)
 
         for requested_slot_mapping in requested_slot_mappings:
             logger.debug("Got mapping '{}'".format(requested_slot_mapping))
-
-            if (not isinstance(requested_slot_mapping, dict) or
-                    requested_slot_mapping.get("type") is None):
-                raise TypeError("Provided incompatible slot mapping")
 
             mapping_intent = requested_slot_mapping.get("intent")
             intent = tracker.latest_message.get("intent",
@@ -161,15 +170,32 @@ class FormAction(Action):
             # look for other slots
             if slot != slot_to_fill:
                 # list is used to cover the case of list slot type
-                value = list(tracker.get_latest_entity_values(slot))
-                if len(value) == 1:
-                    value = value[0]
+                other_slot_mappings = self.get_mappings_for_slot(slot)
 
-                if value:
-                    logger.debug("Extracted '{}' "
-                                 "for extra slot '{}'"
-                                 "".format(value, slot))
-                    slot_values[slot] = value
+                for other_slot_mapping in other_slot_mappings:
+                    intent = tracker.latest_message.get("intent",
+                                                        {}).get("name")
+                    # check whether the slot should be filled
+                    # by entity with the same name
+                    should_fill_slot = (other_slot_mapping ==
+                                        self.from_entity(entity=slot)
+                                        or
+                                        other_slot_mapping ==
+                                        self.from_entity(entity=slot,
+                                                         intent=intent))
+                    if should_fill_slot:
+                        # list is used to cover the case of list slot type
+                        value = list(tracker.get_latest_entity_values(slot))
+                        if len(value) == 1:
+                            value = value[0]
+
+                        if value:
+                            logger.debug("Extracted '{}' "
+                                         "for extra slot '{}'"
+                                         "".format(value, slot))
+                            slot_values[slot] = value
+                            # this slot is done, check  next
+                            break
 
         return slot_values
 
