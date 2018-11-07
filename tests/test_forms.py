@@ -80,6 +80,41 @@ def test_extract_requested_slot_from_entity_with_intent():
     assert slot_values == {}
 
 
+def test_extract_requested_slot_from_entity_with_not_intent():
+    """Test extraction of a slot value from entity with the different name
+        and certain intent
+    """
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def slot_mappings(self):
+            return {"some_slot": self.from_entity(entity="some_entity",
+                                                  not_intent="some_intent")}
+    form = CustomFormAction()
+
+    tracker = Tracker('default', {'requested_slot': 'some_slot'},
+                      {'intent': {'name': 'some_intent', 'confidence': 1.0},
+                       'entities': [{'entity': 'some_entity',
+                                     'value': 'some_value'}]},
+                      [], False, None, {}, 'action_listen')
+
+    slot_values = form.extract_requested_slot(CollectingDispatcher(),
+                                              tracker, {})
+    # check that the value was extracted for correct intent
+    assert slot_values == {}
+
+    tracker = Tracker('default', {'requested_slot': 'some_slot'},
+                      {'intent': {'name': 'some_other_intent',
+                                  'confidence': 1.0},
+                       'entities': [{'entity': 'some_entity',
+                                     'value': 'some_value'}]},
+                      [], False, None, {}, 'action_listen')
+
+    slot_values = form.extract_requested_slot(CollectingDispatcher(),
+                                              tracker, {})
+    # check that the value was not extracted for incorrect intent
+    assert slot_values == {'some_slot': 'some_value'}
+
+
 def test_extract_requested_slot_from_intent():
     """Test extraction of a slot value from certain intent
     """
@@ -109,6 +144,37 @@ def test_extract_requested_slot_from_intent():
                                               tracker, {})
     # check that the value was not extracted for incorrect intent
     assert slot_values == {}
+
+
+def test_extract_requested_slot_from_not_intent():
+    """Test extraction of a slot value from certain intent
+    """
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def slot_mappings(self):
+            return {"some_slot": self.from_intent(not_intent="some_intent",
+                                                  value="some_value")}
+    form = CustomFormAction()
+
+    tracker = Tracker('default', {'requested_slot': 'some_slot'},
+                      {'intent': {'name': 'some_intent',
+                                  'confidence': 1.0}},
+                      [], False, None, {}, 'action_listen')
+
+    slot_values = form.extract_requested_slot(CollectingDispatcher(),
+                                              tracker, {})
+    # check that the value was extracted for correct intent
+    assert slot_values == {}
+
+    tracker = Tracker('default', {'requested_slot': 'some_slot'},
+                      {'intent': {'name': 'some_other_intent',
+                                  'confidence': 1.0}},
+                      [], False, None, {}, 'action_listen')
+
+    slot_values = form.extract_requested_slot(CollectingDispatcher(),
+                                              tracker, {})
+    # check that the value was not extracted for incorrect intent
+    assert slot_values == {'some_slot': 'some_value'}
 
 
 def test_extract_requested_slot_from_text_no_intent():
@@ -159,6 +225,38 @@ def test_extract_requested_slot_from_text_with_intent():
                                               tracker, {})
     # check that the value was not extracted for incorrect intent
     assert slot_values == {}
+
+
+def test_extract_requested_slot_from_text_with_not_intent():
+    """Test extraction of a slot value from text with certain intent
+    """
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def slot_mappings(self):
+            return {"some_slot": self.from_text(not_intent='some_intent')}
+    form = CustomFormAction()
+
+    tracker = Tracker('default', {'requested_slot': 'some_slot'},
+                      {'text': 'some_text',
+                       'intent': {'name': 'some_intent',
+                                  'confidence': 1.0}},
+                      [], False, None, {}, 'action_listen')
+
+    slot_values = form.extract_requested_slot(CollectingDispatcher(),
+                                              tracker, {})
+    # check that the value was extracted for correct intent
+    assert slot_values == {}
+
+    tracker = Tracker('default', {'requested_slot': 'some_slot'},
+                      {'text': 'some_text',
+                       'intent': {'name': 'some_other_intent',
+                                  'confidence': 1.0}},
+                      [], False, None, {}, 'action_listen')
+
+    slot_values = form.extract_requested_slot(CollectingDispatcher(),
+                                              tracker, {})
+    # check that the value was not extracted for incorrect intent
+    assert slot_values == {'some_slot': 'some_text'}
 
 
 def test_extract_other_slots_no_intent():
