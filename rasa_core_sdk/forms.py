@@ -50,6 +50,10 @@ class FormAction(Action):
         # type: (...) -> Dict[Text: Any]
         """A dictionary for slot mapping to extract slot value from
             - an extracted entity
+            - conditioned on
+                - intent if it is not None
+                - not_intent if it is not None,
+                    meaning user intent should be different
         """
         intent, not_intent = self._list_intents(intent, not_intent)
 
@@ -64,6 +68,10 @@ class FormAction(Action):
         # type: (...) -> Dict[Text: Any]
         """A dictionary for slot mapping to extract slot value from
             - intent: value pair
+            - conditioned on
+                - intent if it is not None
+                - not_intent if it is not None,
+                    meaning user intent should be different
         """
         intent, not_intent = self._list_intents(intent, not_intent)
 
@@ -77,6 +85,10 @@ class FormAction(Action):
         # type: (...) -> Dict[Text: Any]
         """A dictionary for slot mapping to extract slot value from
             - a whole message
+            - conditioned on
+                - intent if it is not None
+                - not_intent if it is not None,
+                    meaning user intent should be different
         """
         intent, not_intent = self._list_intents(intent, not_intent)
 
