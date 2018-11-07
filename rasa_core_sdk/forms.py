@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import typing
-from typing import Dict, Text, Any, List, Union, Optional
+from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
 from rasa_core_sdk import Action, ActionExecutionRejection
 from rasa_core_sdk.events import SlotSet, Form
@@ -42,29 +42,46 @@ class FormAction(Action):
         raise NotImplementedError("A form must implement required slots "
                                   "that it has to fill")
 
-    @staticmethod
-    def from_entity(entity, intent=None):
-        # type: (Text, Optional[Text]) -> Dict[Text: Any]
+    def from_entity(self,
+                    entity,  # type: Text
+                    intent=None,  # type: Optional[Union[Text, List[Text]]]
+                    not_intent=None  # type: Optional[Union[Text, List[Text]]]
+                    ):
+        # type: (...) -> Dict[Text: Any]
         """A dictionary for slot mapping to extract slot value from
             - an extracted entity
         """
-        return {"type": "from_entity", "intent": intent, "entity": entity}
+        intent, not_intent = self._list_intents(intent, not_intent)
 
-    @staticmethod
-    def from_intent(intent, value):
-        # type: (Optional[Text], Any) -> Dict[Text: Any]
+        return {"type": "from_entity", "entity": entity,
+                "intent": intent, "not_intent": not_intent}
+
+    def from_intent(self,
+                    value,  # type: Any
+                    intent=None,  # type: Optional[Union[Text, List[Text]]]
+                    not_intent=None  # type: Optional[Union[Text, List[Text]]]
+                    ):
+        # type: (...) -> Dict[Text: Any]
         """A dictionary for slot mapping to extract slot value from
             - intent: value pair
         """
-        return {"type": "from_intent", "intent": intent, "value": value}
+        intent, not_intent = self._list_intents(intent, not_intent)
 
-    @staticmethod
-    def from_text(intent=None):
-        # type: (Optional[Text]) -> Dict[Text: Any]
+        return {"type": "from_intent", "value": value,
+                "intent": intent, "not_intent": not_intent}
+
+    def from_text(self,
+                  intent=None,  # type: Optional[Union[Text, List[Text]]]
+                  not_intent=None  # type: Optional[Union[Text, List[Text]]]
+                  ):
+        # type: (...) -> Dict[Text: Any]
         """A dictionary for slot mapping to extract slot value from
             - a whole message
         """
-        return {"type": "from_text", "intent": intent}
+        intent, not_intent = self._list_intents(intent, not_intent)
+
+        return {"type": "from_text",
+                "intent": intent, "not_intent": not_intent}
 
     # noinspection PyMethodMayBeStatic
     def slot_mappings(self):
@@ -83,15 +100,13 @@ class FormAction(Action):
 
     def get_mappings_for_slot(self, slot_to_fill):
         # type: (Text) -> List[Dict[Text: Any]]
-        """Get mappings for requested slot"""
-        requested_slot_mappings = self.slot_mappings().get(slot_to_fill)
-        if not requested_slot_mappings:
-            # convert empty dict to map requested slot to entity by default
-            requested_slot_mappings = self.from_entity(slot_to_fill)
-
-        if not isinstance(requested_slot_mappings, list):
-            requested_slot_mappings = [requested_slot_mappings]
-
+        """Get mappings for requested slot,
+            else map requested slot to an entity with the same name
+        """
+        requested_slot_mappings = self._to_list(
+                self.slot_mappings().get(slot_to_fill,
+                                         self.from_entity(slot_to_fill))
+        )
         # check provided slot mappings
         for requested_slot_mapping in requested_slot_mappings:
             if (not isinstance(requested_slot_mapping, dict) or
@@ -99,6 +114,15 @@ class FormAction(Action):
                 raise TypeError("Provided incompatible slot mapping")
 
         return requested_slot_mappings
+
+    @staticmethod
+    def intent_is_desired(requested_slot_mapping, tracker):
+        mapping_intents = requested_slot_mapping.get("intent", [])
+        mapping_not_intents = requested_slot_mapping.get("not_intent", [])
+        intent = tracker.latest_message.get("intent",
+                                            {}).get("name")
+        return ((not mapping_intents and intent not in mapping_not_intents) or
+                intent in mapping_intents)
 
     # noinspection PyUnusedLocal
     def extract_requested_slot(self,
@@ -113,7 +137,6 @@ class FormAction(Action):
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         logger.debug("Trying to extract requested slot '{}' ..."
                      "".format(slot_to_fill))
-        logger.debug("... from user input '{}'".format(tracker.latest_message))
 
         # get mapping for requested slot
         requested_slot_mappings = self.get_mappings_for_slot(slot_to_fill)
@@ -121,10 +144,7 @@ class FormAction(Action):
         for requested_slot_mapping in requested_slot_mappings:
             logger.debug("Got mapping '{}'".format(requested_slot_mapping))
 
-            mapping_intent = requested_slot_mapping.get("intent")
-            intent = tracker.latest_message.get("intent",
-                                                {}).get("name")
-            if mapping_intent is None or mapping_intent == intent:
+            if self.intent_is_desired(requested_slot_mapping, tracker):
                 mapping_type = requested_slot_mapping["type"]
 
                 if mapping_type == "from_entity":
@@ -178,10 +198,10 @@ class FormAction(Action):
                     # check whether the slot should be filled
                     # by entity with the same name
                     should_fill_slot = (
-                            other_slot_mapping ==
-                            self.from_entity(entity=slot) or
-                            other_slot_mapping ==
-                            self.from_entity(entity=slot, intent=intent)
+                            other_slot_mapping["type"] == "from_entity" and
+                            other_slot_mapping.get("entity") == slot and
+                            self.intent_is_desired(other_slot_mapping,
+                                                   tracker)
                     )
                     if should_fill_slot:
                         # list is used to cover the case of list slot type
@@ -254,7 +274,33 @@ class FormAction(Action):
 
         raise NotImplementedError("A form must implement a submit method")
 
-    # run helpers
+    # helpers
+    @staticmethod
+    def _to_list(x):
+        # type: (Optional[Any]) -> List[Any]
+        """Convert object to a list if it is not a list,
+            None converted to empty list
+        """
+        if x is None:
+            x = []
+        elif not isinstance(x, list):
+            x = [x]
+
+        return x
+
+    def _list_intents(
+            self,
+            intent=None,  # type: Optional[Union[Text, List[Text]]]
+            not_intent=None  # type: Optional[Union[Text, List[Text]]]
+    ):
+        # type: (...) -> Tuple[List[Text], List[Text]]
+        """Check provided intent and not_intent"""
+        if intent and not_intent:
+            raise ValueError("Providing  both intent '{}' and not_intent '{}' "
+                             "is not supported".format(intent, not_intent))
+
+        return self._to_list(intent), self._to_list(not_intent)
+
     def _activate_if_required(self, tracker):
         # type: (Tracker) -> List[Dict]
         """Return `Form` event with the name of the form
@@ -282,7 +328,8 @@ class FormAction(Action):
         """
         if (tracker.latest_action_name == 'action_listen' and
                 tracker.active_form.get('validate', True)):
-            logger.debug("Validating user input")
+            logger.debug("Validating user input '{}'"
+                         "".format(tracker.latest_message))
             return self.validate(dispatcher, tracker, domain)
         else:
             logger.debug("Skipping validation")
