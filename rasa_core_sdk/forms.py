@@ -129,6 +129,10 @@ class FormAction(Action):
 
     @staticmethod
     def intent_is_desired(requested_slot_mapping, tracker):
+        # type: (Dict[Text: Any], Tracker) -> bool
+        """Check whether user intent matches
+            intent conditions in requested_slot_mapping
+        """
         mapping_intents = requested_slot_mapping.get("intent", [])
         mapping_not_intents = requested_slot_mapping.get("not_intent", [])
         intent = tracker.latest_message.get("intent",
