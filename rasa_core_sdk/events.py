@@ -123,10 +123,12 @@ def ConversationResumed(timestamp=None):
 
 
 # noinspection PyPep8Naming
-def ActionExecuted(action_name, timestamp=None):
+def ActionExecuted(action_name, policy=None, confidence=None, timestamp=None):
     return {
         "event": "action",
         "name": action_name,
+        "policy": policy,
+        "confidence": confidence,
         "timestamp": timestamp,
     }
 
@@ -137,5 +139,35 @@ def AgentUttered(text=None, data=None, timestamp=None):
         "event": "agent",
         "text": text,
         "data": data,
+        "timestamp": timestamp,
+    }
+
+
+# noinspection PyPep8Naming
+def Form(name, timestamp=None):
+    return {
+        "event": "form",
+        "name": name,
+        "timestamp": timestamp,
+    }
+
+
+# noinspection PyPep8Naming
+def FormValidation(validate, timestamp=None):
+    return {
+        "event": "form_validation",
+        "validate": validate,
+        "timestamp": timestamp,
+    }
+
+
+# noinspection PyPep8Naming
+def ActionExecutionRejected(action_name, policy=None, confidence=None,
+                            timestamp=None):
+    return {
+        "event": "action_execution_rejected",
+        "name": action_name,
+        "policy": policy,
+        "confidence": confidence,
         "timestamp": timestamp,
     }

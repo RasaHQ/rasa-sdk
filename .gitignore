@@ -104,3 +104,8 @@ venv.bak/
 .mypy_cache/
 .idea/
 examples/moodbot/models/
+
+# emacs
+*~
+
+*.DS_Store

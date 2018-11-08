@@ -3,6 +3,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from builtins import str
+
 import argparse
 import logging
 
@@ -10,6 +12,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 from rasa_core_sdk.executor import ActionExecutor
+from rasa_core_sdk import ActionExecutionRejection
 
 DEFAULT_SERVER_PORT = 5055
 
@@ -47,7 +50,6 @@ def create_argument_parser():
         default=None,
         help="name of action package to be loaded"
     )
-
     return parser
 
 
@@ -77,7 +79,14 @@ def endpoint_app(cors_origins=None,
     def webhook():
         """Webhook to retrieve action calls."""
         action_call = request.json
-        response = executor.run(action_call)
+        try:
+            response = executor.run(action_call)
+        except ActionExecutionRejection as e:
+            logger.error(str(e))
+            result = {"error": str(e), "action_name": e.action_name}
+            response = jsonify(result)
+            response.status_code = 400
+            return response
 
         return jsonify(response)
 

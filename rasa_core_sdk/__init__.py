@@ -7,9 +7,7 @@ import copy
 import logging
 
 import typing
-from typing import Dict, Text, Any, Optional, Iterator
-from typing import List
-
+from typing import Dict, Text, Any, Optional, Iterator, List
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +28,13 @@ class Tracker(object):
                        state.get("latest_message", {}),
                        state.get("events"),
                        state.get("paused"),
-                       state.get("followup_action"))
+                       state.get("followup_action"),
+                       state.get("active_form", {}),
+                       state.get("latest_action_name"))
 
     def __init__(self, sender_id, slots,
-                 latest_message, events, paused, followup_action):
+                 latest_message, events, paused, followup_action,
+                 active_form, latest_action_name):
         """Initialize the tracker."""
 
         # list of previously seen events
@@ -52,6 +53,8 @@ class Tracker(object):
         #                   "entities": UserUttered.entities,
         #                   "text": text}
         self.latest_message = latest_message if latest_message else {}
+        self.active_form = active_form
+        self.latest_action_name = latest_action_name
 
     def current_state(self):
         # type: () -> Dict[Text, Any]
@@ -68,7 +71,9 @@ class Tracker(object):
             "latest_message": self.latest_message,
             "latest_event_time": latest_event_time,
             "paused": self.is_paused(),
-            "events": self.events
+            "events": self.events,
+            "active_form": self.active_form,
+            "latest_action_name": self.latest_action_name
         }
 
     def current_slot_values(self):
@@ -137,7 +142,9 @@ class Tracker(object):
                        copy.deepcopy(self.latest_message),
                        copy.deepcopy(self.events),
                        self._paused,
-                       self.followup_action)
+                       self.followup_action,
+                       self.active_form,
+                       self.latest_action_name)
 
 
 class Action(object):
@@ -147,7 +154,7 @@ class Action(object):
         # type: () -> Text
         """Unique identifier of this simple action."""
 
-        raise NotImplementedError
+        raise NotImplementedError("An action must implement a name")
 
     def run(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[dict]
@@ -170,7 +177,21 @@ class Action(object):
             instances that is returned through the endpoint
         """
 
-        raise NotImplementedError
+        raise NotImplementedError("An action must implement its run method")
 
     def __str__(self):
         return "Action('{}')".format(self.name())
+
+
+class ActionExecutionRejection(Exception):
+    """Raising this exception will allow other policies
+        to predict another action"""
+
+    def __init__(self, action_name, message=None):
+        self.action_name = action_name
+        self.message = (message or
+                        "Custom action '{}' rejected execution of"
+                        "".format(action_name))
+
+    def __str__(self):
+        return self.message
