@@ -14,9 +14,12 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 Added
 -----
 - added Dockerfile for rasa_core_sdk
+- add ``active_form`` and ``latest_action_name`` properties to ``Tracker``
 
 Changed
 -------
+
+- rework forms
 
 Removed
 -------
