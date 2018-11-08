@@ -163,7 +163,9 @@ class FormAction(Action):
                     # list is used to cover the case of list slot type
                     value = list(tracker.get_latest_entity_values(
                                     requested_slot_mapping.get("entity")))
-                    if len(value) == 1:
+                    if len(value) == 0:
+                        value = None
+                    elif len(value) == 1:
                         value = value[0]
                 elif mapping_type == "from_intent":
                     value = requested_slot_mapping.get("value")
@@ -174,7 +176,7 @@ class FormAction(Action):
                             'Provided slot mapping type '
                             'is not supported')
 
-                if value:
+                if value is not None:
                     logger.debug("Successfully extracted '{}' "
                                  "for requested slot '{}'"
                                  "".format(value, slot_to_fill))
