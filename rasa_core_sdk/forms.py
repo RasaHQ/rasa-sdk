@@ -71,7 +71,7 @@ class FormAction(Action):
             - conditioned on
                 - intent if it is not None
                 - not_intent if it is not None,
-                    meaning user intent should be different
+                    meaning user intent should not be this intent
         """
         intent, not_intent = self._list_intents(intent, not_intent)
 
