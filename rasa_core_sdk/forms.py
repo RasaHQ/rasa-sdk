@@ -137,6 +137,53 @@ class FormAction(Action):
                 intent in mapping_intents)
 
     # noinspection PyUnusedLocal
+    def extract_other_slots(self,
+                            dispatcher,  # type: CollectingDispatcher
+                            tracker,  # type: Tracker
+                            domain  # type: Dict[Text, Any]
+                            ):
+        # type: (...) -> Dict[Text: Any]
+        """Extract the values of the other slots
+            if they are set by corresponding entities from the user input
+            else return None
+        """
+        slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
+
+        slot_values = {}
+        for slot in self.required_slots(tracker):
+            # look for other slots
+            if slot != slot_to_fill:
+                # list is used to cover the case of list slot type
+                other_slot_mappings = self.get_mappings_for_slot(slot)
+
+                for other_slot_mapping in other_slot_mappings:
+                    intent = tracker.latest_message.get("intent",
+                                                        {}).get("name")
+                    # check whether the slot should be filled
+                    # by entity with the same name
+                    should_fill_slot = (
+                            other_slot_mapping["type"] == "from_entity" and
+                            other_slot_mapping.get("entity") == slot and
+                            self.intent_is_desired(other_slot_mapping,
+                                                   tracker)
+                    )
+                    if should_fill_slot:
+                        # list is used to cover the case of list slot type
+                        value = list(tracker.get_latest_entity_values(slot))
+                        if len(value) == 1:
+                            value = value[0]
+
+                        if value:
+                            logger.debug("Extracted '{}' "
+                                         "for extra slot '{}'"
+                                         "".format(value, slot))
+                            slot_values[slot] = value
+                            # this slot is done, check  next
+                            break
+
+        return slot_values
+
+    # noinspection PyUnusedLocal
     def extract_requested_slot(self,
                                dispatcher,  # type: CollectingDispatcher
                                tracker,  # type: Tracker
@@ -185,53 +232,6 @@ class FormAction(Action):
         logger.debug("Failed to extract requested slot '{}'"
                      "".format(slot_to_fill))
         return {}
-
-    # noinspection PyUnusedLocal
-    def extract_other_slots(self,
-                            dispatcher,  # type: CollectingDispatcher
-                            tracker,  # type: Tracker
-                            domain  # type: Dict[Text, Any]
-                            ):
-        # type: (...) -> Dict[Text: Any]
-        """Extract the values of the other slots
-            if they are set by corresponding entities from the user input
-            else return None
-        """
-        slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
-
-        slot_values = {}
-        for slot in self.required_slots(tracker):
-            # look for other slots
-            if slot != slot_to_fill:
-                # list is used to cover the case of list slot type
-                other_slot_mappings = self.get_mappings_for_slot(slot)
-
-                for other_slot_mapping in other_slot_mappings:
-                    intent = tracker.latest_message.get("intent",
-                                                        {}).get("name")
-                    # check whether the slot should be filled
-                    # by entity with the same name
-                    should_fill_slot = (
-                            other_slot_mapping["type"] == "from_entity" and
-                            other_slot_mapping.get("entity") == slot and
-                            self.intent_is_desired(other_slot_mapping,
-                                                   tracker)
-                    )
-                    if should_fill_slot:
-                        # list is used to cover the case of list slot type
-                        value = list(tracker.get_latest_entity_values(slot))
-                        if len(value) == 1:
-                            value = value[0]
-
-                        if value:
-                            logger.debug("Extracted '{}' "
-                                         "for extra slot '{}'"
-                                         "".format(value, slot))
-                            slot_values[slot] = value
-                            # this slot is done, check  next
-                            break
-
-        return slot_values
 
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
