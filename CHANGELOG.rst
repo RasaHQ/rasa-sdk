@@ -23,6 +23,13 @@ Changed
 Fixed
 -----
 
+[0.12.1] - 2018-11-11
+^^^^^^^^^^^^^^^^^^^^^
+
+Fixed
+-----
+- doc formatting preventing successfull rasa core travis build
+
 [0.12.0] - 2018-11-11
 ^^^^^^^^^^^^^^^^^^^^^
 
