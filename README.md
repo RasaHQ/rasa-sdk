@@ -18,7 +18,8 @@ pip install rasa_core_sdk
 
 | SDK version   | compatible Rasa Core version           |
 |---------------|----------------------------------------|
-| `0.11.x`      | `>=0.11.x`                             |
+| `0.12.x`      | `>=0.12.x`                             |
+| `0.11.x`      | `0.11.x`                               |
 | not comatible | `<=0.10.x`                             |
 
 ## Usage
@@ -30,9 +31,12 @@ Detailed instructions can be found in the Rasa Core Documentation about
 
 ### Usage
 
-In order to start an action server using implemented custom actions, you can use the available Docker image `rasa/rasa_core_sdk:latest`.
+In order to start an action server using implemented custom actions, 
+you can use the available Docker image `rasa/rasa_core_sdk:latest`.
 
-Before starting the action server ensure that the folder containing your actions is handled as Python module and therefore has to contain a file called `__init__.py`
+Before starting the action server ensure that the folder containing 
+your actions is handled as Python module and therefore has to contain 
+a file called `__init__.py`
 
 Then start the action server using:
 
@@ -61,7 +65,8 @@ RUN pip install --no-cache-dir <A_REQUIRED_PACKAGE_ON_PYPI>
 ```
 
 ## License
-Licensed under the Apache License, Version 2.0. Copyright 2018 Rasa Technologies GmbH. [Copy of the license](LICENSE.txt).
+Licensed under the Apache License, Version 2.0. Copyright 2018 Rasa 
+Technologies GmbH. [Copy of the license](LICENSE.txt).
 
 A list of the Licenses of the dependencies of the project can be found at
 the bottom of the

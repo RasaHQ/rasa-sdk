@@ -13,10 +13,27 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 Added
 -----
+
+Removed
+-------
+
+Changed
+-------
+
+Fixed
+-----
+
+[0.12.0] - 2018-11-11
+^^^^^^^^^^^^^^^^^^^^^
+
+Added
+-----
 - added Dockerfile for rasa_core_sdk
 - add ``active_form`` and ``latest_action_name`` properties to ``Tracker``
-- add ``FormAction.slot_mapping()`` method to specify the mapping between user input and requested slot in the form
-- add helper methods ``FormAction.from_entity(...)``, ``FormAction.from_intent(...)`` and ``FormAction.from_text(...)``
+- add ``FormAction.slot_mapping()`` method to specify the mapping between
+  user input and requested slot in the form
+- add helper methods ``FormAction.from_entity(...)``,
+  ``FormAction.from_intent(...)`` and ``FormAction.from_text(...)``
 - add ``FormAction.validate(...)`` method to validate user input
 
 Changed
@@ -24,9 +41,12 @@ Changed
 
 - ``FormAction`` class was completely refactored
 - ``required_fields()`` is changed to ``required_slots(tracker)``
-- moved ``FormAction.get_other_slots(...)`` functionality to ``FormAction.extract_other_slots(...)``
-- moved ``FormAction.get_requested_slot(...)`` functionality to ``FormAction.extract_requested_slot(...)``
-- logic of requesting next slot can be customized in ``FormAction.request_next_slot(...)`` method
+- moved ``FormAction.get_other_slots(...)`` functionality to
+  ``FormAction.extract_other_slots(...)``
+- moved ``FormAction.get_requested_slot(...)`` functionality to
+  ``FormAction.extract_requested_slot(...)``
+- logic of requesting next slot can be customized in
+  ``FormAction.request_next_slot(...)`` method
 
 Removed
 -------
