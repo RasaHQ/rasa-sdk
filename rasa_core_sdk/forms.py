@@ -279,7 +279,10 @@ class FormAction(Action):
         for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
                 logger.debug("Request next slot '{}'".format(slot))
-                dispatcher.utter_template("utter_ask_{}".format(slot), tracker)
+                dispatcher.utter_template("utter_ask_{}".format(slot),
+                                          tracker,
+                                          silent_fail=False,
+                                          **tracker.slots)
                 return [SlotSet(REQUESTED_SLOT, slot)]
 
         logger.debug("No slots left to request")
@@ -385,8 +388,7 @@ class FormAction(Action):
         # create temp tracker with populated slots from `validate` method
         temp_tracker = tracker.copy()
         for e in events:
-            if e['event'] == 'slot':
-                temp_tracker.slots[e["name"]] = e["value"]
+            temp_tracker.update(e)
 
         next_slot_events = self.request_next_slot(dispatcher, temp_tracker,
                                                   domain)
