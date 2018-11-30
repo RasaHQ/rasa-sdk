@@ -251,8 +251,14 @@ class FormAction(Action):
         # extract requested slot
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         if slot_to_fill:
-            slot_values.update(self.extract_requested_slot(dispatcher,
-                                                           tracker, domain))
+            for slot, value in self.extract_requested_slot(dispatcher,
+                                                           tracker,
+                                                           domain).items():
+                validate_func = getattr(self, "validate_{}".format(slot),
+                                        lambda *x: value)
+                slot_values[slot] = validate_func(value, dispatcher, tracker,
+                                                  domain)
+
             if not slot_values:
                 # reject to execute the form action
                 # if some slot was requested but nothing was extracted
