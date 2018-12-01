@@ -146,7 +146,11 @@ class ActionExecutor(object):
             logger.exception("Failed to register package '{}'."
                              "".format(package))
 
-        actions = utils.all_subclasses(Action)
+        actions = [
+            action
+            for action in utils.all_subclasses(Action)
+            if action.__module__.startswith(package)
+        ]
 
         for action in actions:
             if (not action.__module__.startswith("rasa_core.") and
