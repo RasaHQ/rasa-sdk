@@ -108,24 +108,26 @@ def check_version_compatibility(core_version):
     # Check for versions of core that are too old to report their version number
     if core_version is None:
         logger.warning("You are using an old version of rasa_core which might "
-                "not be compatible with this version of rasa_core_sdk ({}).\n"
-                "To ensure compatibility use the same version for both, "
-                "modulo the last number, i.e. using version A.B.x the numbers "
-                "A and B should be identical for both rasa_core and "
-                "rasa_core_sdk.".format(sdk_version))
+                       "not be compatible with this version of rasa_core_sdk "
+                       "({}).\n To ensure compatibility use the same version "
+                       "for both, modulo the last number, i.e. using version "
+                       "A.B.x the numbers A and B should be identical for "
+                       "both rasa_core and rasa_core_sdk.".format(sdk_version))
     else:
-        if not core_version==sdk_version:
+        if not core_version == sdk_version:
             for core_c, sdk_c in zip(core_version.split('.')[:-1],
                                      sdk_version.split('.')[:-1]):
                 if core_c != sdk_c:
                     logger.warning("Your version of rasa_core and "
-                    "rasa_core_sdk might not be compatible. You are current "
-                    "running rasa_core version {} and rasa_core_sdk version {}."
-                    "\n"
-                    "To ensure compatibility use the same version for both, "
-                    "modulo the last number, i.e. using version A.B.x the "
-                    "numbers A and B should be identical for both rasa_core and"
-                    " rasa_core_sdk.".format(core_version, sdk_version))
+                                   "rasa_core_sdk might not be compatible. You "
+                                   "are current running rasa_core version {} "
+                                   "and rasa_core_sdk version {}.\n"
+                                   "To ensure compatibility use the same "
+                                   "version for both, modulo the last number, "
+                                   "i.e. using version A.B.x the numbers A and "
+                                   "B should be identical for "
+                                   "both rasa_core and rasa_core_sdk."
+                                   "".format(core_version, sdk_version))
                     break
 
 
