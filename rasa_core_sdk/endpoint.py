@@ -107,11 +107,12 @@ def check_version_compatibility(core_version):
     """
     # Check for versions of core that are too old to report their version number
     if core_version is None:
-        logger.warning("You are using an old version of rasa_core.\n"
+        logger.warning("You are using an old version of rasa_core which might "
+                "not be compatible with this version of rasa_core_sdk ({}).\n"
                 "To ensure compatibility use the same version for both, "
                 "modulo the last number, i.e. using version A.B.x the numbers "
                 "A and B should be identical for both rasa_core and "
-                "rasa_core_sdk.")
+                "rasa_core_sdk.".format(sdk_version))
     else:
         if not core_version==sdk_version:
             for core_c, sdk_c in zip(core_version.split('.')[:-1],
