@@ -115,7 +115,7 @@ def check_version_compatibility(core_version):
     else:
         if not core_version==sdk_version:
             for core_c, sdk_c in zip(core_version.split('.')[:-1],
-                            sdk_version.split('.')[:-1]):
+                                     sdk_version.split('.')[:-1]):
                 if core_c != sdk_c:
                     logger.warning("Your version of rasa_core and "
                     "rasa_core_sdk might not be compatible. You are current "
