@@ -118,8 +118,8 @@ def check_version_compatibility(core_version):
                        "A.B.x the numbers A and B should be identical for "
                        "both rasa_core and rasa_core_sdk."
                        "".format(rasa_core_sdk.__version__))
-    elif (core_version.split('.')[:-1]
-            != rasa_core_sdk.__version__.split('.')[:-1]):
+    elif (core_version.split('.')[:-1] !=
+            rasa_core_sdk.__version__.split('.')[:-1]):
         logger.warning("Your versions of rasa_core and "
                        "rasa_core_sdk might not be compatible. You "
                        "are currently running rasa_core version {} "
