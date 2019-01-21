@@ -105,6 +105,7 @@ def check_version_compatibility(core_version):
         core_version - string containing the version of rasa_core that
         is making the call to the action server.
     """
+
     # Check for versions of core that are too old to report their version number
     if core_version is None:
         logger.warning("You are using an old version of rasa_core which might "
