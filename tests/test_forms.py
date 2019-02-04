@@ -259,6 +259,33 @@ def test_extract_requested_slot_from_text_with_not_intent():
     assert slot_values == {'some_slot': 'some_text'}
 
 
+def test_extract_trigger_slots():
+    """Test extraction of a slot value from trigger intent
+    """
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        @staticmethod
+        def required_slots(_tracker):
+            return ['some_slot']
+
+        def slot_mappings(self):
+            return {"some_slot": self.from_trigger_intent(
+                intent="trigger_intent",
+                value="some_value")}
+    form = CustomFormAction()
+
+    tracker = Tracker('default', {},
+                      {'intent': {'name': 'trigger_intent',
+                                  'confidence': 1.0}},
+                      [], False, None, {},
+                      'action_listen')
+
+    slot_values = form.extract_trigger_slots(CollectingDispatcher(),
+                                             tracker, {})
+    # check that the value was extracted for correct intent
+    assert slot_values == {'some_slot': 'some_value'}
+
+
 def test_extract_other_slots_no_intent():
     """Test extraction of other not requested slots values
         from entities with the same names
@@ -392,6 +419,84 @@ def test_validate():
             "with action some_form" in str(execinfo.value))
 
 
+def test_validate_trigger_slots():
+    """Test validation results of from_trigger_intent slot mappings
+    """
+
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ['some_slot']
+
+        def slot_mappings(self):
+            return {"some_slot": self.from_trigger_intent(
+                intent="trigger_intent",
+                value="some_value")}
+
+    form = CustomFormAction()
+
+    tracker = Tracker('default', {},
+                      {'intent': {'name': 'trigger_intent',
+                                  'confidence': 1.0}},
+                      [], False, None, {},
+                      'action_listen')
+
+    slot_values = form.validate(CollectingDispatcher(),
+                                tracker, {})
+
+    # check that the value was extracted on form activation
+    assert slot_values == [{
+        "event": "slot",
+        "timestamp": None,
+        "name": 'some_slot',
+        "value": 'some_value',
+    }]
+
+    tracker = Tracker('default', {},
+                      {'intent': {'name': 'trigger_intent',
+                                  'confidence': 1.0}},
+                      [], False, None, {
+                          'name': 'some_form',
+                          'validate': True, 'rejected': False,
+                          'trigger_message': {
+                              'intent': {'name': 'trigger_intent',
+                                         'confidence': 1.0}}},
+                      'action_listen')
+
+    slot_values = form.validate(CollectingDispatcher(),
+                                tracker, {})
+    # check that the value was not extracted after form activation
+    assert slot_values == []
+
+    tracker = Tracker('default', {'requested_slot': 'some_other_slot'},
+                      {'intent': {'name': 'some_other_intent',
+                                  'confidence': 1.0},
+                       'entities': [{'entity': 'some_other_slot',
+                                     'value': 'some_other_value'}]},
+                      [], False, None, {
+                          'name': 'some_form',
+                          'validate': True, 'rejected': False,
+                          'trigger_message': {
+                              'intent': {'name': 'trigger_intent',
+                                         'confidence': 1.0}}},
+                      'action_listen')
+
+    slot_values = form.validate(CollectingDispatcher(),
+                                tracker, {})
+
+    # check that validation failed gracefully
+    assert slot_values == [{
+        "event": "slot",
+        "timestamp": None,
+        "name": 'some_other_slot',
+        "value": 'some_other_value',
+    }]
+
+
 def test_activate_if_required():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
@@ -399,12 +504,16 @@ def test_activate_if_required():
             return "some_form"
     form = CustomFormAction()
 
-    tracker = Tracker('default', {}, {},
+    tracker = Tracker('default', {}, {"intent": 'some_intent',
+                                      "entities": [],
+                                      "text": "some text"},
                       [], False, None, {}, 'action_listen')
 
     events = form._activate_if_required(tracker)
     # check that the form was activated
-    assert events == [Form('some_form')]
+    assert events == [Form('some_form', {"intent": 'some_intent',
+                                         "entities": [],
+                                         "text": "some text"})]
 
     tracker = Tracker('default', {}, {}, [], False, None,
                       {'name': 'some_form',
