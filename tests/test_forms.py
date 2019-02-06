@@ -472,3 +472,4 @@ def test_validate_if_required():
     # check that validation was skipped
     # because previous action is not action_listen
     assert events == []
+
