@@ -85,6 +85,7 @@ def ReminderCancelled(action_name, name=None, timestamp=None):
     return {
         "event": "cancel_reminder",
         "timestamp": timestamp,
+        "action": action_name,
         "name": name
     }
 
