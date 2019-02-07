@@ -83,7 +83,7 @@ def ReminderScheduled(action_name, trigger_date_time, name=None,
 # noinspection PyPep8Naming
 def ReminderCancelled(name, timestamp=None):
     return {
-        "event": "cancel",
+        "event": "cancel_reminder",
         "timestamp": timestamp,
         "name": name
     }
