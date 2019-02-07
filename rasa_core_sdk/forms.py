@@ -369,7 +369,7 @@ class FormAction(Action):
 
         return tracker.get_slot(slot_name) is None
 
-    def _deactivate(self):
+    def deactivate(self):
         # type: () -> List[Dict]
         """Return `Form` event with `None` as name to deactivate the form
             and reset the requested slot"""
@@ -410,7 +410,7 @@ class FormAction(Action):
                 # there is nothing more to request, so we can submit
                 events.extend(self.submit(dispatcher, temp_tracker, domain))
                 # deactivate the form after submission
-                events.extend(self._deactivate())
+                events.extend(self.deactivate())
 
         return events
 
