@@ -15,13 +15,14 @@ Added
 -----
 - add optional `validate_{slot}` methods to `FormAction`
 - forms can now be deactivated during the validation function by returning
-  `self._deactivate()`
+  `self.deactivate()`
 
 Removed
 -------
 
 Changed
 -------
+- `self._deactivate()` renamed to `self.deactivate()`
 
 Fixed
 -----

@@ -485,7 +485,7 @@ def test_early_deactivation():
             return ["some_slot", "some_other_slot"]
 
         def validate(self, dispatcher, tracker, domain):
-            return self._deactivate()
+            return self.deactivate()
 
     form = CustomFormAction()
 
