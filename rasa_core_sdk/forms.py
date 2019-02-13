@@ -369,7 +369,7 @@ class FormAction(Action):
 
         return tracker.get_slot(slot_name) is None
 
-    def _deactivate(self):
+    def deactivate(self):
         # type: () -> List[Dict]
         """Return `Form` event with `None` as name to deactivate the form
             and reset the requested slot"""
@@ -391,22 +391,26 @@ class FormAction(Action):
         # validate user input
         events.extend(self._validate_if_required(dispatcher, tracker, domain))
 
-        # create temp tracker with populated slots from `validate` method
-        temp_tracker = tracker.copy()
-        for e in events:
-            if e['event'] == 'slot':
-                temp_tracker.slots[e["name"]] = e["value"]
+        # check that the form wasn't deactivated in validation
+        if Form(None) not in events:
 
-        next_slot_events = self.request_next_slot(dispatcher, temp_tracker,
-                                                  domain)
-        if next_slot_events is not None:
-            # request next slot
-            events.extend(next_slot_events)
-        else:
-            # there is nothing more to request, so we can submit
-            events.extend(self.submit(dispatcher, temp_tracker, domain))
-            # deactivate the form after submission
-            events.extend(self._deactivate())
+            # create temp tracker with populated slots from `validate` method
+            temp_tracker = tracker.copy()
+            for e in events:
+                if e['event'] == 'slot':
+                    temp_tracker.slots[e["name"]] = e["value"]
+
+            next_slot_events = self.request_next_slot(dispatcher, temp_tracker,
+                                                      domain)
+
+            if next_slot_events is not None:
+                # request next slot
+                events.extend(next_slot_events)
+            else:
+                # there is nothing more to request, so we can submit
+                events.extend(self.submit(dispatcher, temp_tracker, domain))
+                # deactivate the form after submission
+                events.extend(self.deactivate())
 
         return events
 

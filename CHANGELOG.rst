@@ -14,12 +14,16 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 Added
 -----
 - add optional `validate_{slot}` methods to `FormAction`
+- forms can now be deactivated during the validation function by returning
+  `self.deactivate()`
 
 Removed
 -------
 
 Changed
 -------
+- ``self._deactivate()`` method from the ``FormAction`` class has been
+  renamed to ``self.deactivate()``
 
 Fixed
 -----
