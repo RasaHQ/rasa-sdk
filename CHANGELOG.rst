@@ -22,7 +22,8 @@ Removed
 
 Changed
 -------
-- `self._deactivate()` renamed to `self.deactivate()`
+- ``self._deactivate()`` method from the ``FormAction`` class has been
+  renamed to ``self.deactivate()``
 
 Fixed
 -----
