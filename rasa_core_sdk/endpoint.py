@@ -11,24 +11,15 @@ import logging
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
+
+from rasa_core_sdk.cli.arguments import add_endpoint_arguments
 from rasa_core_sdk.executor import ActionExecutor
 from rasa_core_sdk import ActionExecutionRejection
 import rasa_core_sdk
 
 from rasa_core_sdk import utils
 
-DEFAULT_SERVER_PORT = 5055
-
 logger = logging.getLogger(__name__)
-
-
-def action_arg(action):
-    if "/" in action:
-        raise argparse.ArgumentTypeError(
-            'Invalid actions format. Actions file should be a python module '
-            'and passed with module notation (e.g. directory.actions).')
-    else:
-        return action
 
 
 def create_argument_parser():
@@ -36,23 +27,7 @@ def create_argument_parser():
 
     parser = argparse.ArgumentParser(
         description='starts the action endpoint')
-    parser.add_argument(
-        '-p', '--port',
-        default=DEFAULT_SERVER_PORT,
-        type=int,
-        help="port to run the server at")
-    parser.add_argument(
-        '--cors',
-        nargs='*',
-        type=str,
-        help="enable CORS for the passed origin. "
-             "Use * to whitelist all origins")
-    parser.add_argument(
-        '--actions',
-        type=action_arg,
-        default=None,
-        help="name of action package to be loaded"
-    )
+    add_endpoint_arguments(parser)
     utils.add_logging_option_arguments(parser)
     return parser
 
@@ -135,24 +110,31 @@ def check_version_compatibility(core_version):
                        "".format(core_version, rasa_core_sdk.__version__))
 
 
-if __name__ == '__main__':
-    # Running as standalone python application
-    arg_parser = create_argument_parser()
-    cmdline_args = arg_parser.parse_args()
-
+def run(args):
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger('matplotlib').setLevel(logging.WARN)
 
-    utils.configure_colored_logging(cmdline_args.loglevel)
+    utils.configure_colored_logging(args.loglevel)
 
     logger.info("Starting action endpoint server...")
-    edp_app = endpoint_app(cors_origins=cmdline_args.cors,
-                           action_package_name=cmdline_args.actions)
+    edp_app = endpoint_app(cors_origins=args.cors,
+                           action_package_name=args.actions)
 
-    http_server = WSGIServer(('0.0.0.0', cmdline_args.port), edp_app)
+    http_server = WSGIServer(('0.0.0.0', args.port), edp_app)
 
     http_server.start()
     logger.info("Action endpoint is up and running. on {}"
                 "".format(http_server.address))
 
     http_server.serve_forever()
+
+
+if __name__ == '__main__':
+    # Running as standalone python application
+    arg_parser = create_argument_parser()
+
+    cmdline_args = arg_parser.parse_args()
+
+    run(cmdline_args)
+
+

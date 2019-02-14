@@ -10,6 +10,7 @@ import typing
 from typing import Dict, Text, Any, Optional, Iterator, List
 
 import rasa_core_sdk.version
+import rasa_core_sdk.cli
 
 logger = logging.getLogger(__name__)
 
