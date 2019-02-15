@@ -102,7 +102,6 @@ class ActionExecutor(object):
             else:
                 action = action()
         if isinstance(action, Action):
-            logger.debug("Registering {}".format(action.__class__.__name__))
             self.register_function(action.name(), action.run)
         else:
             raise Exception("You can only register instances or subclasses of "
@@ -150,15 +149,8 @@ class ActionExecutor(object):
         actions = utils.all_subclasses(Action)
 
         for action in actions:
-            logger.debug("Action: {}".format(action.__name__))
-            logger.debug(action.__dict__)
-            meta = action.__class__.__dict__.get('Meta', False)
-            if meta:
-                logger.debug("Meta: {}".format(meta.__dict__))
-            else:
-                logger.debug("Meta: {}".format(meta))
+            meta = action.__dict__.get('Meta', False)
             abstract = getattr(meta, 'abstract', False)
-            logger.debug("Abstract: {}".format(abstract))
             if (not action.__module__.startswith("rasa_core.") and
                     not action.__module__.startswith("rasa_core_sdk.") and
                     not abstract):
