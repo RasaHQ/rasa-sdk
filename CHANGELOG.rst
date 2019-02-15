@@ -16,6 +16,8 @@ Added
 - add optional `validate_{slot}` methods to `FormAction`
 - forms can now be deactivated during the validation function by returning
   `self.deactivate()`
+- Function to get latest input channel from the tracker with
+  ``tracker.get_latest_input_channel()``
 
 Removed
 -------

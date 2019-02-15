@@ -14,12 +14,14 @@ EventType = Dict[Text, Any]
 # noinspection PyPep8Naming
 def UserUttered(text,
                 parse_data=None,
-                timestamp=None):
+                timestamp=None,
+                input_channel=None):
     return {
         "event": "user",
         "timestamp": timestamp,
         "text": text,
         "parse_data": parse_data,
+        "input_channel": input_channel
     }
 
 
