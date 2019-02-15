@@ -16,6 +16,7 @@ Added
 - add optional `validate_{slot}` methods to `FormAction`
 - forms can now be deactivated during the validation function by returning
   `self.deactivate()`
+- Abstract Actions can now be subclassed
 
 Removed
 -------
