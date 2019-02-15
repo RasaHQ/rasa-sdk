@@ -7,6 +7,8 @@ import inspect
 
 from typing import Any, List
 
+import logging
+
 
 def all_subclasses(cls):
     # type: (Any) -> List[Any]
@@ -14,6 +16,35 @@ def all_subclasses(cls):
 
     return cls.__subclasses__() + [g for s in cls.__subclasses__()
                                    for g in all_subclasses(s)]
+
+
+def add_logging_option_arguments(parser):
+    """Add options to an argument parser to configure logging levels."""
+
+    # arguments for logging configuration
+    parser.add_argument(
+        '-v', '--verbose',
+        help="Be verbose. Sets logging level to INFO",
+        action="store_const",
+        dest="loglevel",
+        const=logging.INFO,
+        default=logging.INFO,
+    )
+    parser.add_argument(
+        '-vv', '--debug',
+        help="Print lots of debugging statements. "
+             "Sets logging level to DEBUG",
+        action="store_const",
+        dest="loglevel",
+        const=logging.DEBUG,
+    )
+    parser.add_argument(
+        '--quiet',
+        help="Be quiet! Sets logging level to WARNING",
+        action="store_const",
+        dest="loglevel",
+        const=logging.WARNING,
+    )
 
 
 def configure_colored_logging(loglevel):

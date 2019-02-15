@@ -10,9 +10,17 @@ from rasa_core_sdk.events import ActionExecuted, UserUttered
 def test_latest_input_channel():
     tracker = Tracker('default', {},
                       {'intent': {'name': 'some_intent', 'confidence': 1.0}},
+<<<<<<< HEAD
                       [UserUttered("my message text",
                                    input_channel="superchat"),
                        ActionExecuted("action_listen")],
                       False, None, {}, 'action_listen')
+=======
+                      [
+                          UserUttered(
+                              "my message text", input_channel="superchat"
+                          ), ActionExecuted("action_listen")
+                      ], False, None, {}, 'action_listen')
+>>>>>>> 66f712dcfb614ee4466bf7614538a7bf3bde0c8f
 
     assert tracker.get_latest_input_channel() == "superchat"
