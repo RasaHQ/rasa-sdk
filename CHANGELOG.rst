@@ -4,12 +4,8 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
-.. _master-release:
-
-[Unreleased 0.12.0.aX] - `master`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note:: This version is not yet released and is under active development.
+[0.12.2] - 2019-02-17
+^^^^^^^^^^^^^^^^^^^^^
 
 Added
 -----
@@ -19,23 +15,17 @@ Added
 - Function to get latest input channel from the tracker with
   ``tracker.get_latest_input_channel()``
 
-Removed
--------
-
 Changed
 -------
 - ``self._deactivate()`` method from the ``FormAction`` class has been
   renamed to ``self.deactivate()``
-
-Fixed
------
 
 [0.12.1] - 2018-11-11
 ^^^^^^^^^^^^^^^^^^^^^
 
 Fixed
 -----
-- doc formatting preventing successfull rasa core travis build
+- doc formatting preventing successful rasa core travis build
 
 [0.12.0] - 2018-11-11
 ^^^^^^^^^^^^^^^^^^^^^
