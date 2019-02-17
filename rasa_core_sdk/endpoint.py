@@ -17,8 +17,6 @@ import rasa_core_sdk
 
 from rasa_core_sdk import utils
 
-from rasa_core_sdk import utils
-
 DEFAULT_SERVER_PORT = 5055
 
 logger = logging.getLogger(__name__)
