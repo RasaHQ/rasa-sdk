@@ -9,7 +9,11 @@ import logging
 import typing
 from typing import Dict, Text, Any, Optional, Iterator, List
 
+import rasa_core_sdk.version
+
 logger = logging.getLogger(__name__)
+
+__version__ = rasa_core_sdk.version.__version__
 
 if typing.TYPE_CHECKING:
     from rasa_core_sdk.executor import CollectingDispatcher

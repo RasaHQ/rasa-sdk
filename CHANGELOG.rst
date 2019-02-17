@@ -59,6 +59,7 @@ Added
 - add helper methods ``FormAction.from_entity(...)``,
   ``FormAction.from_intent(...)`` and ``FormAction.from_text(...)``
 - add ``FormAction.validate(...)`` method to validate user input
+- add warning in case of mismatched version of rasa_core and rasa_core_sdk
 
 Changed
 -------
