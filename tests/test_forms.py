@@ -472,3 +472,32 @@ def test_validate_if_required():
     # check that validation was skipped
     # because previous action is not action_listen
     assert events == []
+
+
+def test_early_deactivation():
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        def validate(self, dispatcher, tracker, domain):
+            return self.deactivate()
+
+    form = CustomFormAction()
+
+    tracker = Tracker('default', {'some_slot': 'some_value'},
+                      {'intent': 'greet'},
+                      [], False, None,
+                      {'name': 'some_form',
+                       'validate': True, 'rejected': False},
+                      'action_listen')
+
+    events = form.run(dispatcher=None, tracker=tracker, domain=None)
+
+    # check that form was deactivated before requesting next slot
+    assert events == [Form(None), SlotSet('requested_slot', None)]
+    assert SlotSet('requested_slot', "some_other_slot") not in events

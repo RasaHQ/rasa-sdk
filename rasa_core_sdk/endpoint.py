@@ -14,6 +14,8 @@ from gevent.pywsgi import WSGIServer
 from rasa_core_sdk.executor import ActionExecutor
 from rasa_core_sdk import ActionExecutionRejection
 
+from rasa_core_sdk import utils
+
 DEFAULT_SERVER_PORT = 5055
 
 logger = logging.getLogger(__name__)
@@ -50,6 +52,7 @@ def create_argument_parser():
         default=None,
         help="name of action package to be loaded"
     )
+    utils.add_logging_option_arguments(parser)
     return parser
 
 
@@ -100,6 +103,8 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger('matplotlib').setLevel(logging.WARN)
+
+    utils.configure_colored_logging(cmdline_args.loglevel)
 
     logger.info("Starting action endpoint server...")
     edp_app = endpoint_app(cors_origins=cmdline_args.cors,

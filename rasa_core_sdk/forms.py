@@ -251,8 +251,14 @@ class FormAction(Action):
         # extract requested slot
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         if slot_to_fill:
-            slot_values.update(self.extract_requested_slot(dispatcher,
-                                                           tracker, domain))
+            for slot, value in self.extract_requested_slot(dispatcher,
+                                                           tracker,
+                                                           domain).items():
+                validate_func = getattr(self, "validate_{}".format(slot),
+                                        lambda *x: value)
+                slot_values[slot] = validate_func(value, dispatcher, tracker,
+                                                  domain)
+
             if not slot_values:
                 # reject to execute the form action
                 # if some slot was requested but nothing was extracted
@@ -279,7 +285,10 @@ class FormAction(Action):
         for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
                 logger.debug("Request next slot '{}'".format(slot))
-                dispatcher.utter_template("utter_ask_{}".format(slot), tracker)
+                dispatcher.utter_template("utter_ask_{}".format(slot),
+                                          tracker,
+                                          silent_fail=False,
+                                          **tracker.slots)
                 return [SlotSet(REQUESTED_SLOT, slot)]
 
         logger.debug("No slots left to request")
@@ -360,7 +369,7 @@ class FormAction(Action):
 
         return tracker.get_slot(slot_name) is None
 
-    def _deactivate(self):
+    def deactivate(self):
         # type: () -> List[Dict]
         """Return `Form` event with `None` as name to deactivate the form
             and reset the requested slot"""
@@ -382,22 +391,26 @@ class FormAction(Action):
         # validate user input
         events.extend(self._validate_if_required(dispatcher, tracker, domain))
 
-        # create temp tracker with populated slots from `validate` method
-        temp_tracker = tracker.copy()
-        for e in events:
-            if e['event'] == 'slot':
-                temp_tracker.slots[e["name"]] = e["value"]
+        # check that the form wasn't deactivated in validation
+        if Form(None) not in events:
 
-        next_slot_events = self.request_next_slot(dispatcher, temp_tracker,
-                                                  domain)
-        if next_slot_events is not None:
-            # request next slot
-            events.extend(next_slot_events)
-        else:
-            # there is nothing more to request, so we can submit
-            events.extend(self.submit(dispatcher, temp_tracker, domain))
-            # deactivate the form after submission
-            events.extend(self._deactivate())
+            # create temp tracker with populated slots from `validate` method
+            temp_tracker = tracker.copy()
+            for e in events:
+                if e['event'] == 'slot':
+                    temp_tracker.slots[e["name"]] = e["value"]
+
+            next_slot_events = self.request_next_slot(dispatcher, temp_tracker,
+                                                      domain)
+
+            if next_slot_events is not None:
+                # request next slot
+                events.extend(next_slot_events)
+            else:
+                # there is nothing more to request, so we can submit
+                events.extend(self.submit(dispatcher, temp_tracker, domain))
+                # deactivate the form after submission
+                events.extend(self.deactivate())
 
         return events
 
