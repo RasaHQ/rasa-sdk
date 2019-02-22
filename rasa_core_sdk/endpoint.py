@@ -13,6 +13,7 @@ from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
 from rasa_core_sdk.cli.arguments import add_endpoint_arguments
+from rasa_core_sdk.constants import DEFAULT_SERVER_PORT
 from rasa_core_sdk.executor import ActionExecutor
 from rasa_core_sdk import ActionExecutionRejection
 import rasa_core_sdk
@@ -110,17 +111,12 @@ def check_version_compatibility(core_version):
                        "".format(core_version, rasa_core_sdk.__version__))
 
 
-def run(args):
-    logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger('matplotlib').setLevel(logging.WARN)
-
-    utils.configure_colored_logging(args.loglevel)
-
+def run(actions, port=DEFAULT_SERVER_PORT, cors='*'):
     logger.info("Starting action endpoint server...")
-    edp_app = endpoint_app(cors_origins=args.cors,
-                           action_package_name=args.actions)
+    edp_app = endpoint_app(cors_origins=cors,
+                           action_package_name=actions)
 
-    http_server = WSGIServer(('0.0.0.0', args.port), edp_app)
+    http_server = WSGIServer(('0.0.0.0', port), edp_app)
 
     http_server.start()
     logger.info("Action endpoint is up and running. on {}"
@@ -129,12 +125,18 @@ def run(args):
     http_server.serve_forever()
 
 
+def main(args):
+    logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger('matplotlib').setLevel(logging.WARN)
+
+    utils.configure_colored_logging(args.loglevel)
+
+    run(args.actions, args.port, args.cors,)
+
+
 if __name__ == '__main__':
     # Running as standalone python application
     arg_parser = create_argument_parser()
-
     cmdline_args = arg_parser.parse_args()
 
-    run(cmdline_args)
-
-
+    main(cmdline_args)
