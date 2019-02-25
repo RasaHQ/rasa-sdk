@@ -39,6 +39,7 @@ Changed
 -------
 - ``self._deactivate()`` method from the ``FormAction`` class has been
   renamed to ``self.deactivate()``
+- changed endpoint function so that it is now accessible with Python as well
 
 [0.12.1] - 2018-11-11
 ^^^^^^^^^^^^^^^^^^^^^
