@@ -131,7 +131,7 @@ def main(args):
 
     utils.configure_colored_logging(args.loglevel)
 
-    run(args.actions, args.port, args.cors,)
+    run(args.actions, args.port, args.cors)
 
 
 if __name__ == '__main__':
