@@ -149,8 +149,11 @@ class ActionExecutor(object):
         actions = utils.all_subclasses(Action)
 
         for action in actions:
+            meta = action.__dict__.get('Meta', False)
+            abstract = getattr(meta, 'abstract', False)
             if (not action.__module__.startswith("rasa_core.") and
-                    not action.__module__.startswith("rasa_core_sdk.")):
+                    not action.__module__.startswith("rasa_core_sdk.") and
+                    not abstract):
                 self.register_action(action)
 
     @staticmethod

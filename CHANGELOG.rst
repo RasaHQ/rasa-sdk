@@ -13,6 +13,7 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 Added
 -----
+- Abstract Actions can now be subclassed
 - add warning in case of mismatched version of rasa_core and rasa_core_sdk
 
 Changed
