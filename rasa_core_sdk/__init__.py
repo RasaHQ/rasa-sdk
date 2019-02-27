@@ -10,6 +10,7 @@ import typing
 from typing import Dict, Text, Any, Optional, Iterator, List
 
 import rasa_core_sdk.version
+import rasa_core_sdk.cli
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,7 @@ class Tracker(object):
             "latest_event_time": latest_event_time,
             "paused": self.is_paused(),
             "events": self.events,
+            "latest_input_channel": self.get_latest_input_channel(),
             "active_form": self.active_form,
             "latest_action_name": self.latest_action_name
         }
@@ -107,6 +109,14 @@ class Tracker(object):
         return (x.get("value")
                 for x in entities
                 if x.get("entity") == entity_type)
+
+    def get_latest_input_channel(self):
+        # type: () -> Optional[Text]
+        """Get the name of the input_channel of the latest UserUttered event"""
+
+        for e in reversed(self.events):
+            if e.get("event") == "user":
+                return e.get("input_channel")
 
     def is_paused(self):
         # type: () -> bool

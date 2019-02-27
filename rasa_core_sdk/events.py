@@ -14,12 +14,14 @@ EventType = Dict[Text, Any]
 # noinspection PyPep8Naming
 def UserUttered(text,
                 parse_data=None,
-                timestamp=None):
+                timestamp=None,
+                input_channel=None):
     return {
         "event": "user",
         "timestamp": timestamp,
         "text": text,
         "parse_data": parse_data,
+        "input_channel": input_channel
     }
 
 
@@ -77,6 +79,16 @@ def ReminderScheduled(action_name, trigger_date_time, name=None,
         "date_time": trigger_date_time.isoformat(),
         "name": name,
         "kill_on_user_msg": kill_on_user_message
+    }
+
+
+# noinspection PyPep8Naming
+def ReminderCancelled(action_name, name=None, timestamp=None):
+    return {
+        "event": "cancel_reminder",
+        "timestamp": timestamp,
+        "action": action_name,
+        "name": name
     }
 
 
