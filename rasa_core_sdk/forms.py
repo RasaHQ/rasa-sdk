@@ -254,21 +254,22 @@ class FormAction(Action):
             slot_values.update(self.extract_requested_slot(dispatcher,
                                                            tracker,
                                                            domain))
-            for slot, value in slot_values.items():
-                validate_func = getattr(self, "validate_{}".format(slot),
-                                        lambda *x: value)
-                slot_values[slot] = validate_func(value, dispatcher, tracker,
-                                                  domain)
 
             if not slot_values:
                 # reject to execute the form action
                 # if some slot was requested but nothing was extracted
                 # it will allow other policies to predict another action
                 raise ActionExecutionRejection(self.name(),
-                                               "Failed to validate slot {0} "
+                                               "Failed to extract slot {0} "
                                                "with action {1}"
                                                "".format(slot_to_fill,
                                                          self.name()))
+
+            for slot, value in slot_values.items():
+                validate_func = getattr(self, "validate_{}".format(slot),
+                                        lambda *x: value)
+                slot_values[slot] = validate_func(value, dispatcher, tracker,
+                                                  domain)
 
         # validation succeed, set slots to extracted values
         return [SlotSet(slot, value) for slot, value in slot_values.items()]
