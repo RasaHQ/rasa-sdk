@@ -313,6 +313,31 @@ def test_extract_trigger_slots():
     # check that the value was extracted for correct intent
     assert slot_values == {'some_slot': 'some_value'}
 
+    tracker = Tracker('default', {},
+                      {'intent': {'name': 'other_intent',
+                                  'confidence': 1.0}},
+                      [], False, None, {},
+                      'action_listen')
+
+    slot_values = form.extract_other_slots(CollectingDispatcher(),
+                                           tracker, {})
+    # check that the value was not extracted for incorrect intent
+    assert slot_values == {}
+
+    # tracker with active form
+    tracker = Tracker('default', {},
+                      {'intent': {'name': 'trigger_intent',
+                                  'confidence': 1.0}},
+                      [], False, None,
+                      {'name': 'some_form',
+                       'validate': True, 'rejected': False},
+                      'action_listen')
+
+    slot_values = form.extract_other_slots(CollectingDispatcher(),
+                                           tracker, {})
+    # check that the value was not extracted for correct intent
+    assert slot_values == {}
+
 
 def test_extract_other_slots_no_intent():
     """Test extraction of other not requested slots values
