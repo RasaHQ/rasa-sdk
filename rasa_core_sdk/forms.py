@@ -436,14 +436,17 @@ class FormAction(Action):
 
     def run(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """Execute the side effects of this form:
-            - activate if needed
-            - validate user input if needed
-            - set validated slots
-            - utter_ask_{slot} template with the next required slot
-            - submit the form if all required slots are set
-            - deactivate the form
+        """Execute the side effects of this form.
+
+        Steps:
+        - activate if needed
+        - validate user input if needed
+        - set validated slots
+        - utter_ask_{slot} template with the next required slot
+        - submit the form if all required slots are set
+        - deactivate the form
         """
+
         # activate the form
         events = self._activate_if_required(tracker)
         # validate user input
