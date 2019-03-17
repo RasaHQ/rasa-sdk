@@ -336,6 +336,14 @@ class FormAction(Action):
         # validation succeed, set slots to extracted values
         return [SlotSet(slot, value) for slot, value in slot_values.items()]
 
+    def deactivate(self):
+        # type: () -> List[Dict]
+        """Return `Form` event with `None` as name to deactivate the form
+            and reset the requested slot"""
+
+        logger.debug("Deactivating the form '{}'".format(self.name()))
+        return [Form(None), SlotSet(REQUESTED_SLOT, None)]
+
     # noinspection PyUnusedLocal
     def request_next_slot(self,
                           dispatcher,  # type: CollectingDispatcher
@@ -407,9 +415,7 @@ class FormAction(Action):
             return []
         else:
             logger.debug("Activated the form '{}'".format(self.name()))
-            return [Form(
-                name=self.name(),
-                trigger_message=tracker.latest_message)]
+            return [Form(self.name())]
 
     def _validate_if_required(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
@@ -434,13 +440,6 @@ class FormAction(Action):
         """Check whether form action should request given slot"""
 
         return tracker.get_slot(slot_name) is None
-
-    def deactivate(self):
-        # type: () -> List[Dict]
-        """Return `Form` event with `None` as name to deactivate the form
-            and reset the requested slot"""
-        logger.debug("Deactivating the form '{}'".format(self.name()))
-        return [Form(None), SlotSet(REQUESTED_SLOT, None)]
 
     def run(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]

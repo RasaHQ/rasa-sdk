@@ -156,11 +156,10 @@ def AgentUttered(text=None, data=None, timestamp=None):
 
 
 # noinspection PyPep8Naming
-def Form(name, trigger_message=None, timestamp=None):
+def Form(name, timestamp=None):
     return {
         "event": "form",
         "name": name,
-        "trigger_message": trigger_message,
         "timestamp": timestamp,
     }
 
