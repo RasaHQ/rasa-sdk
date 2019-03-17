@@ -15,6 +15,10 @@ Added
 -----
 - Abstract Actions can now be subclassed
 - add warning in case of mismatched version of rasa_core and rasa_core_sdk
+- ``FormAction.from_trigger_intent`` allows slot extraction from message
+  triggering the FormAction
+- ``Tracker.active_form`` now includes ``trigger_message`` attribute to allow
+  access to message triggering the form
 
 Changed
 -------
