@@ -11,6 +11,9 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. note:: This version is not yet released and is under active development.
 
+[0.12.3] - 2019-03-26
+^^^^^^^^^^^^^^^^^^^^^
+
 Added
 -----
 - Abstract Actions can now be subclassed
