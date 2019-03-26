@@ -18,6 +18,7 @@ pip install rasa_core_sdk
 
 | SDK version   | compatible Rasa Core version           |
 |---------------|----------------------------------------|
+| `0.13.x`      | `>=0.13.x`                             |
 | `0.12.x`      | `>=0.12.x`                             |
 | `0.11.x`      | `0.11.x`                               |
 | not compatible | `<=0.10.x`                             |
