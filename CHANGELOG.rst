@@ -6,19 +6,13 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. _master-release:
 
-[Unreleased 0.13.0.aX] - `master`_
+[Unreleased 0.13.1aX] - `master`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
 
 Added
 -----
-- Abstract Actions can now be subclassed
-- add warning in case of mismatched version of rasa_core and rasa_core_sdk
-- ``FormAction.from_trigger_intent`` allows slot extraction from message
-  triggering the FormAction
-- ``Tracker.active_form`` now includes ``trigger_message`` attribute to allow
-  access to message triggering the form
 
 Changed
 -------
@@ -28,6 +22,18 @@ Fixed
 
 Removed
 -------
+
+[0.13.0] - 2019-03-26
+^^^^^^^^^^^^^^^^^^^^^
+
+Added
+-----
+- Abstract Actions can now be subclassed
+- add warning in case of mismatched version of rasa_core and rasa_core_sdk
+- ``FormAction.from_trigger_intent`` allows slot extraction from message
+  triggering the FormAction
+- ``Tracker.active_form`` now includes ``trigger_message`` attribute to allow
+  access to message triggering the form
 
 [0.12.2] - 2019-02-17
 ^^^^^^^^^^^^^^^^^^^^^
