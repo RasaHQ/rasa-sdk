@@ -26,16 +26,13 @@ logger = logging.getLogger(__name__)
 def create_argument_parser():
     """Parse all the command line arguments for the run script."""
 
-    parser = argparse.ArgumentParser(
-        description='starts the action endpoint')
+    parser = argparse.ArgumentParser(description="starts the action endpoint")
     add_endpoint_arguments(parser)
     utils.add_logging_option_arguments(parser)
     return parser
 
 
-def endpoint_app(cors_origins=None,
-                 action_package_name=None
-                 ):
+def endpoint_app(cors_origins=None, action_package_name=None):
     app = Flask(__name__)
 
     if not cors_origins:
@@ -46,15 +43,13 @@ def endpoint_app(cors_origins=None,
 
     CORS(app, resources={r"/*": {"origins": cors_origins}})
 
-    @app.route("/health",
-               methods=['GET', 'OPTIONS'])
+    @app.route("/health", methods=["GET", "OPTIONS"])
     @cross_origin(origins=cors_origins)
     def health():
         """Ping endpoint to check if the server is running and well."""
         return jsonify({"status": "ok"})
 
-    @app.route("/webhook",
-               methods=['POST', 'OPTIONS'])
+    @app.route("/webhook", methods=["POST", "OPTIONS"])
     @cross_origin()
     def webhook():
         """Webhook to retrieve action calls."""
@@ -89,52 +84,59 @@ def check_version_compatibility(core_version):
     """
     # Check for versions of core that are too old to report their version number
     if core_version is None:
-        logger.warning("You are using an old version of rasa_core which might "
-                       "not be compatible with this version of rasa_core_sdk "
-                       "({}).\n"
-                       "To ensure compatibility use the same version "
-                       "for both, modulo the last number, i.e. using version "
-                       "A.B.x the numbers A and B should be identical for "
-                       "both rasa_core and rasa_core_sdk."
-                       "".format(rasa_core_sdk.__version__))
-    elif (core_version.split('.')[:-1] !=
-            rasa_core_sdk.__version__.split('.')[:-1]):
-        logger.warning("Your versions of rasa_core and "
-                       "rasa_core_sdk might not be compatible. You "
-                       "are currently running rasa_core version {} "
-                       "and rasa_core_sdk version {}.\n"
-                       "To ensure compatibility use the same "
-                       "version for both, modulo the last number, "
-                       "i.e. using version A.B.x the numbers A and "
-                       "B should be identical for "
-                       "both rasa_core and rasa_core_sdk."
-                       "".format(core_version, rasa_core_sdk.__version__))
+        logger.warning(
+            "You are using an old version of rasa_core which might "
+            "not be compatible with this version of rasa_core_sdk "
+            "({}).\n"
+            "To ensure compatibility use the same version "
+            "for both, modulo the last number, i.e. using version "
+            "A.B.x the numbers A and B should be identical for "
+            "both rasa_core and rasa_core_sdk."
+            "".format(rasa_core_sdk.__version__)
+        )
+    elif (
+        core_version.split(".")[:-1]
+        != rasa_core_sdk.__version__.split(".")[:-1]
+    ):
+        logger.warning(
+            "Your versions of rasa_core and "
+            "rasa_core_sdk might not be compatible. You "
+            "are currently running rasa_core version {} "
+            "and rasa_core_sdk version {}.\n"
+            "To ensure compatibility use the same "
+            "version for both, modulo the last number, "
+            "i.e. using version A.B.x the numbers A and "
+            "B should be identical for "
+            "both rasa_core and rasa_core_sdk."
+            "".format(core_version, rasa_core_sdk.__version__)
+        )
 
 
-def run(actions, port=DEFAULT_SERVER_PORT, cors='*'):
+def run(actions, port=DEFAULT_SERVER_PORT, cors="*"):
     logger.info("Starting action endpoint server...")
-    edp_app = endpoint_app(cors_origins=cors,
-                           action_package_name=actions)
+    edp_app = endpoint_app(cors_origins=cors, action_package_name=actions)
 
-    http_server = WSGIServer(('0.0.0.0', port), edp_app)
+    http_server = WSGIServer(("0.0.0.0", port), edp_app)
 
     http_server.start()
-    logger.info("Action endpoint is up and running. on {}"
-                "".format(http_server.address))
+    logger.info(
+        "Action endpoint is up and running. on {}"
+        "".format(http_server.address)
+    )
 
     http_server.serve_forever()
 
 
 def main(args):
     logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger('matplotlib').setLevel(logging.WARN)
+    logging.getLogger("matplotlib").setLevel(logging.WARN)
 
     utils.configure_colored_logging(args.loglevel)
 
     run(args.actions, args.port, args.cors)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Running as standalone python application
     arg_parser = create_argument_parser()
     cmdline_args = arg_parser.parse_args()

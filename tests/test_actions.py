@@ -26,24 +26,23 @@ class CustomActionBase(Action):
 
 
 class CustomAction(CustomActionBase):
-
     @classmethod
     def name(cls):
         return "custom_action"
 
     def run(self, dispatcher, tracker, domain):
-        return [SlotSet('test', self.some_common_feature())]
+        return [SlotSet("test", self.some_common_feature())]
 
 
 def test_abstract_action():
     executor = ActionExecutor()
-    executor.register_package('tests')
+    executor.register_package("tests")
     assert CustomAction.name() in executor.actions
     assert CustomActionBase.name() not in executor.actions
 
     dispatcher = CollectingDispatcher()
-    tracker = Tracker('test', {}, {}, [], False, None, {}, 'listen')
+    tracker = Tracker("test", {}, {}, [], False, None, {}, "listen")
     domain = {}
 
     events = CustomAction().run(dispatcher, tracker, domain)
-    assert events == [SlotSet('test', "test")]
+    assert events == [SlotSet("test", "test")]
