@@ -13,12 +13,15 @@ install:
 - pip install coveralls==1.3.0
 - pip list
 script:
-- if [[ $TRAVIS_PYTHON_VERSION == 3.6 ]]; then pip install black; black --config rasa_core_sdk.toml --check .; fi
 - travis_wait py.test tests --cov rasa_core_sdk -v
 after_success:
 - coveralls
 jobs:
   include:
+  - stage: test
+    name: Check code style
+    python: 3.6
+    script: pip install black; black --config rasa_core_sdk.toml --check
   - stage: deploy
     python: 3.6
     install: skip
