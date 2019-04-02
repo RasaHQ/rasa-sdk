@@ -65,7 +65,7 @@ class CollectingDispatcher(object):
         buttons,  # type: List[Dict[Text, Any]]
         tracker,  # type: Tracker
         silent_fail=False,  # type: bool
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):
         # type: (...) -> None
         """Sends a message template with buttons to the output channel."""
@@ -81,7 +81,7 @@ class CollectingDispatcher(object):
         template,  # type: Text
         tracker,  # type: Tracker
         silent_fail=False,  # type: bool
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):
         # type: (...) -> None
         """"Send a message to the client based on a template."""
