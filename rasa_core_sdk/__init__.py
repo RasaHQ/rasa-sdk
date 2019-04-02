@@ -218,7 +218,7 @@ class ActionExecutionRejection(Exception):
 
     def __init__(self, action_name, message=None):
         self.action_name = action_name
-        self.message = message or "Custom action '{}' rejected execution of" "".format(
+        self.message = message or "Custom action '{}' rejected execution of".format(
             action_name
         )
 

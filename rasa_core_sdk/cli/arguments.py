@@ -25,7 +25,7 @@ def add_endpoint_arguments(parser):
         "--cors",
         nargs="*",
         type=str,
-        help="enable CORS for the passed origin. " "Use * to whitelist all origins",
+        help="enable CORS for the passed origin. Use * to whitelist all origins",
     )
     parser.add_argument(
         "--actions",

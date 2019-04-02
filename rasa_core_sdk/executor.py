@@ -174,7 +174,7 @@ class ActionExecutor(object):
             action = self.actions.get(action_name)
             if not action:
                 raise Exception(
-                    "No registered Action found for name '{}'." "".format(action_name)
+                    "No registered Action found for name '{}'.".format(action_name)
                 )
 
             tracker_json = action_call.get("tracker")
