@@ -6,7 +6,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 # Avoids IDE errors, but actual version is read from version.py
 __version__ = None
-exec(open("rasa_core_sdk/version.py").read())
+exec (open("rasa_core_sdk/version.py").read())
 
 # Get the long description from the README file
 with io.open(os.path.join(here, "README.md"), encoding="utf-8") as f:
@@ -70,6 +70,6 @@ setup(
     },
 )
 
-print("\nWelcome to Rasa Core SDK!")
-print("If any questions please visit " "documentation page https://docs.rasa.com/core")
-print("or join community chat on https://gitter.im/RasaHQ/rasa_core")
+print ("\nWelcome to Rasa Core SDK!")
+print ("If any questions please visit " "documentation page https://docs.rasa.com/core")
+print ("or join community chat on https://gitter.im/RasaHQ/rasa_core")
