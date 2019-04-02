@@ -8,4 +8,3 @@ flask==1.0.2
 flask_cors==3.0.4
 gevent==1.2.2
 six==1.11.0
-black
