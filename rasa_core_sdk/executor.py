@@ -149,9 +149,7 @@ class ActionExecutor(object):
         try:
             self._import_submodules(package)
         except ImportError:
-            logger.exception(
-                "Failed to register package '{}'." "".format(package)
-            )
+            logger.exception("Failed to register package '{}'." "".format(package))
 
         actions = utils.all_subclasses(Action)
 
@@ -176,8 +174,7 @@ class ActionExecutor(object):
             action = self.actions.get(action_name)
             if not action:
                 raise Exception(
-                    "No registered Action found for name '{}'."
-                    "".format(action_name)
+                    "No registered Action found for name '{}'." "".format(action_name)
                 )
 
             tracker_json = action_call.get("tracker")

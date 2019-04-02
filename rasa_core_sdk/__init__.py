@@ -116,9 +116,7 @@ class Tracker(object):
         If no entity is found `None` is the default result."""
 
         entities = self.latest_message.get("entities", [])
-        return (
-            x.get("value") for x in entities if x.get("entity") == entity_type
-        )
+        return (x.get("value") for x in entities if x.get("entity") == entity_type)
 
     def get_latest_input_channel(self):
         # type: () -> Optional[Text]
@@ -152,10 +150,7 @@ class Tracker(object):
 
     def __eq__(self, other):
         if isinstance(self, type(other)):
-            return (
-                other.events == self.events
-                and self.sender_id == other.sender_id
-            )
+            return other.events == self.events and self.sender_id == other.sender_id
         else:
             return False
 
@@ -223,9 +218,8 @@ class ActionExecutionRejection(Exception):
 
     def __init__(self, action_name, message=None):
         self.action_name = action_name
-        self.message = (
-            message
-            or "Custom action '{}' rejected execution of" "".format(action_name)
+        self.message = message or "Custom action '{}' rejected execution of" "".format(
+            action_name
         )
 
     def __str__(self):

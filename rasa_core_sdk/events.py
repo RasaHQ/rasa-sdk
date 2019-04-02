@@ -29,12 +29,7 @@ def BotUttered(text=None, data=None, timestamp=None):
 
 # noinspection PyPep8Naming
 def SlotSet(key, value=None, timestamp=None):
-    return {
-        "event": "slot",
-        "timestamp": timestamp,
-        "name": key,
-        "value": value,
-    }
+    return {"event": "slot", "timestamp": timestamp, "name": key, "value": value}
 
 
 # noinspection PyPep8Naming
@@ -54,11 +49,7 @@ def AllSlotsReset(timestamp=None):
 
 # noinspection PyPep8Naming
 def ReminderScheduled(
-    action_name,
-    trigger_date_time,
-    name=None,
-    kill_on_user_message=True,
-    timestamp=None,
+    action_name, trigger_date_time, name=None, kill_on_user_message=True, timestamp=None
 ):
     return {
         "event": "reminder",
@@ -118,12 +109,7 @@ def ActionExecuted(action_name, policy=None, confidence=None, timestamp=None):
 
 # noinspection PyPep8Naming
 def AgentUttered(text=None, data=None, timestamp=None):
-    return {
-        "event": "agent",
-        "text": text,
-        "data": data,
-        "timestamp": timestamp,
-    }
+    return {"event": "agent", "text": text, "data": data, "timestamp": timestamp}
 
 
 # noinspection PyPep8Naming
@@ -133,17 +119,11 @@ def Form(name, timestamp=None):
 
 # noinspection PyPep8Naming
 def FormValidation(validate, timestamp=None):
-    return {
-        "event": "form_validation",
-        "validate": validate,
-        "timestamp": timestamp,
-    }
+    return {"event": "form_validation", "validate": validate, "timestamp": timestamp}
 
 
 # noinspection PyPep8Naming
-def ActionExecutionRejected(
-    action_name, policy=None, confidence=None, timestamp=None
-):
+def ActionExecutionRejected(action_name, policy=None, confidence=None, timestamp=None):
     return {
         "event": "action_execution_rejected",
         "name": action_name,

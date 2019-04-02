@@ -94,10 +94,12 @@ def check_version_compatibility(core_version):
             "both rasa_core and rasa_core_sdk."
             "".format(rasa_core_sdk.__version__)
         )
-    elif (
-        core_version.split(".")[:-1]
-        != rasa_core_sdk.__version__.split(".")[:-1]
-    ):
+        return
+
+    core = core_version.split(".")[:-1]
+    sdk = rasa_core_sdk.__version__.split(".")[:-1]
+
+    if core != sdk:
         logger.warning(
             "Your versions of rasa_core and "
             "rasa_core_sdk might not be compatible. You "
@@ -120,8 +122,7 @@ def run(actions, port=DEFAULT_SERVER_PORT, cors="*"):
 
     http_server.start()
     logger.info(
-        "Action endpoint is up and running. on {}"
-        "".format(http_server.address)
+        "Action endpoint is up and running. on {}" "".format(http_server.address)
     )
 
     http_server.serve_forever()
