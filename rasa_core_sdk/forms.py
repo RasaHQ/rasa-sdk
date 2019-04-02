@@ -368,7 +368,7 @@ class FormAction(Action):
                     "utter_ask_{}".format(slot),
                     tracker,
                     silent_fail=False,
-                    **tracker.slots,
+                    **tracker.slots
                 )
                 return [SlotSet(REQUESTED_SLOT, slot)]
 
