@@ -59,13 +59,14 @@ class CollectingDispatcher(object):
 
     # TODO: deprecate this function?
     # noinspection PyUnusedLocal
-    def utter_button_template(self,
-                              template,  # type: Text
-                              buttons,  # type: List[Dict[Text, Any]]
-                              tracker,  # type: Tracker
-                              silent_fail=False,  # type: bool
-                              **kwargs  # type: Any
-                              ):
+    def utter_button_template(
+        self,
+        template,  # type: Text
+        buttons,  # type: List[Dict[Text, Any]]
+        tracker,  # type: Tracker
+        silent_fail=False,  # type: bool
+        **kwargs  # type: Any
+    ):
         # type: (...) -> None
         """Sends a message template with buttons to the output channel."""
 
@@ -75,12 +76,13 @@ class CollectingDispatcher(object):
         self.messages.append(message)
 
     # noinspection PyUnusedLocal
-    def utter_template(self,
-                       template,  # type: Text
-                       tracker,  # type: Tracker
-                       silent_fail=False,  # type: bool
-                       **kwargs  # type: Any
-                       ):
+    def utter_template(
+        self,
+        template,  # type: Text
+        tracker,  # type: Tracker
+        silent_fail=False,  # type: bool
+        **kwargs  # type: Any
+    ):
         # type: (...) -> None
         """"Send a message to the client based on a template."""
 
@@ -104,19 +106,23 @@ class ActionExecutor(object):
         if isinstance(action, Action):
             self.register_function(action.name(), action.run)
         else:
-            raise Exception("You can only register instances or subclasses of "
-                            "type Action. If you want to directly register "
-                            "a function, use `register_function` instead.")
+            raise Exception(
+                "You can only register instances or subclasses of "
+                "type Action. If you want to directly register "
+                "a function, use `register_function` instead."
+            )
 
     def register_function(self, name, f):
         logger.info("Registered function for '{}'.".format(name))
         valid_keys = utils.arguments_of(f)
         if len(valid_keys) < 3:
-            raise Exception("You can only register functions that take "
-                            "3 parameters as arguments. The three parameters "
-                            "your function will receive are: dispatcher, "
-                            "tracker, domain. Your function accepts only {} "
-                            "parameters.".format(len(valid_keys)))
+            raise Exception(
+                "You can only register functions that take "
+                "3 parameters as arguments. The three parameters "
+                "your function will receive are: dispatcher, "
+                "tracker, domain. Your function accepts only {} "
+                "parameters.".format(len(valid_keys))
+            )
         self.actions[name] = f
 
     def _import_submodules(self, package, recursive=True):
@@ -129,12 +135,12 @@ class ActionExecutor(object):
         """
         if isinstance(package, six.string_types):
             package = importlib.import_module(package)
-        if not getattr(package, '__path__', None):
+        if not getattr(package, "__path__", None):
             return
 
         results = {}
         for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
-            full_name = package.__name__ + '.' + name
+            full_name = package.__name__ + "." + name
             results[full_name] = importlib.import_module(full_name)
             if recursive and is_pkg:
                 self._import_submodules(full_name)
@@ -143,25 +149,23 @@ class ActionExecutor(object):
         try:
             self._import_submodules(package)
         except ImportError:
-            logger.exception("Failed to register package '{}'."
-                             "".format(package))
+            logger.exception("Failed to register package '{}'.".format(package))
 
         actions = utils.all_subclasses(Action)
 
         for action in actions:
-            meta = action.__dict__.get('Meta', False)
-            abstract = getattr(meta, 'abstract', False)
-            if (not action.__module__.startswith("rasa_core.") and
-                    not action.__module__.startswith("rasa_core_sdk.") and
-                    not abstract):
+            meta = action.__dict__.get("Meta", False)
+            abstract = getattr(meta, "abstract", False)
+            if (
+                not action.__module__.startswith("rasa_core.")
+                and not action.__module__.startswith("rasa_core_sdk.")
+                and not abstract
+            ):
                 self.register_action(action)
 
     @staticmethod
     def _create_api_response(events, messages):
-        return {
-            "events": events if events else [],
-            "responses": messages
-        }
+        return {"events": events if events else [], "responses": messages}
 
     def run(self, action_call):
         action_name = action_call.get("next_action")
@@ -169,8 +173,9 @@ class ActionExecutor(object):
             logger.debug("Received request to run '{}'".format(action_name))
             action = self.actions.get(action_name)
             if not action:
-                raise Exception("No registered Action found for name '{}'."
-                                "".format(action_name))
+                raise Exception(
+                    "No registered Action found for name '{}'.".format(action_name)
+                )
 
             tracker_json = action_call.get("tracker")
             domain = action_call.get("domain", {})

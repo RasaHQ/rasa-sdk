@@ -64,6 +64,18 @@ RUN apt-get update -qq && \
 RUN pip install --no-cache-dir <A_REQUIRED_PACKAGE_ON_PYPI>
 ```
 
+## Code Style
+
+To ensure a standardized code style we use the formatter [black](https://github.com/ambv/black).
+If your code is not formatted properly, travis will fail to build.
+
+To install black run `pip install black`.
+To reformat files execute 
+```
+black --config rasa_core_sdk.toml .
+```
+
+
 ## License
 Licensed under the Apache License, Version 2.0. Copyright 2018 Rasa
 Technologies GmbH. [Copy of the license](LICENSE.txt).
