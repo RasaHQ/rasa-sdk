@@ -315,15 +315,15 @@ class FormAction(Action):
         return {}
 
     # def validate_<slot_name>(self, value, dispatcher, tracker, domain):
-    #     # type: (Text, CollectingDispatcher, Tracker, Dict[Text, Any]) -> Dict[Text, Any]
+    #     # type: (Any, CollectingDispatcher, Tracker, Dict[Text, Any]) -> Dict[Text, Any]
     #     """Example validate_{} function for validating a slot, <slot_name>.
     #
     #     Returns a dictionary of slots to set and their values.
     #     """
     #
-    #     # only want to validate value if the number is positive
-    #     if int(value) > 0:
-    #         # value is positive, set example_slot to value
+    #     # Example: Don't validate negative numbers
+    #     if int(value) >= 0:
+    #         # value is non-negative, set example_slot to value
     #         return {"<slot_name>": value}
     #     else:
     #         # don't want to validate, set example_slot to None
