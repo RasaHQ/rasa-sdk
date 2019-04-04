@@ -39,7 +39,7 @@ class FormAction(Action):
         """
 
         raise NotImplementedError(
-            "A form must implement required slots " "that it has to fill"
+            "A form must implement required slots that it has to fill"
         )
 
     def from_entity(
@@ -277,7 +277,7 @@ class FormAction(Action):
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         logger.debug(
-            "Trying to extract requested slot '{}' ..." "".format(slot_to_fill)
+            "Trying to extract requested slot '{}' ...".format(slot_to_fill)
         )
 
         # get mapping for requested slot
@@ -301,7 +301,7 @@ class FormAction(Action):
                 elif mapping_type == "from_text":
                     value = tracker.latest_message.get("text")
                 else:
-                    raise ValueError("Provided slot mapping type " "is not supported")
+                    raise ValueError("Provided slot mapping type is not supported")
 
                 if value is not None:
                     logger.debug(
@@ -311,16 +311,32 @@ class FormAction(Action):
                     )
                     return {slot_to_fill: value}
 
-        logger.debug("Failed to extract requested slot '{}'" "".format(slot_to_fill))
+        logger.debug("Failed to extract requested slot '{}'".format(slot_to_fill))
         return {}
+
+    # def validate_<slot_name>(self, value, dispatcher, tracker, domain):
+    #     # type: (Text, CollectingDispatcher, Tracker, Dict[Text, Any]) -> Dict[Text, Any]
+    #     """Example validate_{} function for validating a slot, <slot_name>.
+    #
+    #     Returns a dictionary of slots to set and their values.
+    #     """
+    #
+    #     # only want to validate value if the number is positive
+    #     if int(value) > 0:
+    #         # value is positive, set example_slot to value
+    #         return {"<slot_name>": value}
+    #     else:
+    #         # don't want to validate, set example_slot to None
+    #         return {"<slot_name>": None}
 
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """Validate extracted value of requested slot
-            else reject execution of the form action
+        """Extract and validate value of requested slot.
 
-            Subclass this method to add custom validation and rejection logic
+        If nothing was extracted reject execution of the form action.
+        Subclass this method to add custom validation and rejection logic
         """
+
         # extract other slots that were not requested
         # but set by corresponding entity or trigger intent mapping
         slot_values = self.extract_other_slots(dispatcher, tracker, domain)
@@ -343,9 +359,9 @@ class FormAction(Action):
 
             for slot, value in slot_values.items():
                 validate_func = getattr(
-                    self, "validate_{}".format(slot), lambda *x: value
+                    self, "validate_{}".format(slot), lambda *x: {slot: value}
                 )
-                slot_values[slot] = validate_func(value, dispatcher, tracker, domain)
+                slot_values.update(validate_func(value, dispatcher, tracker, domain))
 
         # validation succeed, set slots to extracted values
         return [SlotSet(slot, value) for slot, value in slot_values.items()]
@@ -425,7 +441,7 @@ class FormAction(Action):
             if the form was called for the first time"""
 
         if tracker.active_form.get("name") is not None:
-            logger.debug("The form '{}' is active" "".format(tracker.active_form))
+            logger.debug("The form '{}' is active".format(tracker.active_form))
         else:
             logger.debug("There is no active form")
 
@@ -446,7 +462,7 @@ class FormAction(Action):
         if tracker.latest_action_name == "action_listen" and tracker.active_form.get(
             "validate", True
         ):
-            logger.debug("Validating user input '{}'" "".format(tracker.latest_message))
+            logger.debug("Validating user input '{}'".format(tracker.latest_message))
             return self.validate(dispatcher, tracker, domain)
         else:
             logger.debug("Skipping validation")
