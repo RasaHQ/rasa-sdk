@@ -21,7 +21,7 @@ jobs:
   - stage: test
     name: Check code style
     python: 3.6
-    script: pip install black; black --config rasa_core_sdk.toml --check .
+    script: pip install black; black --config pyproject.toml --check .
   - stage: deploy
     python: 3.6
     install: skip
