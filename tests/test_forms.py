@@ -647,7 +647,7 @@ def test_validate():
 
     # check that validation failed gracefully
     assert execinfo.type == ActionExecutionRejection
-    assert "Failed to extract slot some_slot " "with action some_form" in str(
+    assert "Failed to extract slot some_slot with action some_form" in str(
         execinfo.value
     )
 

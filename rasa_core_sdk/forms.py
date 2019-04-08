@@ -39,7 +39,7 @@ class FormAction(Action):
         """
 
         raise NotImplementedError(
-            "A form must implement required slots " "that it has to fill"
+            "A form must implement required slots that it has to fill"
         )
 
     def from_entity(
@@ -276,9 +276,7 @@ class FormAction(Action):
             else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
-        logger.debug(
-            "Trying to extract requested slot '{}' ..." "".format(slot_to_fill)
-        )
+        logger.debug("Trying to extract requested slot '{}' ...".format(slot_to_fill))
 
         # get mapping for requested slot
         requested_slot_mappings = self.get_mappings_for_slot(slot_to_fill)
@@ -301,7 +299,7 @@ class FormAction(Action):
                 elif mapping_type == "from_text":
                     value = tracker.latest_message.get("text")
                 else:
-                    raise ValueError("Provided slot mapping type " "is not supported")
+                    raise ValueError("Provided slot mapping type is not supported")
 
                 if value is not None:
                     logger.debug(
@@ -311,7 +309,7 @@ class FormAction(Action):
                     )
                     return {slot_to_fill: value}
 
-        logger.debug("Failed to extract requested slot '{}'" "".format(slot_to_fill))
+        logger.debug("Failed to extract requested slot '{}'".format(slot_to_fill))
         return {}
 
     def validate(self, dispatcher, tracker, domain):
@@ -425,7 +423,7 @@ class FormAction(Action):
             if the form was called for the first time"""
 
         if tracker.active_form.get("name") is not None:
-            logger.debug("The form '{}' is active" "".format(tracker.active_form))
+            logger.debug("The form '{}' is active".format(tracker.active_form))
         else:
             logger.debug("There is no active form")
 
@@ -446,7 +444,7 @@ class FormAction(Action):
         if tracker.latest_action_name == "action_listen" and tracker.active_form.get(
             "validate", True
         ):
-            logger.debug("Validating user input '{}'" "".format(tracker.latest_message))
+            logger.debug("Validating user input '{}'".format(tracker.latest_message))
             return self.validate(dispatcher, tracker, domain)
         else:
             logger.debug("Skipping validation")
