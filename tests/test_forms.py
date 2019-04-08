@@ -652,6 +652,42 @@ def test_validate():
     )
 
 
+def test_validate_extracted_no_requested():
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        def validate_some_slot(self, value, dispatcher, tracker, domain):
+            if value == "some_value":
+                return "validated_value"
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {"requested_slot": None},
+        {
+            "entities": [
+                {"entity": "some_slot", "value": "some_value"},
+            ]
+        },
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    events = form.validate(CollectingDispatcher(), tracker, {})
+    # check that some_slot gets validated correctly
+    assert events == [SlotSet("some_slot", "validated_value")]
+
+
 def test_validate_trigger_slots():
     """Test validation results of from_trigger_intent slot mappings
     """
