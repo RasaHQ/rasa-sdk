@@ -341,11 +341,11 @@ class FormAction(Action):
                     "".format(slot_to_fill, self.name()),
                 )
 
-            for slot, value in slot_values.items():
-                validate_func = getattr(
-                    self, "validate_{}".format(slot), lambda *x: value
-                )
-                slot_values[slot] = validate_func(value, dispatcher, tracker, domain)
+        for slot, value in slot_values.items():
+            validate_func = getattr(
+                self, "validate_{}".format(slot), lambda *x: value
+            )
+            slot_values[slot] = validate_func(value, dispatcher, tracker, domain)
 
         # validation succeed, set slots to extracted values
         return [SlotSet(slot, value) for slot, value in slot_values.items()]
