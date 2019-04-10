@@ -669,14 +669,7 @@ def test_validate_prefilled_slot():
     form = CustomFormAction()
 
     tracker = Tracker(
-        "default",
-        {"some_slot": "some_value"},
-        {},
-        [],
-        False,
-        None,
-        {},
-        "form",
+        "default", {"some_slot": "some_value"}, {}, [], False, None, {}, "form"
     )
 
     events = form._validate_if_required(CollectingDispatcher(), tracker, {})
@@ -703,11 +696,7 @@ def test_validate_extracted_no_requested():
     tracker = Tracker(
         "default",
         {"requested_slot": None},
-        {
-            "entities": [
-                {"entity": "some_slot", "value": "some_value"},
-            ]
-        },
+        {"entities": [{"entity": "some_slot", "value": "some_value"}]},
         [],
         False,
         None,
