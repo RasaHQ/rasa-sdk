@@ -652,6 +652,38 @@ def test_validate():
     )
 
 
+def test_validate_prefilled_slot():
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        def validate_some_slot(self, value, dispatcher, tracker, domain):
+            if value == "some_value":
+                return "validated_value"
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {"some_slot": "some_value"},
+        {},
+        [],
+        False,
+        None,
+        {},
+        "form",
+    )
+
+    events = form._validate_if_required(CollectingDispatcher(), tracker, {})
+    # check that some_slot gets validated correctly
+    assert events == [SlotSet("some_slot", "validated_value")]
+
+
 def test_validate_extracted_no_requested():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):

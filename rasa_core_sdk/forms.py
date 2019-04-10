@@ -435,6 +435,24 @@ class FormAction(Action):
             logger.debug("Activated the form '{}'".format(self.name()))
             return [Form(self.name())]
 
+    def _validate_prefilled_slots(self, dispatcher, tracker, domain):
+        # type: (Tracker) -> List[Dict]
+        """Upon form activation, validate all required slots that are already
+           filled."""
+        prefilled_slots = {}
+        for slot_name in self.required_slots(tracker):
+            if not self._should_request_slot(tracker, slot_name):
+                slot_value = tracker.get_slot(slot_name)
+                prefilled_slots[slot_name] = slot_value
+
+        for slot, value in list(prefilled_slots.items()):
+            validate_func = getattr(
+                self, "validate_{}".format(slot), lambda *x: {slot: value}
+            )
+            prefilled_slots[slot] = validate_func(value, dispatcher, tracker, domain)
+
+        return [SlotSet(slot, value) for slot, value in prefilled_slots.items()]
+
     def _validate_if_required(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Return a list of events from `self.validate(...)`
@@ -443,7 +461,11 @@ class FormAction(Action):
             - the form is called after `action_listen`
             - form validation was not cancelled
         """
-        if tracker.latest_action_name == "action_listen" and tracker.active_form.get(
+        if tracker.latest_action_name == "form" and tracker.active_form.get(
+            "validate", True
+        ):
+            return self._validate_prefilled_slots(dispatcher, tracker, domain)
+        elif tracker.latest_action_name == "action_listen" and tracker.active_form.get(
             "validate", True
         ):
             logger.debug("Validating user input '{}'" "".format(tracker.latest_message))
