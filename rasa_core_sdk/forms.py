@@ -340,9 +340,7 @@ class FormAction(Action):
                 )
 
         for slot, value in slot_values.items():
-            validate_func = getattr(
-                self, "validate_{}".format(slot), lambda *x: value
-            )
+            validate_func = getattr(self, "validate_{}".format(slot), lambda *x: value)
             slot_values[slot] = validate_func(value, dispatcher, tracker, domain)
 
         # validation succeed, set slots to extracted values

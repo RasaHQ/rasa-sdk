@@ -671,11 +671,7 @@ def test_validate_extracted_no_requested():
     tracker = Tracker(
         "default",
         {"requested_slot": None},
-        {
-            "entities": [
-                {"entity": "some_slot", "value": "some_value"},
-            ]
-        },
+        {"entities": [{"entity": "some_slot", "value": "some_value"}]},
         [],
         False,
         None,
