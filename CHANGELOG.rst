@@ -14,6 +14,7 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 Added
 -----
 - add formatter 'black'
+- Slots filled before the start of a form are now validated upon form start
 
 Changed
 -------
