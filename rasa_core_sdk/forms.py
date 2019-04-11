@@ -355,9 +355,16 @@ class FormAction(Action):
                     "".format(slot_to_fill, self.name()),
                 )
 
-        for slot, value in slot_values.items():
+        for slot, value in list(slot_values.items()):
             validate_func = getattr(self, "validate_{}".format(slot), lambda *x: value)
-            slot_values.update(validate_func(value, dispatcher, tracker, domain))
+            validation_output = validate_func(value, dispatcher, tracker, domain)
+            if not isinstance(validation_output, dict):
+                logger.warning(
+                    "Returning values in helper validation methods is deprecated. "
+                    + "Your method should return a dict of {'slot_name': 'value'} instead."
+                )
+                validation_output = {slot: validation_output}
+            slot_values.update(validation_output)
 
         # validation succeed, set slots to extracted values
         return [SlotSet(slot, value) for slot, value in slot_values.items()]

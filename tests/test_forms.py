@@ -652,6 +652,47 @@ def test_validate():
     )
 
 
+def test_set_slot_within_helper():
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        def validate_some_slot(self, value, dispatcher, tracker, domain):
+            if value == "some_value":
+                return {
+                    "some_slot": "validated_value",
+                    "some_other_slot": "other_value",
+                }
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {"requested_slot": "some_slot"},
+        {"entities": [{"entity": "some_slot", "value": "some_value"}]},
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    events = form.validate(CollectingDispatcher(), tracker, {})
+    # check that some_slot gets validated correctly
+    assert events == [
+        SlotSet("some_other_slot", "other_value"),
+        SlotSet("some_slot", "validated_value"),
+    ] or events == [
+        SlotSet("some_slot", "validated_value"),
+        SlotSet("some_other_slot", "other_value"),
+    ]
+
+
 def test_validate_extracted_no_requested():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
@@ -664,7 +705,7 @@ def test_validate_extracted_no_requested():
 
         def validate_some_slot(self, value, dispatcher, tracker, domain):
             if value == "some_value":
-                return "validated_value"
+                return {"some_slot": "validated_value"}
 
     form = CustomFormAction()
 
@@ -897,6 +938,40 @@ def test_validate_if_required():
     # check that validation was skipped
     # because previous action is not action_listen
     assert events == []
+
+
+def test_deprecated_helper_style():
+    # noinspection PyAbstractClass
+    # This method tests the old style of returning values instead of {'slot':'value'}
+    # dicts, and can be removed if we officially stop supporting the deprecated style.
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        def validate_some_slot(self, value, dispatcher, tracker, domain):
+            if value == "some_value":
+                return "validated_value"
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {"requested_slot": "some_value"},
+        {"entities": [{"entity": "some_slot", "value": "some_value"}]},
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    events = form.validate(CollectingDispatcher(), tracker, {})
+    # check that some_slot gets validated correctly
+    assert events == [SlotSet("some_slot", "validated_value")]
 
 
 def test_early_deactivation():
