@@ -121,9 +121,7 @@ def run(actions, port=DEFAULT_SERVER_PORT, cors="*"):
     http_server = WSGIServer(("0.0.0.0", port), edp_app)
 
     http_server.start()
-    logger.info(
-        "Action endpoint is up and running. on {}".format(http_server.address)
-    )
+    logger.info("Action endpoint is up and running. on {}".format(http_server.address))
 
     http_server.serve_forever()
 

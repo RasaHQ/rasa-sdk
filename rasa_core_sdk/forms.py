@@ -276,9 +276,7 @@ class FormAction(Action):
             else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
-        logger.debug(
-            "Trying to extract requested slot '{}' ...".format(slot_to_fill)
-        )
+        logger.debug("Trying to extract requested slot '{}' ...".format(slot_to_fill))
 
         # get mapping for requested slot
         requested_slot_mappings = self.get_mappings_for_slot(slot_to_fill)
@@ -357,11 +355,9 @@ class FormAction(Action):
                     "".format(slot_to_fill, self.name()),
                 )
 
-            for slot, value in slot_values.items():
-                validate_func = getattr(
-                    self, "validate_{}".format(slot), lambda *x: {slot: value}
-                )
-                slot_values.update(validate_func(value, dispatcher, tracker, domain))
+        for slot, value in slot_values.items():
+            validate_func = getattr(self, "validate_{}".format(slot), lambda *x: value)
+            slot_values.update(validate_func(value, dispatcher, tracker, domain))
 
         # validation succeed, set slots to extracted values
         return [SlotSet(slot, value) for slot, value in slot_values.items()]

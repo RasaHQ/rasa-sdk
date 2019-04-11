@@ -22,6 +22,8 @@ Changed
 
 Fixed
 -----
+- Slots extracted from entities in user input upon calling form activation are
+  now correctly validated
 
 Removed
 -------
