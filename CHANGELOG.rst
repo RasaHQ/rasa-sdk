@@ -15,6 +15,8 @@ Added
 -----
 - add formatter 'black'
 - Slots filled before the start of a form are now validated upon form start
+- The values of required slots for a form are now printed before submitting
+  under the ``--debug`` flag
 
 Changed
 -------

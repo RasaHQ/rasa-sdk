@@ -370,8 +370,21 @@ class FormAction(Action):
                 )
                 return [SlotSet(REQUESTED_SLOT, slot)]
 
-        logger.debug("No slots left to request")
+        self._log_form_slots(tracker)
         return None
+
+    def _log_form_slots(self, tracker):
+        """Logs the values of all required slots before submitting the form."""
+
+        req_slots = self.required_slots(tracker)
+        slot_values = "\n".join(
+            ["\t{}: {}".format(slot, tracker.get_slot(slot)) for slot in req_slots]
+        )
+        logger.debug(
+            "No slots left to request, all required slots are filled:\n{}".format(
+                slot_values
+            )
+        )
 
     def deactivate(self):
         # type: () -> List[Dict]
@@ -496,7 +509,6 @@ class FormAction(Action):
         events = self._activate_if_required(tracker)
         # validate user input
         events.extend(self._validate_if_required(dispatcher, tracker, domain))
-
         # check that the form wasn't deactivated in validation
         if Form(None) not in events:
 
@@ -513,6 +525,7 @@ class FormAction(Action):
                 events.extend(next_slot_events)
             else:
                 # there is nothing more to request, so we can submit
+                logger.debug("Submitting the form '{}'".format(self.name()))
                 events.extend(self.submit(dispatcher, temp_tracker, domain))
                 # deactivate the form after submission
                 events.extend(self.deactivate())
