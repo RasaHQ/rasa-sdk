@@ -312,21 +312,6 @@ class FormAction(Action):
         logger.debug("Failed to extract requested slot '{}'".format(slot_to_fill))
         return {}
 
-    # def validate_<slot_name>(self, value, dispatcher, tracker, domain):
-    #     # type: (Any, CollectingDispatcher, Tracker, Dict[Text, Any]) -> Dict[Text, Any]
-    #     """Example validate_{} function for validating a slot, <slot_name>.
-    #
-    #     Returns a dictionary of slots to set and their values.
-    #     """
-    #
-    #     # Example: Don't validate negative numbers
-    #     if int(value) >= 0:
-    #         # value is non-negative, set example_slot to value
-    #         return {"<slot_name>": value}
-    #     else:
-    #         # don't want to validate, set example_slot to None
-    #         return {"<slot_name>": None}
-
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Extract and validate value of requested slot.
