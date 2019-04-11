@@ -17,6 +17,8 @@ Added
 
 Changed
 -------
+- validate_{} functions for slots now return dictionaries of form {slot: value} 
+  instead of value
 
 Fixed
 -----

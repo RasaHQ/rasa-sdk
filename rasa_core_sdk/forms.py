@@ -314,11 +314,12 @@ class FormAction(Action):
 
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """Validate extracted value of requested slot
-            else reject execution of the form action
+        """Extract and validate value of requested slot.
 
-            Subclass this method to add custom validation and rejection logic
+        If nothing was extracted reject execution of the form action.
+        Subclass this method to add custom validation and rejection logic
         """
+
         # extract other slots that were not requested
         # but set by corresponding entity or trigger intent mapping
         slot_values = self.extract_other_slots(dispatcher, tracker, domain)
@@ -339,9 +340,18 @@ class FormAction(Action):
                     "".format(slot_to_fill, self.name()),
                 )
 
-        for slot, value in slot_values.items():
-            validate_func = getattr(self, "validate_{}".format(slot), lambda *x: value)
-            slot_values[slot] = validate_func(value, dispatcher, tracker, domain)
+        for slot, value in list(slot_values.items()):
+            validate_func = getattr(
+                self, "validate_{}".format(slot), lambda *x: {slot: value}
+            )
+            validation_output = validate_func(value, dispatcher, tracker, domain)
+            if not isinstance(validation_output, dict):
+                logger.warning(
+                    "Returning values in helper validation methods is deprecated. "
+                    + "Your method should return a dict of {'slot_name': value} instead."
+                )
+                validation_output = {slot: validation_output}
+            slot_values.update(validation_output)
 
         # validation succeed, set slots to extracted values
         return [SlotSet(slot, value) for slot, value in slot_values.items()]
