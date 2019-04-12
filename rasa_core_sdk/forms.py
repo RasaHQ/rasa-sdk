@@ -312,6 +312,28 @@ class FormAction(Action):
         logger.debug("Failed to extract requested slot '{}'".format(slot_to_fill))
         return {}
 
+    def validate_slots(self, slot_dict, dispatcher, tracker, domain):
+        # type: (Dict[Text, Any], CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
+        """Upon form activation, validate all required slots that are already
+           filled."""
+
+        for slot, value in list(slot_dict.items()):
+            validate_func = getattr(
+                self, "validate_{}".format(slot), lambda *x: {slot: value}
+            )
+            validation_output = validate_func(value, dispatcher, tracker, domain)
+            if not isinstance(validation_output, dict):
+                logger.warning(
+                    "Returning values in helper validation methods is deprecated. "
+                    + "Your `validate_{}()` method should return ".format(slot)
+                    + "a dict of {'slot_name': value} instead."
+                )
+                validation_output = {slot: validation_output}
+            slot_dict.update(validation_output)
+
+        # validation succeed, set slots to extracted values
+        return [SlotSet(slot, value) for slot, value in slot_dict.items()]
+
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Extract and validate value of requested slot.
@@ -339,22 +361,8 @@ class FormAction(Action):
                     "with action {1}"
                     "".format(slot_to_fill, self.name()),
                 )
-
-        for slot, value in list(slot_values.items()):
-            validate_func = getattr(
-                self, "validate_{}".format(slot), lambda *x: {slot: value}
-            )
-            validation_output = validate_func(value, dispatcher, tracker, domain)
-            if not isinstance(validation_output, dict):
-                logger.warning(
-                    "Returning values in helper validation methods is deprecated. "
-                    + "Your method should return a dict of {'slot_name': value} instead."
-                )
-                validation_output = {slot: validation_output}
-            slot_values.update(validation_output)
-
-        # validation succeed, set slots to extracted values
-        return [SlotSet(slot, value) for slot, value in slot_values.items()]
+        logger.debug("Validating extracted slots: {}".format(slot_values))
+        return self.validate_slots(slot_values, dispatcher, tracker, domain)
 
     # noinspection PyUnusedLocal
     def request_next_slot(
@@ -438,8 +446,8 @@ class FormAction(Action):
             )
         )
 
-    def _activate_if_required(self, tracker):
-        # type: (Tracker) -> List[Dict]
+    def _activate_if_required(self, dispatcher, tracker, domain):
+        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """Return `Form` event with the name of the form
             if the form was called for the first time"""
 
@@ -452,33 +460,22 @@ class FormAction(Action):
             return []
         else:
             logger.debug("Activated the form '{}'".format(self.name()))
-            return [Form(self.name())]
 
-    def _validate_prefilled_slots(self, dispatcher, tracker, domain):
-        # type: (Tracker) -> List[Dict]
-        """Upon form activation, validate all required slots that are already
-           filled."""
-
-        prefilled_slots = {}
-        for slot_name in self.required_slots(tracker):
-            if not self._should_request_slot(tracker, slot_name):
-                slot_value = tracker.get_slot(slot_name)
-                prefilled_slots[slot_name] = slot_value
-
-        for slot, value in list(prefilled_slots.items()):
-            validate_func = getattr(
-                self, "validate_{}".format(slot), lambda *x: {slot: value}
-            )
-            validation_output = validate_func(value, dispatcher, tracker, domain)
-            if not isinstance(validation_output, dict):
-                logger.warning(
-                    "Returning values in helper validation methods is deprecated. "
-                    + "Your method should return a dict of {'slot_name': value} instead."
+            # collect values of required slots filled before activation
+            prefilled_slots = {}
+            for slot_name in self.required_slots(tracker):
+                if not self._should_request_slot(tracker, slot_name):
+                    prefilled_slots[slot_name] = tracker.get_slot(slot_name)
+            if prefilled_slots != {}:
+                logger.debug(
+                    "Validating pre-filled required slots: {}".format(prefilled_slots)
                 )
-                validation_output = {slot: validation_output}
-            prefilled_slots.update(validation_output)
+                validation_events = self.validate_slots(
+                    prefilled_slots, dispatcher, tracker, domain
+                )
+                return [Form(self.name())] + validation_events
 
-        return [SlotSet(slot, value) for slot, value in prefilled_slots.items()]
+            return [Form(self.name())]
 
     def _validate_if_required(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
@@ -488,11 +485,7 @@ class FormAction(Action):
             - the form is called after `action_listen`
             - form validation was not cancelled
         """
-        if tracker.latest_action_name == "form" and tracker.active_form.get(
-            "validate", True
-        ):
-            return self._validate_prefilled_slots(dispatcher, tracker, domain)
-        elif tracker.latest_action_name == "action_listen" and tracker.active_form.get(
+        if tracker.latest_action_name == "action_listen" and tracker.active_form.get(
             "validate", True
         ):
             logger.debug("Validating user input '{}'".format(tracker.latest_message))
@@ -522,7 +515,7 @@ class FormAction(Action):
         """
 
         # activate the form
-        events = self._activate_if_required(tracker)
+        events = self._activate_if_required(dispatcher, tracker, domain)
         # validate user input
         events.extend(self._validate_if_required(dispatcher, tracker, domain))
         # check that the form wasn't deactivated in validation
