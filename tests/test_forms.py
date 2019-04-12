@@ -763,6 +763,10 @@ def test_validate_prefilled_slots():
         Form("some_form"),
         SlotSet("some_slot", "validated_value"),
         SlotSet("some_other_slot", "some_other_value"),
+    ] or events == [
+        Form("some_form"),
+        SlotSet("some_other_slot", "some_other_value"),
+        SlotSet("some_slot", "validated_value"),
     ]
 
     events.extend(
@@ -773,6 +777,11 @@ def test_validate_prefilled_slots():
         Form("some_form"),
         SlotSet("some_slot", "validated_value"),
         SlotSet("some_other_slot", "some_other_value"),
+        SlotSet("some_slot", None),
+    ] or events == [
+        Form("some_form"),
+        SlotSet("some_other_slot", "some_other_value"),
+        SlotSet("some_slot", "validated_value"),
         SlotSet("some_slot", None),
     ]
 
