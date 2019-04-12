@@ -370,21 +370,8 @@ class FormAction(Action):
                 )
                 return [SlotSet(REQUESTED_SLOT, slot)]
 
-        self._log_form_slots(tracker)
+        # no more required slots to fill
         return None
-
-    def _log_form_slots(self, tracker):
-        """Logs the values of all required slots before submitting the form."""
-
-        req_slots = self.required_slots(tracker)
-        slot_values = "\n".join(
-            ["\t{}: {}".format(slot, tracker.get_slot(slot)) for slot in req_slots]
-        )
-        logger.debug(
-            "No slots left to request, all required slots are filled:\n{}".format(
-                slot_values
-            )
-        )
 
     def deactivate(self):
         # type: () -> List[Dict]
@@ -430,6 +417,19 @@ class FormAction(Action):
 
         return self._to_list(intent), self._to_list(not_intent)
 
+    def _log_form_slots(self, tracker):
+        """Logs the values of all required slots before submitting the form."""
+
+        req_slots = self.required_slots(tracker)
+        slot_values = "\n".join(
+            ["\t{}: {}".format(slot, tracker.get_slot(slot)) for slot in req_slots]
+        )
+        logger.debug(
+            "No slots left to request, all required slots are filled:\n{}".format(
+                slot_values
+            )
+        )
+
     def _activate_if_required(self, tracker):
         # type: (Tracker) -> List[Dict]
         """Return `Form` event with the name of the form
@@ -450,6 +450,7 @@ class FormAction(Action):
         # type: (Tracker) -> List[Dict]
         """Upon form activation, validate all required slots that are already
            filled."""
+
         prefilled_slots = {}
         for slot_name in self.required_slots(tracker):
             if not self._should_request_slot(tracker, slot_name):
@@ -525,6 +526,7 @@ class FormAction(Action):
                 events.extend(next_slot_events)
             else:
                 # there is nothing more to request, so we can submit
+                self._log_form_slots(tracker)
                 logger.debug("Submitting the form '{}'".format(self.name()))
                 events.extend(self.submit(dispatcher, temp_tracker, domain))
                 # deactivate the form after submission
