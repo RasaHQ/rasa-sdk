@@ -451,8 +451,12 @@ class FormAction(Action):
 
     def _activate_if_required(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """Return `Form` event with the name of the form
-            if the form was called for the first time"""
+        """Activate form if the form is called for the first time.
+
+        If activating, validate any required slots that were filled before
+        form activation and return `Form` event with the name of the form, as well
+        as any `SlotSet` events from validation of pre-filled slots.
+        """
 
         if tracker.active_form.get("name") is not None:
             logger.debug("The form '{}' is active".format(tracker.active_form))
@@ -463,6 +467,7 @@ class FormAction(Action):
             return []
         else:
             logger.debug("Activated the form '{}'".format(self.name()))
+            events = [Form(self.name())]
 
             # collect values of required slots filled before activation
             prefilled_slots = {}
@@ -474,14 +479,13 @@ class FormAction(Action):
                 logger.debug(
                     "Validating pre-filled required slots: {}".format(prefilled_slots)
                 )
-                validation_events = self.validate_slots(
-                    prefilled_slots, dispatcher, tracker, domain
+                events.extend(
+                    self.validate_slots(prefilled_slots, dispatcher, tracker, domain)
                 )
             else:
                 logger.debug("No pre-filled required slots to validate.")
-                validation_events = []
 
-            return [Form(self.name())] + validation_events
+            return events
 
     def _validate_if_required(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
