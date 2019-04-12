@@ -725,6 +725,67 @@ def test_validate_extracted_no_requested():
     assert events == [SlotSet("some_slot", "validated_value")]
 
 
+def test_validate_prefilled_slots():
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        def validate_some_slot(self, value, dispatcher, tracker, domain):
+            if value == "some_value":
+                return {"some_slot": "validated_value"}
+            else:
+                return {"some_slot": None}
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {"some_slot": "some_value", "some_other_slot": "some_other_value"},
+        {
+            "entities": [{"entity": "some_slot", "value": "some_bad_value"}],
+            "text": "some text",
+        },
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    events = form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
+    # check that the form was activated and prefilled slots were validated
+    assert events == [
+        Form("some_form"),
+        SlotSet("some_slot", "validated_value"),
+        SlotSet("some_other_slot", "some_other_value"),
+    ] or events == [  # this 'or' is only necessary for python 2.7 and 3.5
+        Form("some_form"),
+        SlotSet("some_other_slot", "some_other_value"),
+        SlotSet("some_slot", "validated_value"),
+    ]
+
+    events.extend(
+        form._validate_if_required(dispatcher=None, tracker=tracker, domain=None)
+    )
+    # check that entities picked up in input overwrite prefilled slots
+    assert events == [
+        Form("some_form"),
+        SlotSet("some_slot", "validated_value"),
+        SlotSet("some_other_slot", "some_other_value"),
+        SlotSet("some_slot", None),
+    ] or events == [  # this 'or' is only necessary for python 2.7 and 3.5
+        Form("some_form"),
+        SlotSet("some_other_slot", "some_other_value"),
+        SlotSet("some_slot", "validated_value"),
+        SlotSet("some_slot", None),
+    ]
+
+
 def test_validate_trigger_slots():
     """Test validation results of from_trigger_intent slot mappings
     """
@@ -827,6 +888,10 @@ def test_activate_if_required():
         def name(self):
             return "some_form"
 
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
     form = CustomFormAction()
 
     tracker = Tracker(
@@ -840,7 +905,7 @@ def test_activate_if_required():
         "action_listen",
     )
 
-    events = form._activate_if_required(tracker)
+    events = form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
     # check that the form was activated
     assert events == [Form("some_form")]
 
@@ -855,7 +920,7 @@ def test_activate_if_required():
         "action_listen",
     )
 
-    events = form._activate_if_required(tracker)
+    events = form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
     # check that the form was not activated again
     assert events == []
 
