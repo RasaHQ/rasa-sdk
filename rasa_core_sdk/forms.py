@@ -39,7 +39,7 @@ class FormAction(Action):
         """
 
         raise NotImplementedError(
-            "A form must implement required slots " "that it has to fill"
+            "A form must implement required slots that it has to fill"
         )
 
     def from_entity(
@@ -276,9 +276,7 @@ class FormAction(Action):
             else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
-        logger.debug(
-            "Trying to extract requested slot '{}' ..." "".format(slot_to_fill)
-        )
+        logger.debug("Trying to extract requested slot '{}' ...".format(slot_to_fill))
 
         # get mapping for requested slot
         requested_slot_mappings = self.get_mappings_for_slot(slot_to_fill)
@@ -301,7 +299,7 @@ class FormAction(Action):
                 elif mapping_type == "from_text":
                     value = tracker.latest_message.get("text")
                 else:
-                    raise ValueError("Provided slot mapping type " "is not supported")
+                    raise ValueError("Provided slot mapping type is not supported")
 
                 if value is not None:
                     logger.debug(
@@ -311,16 +309,17 @@ class FormAction(Action):
                     )
                     return {slot_to_fill: value}
 
-        logger.debug("Failed to extract requested slot '{}'" "".format(slot_to_fill))
+        logger.debug("Failed to extract requested slot '{}'".format(slot_to_fill))
         return {}
 
     def validate(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """Validate extracted value of requested slot
-            else reject execution of the form action
+        """Extract and validate value of requested slot.
 
-            Subclass this method to add custom validation and rejection logic
+        If nothing was extracted reject execution of the form action.
+        Subclass this method to add custom validation and rejection logic
         """
+
         # extract other slots that were not requested
         # but set by corresponding entity or trigger intent mapping
         slot_values = self.extract_other_slots(dispatcher, tracker, domain)
@@ -341,9 +340,18 @@ class FormAction(Action):
                     "".format(slot_to_fill, self.name()),
                 )
 
-        for slot, value in slot_values.items():
-            validate_func = getattr(self, "validate_{}".format(slot), lambda *x: value)
-            slot_values[slot] = validate_func(value, dispatcher, tracker, domain)
+        for slot, value in list(slot_values.items()):
+            validate_func = getattr(
+                self, "validate_{}".format(slot), lambda *x: {slot: value}
+            )
+            validation_output = validate_func(value, dispatcher, tracker, domain)
+            if not isinstance(validation_output, dict):
+                logger.warning(
+                    "Returning values in helper validation methods is deprecated. "
+                    + "Your method should return a dict of {'slot_name': value} instead."
+                )
+                validation_output = {slot: validation_output}
+            slot_values.update(validation_output)
 
         # validation succeed, set slots to extracted values
         return [SlotSet(slot, value) for slot, value in slot_values.items()]
@@ -436,7 +444,7 @@ class FormAction(Action):
             if the form was called for the first time"""
 
         if tracker.active_form.get("name") is not None:
-            logger.debug("The form '{}' is active" "".format(tracker.active_form))
+            logger.debug("The form '{}' is active".format(tracker.active_form))
         else:
             logger.debug("There is no active form")
 
@@ -461,7 +469,14 @@ class FormAction(Action):
             validate_func = getattr(
                 self, "validate_{}".format(slot), lambda *x: {slot: value}
             )
-            prefilled_slots[slot] = validate_func(value, dispatcher, tracker, domain)
+            validation_output = validate_func(value, dispatcher, tracker, domain)
+            if not isinstance(validation_output, dict):
+                logger.warning(
+                    "Returning values in helper validation methods is deprecated. "
+                    + "Your method should return a dict of {'slot_name': value} instead."
+                )
+                validation_output = {slot: validation_output}
+            prefilled_slots.update(validation_output)
 
         return [SlotSet(slot, value) for slot, value in prefilled_slots.items()]
 
@@ -480,7 +495,7 @@ class FormAction(Action):
         elif tracker.latest_action_name == "action_listen" and tracker.active_form.get(
             "validate", True
         ):
-            logger.debug("Validating user input '{}'" "".format(tracker.latest_message))
+            logger.debug("Validating user input '{}'".format(tracker.latest_message))
             return self.validate(dispatcher, tracker, domain)
         else:
             logger.debug("Skipping validation")
