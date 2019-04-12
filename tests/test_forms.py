@@ -758,6 +758,12 @@ def test_validate_prefilled_slots():
     )
 
     events = form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
+    assert events == [
+        Form("some_form"),
+        SlotSet("some_slot", "validated_value"),
+        SlotSet("some_other_slot", "some_other_value"),
+    ]
+
     events.extend(
         form._validate_if_required(dispatcher=None, tracker=tracker, domain=None)
     )
