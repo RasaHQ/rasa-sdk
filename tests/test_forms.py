@@ -763,7 +763,7 @@ def test_validate_prefilled_slots():
         Form("some_form"),
         SlotSet("some_slot", "validated_value"),
         SlotSet("some_other_slot", "some_other_value"),
-    ] or events == [
+    ] or events == [  # this 'or' is only necessary for python 2.7 and 3.5
         Form("some_form"),
         SlotSet("some_other_slot", "some_other_value"),
         SlotSet("some_slot", "validated_value"),
@@ -778,7 +778,7 @@ def test_validate_prefilled_slots():
         SlotSet("some_slot", "validated_value"),
         SlotSet("some_other_slot", "some_other_value"),
         SlotSet("some_slot", None),
-    ] or events == [
+    ] or events == [  # this 'or' is only necessary for python 2.7 and 3.5
         Form("some_form"),
         SlotSet("some_other_slot", "some_other_value"),
         SlotSet("some_slot", "validated_value"),

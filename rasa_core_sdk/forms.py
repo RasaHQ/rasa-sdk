@@ -314,8 +314,11 @@ class FormAction(Action):
 
     def validate_slots(self, slot_dict, dispatcher, tracker, domain):
         # type: (Dict[Text, Any], CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
-        """Upon form activation, validate all required slots that are already
-           filled."""
+        """Validate slots using helper validation functions.
+
+        Call validate_{slot} function for each slot, value pair to be validated.
+        If this function is not implemented, set the slot to the value.
+        """
 
         for slot, value in list(slot_dict.items()):
             validate_func = getattr(
@@ -466,16 +469,19 @@ class FormAction(Action):
             for slot_name in self.required_slots(tracker):
                 if not self._should_request_slot(tracker, slot_name):
                     prefilled_slots[slot_name] = tracker.get_slot(slot_name)
-            if prefilled_slots != {}:
+
+            if prefilled_slots:
                 logger.debug(
                     "Validating pre-filled required slots: {}".format(prefilled_slots)
                 )
                 validation_events = self.validate_slots(
                     prefilled_slots, dispatcher, tracker, domain
                 )
-                return [Form(self.name())] + validation_events
+            else:
+                logger.debug("No pre-filled required slots to validate.")
+                validation_events = []
 
-            return [Form(self.name())]
+            return [Form(self.name())] + validation_events
 
     def _validate_if_required(self, dispatcher, tracker, domain):
         # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
