@@ -26,8 +26,6 @@ Removed
 [0.13.1] - 2019-04-15
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: This version is not yet released and is under active development.
-
 Added
 -----
 - add formatter 'black'
