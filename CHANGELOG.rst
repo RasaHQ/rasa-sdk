@@ -6,10 +6,25 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. _master-release:
 
-[Unreleased 0.13.1aX] - `master`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[Unreleased 0.13.2aX] - `master`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
+
+Added
+-----
+
+Changed
+-------
+
+Fixed
+-----
+
+Removed
+-------
+
+[0.13.1] - 2019-04-16
+^^^^^^^^^^^^^^^^^^^^^
 
 Added
 -----
@@ -20,16 +35,13 @@ Added
 
 Changed
 -------
-- validate_{} functions for slots now return dictionaries of form {slot: value} 
+- validate_{} functions for slots now return dictionaries of form {slot: value}
   instead of value
 
 Fixed
 -----
 - Slots extracted from entities in user input upon calling form activation are
   now correctly validated
-
-Removed
--------
 
 [0.13.0] - 2019-03-26
 ^^^^^^^^^^^^^^^^^^^^^
