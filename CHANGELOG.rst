@@ -23,6 +23,12 @@ Fixed
 Removed
 -------
 
+[0.14.0] - 2019-04-26
+^^^^^^^^^^^^^^^^^^^^^
+
+Compatibility release for Rasa Core 0.14.0. There have not been any
+additional changes when compared to ``0.13.1``.
+
 [0.13.1] - 2019-04-16
 ^^^^^^^^^^^^^^^^^^^^^
 
