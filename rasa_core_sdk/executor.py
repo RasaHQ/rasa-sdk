@@ -31,6 +31,14 @@ class CollectingDispatcher(object):
         message = {"text": None, "elements": elements}
 
         self.messages.append(message)
+    
+    def utter_custom_json_message(self, *elements):
+        # type: (*Dict[Text, Any]) -> None
+        """Sends a message with custom JSON elements to the output channel."""
+
+        message = {"graphql": elements}
+
+        self.messages.append(message)
 
     def utter_message(self, text):
         # type: (Text) -> None
