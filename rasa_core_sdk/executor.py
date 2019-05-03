@@ -24,7 +24,18 @@ class CollectingDispatcher(object):
 
         self.messages = []
 
+    # deprecated
     def utter_custom_message(self, *elements):
+        # type: (*Dict[Text, Any]) -> None
+
+        logger.warning(
+            "DEPRECATION warning: `utter_custom_message` has been deprecated. "
+            + "Use `utter_elements` to send elements, or "
+            + "`utter_custom_json` to send a custom json message. "
+        )
+        self.utter_elements(elements)
+
+    def utter_elements(self, *elements):
         # type: (*Dict[Text, Any]) -> None
         """Sends a message with custom elements to the output channel."""
 
@@ -89,6 +100,13 @@ class CollectingDispatcher(object):
         message = {"template": template}
         message.update(kwargs)
 
+        self.messages.append(message)
+
+    def utter_custom_json(self, message):
+        # type: (Dict[Text, Any]) -> None
+        """Sends custom json to the output channel."""
+
+        message = {"custom": message}
         self.messages.append(message)
 
 
