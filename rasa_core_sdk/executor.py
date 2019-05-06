@@ -36,7 +36,7 @@ class CollectingDispatcher(object):
         self.utter_elements(elements)
 
     def utter_elements(self, *elements):
-        # type: (*Dict[Text, Any]) -> None
+        # type: (Dict[Text, Any]) -> None
         """Sends a message with custom elements to the output channel."""
 
         message = {"text": None, "elements": elements}
