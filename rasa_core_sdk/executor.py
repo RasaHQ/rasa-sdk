@@ -7,6 +7,7 @@ import importlib
 import inspect
 import logging
 import pkgutil
+import warnings
 
 import six
 from typing import Text, List, Dict, Any
@@ -24,8 +25,20 @@ class CollectingDispatcher(object):
 
         self.messages = []
 
+    # deprecated
     def utter_custom_message(self, *elements):
-        # type: (*Dict[Text, Any]) -> None
+        # type: (Dict[Text, Any]) -> None
+
+        warnings.warn(
+            "Use of `utter_custom_message` is deprecated. "
+            "Use `utter_elements` to send elements, or "
+            "`utter_custom_json` to send a custom json message. ",
+            DeprecationWarning,
+        )
+        self.utter_elements(elements)
+
+    def utter_elements(self, *elements):
+        # type: (Dict[Text, Any]) -> None
         """Sends a message with custom elements to the output channel."""
 
         message = {"text": None, "elements": elements}
@@ -89,6 +102,13 @@ class CollectingDispatcher(object):
         message = {"template": template}
         message.update(kwargs)
 
+        self.messages.append(message)
+
+    def utter_custom_json(self, message):
+        # type: (Dict[Text, Any]) -> None
+        """Sends custom json to the output channel."""
+
+        message = {"custom": message}
         self.messages.append(message)
 
 
