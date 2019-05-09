@@ -70,7 +70,6 @@ class CollectingDispatcher(object):
 
         self.messages.append(message)
 
-    # TODO: deprecate this function?
     # noinspection PyUnusedLocal
     def utter_button_template(
         self,
