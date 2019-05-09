@@ -1,6 +1,6 @@
 ## Setup py requirements
 future==0.16.0
-typing==3.6.4
+typing==3.6.4; python_version < '3.5'
 requests==2.20.0
 ConfigArgParse==0.13.0
 coloredlogs==10.0

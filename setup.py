@@ -17,7 +17,6 @@ tests_requires = ["pytest~=3.0", "pytest-pep8~=1.0", "pytest-cov~=2.0"]
 
 install_requires = [
     "future~=0.16",
-    "typing~=3.0",
     "requests~=2.20",
     "ConfigArgParse~=0.13.0",
     "coloredlogs~=10.0",
@@ -27,7 +26,7 @@ install_requires = [
     "six~=1.11",
 ]
 
-extras_requires = {"test": tests_requires}
+extras_requires = {"test": tests_requires, ":python_version < '3.5'": ["typing~=3.0"]}
 
 setup(
     name="rasa-core-sdk",
