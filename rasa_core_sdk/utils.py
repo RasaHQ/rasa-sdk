@@ -4,10 +4,22 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import inspect
-
-from typing import Any, List
-
 import logging
+
+
+class Element(dict):
+    __acceptable_keys = ["title", "item_url", "image_url", "subtitle", "buttons"]
+
+    def __init__(self, *args, **kwargs):
+        kwargs = {
+            key: value for key, value in kwargs.items() if key in self.__acceptable_keys
+        }
+
+        super(Element, self).__init__(*args, **kwargs)
+
+
+class Button(dict):
+    pass
 
 
 def all_subclasses(cls):
