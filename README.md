@@ -2,7 +2,7 @@
 [![Join the chat on Rasa Community Forum](https://img.shields.io/badge/forum-join%20discussions-brightgreen.svg)](https://forum.rasa.com/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.com/RasaHQ/rasa_core_sdk.svg?branch=master)](https://travis-ci.com/RasaHQ/rasa_core_sdk)
 [![PyPI version](https://img.shields.io/pypi/v/rasa_core_sdk.svg)](https://pypi.python.org/pypi/rasa-core-sdk)
-[![Documentation Status](https://img.shields.io/badge/docs-stable-brightgreen.svg)](https://rasa.com/docs/core)
+[![Documentation Status](https://img.shields.io/badge/docs-stable-brightgreen.svg)](https://rasa.com/docs)
 
 Python SDK for the development of custom actions for Rasa Core.
 
@@ -16,10 +16,11 @@ pip install rasa_core_sdk
 
 ## Compatibility
 
-| SDK version   | compatible Rasa Core version           |
-|---------------|----------------------------------------|
-| `0.12.x`      | `>=0.12.x`                             |
-| `0.11.x`      | `0.11.x`                               |
+| SDK version    | compatible Rasa Core version           |
+|----------------|----------------------------------------|
+| `1.0.x`        | `>=1.0.x`                              |
+| `0.12.x`       | `>=0.12.x`                             |
+| `0.11.x`       | `0.11.x`                               |
 | not compatible | `<=0.10.x`                             |
 
 ## Usage
@@ -45,7 +46,7 @@ docker run -p 5055:5055 --mount type=bind,source=<ABSOLUTE_PATH_TO_YOUR_ACTIONS>
 	rasa/rasa_core_sdk:latest
 ```
 
-The action server is then avaible at `http://localhost:5055/webhook`.
+The action server is then available at `http://localhost:5055/webhook`.
 
 ### Custom Dependencies
 
@@ -80,7 +81,7 @@ black .
 
 
 ## License
-Licensed under the Apache License, Version 2.0. Copyright 2018 Rasa
+Licensed under the Apache License, Version 2.0. Copyright 2019 Rasa
 Technologies GmbH. [Copy of the license](LICENSE.txt).
 
 A list of the Licenses of the dependencies of the project can be found at
