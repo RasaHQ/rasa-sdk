@@ -1,40 +1,31 @@
 version: '3'
 services:
   app:
-    image: "app"
+    image: "app"      #  this is your container running the sdk server and your actions
     container_name: "app"
     expose:
-    - "5001"
+      - "5055"
     depends_on:
-      - core
+      - rasa
 
-  core:
-    image: "rasa/rasa_core"
-    container_name: "rasa_core"
+  rasa:
+    image: "rasa/rasa"
+    container_name: "rasa"
     expose:
-    - "5005"
+      - "5005"
     depends_on:
-      - nlu
       - mongo
-
-  nlu:
-    image: "rasa/rasa_nlu"
-    container_name: "nlu"
-    expose:
-    - "5000"
 
   mongo:
     image: "mongo:3.7-jessie"
     container_name: "mongo"
     expose:
-    - "27017"
+      - "27017"
     volumes:
-    - ./mongo:/data/db
+      - ./mongo:/data/db
 
   duckling:
     image: "rasa/duckling:latest"
     container_name: "duckling"
     expose:
-    - "8000"
-
-
+      - "8000"
