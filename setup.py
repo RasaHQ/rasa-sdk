@@ -16,14 +16,14 @@ tests_requires = ["pytest~=3.0", "pytest-pep8~=1.0", "pytest-cov~=2.0"]
 
 
 install_requires = [
-    "future~=0.16",
-    "requests~=2.20",
-    "ConfigArgParse~=0.13.0",
+    "future~=0.17",
+    "requests~=2.21",
+    "ConfigArgParse~=0.14.0",
     "coloredlogs~=10.0",
     "flask~=1.0",
     "flask_cors~=3.0",
-    "gevent~=1.2",
-    "six~=1.11",
+    "gevent~=1.4",
+    "six~=1.12",
 ]
 
 extras_requires = {"test": tests_requires, ":python_version < '3.5'": ["typing~=3.0"]}
@@ -64,11 +64,11 @@ setup(
     "".format(__version__),
     project_urls={
         "Bug Reports": "https://github.com/rasahq/rasa_core_sdk/issues",
-        "Documentation": "https://docs.rasa.com/core",
+        "Documentation": "https://rasa.com/docs",
         "Source": "https://github.com/rasahq/rasa_core_sdk",
     },
 )
 
-print ("\nWelcome to Rasa Core SDK!")
-print ("If any questions please visit documentation page https://docs.rasa.com/core")
-print ("or join community chat on https://gitter.im/RasaHQ/rasa_core")
+print ("\nWelcome to Rasa SDK!")
+print ("If any questions please visit documentation page https://rasa.com/docs")
+print ("or join the community discussions on https://forum.rasa.com")

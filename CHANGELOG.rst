@@ -6,7 +6,7 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. _master-release:
 
-[Unreleased 0.13.2aX] - `master`_
+[Unreleased 1.0.0rc2] - `master`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
@@ -22,6 +22,13 @@ Fixed
 
 Removed
 -------
+
+[1.0.0rc1] - 2019-05-09
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Compatibility release for Rasa Core 1.0.0. There have not been any
+additional changes when compared to ``0.14.0``.
+
 
 [0.14.0] - 2019-04-26
 ^^^^^^^^^^^^^^^^^^^^^
