@@ -26,8 +26,8 @@ class CollectingDispatcher(object):
         self.messages = []
 
     # deprecated
-    def utter_custom_message(self, *elements):
-        # type: (Dict[Text, Any]) -> None
+    def utter_custom_message(self, *elements, **kwargs):
+        # type: (Dict[Text, Any], Any) -> None
 
         warnings.warn(
             "Use of `utter_custom_message` is deprecated. "
@@ -35,21 +35,23 @@ class CollectingDispatcher(object):
             "`utter_custom_json` to send a custom json message. ",
             DeprecationWarning,
         )
-        self.utter_elements(elements)
+        self.utter_elements(elements, **kwargs)
 
-    def utter_elements(self, *elements):
-        # type: (Dict[Text, Any]) -> None
+    def utter_elements(self, *elements, **kwargs):
+        # type: (Dict[Text, Any], Any) -> None
         """Sends a message with custom elements to the output channel."""
 
         message = {"text": None, "elements": elements}
+        message.update(kwargs)
 
         self.messages.append(message)
 
-    def utter_message(self, text):
-        # type: (Text) -> None
+    def utter_message(self, text, **kwargs):
+        # type: (Text, Any) -> None
         """"Send a text to the output channel"""
 
         message = {"text": text}
+        message.update(kwargs)
 
         self.messages.append(message)
 
@@ -62,11 +64,12 @@ class CollectingDispatcher(object):
 
         self.messages.append(message)
 
-    def utter_attachment(self, attachment):
-        # type: (Text) -> None
+    def utter_attachment(self, attachment, **kwargs):
+        # type: (Text, Any) -> None
         """Send a message to the client with attachments."""
 
         message = {"text": None, "attachment": attachment}
+        message.update(kwargs)
 
         self.messages.append(message)
 
@@ -103,12 +106,14 @@ class CollectingDispatcher(object):
 
         self.messages.append(message)
 
-    def utter_custom_json(self, message):
-        # type: (Dict[Text, Any]) -> None
+    def utter_custom_json(self, json_message, **kwargs):
+        # type: (Dict[Text, Any], Any) -> None
         """Sends custom json to the output channel."""
 
-        message = {"custom": message}
-        self.messages.append(message)
+        json_message = {"custom": json_message}
+        json_message.update(kwargs)
+
+        self.messages.append(json_message)
 
 
 class ActionExecutor(object):
