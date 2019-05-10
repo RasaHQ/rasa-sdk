@@ -17,7 +17,7 @@ tests_requires = ["pytest~=3.0", "pytest-pep8~=1.0", "pytest-cov~=2.0"]
 
 install_requires = [
     "future~=0.17",
-    "ConfigArgParse~=0.14.0",
+    "ConfigArgParse~=0.14",
     "coloredlogs~=10.0",
     "flask~=1.0",
     "flask_cors~=3.0",
