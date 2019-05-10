@@ -22,7 +22,7 @@ install_requires = [
     "flask~=1.0",
     "flask_cors~=3.0",
     "gevent~=1.4",
-    "six~=1.12",
+    "six>=1.10",
 ]
 
 extras_requires = {"test": tests_requires, ":python_version < '3.5'": ["typing~=3.0"]}
