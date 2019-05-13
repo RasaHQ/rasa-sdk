@@ -10,7 +10,7 @@ help:
 	@echo "    test"
 	@echo "        Run py.test"
 	@echo "    init"
-	@echo "        Install Rasa Core"
+	@echo "        Install Rasa SDK dependencies"
 
 init:
 	pip install -r requirements.txt

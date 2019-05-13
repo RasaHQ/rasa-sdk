@@ -6,7 +6,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 # Avoids IDE errors, but actual version is read from version.py
 __version__ = None
-exec (open("rasa_core_sdk/version.py").read())
+exec (open("rasa_sdk/version.py").read())
 
 # Get the long description from the README file
 with io.open(os.path.join(here, "README.md"), encoding="utf-8") as f:
@@ -28,7 +28,7 @@ install_requires = [
 extras_requires = {"test": tests_requires, ":python_version < '3.5'": ["typing~=3.0"]}
 
 setup(
-    name="rasa-core-sdk",
+    name="rasa-sdk",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -59,12 +59,12 @@ setup(
     "botkit rasa conversational-agents conversational-ai chatbot"
     "chatbot-framework bot-framework",
     url="https://rasa.com",
-    download_url="https://github.com/RasaHQ/rasa_core_sdk/archive/{}.tar.gz"
+    download_url="https://github.com/RasaHQ/rasa-sdk/archive/{}.tar.gz"
     "".format(__version__),
     project_urls={
-        "Bug Reports": "https://github.com/rasahq/rasa_core_sdk/issues",
+        "Bug Reports": "https://github.com/rasahq/rasa-sdk/issues",
         "Documentation": "https://rasa.com/docs",
-        "Source": "https://github.com/rasahq/rasa_core_sdk",
+        "Source": "https://github.com/rasahq/rasa-sdk",
     },
 )
 

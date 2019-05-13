@@ -12,7 +12,8 @@ import warnings
 import six
 from typing import Text, List, Dict, Any
 
-from rasa_core_sdk import utils, Action, Tracker
+from rasa_sdk import utils
+from rasa_sdk.interfaces import Action, Tracker
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +123,7 @@ class ActionExecutor(object):
 
     def register_action(self, action):
         if inspect.isclass(action):
-            if action.__module__.startswith("rasa_core."):
+            if action.__module__.startswith("rasa."):
                 logger.warning("Skipping built in Action {}.".format(action))
                 return
             else:
@@ -182,6 +183,8 @@ class ActionExecutor(object):
             abstract = getattr(meta, "abstract", False)
             if (
                 not action.__module__.startswith("rasa_core.")
+                and not action.__module__.startswith("rasa.")
+                and not action.__module__.startswith("rasa_sdk.")
                 and not action.__module__.startswith("rasa_core_sdk.")
                 and not abstract
             ):

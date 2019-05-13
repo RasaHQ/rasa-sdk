@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import pytest
-import rasa_core_sdk.endpoint as ep
+import rasa_sdk.endpoint as ep
 
 
 def test_arg_parser_actions_params_folder_style():

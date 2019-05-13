@@ -8,14 +8,14 @@ import logging
 import typing
 from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
-from rasa_core_sdk import Action, ActionExecutionRejection
-from rasa_core_sdk.events import SlotSet, Form
+from rasa_sdk.interfaces import Action, ActionExecutionRejection
+from rasa_sdk.events import SlotSet, Form
 
 logger = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
-    from rasa_core_sdk import Tracker
-    from rasa_core_sdk.executor import CollectingDispatcher
+    from rasa_sdk import Tracker
+    from rasa_sdk.executor import CollectingDispatcher
 
 # this slot is used to store information needed
 # to do the form handling
