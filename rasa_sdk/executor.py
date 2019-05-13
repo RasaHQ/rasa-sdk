@@ -192,7 +192,40 @@ class ActionExecutor(object):
 
     @staticmethod
     def _create_api_response(events, messages):
-        return {"events": events if events else [], "responses": messages}
+        return {"events": events, "responses": messages}
+
+    @staticmethod
+    def validate_events(events, action_name):
+        validated = []
+        for e in events:
+            if isinstance(e, dict):
+                if not e.get("event"):
+                    logger.error(
+                        "Your action '{}' returned an action dict "
+                        "without the `event` property. Please use "
+                        "the helpers in `rasa_sdk.events`! Event will"
+                        "be ignored! Event: {}".format(action_name, e)
+                    )
+                else:
+                    validated.append(e)
+            elif type(e).__module__ == "rasa.core.events":
+                logger.warning(
+                    "Your action should not return Rasa actions within the "
+                    "SDK. Instead of using events from "
+                    "`rasa.core.events`, you should use the ones "
+                    "provided in `rasa_sdk.events`! "
+                    "We will try to make this work, but this "
+                    "might go wrong!"
+                )
+                validated.append(e.as_dict())
+            else:
+                logger.error(
+                    "Your action's '{}' run method returned an invalid "
+                    "event. Event will be ignored. "
+                    "Event: '{}'.".format(action_name, e)
+                )
+                # we won't append this to validated events -> will be ignored
+        return validated
 
     def run(self, action_call):
         action_name = action_call.get("next_action")
@@ -210,7 +243,12 @@ class ActionExecutor(object):
             dispatcher = CollectingDispatcher()
 
             events = action(dispatcher, tracker, domain)
-            logger.debug("Successfully ran '{}'".format(action_name))
-            return self._create_api_response(events, dispatcher.messages)
+            if not events:
+                # make sure the action did not just return `None`...
+                events = []
+
+            validated_events = self.validate_events(events, action_name)
+            logger.debug("Finished running '{}'".format(action_name))
+            return self._create_api_response(validated_events, dispatcher.messages)
         else:
             logger.warning("Received an action call without an action.")
