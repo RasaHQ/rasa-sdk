@@ -101,7 +101,7 @@ def check_version_compatibility(rasa_version):
 
     if rasa != sdk:
         logger.warning(
-            "Your versions of rasa_core and "
+            "Your versions of rasa and "
             "rasa_sdk might not be compatible. You "
             "are currently running rasa version {} "
             "and rasa_sdk version {}.\n"
