@@ -128,4 +128,5 @@ def run(actions, port=DEFAULT_SERVER_PORT, cors="*"):
 
 if __name__ == "__main__":
     import rasa_sdk.__main__
+
     rasa_sdk.__main__.main()

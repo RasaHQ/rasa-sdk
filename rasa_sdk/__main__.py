@@ -22,5 +22,5 @@ def main():
     run(cmdline_args.actions, cmdline_args.port, cmdline_args.cors)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
