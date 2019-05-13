@@ -6,7 +6,7 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. _master-release:
 
-[Unreleased 1.0.0rc3] - `master`_
+[Unreleased 1.0.0rc4] - `master`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
@@ -16,14 +16,20 @@ Added
 
 Changed
 -------
-- package renamed from ``rasa_core_sdk`` to ``rasa_sdk`` - please make sure to
-  update your imports accordingly
 
 Fixed
 -----
 
 Removed
 -------
+
+[1.0.0rc3] - 2019-05-13
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Changed
+-------
+- package renamed from ``rasa_core_sdk`` to ``rasa_sdk`` - please make sure to
+  update your imports accordingly
 
 [1.0.0rc1] - 2019-05-09
 ^^^^^^^^^^^^^^^^^^^^^^^

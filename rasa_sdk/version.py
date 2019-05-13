@@ -3,4 +3,4 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-__version__ = "1.0.0rc2"
+__version__ = "1.0.0rc3"
