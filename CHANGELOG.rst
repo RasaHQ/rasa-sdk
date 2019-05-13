@@ -13,6 +13,8 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 Added
 -----
+- validate events returned from action - checks for sanity
+- endpoint to retrieve all registered actions at ``/actions``
 
 Changed
 -------
