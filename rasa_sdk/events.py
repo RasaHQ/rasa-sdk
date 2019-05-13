@@ -23,8 +23,14 @@ def UserUttered(text, parse_data=None, timestamp=None, input_channel=None):
 
 
 # noinspection PyPep8Naming
-def BotUttered(text=None, data=None, timestamp=None):
-    return {"event": "bot", "timestamp": timestamp, "text": text, "data": data}
+def BotUttered(text=None, data=None, metadata=None, timestamp=None):
+    return {
+        "event": "bot",
+        "timestamp": timestamp,
+        "text": text,
+        "data": data,
+        "metadata": metadata,
+    }
 
 
 # noinspection PyPep8Naming

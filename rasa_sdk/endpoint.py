@@ -122,8 +122,9 @@ def check_version_compatibility(rasa_version):
 
 def run(action_package_name, port=DEFAULT_SERVER_PORT, cors_origins="*"):
     logger.info("Starting action endpoint server...")
-    edp_app = endpoint_app(cors_origins=cors_origins,
-                           action_package_name=action_package_name)
+    edp_app = endpoint_app(
+        cors_origins=cors_origins, action_package_name=action_package_name
+    )
 
     http_server = WSGIServer(("0.0.0.0", port), edp_app)
 
