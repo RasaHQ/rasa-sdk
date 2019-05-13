@@ -1,6 +1,6 @@
 import argparse
 
-from rasa_core_sdk.constants import DEFAULT_SERVER_PORT
+from rasa_sdk.constants import DEFAULT_SERVER_PORT
 
 
 def action_arg(action):

@@ -4,10 +4,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import pytest
-from rasa_core_sdk.forms import FormAction
-from rasa_core_sdk import Tracker, ActionExecutionRejection
-from rasa_core_sdk.executor import CollectingDispatcher
-from rasa_core_sdk.events import SlotSet, Form
+from rasa_sdk.forms import FormAction
+from rasa_sdk import Tracker, ActionExecutionRejection
+from rasa_sdk.executor import CollectingDispatcher
+from rasa_sdk.events import SlotSet, Form
 
 
 def test_extract_requested_slot_default():

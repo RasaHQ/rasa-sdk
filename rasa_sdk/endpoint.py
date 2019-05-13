@@ -12,13 +12,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
-from rasa_core_sdk.cli.arguments import add_endpoint_arguments
-from rasa_core_sdk.constants import DEFAULT_SERVER_PORT
-from rasa_core_sdk.executor import ActionExecutor
-from rasa_core_sdk import ActionExecutionRejection
-import rasa_core_sdk
+from rasa_sdk.cli.arguments import add_endpoint_arguments
+from rasa_sdk.constants import DEFAULT_SERVER_PORT
+from rasa_sdk.executor import ActionExecutor
+from rasa_sdk.interfaces import ActionExecutionRejection
+import rasa_sdk
 
-from rasa_core_sdk import utils
+from rasa_sdk import utils
 
 logger = logging.getLogger(__name__)
 
@@ -69,48 +69,48 @@ def endpoint_app(cors_origins=None, action_package_name=None):
     return app
 
 
-def check_version_compatibility(core_version):
-    """Check if the version of rasa_core and rasa_core_sdk are compatible.
+def check_version_compatibility(rasa_version):
+    """Check if the version of rasa and rasa_sdk are compatible.
 
     The version check relies on the version string being formatted as
     'x.y.z' and compares whether the numbers x and y are the same for both
-    rasa_core and rasa_core_sdk.
+    rasa and rasa_sdk.
     Args:
-        core_version - A string containing the version of rasa_core that
+        rasa_version - A string containing the version of rasa that
         is making the call to the action server.
     Raises:
-        Warning - The version of rasa_core version unkown or not compatible with
-        this version of rasa_core_sdk.
+        Warning - The version of rasa version unknown or not compatible with
+        this version of rasa_sdk.
     """
-    # Check for versions of core that are too old to report their version number
-    if core_version is None:
+    # Check for versions of Rasa that are too old to report their version number
+    if rasa_version is None:
         logger.warning(
-            "You are using an old version of rasa_core which might "
-            "not be compatible with this version of rasa_core_sdk "
+            "You are using an old version of rasa which might "
+            "not be compatible with this version of rasa_sdk "
             "({}).\n"
             "To ensure compatibility use the same version "
             "for both, modulo the last number, i.e. using version "
             "A.B.x the numbers A and B should be identical for "
-            "both rasa_core and rasa_core_sdk."
-            "".format(rasa_core_sdk.__version__)
+            "both rasa and rasa_sdk."
+            "".format(rasa_sdk.__version__)
         )
         return
 
-    core = core_version.split(".")[:-1]
-    sdk = rasa_core_sdk.__version__.split(".")[:-1]
+    rasa = rasa_version.split(".")[:-1]
+    sdk = rasa_sdk.__version__.split(".")[:-1]
 
-    if core != sdk:
+    if rasa != sdk:
         logger.warning(
             "Your versions of rasa_core and "
-            "rasa_core_sdk might not be compatible. You "
-            "are currently running rasa_core version {} "
-            "and rasa_core_sdk version {}.\n"
+            "rasa_sdk might not be compatible. You "
+            "are currently running rasa version {} "
+            "and rasa_sdk version {}.\n"
             "To ensure compatibility use the same "
             "version for both, modulo the last number, "
             "i.e. using version A.B.x the numbers A and "
             "B should be identical for "
-            "both rasa_core and rasa_core_sdk."
-            "".format(core_version, rasa_core_sdk.__version__)
+            "both rasa and rasa_sdk."
+            "".format(rasa_version, rasa_sdk.__version__)
         )
 
 
@@ -126,18 +126,6 @@ def run(actions, port=DEFAULT_SERVER_PORT, cors="*"):
     http_server.serve_forever()
 
 
-def main(args):
-    logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger("matplotlib").setLevel(logging.WARN)
-
-    utils.configure_colored_logging(args.loglevel)
-
-    run(args.actions, args.port, args.cors)
-
-
 if __name__ == "__main__":
-    # Running as standalone python application
-    arg_parser = create_argument_parser()
-    cmdline_args = arg_parser.parse_args()
-
-    main(cmdline_args)
+    import rasa_sdk.__main__
+    rasa_sdk.__main__.main()

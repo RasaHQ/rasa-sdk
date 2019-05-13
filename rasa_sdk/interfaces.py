@@ -5,19 +5,13 @@ from __future__ import unicode_literals
 
 import copy
 import logging
-
 import typing
-from typing import Dict, Text, Any, Optional, Iterator, List
-
-import rasa_core_sdk.version
-import rasa_core_sdk.cli
-
-logger = logging.getLogger(__name__)
-
-__version__ = rasa_core_sdk.version.__version__
+from typing import Any, Dict, Iterator, List, Optional, Text
 
 if typing.TYPE_CHECKING:
-    from rasa_core_sdk.executor import CollectingDispatcher
+    from rasa_sdk.executor import CollectingDispatcher
+
+logger = logging.getLogger(__name__)
 
 
 class Tracker(object):
@@ -125,6 +119,7 @@ class Tracker(object):
         for e in reversed(self.events):
             if e.get("event") == "user":
                 return e.get("input_channel")
+        return None
 
     def is_paused(self):
         # type: () -> bool
@@ -192,17 +187,17 @@ class Action(object):
             dispatcher (CollectingDispatcher): the dispatcher which is used to
                 send messages back to the user. Use
                 ``dipatcher.utter_message()`` or any other
-                ``rasa_core_sdk.executor.CollectingDispatcher``
+                ``rasa_sdk.executor.CollectingDispatcher``
                 method.
             tracker (Tracker): the state tracker for the current
                 user. You can access slot values using
                 ``tracker.get_slot(slot_name)``, the most recent user message
                 is ``tracker.latest_message.text`` and any other
-                ``rasa_core_sdk.Tracker`` property.
+                ``rasa_sdk.Tracker`` property.
             domain (Dict[Text, Any]): the bot's domain
         Returns:
             List[Dict[Text, Any]]: A dictionary of
-                ``rasa_core_sdk.events.Event`` instances that is
+                ``rasa_sdk.events.Event`` instances that is
                 returned through the endpoint
         """
 
