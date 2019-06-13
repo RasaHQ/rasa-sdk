@@ -23,6 +23,12 @@ Fixed
 Removed
 -------
 
+[1.1.0] - 2019-06-13
+^^^^^^^^^^^^^^^^^^^^
+
+Compatibility release for Rasa 1.1.0. There have not been any
+additional changes.
+
 [1.0.0] - 2019-05-21
 ^^^^^^^^^^^^^^^^^^^^
 
