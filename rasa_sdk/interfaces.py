@@ -132,11 +132,10 @@ class Tracker(object):
 
         If the conversation has not been restarted, ``0`` is returned."""
 
-        idx = 0
-        for i, event in enumerate(self.events):
-            if event.get("event") == "restarted":
-                idx = i + 1
-        return idx
+        for i, event in enumerate(reversed(self.events)):
+            if event.get("name") == "action_restart":
+                return len(self.events) - i
+        return 0
 
     def events_after_latest_restart(self):
         # type: () -> List[dict]
