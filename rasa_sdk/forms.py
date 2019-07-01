@@ -526,8 +526,6 @@ class FormAction(Action):
 
         # activate the form
         events = self._activate_if_required(dispatcher, tracker, domain)
-        # validate user input
-        events.extend(self._validate_if_required(dispatcher, tracker, domain))
         # check that the form wasn't deactivated in validation
         if Form(None) not in events:
 
