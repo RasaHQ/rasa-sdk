@@ -133,7 +133,7 @@ class Tracker(object):
         If the conversation has not been restarted, ``0`` is returned."""
 
         for i, event in enumerate(reversed(self.events)):
-            if event.get("event") == "restart":
+            if event.get("name") == "restart":
                 return len(self.events) - i
         return 0
 
