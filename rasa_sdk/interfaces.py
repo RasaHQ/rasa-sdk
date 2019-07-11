@@ -134,7 +134,7 @@ class Tracker(object):
 
         idx = 0
         for i, event in enumerate(self.events):
-            if event.get("event") == "restarted":
+            if event.get("event") == "restart":
                 idx = i + 1
         return idx
 
