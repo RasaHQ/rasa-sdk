@@ -116,11 +116,8 @@ class CollectingDispatcher(object):
 
         self.messages.append(json_message)
 
-    def utter_image_url(self,
-                        image, # type : Text
-                        **kwargs # type : Any
-    ):
-
+    def utter_image_url(self, image, **kwargs):
+        # type: (Text, Any) -> None
         """Sends url of image attachment to the output channel."""
 
         message = {"image": image}
