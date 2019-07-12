@@ -116,6 +116,14 @@ class CollectingDispatcher(object):
 
         self.messages.append(json_message)
 
+    def utter_image_url(self, image, **kwargs):
+        """ sends image url to the output channel as image"""
+
+        json_message = {"image": image}
+        json_message.update(kwargs)
+
+        self.messages.append(json_message)
+
 
 class ActionExecutor(object):
     def __init__(self):
