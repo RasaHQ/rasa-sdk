@@ -544,7 +544,7 @@ class FormAction(Action):
                 events.extend(next_slot_events)
             else:
                 # there is nothing more to request, so we can submit
-                self._log_form_slots(tracker)
+                self._log_form_slots(temp_tracker)
                 logger.debug("Submitting the form '{}'".format(self.name()))
                 events.extend(self.submit(dispatcher, temp_tracker, domain))
                 # deactivate the form after submission
