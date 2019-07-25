@@ -26,8 +26,6 @@ Removed
 [1.1.1] - 2019-07-25
 ^^^^^^^^^^^^^^^^^^^^
 
-.. note:: This version is not yet released and is under active development.
-
 Added
 -----
 - ``dispatcher.utter_image_url()`` to dispatch images from custom actions
