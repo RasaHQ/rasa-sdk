@@ -6,7 +6,7 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. _master-release:
 
-[Unreleased 1.1.0] - `master`_
+[Unreleased 1.1.2] - `master`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
@@ -22,6 +22,19 @@ Fixed
 
 Removed
 -------
+
+[1.1.1] - 2019-07-25
+^^^^^^^^^^^^^^^^^^^^
+
+.. note:: This version is not yet released and is under active development.
+
+Added
+-----
+- ``dispatcher.utter_image_url()`` to dispatch images from custom actions
+
+Fixed
+-----
+- correct slots print in debug mode before submitting a form
 
 [1.1.0] - 2019-06-13
 ^^^^^^^^^^^^^^^^^^^^
