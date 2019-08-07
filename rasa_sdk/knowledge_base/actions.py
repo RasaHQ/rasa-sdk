@@ -13,6 +13,15 @@ from rasa_sdk.knowledge_base.storage import (
 )
 
 
+# TODO
+# - can we somehow set the knowledge base without inheriting the KB action?
+# - can we automatically set the slots for the action if they are not set?
+# - documentation
+# - should we hide the slots that are only set via the action (listed items) in the
+# tracker somehow?
+# - test, test, test
+
+
 class ActionKnowledgeBase(Action):
     """
     Abstract knowledge base action that can be inherited to create custom actions
@@ -107,7 +116,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
             "Found the following entities of type '{}':".format(entity_type)
         )
         for i, e in enumerate(entities):
-            dispatcher.utter_message(f"{i + 1}: {representation_function(e)}")
+            dispatcher.utter_message("{}: {}".format(i + 1, representation_function(e)))
 
         key_attribute = self.knowledge_base.schema[entity_type][SCHEMA_KEYS_KEY]
 
@@ -157,13 +166,13 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         # utter response
         if value:
             dispatcher.utter_message(
-                "{} has the value '{}' for attribute '{}'.".format(
+                "'{}' has the value '{}' for attribute '{}'.".format(
                     entity, value, attribute
                 )
             )
         else:
             dispatcher.utter_message(
-                "Did not found a valid value for attribute {} for entity '{}'.".format(
+                "Did not found a valid value for attribute '{}' for entity '{}'.".format(
                     attribute, entity
                 )
             )
@@ -197,6 +206,10 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         entity_name = tracker.get_slot(entity_type)
         if entity_name:
             return entity_name
+
+        # if no explicit mention was found, we assume the user just refers to the last
+        # entity mentioned in the conversation
+        return tracker.get_slot("knowledge_base_last_entity")
 
     def _resolve_mention(self, tracker: Tracker) -> Optional[Text]:
         """
@@ -242,7 +255,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
 
         :return: a string that represents the entity
         """
-        representation_func = self.knowledge_base.schema[entity_type]["representation"]
+        representation_func = self.knowledge_base.schema[entity_type][SCHEMA_KEYS_REPRESENTATION]
         return representation_func(entity)
 
     def _get_attributes_of_entity(
