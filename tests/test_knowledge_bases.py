@@ -1,12 +1,13 @@
 import pytest
 
-from rasa_sdk.knowledge_bases import InMemoryKnowledgeBase
+from rasa_sdk.knowledge_bases import InMemoryKnowledgeBase, SCHEMA_KEYS_KEY, \
+    SCHEMA_KEYS_ATTRIBUTES, SCHEMA_KEYS_REPRESENTATION, Attribute
 
 SCHEMA = {
     "restaurant": {
-        "attributes": ["name", "cuisine", "wifi"],
-        "key": "name",
-        "representation": ["name"],
+        SCHEMA_KEYS_ATTRIBUTES: ["name", "cuisine", "wifi"],
+        SCHEMA_KEYS_KEY: "name",
+        SCHEMA_KEYS_REPRESENTATION: lambda e: e["name"],
     }
 }
 
@@ -34,15 +35,15 @@ GRAPH = {
 def test_schema_validation():
     schema = {
         "correct_entity_type": {
-            "attributes": ["a1", "a2"],
-            "key": "key",
-            "representation": ["a1", "a2"],
+            SCHEMA_KEYS_ATTRIBUTES: ["a1", "a2"],
+            SCHEMA_KEYS_KEY: "key",
+            SCHEMA_KEYS_REPRESENTATION: lambda e: e["a2"],
         },
         "incorrect_entity_1": {
-            "attributes": ["a1", "a2"],
-            "representation": ["a1", "a2"],
+            SCHEMA_KEYS_ATTRIBUTES: ["a1", "a2"],
+            SCHEMA_KEYS_REPRESENTATION: lambda e: e["a1"],
         },
-        "incorrect_entity_2": {"key": "a1"},
+        "incorrect_entity_2": {SCHEMA_KEYS_KEY: "a1"},
     }
 
     graph = {"correct_entity_type": [{"a1": "value1", "a2": "value2"}]}
@@ -57,8 +58,8 @@ def test_schema_validation():
     "entity_type,attributes,expected_length", [
         ("restaurant", [], 3),
         ("hotel", [], 0),
-        ("restaurant", [{"key": "wifi", "value": True}], 1),
-        ("restaurant", [{"key": "cuisine", "value": "Italian"}], 2)
+        ("restaurant", [Attribute("wifi", True)], 1),
+        ("restaurant", [Attribute("cuisine", "Italian")], 2)
     ]
 )
 def test_query_entities(entity_type, attributes, expected_length):

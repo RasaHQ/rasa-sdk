@@ -5,7 +5,20 @@ from typing import List, Dict, Any, Optional, Text, Callable
 logger = logging.getLogger(__name__)
 
 
-MANDATORY_SCHEMA_KEYS = ["attributes", "key", "representation"]
+SCHEMA_KEYS_KEY = "key"
+SCHEMA_KEYS_ATTRIBUTES = "attributes"
+SCHEMA_KEYS_REPRESENTATION = "representation"
+MANDATORY_SCHEMA_KEYS = [
+    SCHEMA_KEYS_KEY,
+    SCHEMA_KEYS_ATTRIBUTES,
+    SCHEMA_KEYS_REPRESENTATION,
+]
+
+
+class Attribute:
+    def __init__(self, name: Text, value: Any):
+        self.name = name
+        self.value = value
 
 
 class KnowledgeBase(object):
@@ -54,7 +67,7 @@ class KnowledgeBase(object):
     def get_entities(
         self,
         entity_type: Text,
-        attributes: Optional[List[Dict[Text, Text]]] = None,
+        attributes: Optional[List[Attribute]] = None,
         limit: int = 5,
     ) -> List[Dict[Text, Any]]:
         """
@@ -70,10 +83,7 @@ class KnowledgeBase(object):
         raise NotImplementedError("Method is not implemented.")
 
     def get_attribute_of(
-        self,
-        entity_type: Text,
-        key_attribute_value: Text,
-        attribute: Text,
+        self, entity_type: Text, key_attribute_value: Text, attribute: Text
     ) -> Any:
         """
         Get the value of the given attribute for the provided entity.
@@ -88,7 +98,6 @@ class KnowledgeBase(object):
 
 
 class InMemoryKnowledgeBase(KnowledgeBase):
-
     def __init__(self, schema: Dict, graph: Dict):
         self.graph = graph
         super().__init__(schema)
@@ -96,7 +105,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
     def get_entities(
         self,
         entity_type: Text,
-        attributes: Optional[List[Dict[Text, Text]]] = None,
+        attributes: Optional[List[Attribute]] = None,
         limit: int = 5,
     ) -> List[Dict[Text, Any]]:
 
@@ -109,9 +118,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         if attributes:
             entities = list(
                 filter(
-                    lambda e: [e[a["key"]] == a["value"] for a in attributes].count(
-                        False
-                    )
+                    lambda e: [e[a.name] == a.value for a in attributes].count(False)
                     == 0,
                     entities,
                 )
@@ -126,7 +133,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
             return None
 
         entities = self.graph[entity_type]
-        key_attribute = self.schema[entity_type]["key"]
+        key_attribute = self.schema[entity_type][SCHEMA_KEYS_KEY]
 
         entity_of_interest = list(
             filter(lambda e: e[key_attribute] == key_attribute_value, entities)
