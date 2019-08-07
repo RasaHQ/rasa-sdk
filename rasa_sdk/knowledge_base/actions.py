@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-from typing import Text, Dict, Any, List, Union, Optional
+from typing import Text, Dict, Any, List, Optional
 
 from rasa_sdk import Action, Tracker
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.knowledge_bases import (
+from rasa_sdk.knowledge_base.storage import (
+    Attribute,
     KnowledgeBase,
     SCHEMA_KEYS_ATTRIBUTES,
-    Attribute,
     SCHEMA_KEYS_REPRESENTATION,
     SCHEMA_KEYS_KEY,
 )

@@ -1,6 +1,6 @@
 import logging
 import random
-from typing import List, Dict, Any, Optional, Text, Callable
+from typing import List, Dict, Any, Optional, Text, Callable, NamedTuple
 
 logger = logging.getLogger(__name__)
 
@@ -15,15 +15,13 @@ MANDATORY_SCHEMA_KEYS = [
 ]
 
 
-class Attribute:
-    def __init__(self, name: Text, value: Any):
-        self.name = name
-        self.value = value
+class Attribute(NamedTuple):
+    name: List[Dict[Text, Any]]
+    value: int
 
 
 class KnowledgeBase(object):
     def __init__(self, schema: Dict[Text, Dict[Text, Any]]):
-        self.schema = schema
         self.ordinal_mention_mapping = {
             "one": lambda l: l[0],
             "first": lambda l: l[0],
@@ -46,6 +44,7 @@ class KnowledgeBase(object):
             "final": lambda l: l[-1],
         }
 
+        self.schema = schema
         self._validate_schema()
 
     def _validate_schema(self):
@@ -102,8 +101,8 @@ class KnowledgeBase(object):
 
 
 class InMemoryKnowledgeBase(KnowledgeBase):
-    def __init__(self, schema: Dict, graph: Dict):
-        self.graph = graph
+    def __init__(self, schema: Dict, data: Dict):
+        self.data = data
         super().__init__(schema)
 
     def get_entities(
@@ -113,10 +112,10 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         limit: int = 5,
     ) -> List[Dict[Text, Any]]:
 
-        if entity_type not in self.graph:
+        if entity_type not in self.data:
             return []
 
-        entities = self.graph[entity_type]
+        entities = self.data[entity_type]
 
         # filter entities by attributes
         if attributes:
@@ -133,10 +132,10 @@ class InMemoryKnowledgeBase(KnowledgeBase):
     def get_attribute_of(
         self, entity_type: Text, key_attribute_value: Text, attribute: Text
     ) -> Any:
-        if entity_type not in self.graph:
+        if entity_type not in self.data:
             return None
 
-        entities = self.graph[entity_type]
+        entities = self.data[entity_type]
         key_attribute = self.schema[entity_type][SCHEMA_KEYS_KEY]
 
         entity_of_interest = list(

@@ -1,6 +1,6 @@
 import pytest
 
-from rasa_sdk.knowledge_bases import InMemoryKnowledgeBase, SCHEMA_KEYS_KEY, \
+from rasa_sdk.knowledge_base.storage import InMemoryKnowledgeBase, SCHEMA_KEYS_KEY, \
     SCHEMA_KEYS_ATTRIBUTES, SCHEMA_KEYS_REPRESENTATION, Attribute
 
 SCHEMA = {
