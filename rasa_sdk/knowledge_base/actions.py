@@ -14,6 +14,11 @@ from rasa_sdk.knowledge_base.storage import (
 
 
 class ActionKnowledgeBase(Action):
+    """
+    Abstract knowledge base action that can be inherited to create custom actions
+    that are able to interact with the knowledge base.
+    """
+
     def __init__(self, knowledge_base: KnowledgeBase):
         self.knowledge_base = knowledge_base
 
@@ -27,6 +32,150 @@ class ActionKnowledgeBase(Action):
         domain: Dict[Text, Any],
     ) -> List[Dict[Text, Any]]:
         raise NotImplementedError("An action must implement its run method")
+
+
+class ActionQueryKnowledgeBase(ActionKnowledgeBase):
+    """
+    Action that queries the knowledge base for entities and attributes of an entity.
+    The action needs to be inherited and the knowledge base needs to be set.
+    In order to actually query the knowledge base you need to:
+    - create your knowledge base
+    - add mandatory slots to the domain file: 'entity_type', 'attribute', 'mention'
+    - create an intent that triggers this action
+    - mark all needed entities in the NLU data, such as 'entity_type'
+    - create a story that includes this action
+    - add created intent and action to domain file
+    """
+
+    def __init__(self, knowledge_base: KnowledgeBase):
+        super().__init__(knowledge_base)
+
+    def name(self):
+        raise NotImplementedError("An action must implement a name.")
+
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> List[Dict[Text, Any]]:
+        entity_type = tracker.get_slot("entity_type")
+        attribute = tracker.get_slot("attribute")
+
+        if not entity_type:
+            dispatcher.utter_message(
+                "Sorry, I did not get that. Can you please rephrase?"
+            )
+            return []
+
+        if not attribute:
+            return self._query_entities(dispatcher, tracker)
+        elif attribute:
+            return self._query_attribute(dispatcher, tracker)
+
+        dispatcher.utter_message("Sorry, I did not get that. Can you please rephrase?")
+        return []
+
+    def _query_entities(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker
+    ) -> List[Dict[Text, Any]]:
+        """
+        Queries the knowledge base for entities of the requested entity type and
+        outputs those to the user.
+
+        :param dispatcher: the dispatcher
+        :param tracker: the tracker
+
+        :return: list of slots
+        """
+        entity_type = tracker.get_slot("entity_type")
+
+        attributes = self._get_attributes_of_entity(entity_type, tracker)
+        entities = self.knowledge_base.get_entities(entity_type, attributes)
+
+        if not entities:
+            dispatcher.utter_message(
+                "I could not find any entities of type '{}'.".format(entity_type)
+            )
+            return []
+
+        representation_function = self.knowledge_base.schema[entity_type][
+            SCHEMA_KEYS_REPRESENTATION
+        ]
+
+        dispatcher.utter_message(
+            "Found the following entities of type '{}':".format(entity_type)
+        )
+        for i, e in enumerate(entities):
+            dispatcher.utter_message(f"{i + 1}: {representation_function(e)}")
+
+        key_attribute = self.knowledge_base.schema[entity_type][SCHEMA_KEYS_KEY]
+
+        last_entity = None if len(entities) > 1 else entities[0][key_attribute]
+
+        slots = [
+            SlotSet("entity_type", entity_type),
+            SlotSet("mention", None),
+            SlotSet("attribute", None),
+            SlotSet("knowledge_base_last_entity", last_entity),
+            SlotSet("knowledge_base_last_entity_type", entity_type),
+            SlotSet(
+                "knowledge_base_entities",
+                list(map(lambda e: e[key_attribute], entities)),
+            ),
+        ]
+
+        return slots + self._reset_attribute_slots(entity_type, tracker)
+
+    def _query_attribute(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker
+    ) -> List[Dict[Text, Any]]:
+        """
+        Queries the knowledge base for the value of the requested attribute of the
+        mentioned entity and outputs it to the user.
+
+        :param dispatcher: the dispatcher
+        :param tracker: the tracker
+
+        :return: list of slots
+        """
+        entity_type = tracker.get_slot("entity_type")
+        attribute = tracker.get_slot("attribute")
+
+        entity = self._get_entity(tracker)
+
+        if not entity or not attribute:
+            dispatcher.utter_message(
+                "Sorry, I did not get that. Can you please rephrase?"
+            )
+
+            slots = [SlotSet("mention", None)]
+            return slots + self._reset_attribute_slots(entity_type, tracker)
+
+        value = self.knowledge_base.get_attribute_of(entity_type, entity, attribute)
+
+        # utter response
+        if value:
+            dispatcher.utter_message(
+                "{} has the value '{}' for attribute '{}'.".format(
+                    entity, value, attribute
+                )
+            )
+        else:
+            dispatcher.utter_message(
+                "Did not found a valid value for attribute {} for entity '{}'.".format(
+                    attribute, entity
+                )
+            )
+
+        slots = [
+            SlotSet("entity_type", entity_type),
+            SlotSet("mention", None),
+            SlotSet("knowledge_base_last_entity", entity),
+            SlotSet("knowledge_base_last_entity_type", entity_type),
+        ]
+
+        return slots + self._reset_attribute_slots(entity_type, tracker)
 
     def _get_entity(self, tracker: Tracker) -> Text:
         """
@@ -141,108 +290,3 @@ class ActionKnowledgeBase(Action):
                 slots.append(SlotSet(attr, None))
 
         return slots
-
-
-class ActionQueryKnowledgeBase(ActionKnowledgeBase):
-    def __init__(self, knowledge_base: KnowledgeBase):
-        super().__init__(knowledge_base)
-
-    def name(self):
-        raise NotImplementedError("An action must implement a name.")
-
-    def run(self, dispatcher, tracker, domain):
-        entity_type = tracker.get_slot("entity_type")
-        attribute = tracker.get_slot("attribute")
-
-        if not entity_type:
-            dispatcher.utter_message(
-                "Sorry, I did not get that. Can you please rephrase?"
-            )
-            return []
-
-        if not attribute:
-            return self._query_entities(dispatcher, tracker)
-        elif attribute:
-            return self._query_attribute(dispatcher, tracker)
-
-        dispatcher.utter_message("Sorry, I did not get that. Can you please rephrase?")
-        return []
-
-    def _query_entities(self, dispatcher, tracker):
-        entity_type = tracker.get_slot("entity_type")
-
-        attributes = self._get_attributes_of_entity(entity_type, tracker)
-        entities = self.knowledge_base.get_entities(entity_type, attributes)
-
-        if not entities:
-            dispatcher.utter_message(
-                "I could not find any entities of type '{}'.".format(entity_type)
-            )
-            return []
-
-        representation_function = self.knowledge_base.schema[entity_type][
-            SCHEMA_KEYS_REPRESENTATION
-        ]
-
-        dispatcher.utter_message(
-            "Found the following entities of type '{}':".format(entity_type)
-        )
-        for i, e in enumerate(entities):
-            dispatcher.utter_message(f"{i + 1}: {representation_function(e)}")
-
-        key_attribute = self.knowledge_base.schema[entity_type][SCHEMA_KEYS_KEY]
-
-        last_entity = None if len(entities) > 1 else entities[0][key_attribute]
-
-        slots = [
-            SlotSet("entity_type", entity_type),
-            SlotSet("mention", None),
-            SlotSet("attribute", None),
-            SlotSet("knowledge_base_last_entity", last_entity),
-            SlotSet("knowledge_base_last_entity_type", entity_type),
-            SlotSet(
-                "knowledge_base_entities",
-                list(map(lambda e: e[key_attribute], entities)),
-            ),
-        ]
-
-        return slots + self._reset_attribute_slots(entity_type, tracker)
-
-    def _query_attribute(self, dispatcher, tracker):
-        entity_type = tracker.get_slot("entity_type")
-        attribute = tracker.get_slot("attribute")
-
-        entity = self._get_entity(tracker)
-
-        if not entity or not attribute:
-            dispatcher.utter_message(
-                "Sorry, I did not get that. Can you please rephrase?"
-            )
-
-            slots = [SlotSet("mention", None)]
-            return slots + self._reset_attribute_slots(entity_type, tracker)
-
-        value = self.knowledge_base.get_attribute_of(entity_type, entity, attribute)
-
-        # utter response
-        if value:
-            dispatcher.utter_message(
-                "{} has the value '{}' for attribute '{}'.".format(
-                    entity, value, attribute
-                )
-            )
-        else:
-            dispatcher.utter_message(
-                "Did not found a valid value for attribute {} for entity '{}'.".format(
-                    attribute, entity
-                )
-            )
-
-        slots = [
-            SlotSet("entity_type", entity_type),
-            SlotSet("mention", None),
-            SlotSet("knowledge_base_last_entity", entity),
-            SlotSet("knowledge_base_last_entity_type", entity_type),
-        ]
-
-        return slots + self._reset_attribute_slots(entity_type, tracker)
