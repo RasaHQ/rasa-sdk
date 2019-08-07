@@ -148,7 +148,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         super().__init__(knowledge_base)
 
     def name(self):
-        return "action_query_knowledge_base"
+        raise NotImplementedError("An action must implement a name.")
 
     def run(self, dispatcher, tracker, domain):
         entity_type = tracker.get_slot("entity_type")
