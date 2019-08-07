@@ -1,14 +1,55 @@
 import logging
-from typing import List, Dict, Any, Optional, Text
-
+import random
+from typing import List, Dict, Any, Optional, Text, Callable
 
 logger = logging.getLogger(__name__)
 
 
-class KnowledgeBase(object):
+MANDATORY_SCHEMA_KEYS = ["attributes", "key", "representation"]
 
-    def __init__(self, schema: Dict):
+
+class KnowledgeBase(object):
+    def __init__(self, schema: Dict[Text, Dict[Text, Any]]):
         self.schema = schema
+        self.ordinal_mention_mapping = {
+            "one": lambda l: l[0],
+            "first": lambda l: l[0],
+            "1": lambda l: l[0],
+            "two": lambda l: l[1],
+            "second": lambda l: l[1],
+            "2": lambda l: l[1],
+            "three": lambda l: l[2],
+            "third": lambda l: l[2],
+            "3": lambda l: l[2],
+            "four": lambda l: l[3],
+            "fourth": lambda l: l[3],
+            "4": lambda l: l[3],
+            "any": lambda l: random.choice(list),
+            "last": lambda l: l[-1],
+            "final": lambda l: l[-1],
+        }
+
+        self._validate_schema()
+
+    def _validate_schema(self):
+        for entity_type, values in self.schema.items():
+            if not set(values.keys()) == set(MANDATORY_SCHEMA_KEYS):
+                raise ValueError(
+                    "The provided schema is missing mandatory keys for"
+                    "entity type '{}'. The mandatory keys are: {}".format(
+                        entity_type, MANDATORY_SCHEMA_KEYS
+                    )
+                )
+
+    def set_ordinal_mention_mapping(self, mapping: Dict[Text, Callable[[List], Any]]):
+        """
+        Overwrites the default ordinal mention mapping. E.g. the mapping that
+        maps, for example, "first one" to the first element of the previously
+        mentioned entities.
+
+        :param mapping: the ordinal mention mapping
+        """
+        self.ordinal_mention_mapping = mapping
 
     def get_entities(
         self,
@@ -29,13 +70,15 @@ class KnowledgeBase(object):
         raise NotImplementedError("Method is not implemented.")
 
     def get_attribute_of(
-        self, entity_type: Text, key_attribute: Text, key_attribute_value: Text, attribute: Text
+        self,
+        entity_type: Text,
+        key_attribute_value: Text,
+        attribute: Text,
     ) -> Any:
         """
         Get the value of the given attribute for the provided entity.
 
         :param entity_type: entity type
-        :param key_attribute: key attribute of entity
         :param key_attribute_value: value of the key attribute
         :param attribute: attribute of interest
 
@@ -77,19 +120,24 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         return entities[:limit]
 
     def get_attribute_of(
-        self, entity_type: Text, key_attribute: Text, entity: Text, attribute: Text
+        self, entity_type: Text, key_attribute_value: Text, attribute: Text
     ) -> Any:
         if entity_type not in self.graph:
             return None
 
         entities = self.graph[entity_type]
+        key_attribute = self.schema[entity_type]["key"]
 
         entity_of_interest = list(
-            filter(lambda e: e[key_attribute] == entity, entities)
+            filter(lambda e: e[key_attribute] == key_attribute_value, entities)
         )
 
         if not entity_of_interest or len(entity_of_interest) > 1:
             return None
 
-        return entity_of_interest[0][attribute]
+        entity = entity_of_interest[0]
 
+        if attribute not in entity:
+            return None
+
+        return entity_of_interest[0][attribute]
