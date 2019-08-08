@@ -162,7 +162,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
     """
 
     def __init__(self, knowldege_base):
-        super().__init__(knowldege_base)
+        super(ActionQueryKnowledgeBase, self).__init__(knowldege_base)
 
     def name(self):
         return "action_query_knowledge_base"

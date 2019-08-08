@@ -43,7 +43,7 @@ def test_schema_validation():
     with pytest.raises(ValueError) as excinfo:
         InMemoryKnowledgeBase(schema, graph)
 
-    assert "incorrect_entity_1" in str(excinfo.value)
+    assert "incorrect_entity_" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(

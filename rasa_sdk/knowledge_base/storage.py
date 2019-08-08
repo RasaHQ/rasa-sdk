@@ -91,7 +91,7 @@ class KnowledgeBase(object):
 class InMemoryKnowledgeBase(KnowledgeBase):
     def __init__(self, schema, data):
         self.data = data
-        super().__init__(schema)
+        super(InMemoryKnowledgeBase, self).__init__(schema)
 
     def get_entities(self, entity_type, attributes, limit=5):
 
