@@ -186,7 +186,10 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         domain: Dict[Text, Any],
     ) -> List[Dict[Text, Any]]:
         entity_type = tracker.get_slot(SLOT_ENTITY_TYPE)
+        last_entity_type = tracker.get_slot(SLOT_LAST_ENTITY_TYPE)
         attribute = tracker.get_slot(SLOT_ATTRIBUTE)
+
+        new_request = entity_type != last_entity_type
 
         if not entity_type:
             dispatcher.utter_message(
@@ -194,7 +197,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
             )
             return []
 
-        if not attribute:
+        if not attribute or new_request:
             return self._query_entities(dispatcher, tracker)
         elif attribute:
             return self._query_attribute(dispatcher, tracker)
