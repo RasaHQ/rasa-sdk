@@ -174,8 +174,8 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         new_request = entity_type != last_entity_type
 
         if not entity_type:
-            dispatcher.utter_message(
-                "Sorry, I did not get that. Can you please rephrase?"
+            dispatcher.utter_template(
+                "Sorry, I did not get that. Can you please rephrase?", tracker
             )
             return []
 
@@ -184,7 +184,9 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         elif attribute:
             return self._query_attribute(dispatcher, tracker)
 
-        dispatcher.utter_message("Sorry, I did not get that. Can you please rephrase?")
+        dispatcher.utter_template(
+            "Sorry, I did not get that. Can you please rephrase?", tracker
+        )
         return []
 
     def _query_entities(self, dispatcher, tracker):
@@ -204,8 +206,8 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         entities = self.knowledge_base.get_entities(entity_type, attributes)
 
         if not entities:
-            dispatcher.utter_message(
-                "I could not find any entities of type '{}'.".format(entity_type)
+            dispatcher.utter_template(
+                "I could not find any entities of type '{entity_type}'.", tracker
             )
             return []
 
@@ -213,11 +215,13 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
             SCHEMA_KEYS_REPRESENTATION
         ]
 
-        dispatcher.utter_message(
-            "Found the following entities of type '{}':".format(entity_type)
+        dispatcher.utter_template(
+            "Found the following entities of type '{entity_type}':", tracker
         )
         for i, e in enumerate(entities, 1):
-            dispatcher.utter_message("{}: {}".format(i, representation_function(e)))
+            dispatcher.utter_template(
+                "{}: {}".format(i, representation_function(e)), tracker
+            )
 
         key_attribute = self.knowledge_base.schema[entity_type][SCHEMA_KEYS_KEY]
 
@@ -251,8 +255,8 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         entity = self._get_entity(tracker)
 
         if not entity or not attribute:
-            dispatcher.utter_message(
-                "Sorry, I did not get that. Can you please rephrase?"
+            dispatcher.utter_template(
+                "Sorry, I did not get that. Can you please rephrase?", tracker
             )
 
             slots = [SlotSet(SLOT_MENTION, None)]
@@ -262,16 +266,18 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
 
         # utter response
         if value:
-            dispatcher.utter_message(
+            dispatcher.utter_template(
                 "'{}' has the value '{}' for attribute '{}'.".format(
                     entity, value, attribute
-                )
+                ),
+                tracker,
             )
         else:
-            dispatcher.utter_message(
+            dispatcher.utter_template(
                 "Did not found a valid value for attribute '{}' for entity '{}'.".format(
                     attribute, entity
-                )
+                ),
+                tracker,
             )
 
         slots = [
