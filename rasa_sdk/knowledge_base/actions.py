@@ -25,12 +25,6 @@ class ActionKnowledgeBase(Action):
     def __init__(self, knowledge_base):
         self.knowledge_base = knowledge_base
 
-    def name(self):
-        raise NotImplementedError("An action must implement a name")
-
-    def run(self, dispatcher, tracker, domain):
-        raise NotImplementedError("An action must implement its run method")
-
     def _get_entity(self, tracker):
         """
         Get the name of the entity the user referred to. Either the NER detected the
