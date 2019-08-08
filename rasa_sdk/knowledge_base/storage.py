@@ -58,7 +58,8 @@ class KnowledgeBase(object):
         maps, for example, "first one" to the first element of the previously
         mentioned entities.
 
-        :param mapping: the ordinal mention mapping
+        Args:
+            mapping: the ordinal mention mapping
         """
         self.ordinal_mention_mapping = mapping
 
@@ -67,11 +68,12 @@ class KnowledgeBase(object):
         Query the knowledge base for entities of the given type. Restrict the entities
         by the provided attributes, if any attributes are given.
 
-        :param entity_type: the entity type
-        :param attributes: list of attributes
-        :param limit: maximum number of entities to return
+        Args:
+            entity_type: the entity type
+            attributes: list of attributes
+            limit: maximum number of entities to return
 
-        :return: list of entities
+        Returns: list of entities
         """
         raise NotImplementedError("Method is not implemented.")
 
@@ -79,11 +81,12 @@ class KnowledgeBase(object):
         """
         Get the value of the given attribute for the provided entity.
 
-        :param entity_type: entity type
-        :param key_attribute_value: value of the key attribute
-        :param attribute: attribute of interest
+        Args:
+            entity_type: entity type
+            key_attribute_value: value of the key attribute
+            attribute: attribute of interest
 
-        :return: the value of the attribute of interest
+        Returns: the value of the attribute of interest
         """
         raise NotImplementedError("Method is not implemented.")
 

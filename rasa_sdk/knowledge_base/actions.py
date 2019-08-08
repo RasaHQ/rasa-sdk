@@ -31,9 +31,10 @@ class ActionKnowledgeBase(Action):
         entity and stored its name in the corresponding slot or the user referred to
         the entity by any kind of mention, such as "first one" or "it".
 
-        :param tracker: Tracker
+        Args:
+            tracker: the tracker
 
-        :return: the name of the actual entity (value of key attribute in the knowledge base)
+        Returns: the name of the actual entity (value of key attribute in the knowledge base)
         """
         mention = tracker.get_slot(SLOT_MENTION)
         entity_type = tracker.get_slot(SLOT_ENTITY_TYPE)
@@ -59,9 +60,10 @@ class ActionKnowledgeBase(Action):
         If the mention is not an ordinal mention, but some other reference, we just
         assume the user is referring to the last mentioned entity in the conversation.
 
-        :param tracker: tracker
+        Args:
+            tracker: the tracker
 
-        :return: name of the actually entity
+        Returns: name of the actually entity
         """
 
         mention = tracker.get_slot(SLOT_MENTION)
@@ -89,10 +91,11 @@ class ActionKnowledgeBase(Action):
         Converts an entity to its string representation using the lambda function
         defined in the schema
 
-        :param entity_type: the entity type
-        :param entity: the entity with all its attributes
+        Args:
+            entity_type: the entity type
+            entity: the entity with all its attributes
 
-        :return: a string that represents the entity
+        Returns: a string that represents the entity
         """
         representation_func = self.knowledge_base.schema[entity_type][
             SCHEMA_KEYS_REPRESENTATION
@@ -103,10 +106,11 @@ class ActionKnowledgeBase(Action):
         """
         Checks if the NER found any value for all attributes of the given entity type.
 
-        :param entity_type: the entity type
-        :param tracker: the tracker
+        Args:
+            entity_type: the entity type
+            tracker: the tracker
 
-        :return: a list of attributes
+        Returns: a list of attributes
         """
         attributes = []
 
@@ -124,10 +128,11 @@ class ActionKnowledgeBase(Action):
         """
         Reset all attribute slots of the current entity type.
 
-        :param entity_type: the entity type
-        :param tracker: the tracker
+        Args:
+            entity_type: the entity type
+            tracker: the tracker
 
-        :return: list of reset slots
+        Returns: list of reset slots
         """
         slots = []
 
@@ -187,10 +192,11 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         Queries the knowledge base for entities of the requested entity type and
         outputs those to the user.
 
-        :param dispatcher: the dispatcher
-        :param tracker: the tracker
+        Args:
+            dispatcher: the dispatcher
+            tracker: the tracker
 
-        :return: list of slots
+        Returns: list of slots
         """
         entity_type = tracker.get_slot(SLOT_ENTITY_TYPE)
 
@@ -210,8 +216,8 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         dispatcher.utter_message(
             "Found the following entities of type '{}':".format(entity_type)
         )
-        for i, e in enumerate(entities):
-            dispatcher.utter_message("{}: {}".format(i + 1, representation_function(e)))
+        for i, e in enumerate(entities, 1):
+            dispatcher.utter_message("{}: {}".format(i, representation_function(e)))
 
         key_attribute = self.knowledge_base.schema[entity_type][SCHEMA_KEYS_KEY]
 
@@ -233,10 +239,11 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         Queries the knowledge base for the value of the requested attribute of the
         mentioned entity and outputs it to the user.
 
-        :param dispatcher: the dispatcher
-        :param tracker: the tracker
+        Args:
+            dispatcher: the dispatcher
+            tracker: the tracker
 
-        :return: list of slots
+        Returns: list of slots
         """
         entity_type = tracker.get_slot(SLOT_ENTITY_TYPE)
         attribute = tracker.get_slot(SLOT_ATTRIBUTE)
