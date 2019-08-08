@@ -5,7 +5,6 @@ from rasa_sdk.knowledge_base.storage import (
     SCHEMA_KEYS_KEY,
     SCHEMA_KEYS_ATTRIBUTES,
     SCHEMA_KEYS_REPRESENTATION,
-    Attribute,
 )
 
 SCHEMA = {
@@ -18,9 +17,9 @@ SCHEMA = {
 
 GRAPH = {
     "restaurant": [
-        {"name": "PastaBar", "cuisine": "Italian", "wifi": False},
-        {"name": "Berlin Burrito Company", "cuisine": "Mexican", "wifi": True},
-        {"name": "I due forni", "cuisine": "Italian", "wifi": False},
+        {"name": "PastaBar", "cuisine": "Italian", "wifi": "False"},
+        {"name": "Berlin Burrito Company", "cuisine": "Mexican", "wifi": "True"},
+        {"name": "I due forni", "cuisine": "Italian", "wifi": "False"},
     ]
 }
 
@@ -52,8 +51,8 @@ def test_schema_validation():
     [
         ("restaurant", [], 3),
         ("hotel", [], 0),
-        ("restaurant", [Attribute("wifi", True)], 1),
-        ("restaurant", [Attribute("cuisine", "Italian")], 2),
+        ("restaurant", [{"name": "wifi", "value": "True"}], 1),
+        ("restaurant", [{"name": "cuisine", "value": "Italian"}], 2),
     ],
 )
 def test_query_entities(entity_type, attributes, expected_length):
@@ -68,7 +67,7 @@ def test_query_entities(entity_type, attributes, expected_length):
 @pytest.mark.parametrize(
     "entity_type,key_attribute_value,attribute,expected_value",
     [
-        ("restaurant", "PastaBar", "wifi", False),
+        ("restaurant", "PastaBar", "wifi", "False"),
         ("restaurant", "non-existing", "wifi", None),
         ("restaurant", "Berlin Burrito Company", "non-existing", None),
         ("hotel", "any-hotel", "any-attribute", None),
