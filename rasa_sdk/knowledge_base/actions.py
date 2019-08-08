@@ -110,7 +110,9 @@ class ActionKnowledgeBase(Action):
 
         :return: a string that represents the entity
         """
-        representation_func = self.knowledge_base.schema[entity_type][SCHEMA_KEYS_REPRESENTATION]
+        representation_func = self.knowledge_base.schema[entity_type][
+            SCHEMA_KEYS_REPRESENTATION
+        ]
         return representation_func(entity)
 
     def _get_attributes_of_entity(
@@ -248,10 +250,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
             SlotSet(SLOT_ATTRIBUTE, None),
             SlotSet(SLOT_LAST_ENTITY, last_entity),
             SlotSet(SLOT_LAST_ENTITY_TYPE, entity_type),
-            SlotSet(
-                SLOT_LISTED_ITEMS,
-                list(map(lambda e: e[key_attribute], entities)),
-            ),
+            SlotSet(SLOT_LISTED_ITEMS, list(map(lambda e: e[key_attribute], entities))),
         ]
 
         return slots + self._reset_attribute_slots(entity_type, tracker)

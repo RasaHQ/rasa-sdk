@@ -1,7 +1,12 @@
 import pytest
 
-from rasa_sdk.knowledge_base.storage import InMemoryKnowledgeBase, SCHEMA_KEYS_KEY, \
-    SCHEMA_KEYS_ATTRIBUTES, SCHEMA_KEYS_REPRESENTATION, Attribute
+from rasa_sdk.knowledge_base.storage import (
+    InMemoryKnowledgeBase,
+    SCHEMA_KEYS_KEY,
+    SCHEMA_KEYS_ATTRIBUTES,
+    SCHEMA_KEYS_REPRESENTATION,
+    Attribute,
+)
 
 SCHEMA = {
     "restaurant": {
@@ -13,21 +18,9 @@ SCHEMA = {
 
 GRAPH = {
     "restaurant": [
-        {
-            "name": "PastaBar",
-            "cuisine": "Italian",
-            "wifi": False,
-        },
-        {
-            "name": "Berlin Burrito Company",
-            "cuisine": "Mexican",
-            "wifi": True,
-        },
-        {
-            "name": "I due forni",
-            "cuisine": "Italian",
-            "wifi": False,
-        }
+        {"name": "PastaBar", "cuisine": "Italian", "wifi": False},
+        {"name": "Berlin Burrito Company", "cuisine": "Mexican", "wifi": True},
+        {"name": "I due forni", "cuisine": "Italian", "wifi": False},
     ]
 }
 
@@ -55,34 +48,40 @@ def test_schema_validation():
 
 
 @pytest.mark.parametrize(
-    "entity_type,attributes,expected_length", [
+    "entity_type,attributes,expected_length",
+    [
         ("restaurant", [], 3),
         ("hotel", [], 0),
         ("restaurant", [Attribute("wifi", True)], 1),
-        ("restaurant", [Attribute("cuisine", "Italian")], 2)
-    ]
+        ("restaurant", [Attribute("cuisine", "Italian")], 2),
+    ],
 )
 def test_query_entities(entity_type, attributes, expected_length):
     knowledge_base = InMemoryKnowledgeBase(SCHEMA, GRAPH)
 
-    entities = knowledge_base.get_entities(entity_type=entity_type, attributes=attributes)
+    entities = knowledge_base.get_entities(
+        entity_type=entity_type, attributes=attributes
+    )
     assert expected_length == len(entities)
 
 
 @pytest.mark.parametrize(
-    "entity_type,key_attribute_value,attribute,expected_value", [
+    "entity_type,key_attribute_value,attribute,expected_value",
+    [
         ("restaurant", "PastaBar", "wifi", False),
         ("restaurant", "non-existing", "wifi", None),
         ("restaurant", "Berlin Burrito Company", "non-existing", None),
         ("hotel", "any-hotel", "any-attribute", None),
         ("restaurant", "Berlin Burrito Company", "cuisine", "Mexican"),
-    ]
+    ],
 )
 def test_query_attribute(entity_type, key_attribute_value, attribute, expected_value):
     knowledge_base = InMemoryKnowledgeBase(SCHEMA, GRAPH)
 
-    actual_value = knowledge_base.get_attribute_of(entity_type=entity_type,
-                                    key_attribute_value=key_attribute_value,
-                                    attribute=attribute)
+    actual_value = knowledge_base.get_attribute_of(
+        entity_type=entity_type,
+        key_attribute_value=key_attribute_value,
+        attribute=attribute,
+    )
 
     assert expected_value == actual_value
