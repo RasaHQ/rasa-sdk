@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
-from typing import Text, Dict, Any, List, Optional
-
-from rasa_sdk import Action, Tracker
+from rasa_sdk import Action
 from rasa_sdk.events import SlotSet
-from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.knowledge_base.storage import (
-    Attribute,
-    KnowledgeBase,
     SCHEMA_KEYS_ATTRIBUTES,
     SCHEMA_KEYS_REPRESENTATION,
     SCHEMA_KEYS_KEY,
@@ -27,21 +22,16 @@ class ActionKnowledgeBase(Action):
     that are able to interact with the knowledge base.
     """
 
-    def __init__(self, knowledge_base: KnowledgeBase):
+    def __init__(self, knowledge_base):
         self.knowledge_base = knowledge_base
 
     def name(self):
         raise NotImplementedError("An action must implement a name")
 
-    def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
+    def run(self, dispatcher, tracker, domain):
         raise NotImplementedError("An action must implement its run method")
 
-    def _get_entity(self, tracker: Tracker) -> Text:
+    def _get_entity(self, tracker):
         """
         Get the name of the entity the user referred to. Either the NER detected the
         entity and stored its name in the corresponding slot or the user referred to
@@ -66,7 +56,7 @@ class ActionKnowledgeBase(Action):
         # entity mentioned in the conversation
         return tracker.get_slot(SLOT_LAST_ENTITY)
 
-    def _resolve_mention(self, tracker: Tracker) -> Optional[Text]:
+    def _resolve_mention(self, tracker):
         """
         Resolves a mention of an entity, such as first, to the actual entity.
         If multiple entities are listed during the conversation, the entities
@@ -100,7 +90,7 @@ class ActionKnowledgeBase(Action):
         if current_entity_type == last_entity_type:
             return last_entity
 
-    def _to_str(self, entity_type: Text, entity: Dict[Text, Any]) -> Text:
+    def _to_str(self, entity_type, entity):
         """
         Converts an entity to its string representation using the lambda function
         defined in the schema
@@ -115,9 +105,7 @@ class ActionKnowledgeBase(Action):
         ]
         return representation_func(entity)
 
-    def _get_attributes_of_entity(
-        self, entity_type: Text, tracker: Tracker
-    ) -> List[Attribute]:
+    def _get_attributes_of_entity(self, entity_type, tracker):
         """
         Checks if the NER found any value for all attributes of the given entity type.
 
@@ -134,13 +122,11 @@ class ActionKnowledgeBase(Action):
         for attr in self.knowledge_base.schema[entity_type][SCHEMA_KEYS_ATTRIBUTES]:
             attr_val = tracker.get_slot(attr)
             if attr_val is not None:
-                attributes.append(Attribute(attr, attr_val))
+                attributes.append({"name": attr, "value": attr_val})
 
         return attributes
 
-    def _reset_attribute_slots(
-        self, entity_type: Text, tracker: Tracker
-    ) -> List[SlotSet]:
+    def _reset_attribute_slots(self, entity_type, tracker):
         """
         Reset all attribute slots of the current entity type.
 
@@ -175,18 +161,13 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
     - add created intent and action to domain file
     """
 
-    def __init__(self, knowldege_base: KnowledgeBase):
+    def __init__(self, knowldege_base):
         super().__init__(knowldege_base)
 
     def name(self):
         return "action_query_knowledge_base"
 
-    def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
+    def run(self, dispatcher, tracker, domain):
         entity_type = tracker.get_slot(SLOT_ENTITY_TYPE)
         last_entity_type = tracker.get_slot(SLOT_LAST_ENTITY_TYPE)
         attribute = tracker.get_slot(SLOT_ATTRIBUTE)
@@ -207,9 +188,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         dispatcher.utter_message("Sorry, I did not get that. Can you please rephrase?")
         return []
 
-    def _query_entities(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker
-    ) -> List[Dict[Text, Any]]:
+    def _query_entities(self, dispatcher, tracker):
         """
         Queries the knowledge base for entities of the requested entity type and
         outputs those to the user.
@@ -255,9 +234,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
 
         return slots + self._reset_attribute_slots(entity_type, tracker)
 
-    def _query_attribute(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker
-    ) -> List[Dict[Text, Any]]:
+    def _query_attribute(self, dispatcher, tracker):
         """
         Queries the knowledge base for the value of the requested attribute of the
         mentioned entity and outputs it to the user.

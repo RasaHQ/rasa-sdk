@@ -1,6 +1,6 @@
 import logging
 import random
-from typing import List, Dict, Any, Optional, Text, Callable, NamedTuple
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,13 +15,8 @@ MANDATORY_SCHEMA_KEYS = [
 ]
 
 
-class Attribute(NamedTuple):
-    name: List[Dict[Text, Any]]
-    value: int
-
-
 class KnowledgeBase(object):
-    def __init__(self, schema: Dict[Text, Dict[Text, Any]]):
+    def __init__(self, schema):
         self.ordinal_mention_mapping = {
             "one": lambda l: l[0],
             "first": lambda l: l[0],
@@ -57,7 +52,7 @@ class KnowledgeBase(object):
                     )
                 )
 
-    def set_ordinal_mention_mapping(self, mapping: Dict[Text, Callable[[List], Any]]):
+    def set_ordinal_mention_mapping(self, mapping):
         """
         Overwrites the default ordinal mention mapping. E.g. the mapping that
         maps, for example, "first one" to the first element of the previously
@@ -67,12 +62,7 @@ class KnowledgeBase(object):
         """
         self.ordinal_mention_mapping = mapping
 
-    def get_entities(
-        self,
-        entity_type: Text,
-        attributes: Optional[List[Attribute]] = None,
-        limit: int = 5,
-    ) -> List[Dict[Text, Any]]:
+    def get_entities(self, entity_type, attributes, limit=5):
         """
         Query the knowledge base for entities of the given type. Restrict the entities
         by the provided attributes, if any attributes are given.
@@ -85,9 +75,7 @@ class KnowledgeBase(object):
         """
         raise NotImplementedError("Method is not implemented.")
 
-    def get_attribute_of(
-        self, entity_type: Text, key_attribute_value: Text, attribute: Text
-    ) -> Any:
+    def get_attribute_of(self, entity_type, key_attribute_value, attribute):
         """
         Get the value of the given attribute for the provided entity.
 
@@ -101,16 +89,11 @@ class KnowledgeBase(object):
 
 
 class InMemoryKnowledgeBase(KnowledgeBase):
-    def __init__(self, schema: Dict, data: Dict):
+    def __init__(self, schema, data):
         self.data = data
         super().__init__(schema)
 
-    def get_entities(
-        self,
-        entity_type: Text,
-        attributes: Optional[List[Attribute]] = None,
-        limit: int = 5,
-    ) -> List[Dict[Text, Any]]:
+    def get_entities(self, entity_type, attributes, limit=5):
 
         if entity_type not in self.data:
             return []
@@ -121,7 +104,9 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         if attributes:
             entities = list(
                 filter(
-                    lambda e: [e[a.name] == a.value for a in attributes].count(False)
+                    lambda e: [e[a["name"]] == a["value"] for a in attributes].count(
+                        False
+                    )
                     == 0,
                     entities,
                 )
@@ -129,9 +114,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         return entities[:limit]
 
-    def get_attribute_of(
-        self, entity_type: Text, key_attribute_value: Text, attribute: Text
-    ) -> Any:
+    def get_attribute_of(self, entity_type, key_attribute_value, attribute):
         if entity_type not in self.data:
             return None
 
