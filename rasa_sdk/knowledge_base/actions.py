@@ -155,7 +155,7 @@ class ActionKnowledgeBase(Action):
         restaurants that have wifi.", we would have two attribute slots set: "wifi" and
         "cuisine". Thus, we would filter all restaurants for two attributes now:
         wifi = True and cuisine = Italian. However, the user did not specify any
-        cuisine in his request. To avoid that we reset the attribute slots once the
+        cuisine in the request. To avoid that we reset the attribute slots once the
         request is done.
 
         Args:
