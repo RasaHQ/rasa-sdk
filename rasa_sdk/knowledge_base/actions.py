@@ -55,10 +55,11 @@ class ActionKnowledgeBase(Action):
         """
         Resolves a mention of an entity, such as 'the first one', to the actual entity.
         If multiple entities are listed during the conversation, the entities
-        are stored in the slot 'knowledge_base_entities' as a list. We resolve the
+        are stored in the slot 'knowledge_base_listed_items' as a list. We resolve the
         mention, such as first, to the list index and retrieve the actual entity.
-        If the mention is not an ordinal mention, but some other reference, we just
-        assume the user is referring to the last mentioned entity in the conversation.
+        If the mention is not an ordinal mention, but some other reference, such as
+        'it' or 'that restaurant', we just assume the user is referring to the last
+        mentioned entity in the conversation.
 
         Args:
             tracker: the tracker
