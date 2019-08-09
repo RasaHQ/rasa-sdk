@@ -157,7 +157,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
     - create an intent that triggers this action
     - mark all needed entities in the NLU data, such as 'entity_type'
     - create a story that includes this action
-    - add created intent and action to domain file
+    - add the intent and action to domain file
     """
 
     def __init__(self, knowldege_base):
