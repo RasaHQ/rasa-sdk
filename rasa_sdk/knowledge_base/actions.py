@@ -113,7 +113,7 @@ class ActionKnowledgeBase(Action):
     def _get_attributes_of_object(self, tracker, object_type):
         """
         If the user mentioned one or multiple attributes of the provided object_type in
-        his utterance, we extract all attribute values from the tracker and put them
+        an utterance, we extract all attribute values from the tracker and put them
         in a list. The list is used later on to filter a list of objects.
 
         For example: The user says 'What Italian restaurants do you know?'.
