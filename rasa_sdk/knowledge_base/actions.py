@@ -81,7 +81,7 @@ class ActionKnowledgeBase(Action):
 
         # NOTE:
         # for now we just assume that if the user refers to an entity, for
-        # example via "it" or "that restaurant". he actually refers to the last
+        # example via "it" or "that restaurant". they are actually referring to the last
         # entity that was detected.
         if current_entity_type == last_entity_type:
             return last_entity
