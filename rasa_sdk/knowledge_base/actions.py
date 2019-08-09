@@ -154,8 +154,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
     In order to actually query the knowledge base you need to:
     - create your knowledge base
     - add mandatory slots to the domain file: 'entity_type', 'attribute', 'mention'
-    - create an intent that triggers this action
-    - mark all needed entities in the NLU data, such as 'entity_type'
+    - create NLU data where the required entities are annotated
     - create a story that includes this action
     - add the intent and action to domain file
     """
@@ -166,6 +165,41 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
     def name(self):
         return "action_query_knowledge_base"
 
+    def utter_rephrase(self, dispatcher, tracker):
+        dispatcher.utter_template(
+            "Sorry, I did not get that. Can you please rephrase?", tracker
+        )
+
+    def utter_attribute_value(self, dispatcher, tracker, entity, attribute, value):
+        if value:
+            dispatcher.utter_template(
+                "'{}' has the value '{}' for attribute '{}'.".format(
+                    entity, value, attribute
+                ),
+                tracker,
+            )
+        else:
+            dispatcher.utter_template(
+                "Did not found a valid value for attribute '{}' for entity '{}'.".format(
+                    attribute, entity
+                ),
+                tracker,
+            )
+
+    def utter_entities(self, dispatcher, tracker, representation_function, entities):
+        dispatcher.utter_template(
+            "Found the following entities of type '{entity_type}':", tracker
+        )
+        for i, e in enumerate(entities, 1):
+            dispatcher.utter_template(
+                "{}: {}".format(i, representation_function(e)), tracker
+            )
+
+    def utter_no_entities_found(self, dispatcher, tracker):
+        dispatcher.utter_template(
+            "I could not find any entities of type '{entity_type}'.", tracker
+        )
+
     def run(self, dispatcher, tracker, domain):
         entity_type = tracker.get_slot(SLOT_ENTITY_TYPE)
         last_entity_type = tracker.get_slot(SLOT_LAST_ENTITY_TYPE)
@@ -174,9 +208,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         new_request = entity_type != last_entity_type
 
         if not entity_type:
-            dispatcher.utter_template(
-                "Sorry, I did not get that. Can you please rephrase?", tracker
-            )
+            self.utter_rephrase(dispatcher, tracker)
             return []
 
         if not attribute or new_request:
@@ -184,15 +216,14 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         elif attribute:
             return self._query_attribute(dispatcher, tracker)
 
-        dispatcher.utter_template(
-            "Sorry, I did not get that. Can you please rephrase?", tracker
-        )
+        self.utter_rephrase(dispatcher, tracker)
         return []
 
     def _query_entities(self, dispatcher, tracker):
         """
         Queries the knowledge base for entities of the requested entity type and
-        outputs those to the user.
+        outputs those to the user. The entities are filtered by any attribute the
+        user mentioned int he request.
 
         Args:
             dispatcher: the dispatcher
@@ -202,26 +233,21 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         """
         entity_type = tracker.get_slot(SLOT_ENTITY_TYPE)
 
+        # get all set attribute slots of the entity type to be able to filter the
+        # list of entities
         attributes = self._get_attributes_of_entity(entity_type, tracker)
+        # query the knowledge base
         entities = self.knowledge_base.get_entities(entity_type, attributes)
 
         if not entities:
-            dispatcher.utter_template(
-                "I could not find any entities of type '{entity_type}'.", tracker
-            )
-            return []
+            self.utter_no_entities_found(dispatcher, tracker)
+            return self._reset_attribute_slots(entity_type, tracker)
 
         representation_function = self.knowledge_base.schema[entity_type][
             SCHEMA_KEYS_REPRESENTATION
         ]
 
-        dispatcher.utter_template(
-            "Found the following entities of type '{entity_type}':", tracker
-        )
-        for i, e in enumerate(entities, 1):
-            dispatcher.utter_template(
-                "{}: {}".format(i, representation_function(e)), tracker
-            )
+        self.utter_entities(dispatcher, tracker, representation_function, entities)
 
         key_attribute = self.knowledge_base.schema[entity_type][SCHEMA_KEYS_KEY]
 
@@ -237,6 +263,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         ]
 
         return slots + self._reset_attribute_slots(entity_type, tracker)
+
 
     def _query_attribute(self, dispatcher, tracker):
         """
@@ -255,30 +282,13 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         entity = self._get_entity(tracker)
 
         if not entity or not attribute:
-            dispatcher.utter_template(
-                "Sorry, I did not get that. Can you please rephrase?", tracker
-            )
-
+            self.utter_rephrase(dispatcher, tracker)
             slots = [SlotSet(SLOT_MENTION, None)]
-            return slots + self._reset_attribute_slots(entity_type, tracker)
+            return slots
 
         value = self.knowledge_base.get_attribute_of(entity_type, entity, attribute)
 
-        # utter response
-        if value:
-            dispatcher.utter_template(
-                "'{}' has the value '{}' for attribute '{}'.".format(
-                    entity, value, attribute
-                ),
-                tracker,
-            )
-        else:
-            dispatcher.utter_template(
-                "Did not found a valid value for attribute '{}' for entity '{}'.".format(
-                    attribute, entity
-                ),
-                tracker,
-            )
+        self.utter_attribute_value(attribute, dispatcher, entity, tracker, value)
 
         slots = [
             SlotSet(SLOT_ENTITY_TYPE, entity_type),
@@ -287,4 +297,4 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
             SlotSet(SLOT_LAST_ENTITY_TYPE, entity_type),
         ]
 
-        return slots + self._reset_attribute_slots(entity_type, tracker)
+        return slots
