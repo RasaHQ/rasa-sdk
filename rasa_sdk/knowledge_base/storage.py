@@ -18,25 +18,18 @@ MANDATORY_SCHEMA_KEYS = [
 class KnowledgeBase(object):
     def __init__(self, schema):
         self.ordinal_mention_mapping = {
-            "one": lambda l: l[0],
-            "first": lambda l: l[0],
             "1": lambda l: l[0],
-            "first one": lambda l: l[0],
-            "two": lambda l: l[1],
-            "second": lambda l: l[1],
             "2": lambda l: l[1],
-            "second one": lambda l: l[1],
-            "three": lambda l: l[2],
-            "third": lambda l: l[2],
             "3": lambda l: l[2],
-            "third one": lambda l: l[2],
-            "four": lambda l: l[3],
-            "fourth": lambda l: l[3],
             "4": lambda l: l[3],
+            "5": lambda l: l[4],
+            "6": lambda l: l[5],
+            "7": lambda l: l[6],
+            "8": lambda l: l[7],
+            "9": lambda l: l[8],
+            "10": lambda l: l[9],
             "any": lambda l: random.choice(list),
             "last": lambda l: l[-1],
-            "last one": lambda l: l[-1],
-            "final": lambda l: l[-1],
         }
 
         self.schema = schema
@@ -114,6 +107,8 @@ class InMemoryKnowledgeBase(KnowledgeBase):
                     entities,
                 )
             )
+
+        random.shuffle(entities)
 
         return entities[:limit]
 
