@@ -28,17 +28,20 @@ class ActionKnowledgeBase(Action):
     def _get_entity(self, tracker):
         """
         Get the name of the entity the user referred to. Either the NER detected the
-        entity and stored its name in the corresponding slot or the user referred to
-        the entity by any kind of mention, such as "first one" or "it".
+        entity and stored its name in the corresponding slot (e.g. "Pasta&Pizza Place"
+        is detected as "restaurant") or the user referred to the entity by any kind of
+        mention, such as "first one" or "it".
 
         Args:
             tracker: the tracker
 
-        Returns: the name of the actual entity (value of key attribute in the knowledge base)
+        Returns: the name of the actual entity (value of key attribute in the
+        knowledge base)
         """
         mention = tracker.get_slot(SLOT_MENTION)
         entity_type = tracker.get_slot(SLOT_ENTITY_TYPE)
 
+        # the user referred to the entity by a mention, such as "first one"
         if mention:
             return self._resolve_mention(tracker)
 
@@ -53,13 +56,17 @@ class ActionKnowledgeBase(Action):
 
     def _resolve_mention(self, tracker):
         """
-        Resolves a mention of an entity, such as 'the first one', to the actual entity.
-        If multiple entities are listed during the conversation, the entities
-        are stored in the slot 'knowledge_base_listed_items' as a list. We resolve the
-        mention, such as first, to the list index and retrieve the actual entity.
-        If the mention is not an ordinal mention, but some other reference, such as
-        'it' or 'that restaurant', we just assume the user is referring to the last
-        mentioned entity in the conversation.
+        Resolve the given mention to the name of the actual entity.
+
+        Different kind of mentions exist. We distinguish between ordinal mentions and
+        all others.
+        For ordinal mentions we resolve the mention of an entity, such as 'the first
+        one', to the actual entity. If multiple entities are listed during the
+        conversation, the entities are stored in the slot 'knowledge_base_listed_items'
+        as a list. We resolve the mention, such as 'the first one', to the list index
+        and retrieve the actual entity.
+        For any other mention, such as 'it' or 'that restaurant', we just assume the
+        user is referring to the last mentioned entity in the conversation.
 
         Args:
             tracker: the tracker
@@ -82,7 +89,7 @@ class ActionKnowledgeBase(Action):
 
         # NOTE:
         # for now we just assume that if the user refers to an entity, for
-        # example via "it" or "that restaurant". they are actually referring to the last
+        # example via "it" or "that restaurant", they are actually referring to the last
         # entity that was detected.
         if current_entity_type == last_entity_type:
             return last_entity
@@ -90,7 +97,7 @@ class ActionKnowledgeBase(Action):
     def _to_str(self, entity_type, entity):
         """
         Converts an entity to its string representation using the lambda function
-        defined in the schema
+        defined in the schema.
 
         Args:
             entity_type: the entity type
@@ -105,7 +112,16 @@ class ActionKnowledgeBase(Action):
 
     def _get_attributes_of_entity(self, entity_type, tracker):
         """
-        Checks if the NER found any value for all attributes of the given entity type.
+        If the user mentioned one or multiple attributes of the provided entity_type in
+        his utterance, we extract all attribute values from the tracker and put them
+        in a list. The list is used later on to filter a list of entities.
+
+        For example: The user says 'What Italian restaurants do you know?'.
+        The NER should detect 'Italian' as 'cuisine'.
+        Due to the schema definition we know that 'cuisine' is an attribute of the
+        entity type 'restaurant'.
+        Thus, this method returns [{'name': 'cuisine', 'value': 'Italian'}] as
+        list of attributes for the entity type 'restaurant'.
 
         Args:
             entity_type: the entity type
@@ -129,11 +145,24 @@ class ActionKnowledgeBase(Action):
         """
         Reset all attribute slots of the current entity type.
 
+        If the user is saying something like "Show me all restaurants with Italian
+        cuisine.", the NER should detect "restaurant" as "entity_type" and "Italian" as
+        "cuisine" entity. So, we should filter the restaurant entities in the
+        knowledge base by their cuisine (= Italian). When listing entities, we check
+        what attributes are detected by the NER. We take all attributes that are set,
+        e.g. cuisine = Italian. If we don't reset the attribute slots after the request
+        is done and the next utterance of the user would be, for example, "List all
+        restaurants that have wifi.", we would have two attribute slots set: "wifi" and
+        "cuisine". Thus, we would filter all restaurants for two attributes now:
+        wifi = True and cuisine = Italian. However, the user did not specify any
+        cuisine in his request. To avoid that we reset the attribute slots once the
+        request is done.
+
         Args:
             entity_type: the entity type
             tracker: the tracker
 
-        Returns: list of reset slots
+        Returns: list of slots
         """
         slots = []
 
@@ -167,11 +196,27 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         return "action_query_knowledge_base"
 
     def utter_rephrase(self, dispatcher, tracker):
+        """
+        Utters a response to the user that indicates that something went wrong. It
+        asks the user to rephrase his request.
+
+        Args:
+            dispatcher: the dispatcher
+            tracker: the tracker
+        """
         dispatcher.utter_template(
             "Sorry, I did not get that. Can you please rephrase?", tracker
         )
 
     def utter_attribute_value(self, dispatcher, tracker, entity, attribute, value):
+        """
+        Utters a response that informs the user about the attribute value of the
+        attribute of interest.
+
+        Args:
+            dispatcher: the dispatcher
+            tracker: the tracker
+        """
         if value:
             dispatcher.utter_template(
                 "'{}' has the value '{}' for attribute '{}'.".format(
@@ -188,6 +233,13 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
             )
 
     def utter_entities(self, dispatcher, tracker, representation_function, entities):
+        """
+        Utters a response to the user that lists all found entities.
+
+        Args:
+            dispatcher: the dispatcher
+            tracker: the tracker
+        """
         dispatcher.utter_template(
             "Found the following entities of type '{entity_type}':", tracker
         )
@@ -197,11 +249,33 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
             )
 
     def utter_no_entities_found(self, dispatcher, tracker):
+        """
+        Utters a response that informs the user that no entity could be found.
+
+        Args:
+            dispatcher: the dispatcher
+            tracker: the tracker
+        """
         dispatcher.utter_template(
             "I could not find any entities of type '{entity_type}'.", tracker
         )
 
     def run(self, dispatcher, tracker, domain):
+        """
+        Executes this action. If the user ask an question about an attribute,
+        the knowledge base is queried for that attribute. Otherwise, if no
+        attribute was detected in the request or the user is talking about a new
+        entity, multiple entities of the requested type are returned from the
+        knowledge base.
+
+        Args:
+            dispatcher: the dispatcher
+            tracker: the tracker
+            domain: the domain
+
+        Returns: list of slots
+
+        """
         entity_type = tracker.get_slot(SLOT_ENTITY_TYPE)
         last_entity_type = tracker.get_slot(SLOT_LAST_ENTITY_TYPE)
         attribute = tracker.get_slot(SLOT_ATTRIBUTE)
@@ -224,7 +298,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         """
         Queries the knowledge base for entities of the requested entity type and
         outputs those to the user. The entities are filtered by any attribute the
-        user mentioned int he request.
+        user mentioned in the request.
 
         Args:
             dispatcher: the dispatcher
@@ -264,7 +338,6 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         ]
 
         return slots + self._reset_attribute_slots(entity_type, tracker)
-
 
     def _query_attribute(self, dispatcher, tracker):
         """

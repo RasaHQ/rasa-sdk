@@ -28,8 +28,8 @@ class KnowledgeBase(object):
             "8": lambda l: l[7],
             "9": lambda l: l[8],
             "10": lambda l: l[9],
-            "any": lambda l: random.choice(list),
-            "last": lambda l: l[-1],
+            "ANY": lambda l: random.choice(list),
+            "LAST": lambda l: l[-1],
         }
 
         self.schema = schema
@@ -48,8 +48,7 @@ class KnowledgeBase(object):
     def set_ordinal_mention_mapping(self, mapping):
         """
         Overwrites the default ordinal mention mapping. E.g. the mapping that
-        maps, for example, "first one" to the first element of the previously
-        mentioned entities.
+        maps, for example, "first one" to the first element in a list.
 
         Args:
             mapping: the ordinal mention mapping
