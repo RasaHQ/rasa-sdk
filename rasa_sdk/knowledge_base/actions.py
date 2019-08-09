@@ -19,7 +19,7 @@ SLOT_LAST_ENTITY_TYPE = "knowledge_base_last_entity_type"
 class ActionKnowledgeBase(Action):
     """
     Abstract knowledge base action that can be inherited to create custom actions
-    that are able to interact with the knowledge base.
+    that are able to interact with a knowledge base.
     """
 
     def __init__(self, knowledge_base):
