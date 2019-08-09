@@ -53,7 +53,7 @@ class ActionKnowledgeBase(Action):
 
     def _resolve_mention(self, tracker):
         """
-        Resolves a mention of an entity, such as first, to the actual entity.
+        Resolves a mention of an entity, such as 'the first one', to the actual entity.
         If multiple entities are listed during the conversation, the entities
         are stored in the slot 'knowledge_base_entities' as a list. We resolve the
         mention, such as first, to the list index and retrieve the actual entity.
