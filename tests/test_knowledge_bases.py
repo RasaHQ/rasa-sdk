@@ -58,8 +58,8 @@ def test_schema_validation():
 def test_query_entities(entity_type, attributes, expected_length):
     knowledge_base = InMemoryKnowledgeBase(SCHEMA, GRAPH)
 
-    entities = knowledge_base.get_entities(
-        entity_type=entity_type, attributes=attributes
+    entities = knowledge_base.get_objects(
+        object_type=entity_type, attributes=attributes
     )
     assert expected_length == len(entities)
 
@@ -78,7 +78,7 @@ def test_query_attribute(entity_type, key_attribute_value, attribute, expected_v
     knowledge_base = InMemoryKnowledgeBase(SCHEMA, GRAPH)
 
     actual_value = knowledge_base.get_attribute_of(
-        entity_type=entity_type,
+        object_type=entity_type,
         key_attribute_value=key_attribute_value,
         attribute=attribute,
     )

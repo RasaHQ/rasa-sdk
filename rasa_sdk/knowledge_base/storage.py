@@ -36,12 +36,12 @@ class KnowledgeBase(object):
         self._validate_schema()
 
     def _validate_schema(self):
-        for entity_type, values in self.schema.items():
+        for object_type, values in self.schema.items():
             if not set(values.keys()) == set(MANDATORY_SCHEMA_KEYS):
                 raise ValueError(
                     "The provided schema is missing mandatory keys for"
-                    "entity type '{}'. The mandatory keys are: {}".format(
-                        entity_type, MANDATORY_SCHEMA_KEYS
+                    "object type '{}'. The mandatory keys are: {}".format(
+                        object_type, MANDATORY_SCHEMA_KEYS
                     )
                 )
 
@@ -55,26 +55,26 @@ class KnowledgeBase(object):
         """
         self.ordinal_mention_mapping = mapping
 
-    def get_entities(self, entity_type, attributes, limit=5):
+    def get_objects(self, object_type, attributes, limit=5):
         """
-        Query the knowledge base for entities of the given type. Restrict the entities
+        Query the knowledge base for objects of the given type. Restrict the objects
         by the provided attributes, if any attributes are given.
 
         Args:
-            entity_type: the entity type
+            object_type: the object type
             attributes: list of attributes
-            limit: maximum number of entities to return
+            limit: maximum number of objects to return
 
-        Returns: list of entities
+        Returns: list of objects
         """
         raise NotImplementedError("Method is not implemented.")
 
-    def get_attribute_of(self, entity_type, key_attribute_value, attribute):
+    def get_attribute_of(self, object_type, key_attribute_value, attribute):
         """
-        Get the value of the given attribute for the provided entity.
+        Get the value of the given attribute for the provided object.
 
         Args:
-            entity_type: entity type
+            object_type: object type
             key_attribute_value: value of the key attribute
             attribute: attribute of interest
 
@@ -88,46 +88,46 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         self.data = data
         super(InMemoryKnowledgeBase, self).__init__(schema)
 
-    def get_entities(self, entity_type, attributes, limit=5):
+    def get_objects(self, object_type, attributes, limit=5):
 
-        if entity_type not in self.data:
+        if object_type not in self.data:
             return []
 
-        entities = self.data[entity_type]
+        objects = self.data[object_type]
 
-        # filter entities by attributes
+        # filter objects by attributes
         if attributes:
-            entities = list(
+            objects = list(
                 filter(
-                    lambda e: [e[a["name"]] == a["value"] for a in attributes].count(
-                        False
-                    )
+                    lambda obj: [
+                        obj[a["name"]] == a["value"] for a in attributes
+                    ].count(False)
                     == 0,
-                    entities,
+                    objects,
                 )
             )
 
-        random.shuffle(entities)
+        random.shuffle(objects)
 
-        return entities[:limit]
+        return objects[:limit]
 
-    def get_attribute_of(self, entity_type, key_attribute_value, attribute):
-        if entity_type not in self.data:
+    def get_attribute_of(self, object_type, key_attribute_value, attribute):
+        if object_type not in self.data:
             return None
 
-        entities = self.data[entity_type]
-        key_attribute = self.schema[entity_type][SCHEMA_KEYS_KEY]
+        objects = self.data[object_type]
+        key_attribute = self.schema[object_type][SCHEMA_KEYS_KEY]
 
-        entity_of_interest = list(
-            filter(lambda e: e[key_attribute] == key_attribute_value, entities)
+        object_of_interest = list(
+            filter(lambda obj: obj[key_attribute] == key_attribute_value, objects)
         )
 
-        if not entity_of_interest or len(entity_of_interest) > 1:
+        if not object_of_interest or len(object_of_interest) > 1:
             return None
 
-        entity = entity_of_interest[0]
+        object_of_interest = object_of_interest[0]
 
-        if attribute not in entity:
+        if attribute not in object_of_interest:
             return None
 
-        return entity_of_interest[0][attribute]
+        return object_of_interest[attribute]
