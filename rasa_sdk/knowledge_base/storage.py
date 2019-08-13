@@ -1,6 +1,6 @@
 import logging
 import random
-
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,8 @@ MANDATORY_SCHEMA_KEYS = [
 
 
 class KnowledgeBase(object):
-    def __init__(self, schema):
+    def __init__(self):
+
         self.ordinal_mention_mapping = {
             "1": lambda l: l[0],
             "2": lambda l: l[1],
@@ -32,18 +33,39 @@ class KnowledgeBase(object):
             "LAST": lambda l: l[-1],
         }
 
-        self.schema = schema
-        self._validate_schema()
+    def get_attributes_of_object(self, object_type):
+        """
+        Returns a list of all attributes that belong to the provided object type.
 
-    def _validate_schema(self):
-        for object_type, values in self.schema.items():
-            if not set(values.keys()) == set(MANDATORY_SCHEMA_KEYS):
-                raise ValueError(
-                    "The provided schema is missing mandatory keys for"
-                    "object type '{}'. The mandatory keys are: {}".format(
-                        object_type, MANDATORY_SCHEMA_KEYS
-                    )
-                )
+        Args:
+            object_type: the object type
+
+        Returns: list of attributes of object_type
+        """
+        raise NotImplementedError("Method is not implemented.")
+
+    def get_key_attribute_of_object(self, object_type):
+        """
+        Returns the key attribute for the given object.
+
+        Args:
+            object_type: the object type
+
+        Returns: key attribute
+        """
+        raise NotImplementedError("Method is not implemented.")
+
+    def get_representation_function_of_object(self, object_type):
+        """
+        Returns a lamdba function that takes the object and returns a string
+        representation of it.
+
+        Args:
+            object_type: the object type
+
+        Returns: lamdba function
+        """
+        raise NotImplementedError("Method is not implemented.")
 
     def set_ordinal_mention_mapping(self, mapping):
         """
@@ -69,7 +91,7 @@ class KnowledgeBase(object):
         """
         raise NotImplementedError("Method is not implemented.")
 
-    def get_attribute_of(self, object_type, key_attribute_value, attribute):
+    def get_attribute(self, object_type, key_attribute_value, attribute):
         """
         Get the value of the given attribute for the provided object.
 
@@ -84,9 +106,33 @@ class KnowledgeBase(object):
 
 
 class InMemoryKnowledgeBase(KnowledgeBase):
-    def __init__(self, schema, data):
+    def __init__(self, data):
         self.data = data
-        super(InMemoryKnowledgeBase, self).__init__(schema)
+
+        self.key_attribute = defaultdict(lambda: "id")
+        self.representation_function = defaultdict(lambda obj: obj["name"])
+
+        super(InMemoryKnowledgeBase, self).__init__()
+
+    def get_attributes_of_object(self, object_type):
+        if object_type not in self.data or len(self.data[object_type]) < 1:
+            return []
+
+        first_object = self.data[object_type][0]
+
+        return list(first_object.keys())
+
+    def set_key_attribute_of_object(self, object_type, key_attribute):
+        self.key_attribute[object_type] = key_attribute
+
+    def get_key_attribute_of_object(self, object_type):
+        return self.key_attribute[object_type]
+
+    def set_representation_function_of_object(self, object_type, representation_function):
+        self.representation_function[object_type] = representation_function
+
+    def get_representation_function_of_object(self, object_type):
+        return self.representation_function[object_type]
 
     def get_objects(self, object_type, attributes, limit=5):
 
@@ -111,12 +157,12 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         return objects[:limit]
 
-    def get_attribute_of(self, object_type, key_attribute_value, attribute):
+    def get_attribute(self, object_type, key_attribute_value, attribute):
         if object_type not in self.data:
             return None
 
         objects = self.data[object_type]
-        key_attribute = self.schema[object_type][SCHEMA_KEYS_KEY]
+        key_attribute = self.get_key_attribute_of_object(object_type)
 
         object_of_interest = list(
             filter(lambda obj: obj[key_attribute] == key_attribute_value, objects)

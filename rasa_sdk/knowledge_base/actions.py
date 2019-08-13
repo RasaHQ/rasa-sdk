@@ -196,7 +196,7 @@ class ActionQueryKnowledgeBase(Action):
             slots = [SlotSet(SLOT_MENTION, None)]
             return slots
 
-        value = self.knowledge_base.get_attribute_of(
+        value = self.knowledge_base.get_attribute(
             object_type, object_name, attribute
         )
 
