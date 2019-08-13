@@ -22,8 +22,9 @@ class ActionKnowledgeBase(Action):
     that are able to interact with a knowledge base.
     """
 
-    def __init__(self, knowledge_base):
+    def __init__(self, knowledge_base, use_last_object_mention=True):
         self.knowledge_base = knowledge_base
+        self.use_last_object_mention = use_last_object_mention
 
     def _get_object_name(self, tracker):
         """
@@ -50,9 +51,12 @@ class ActionKnowledgeBase(Action):
         if object_name:
             return object_name
 
-        # if no explicit mention was found, we assume the user just refers to the last
-        # object mentioned in the conversation
-        return tracker.get_slot(SLOT_LAST_OBJECT)
+        if self.use_last_object_mention:
+            # if no explicit mention was found, we assume the user just refers to the last
+            # object mentioned in the conversation
+            return tracker.get_slot(SLOT_LAST_OBJECT)
+
+        return None
 
     def _resolve_mention(self, tracker):
         """
@@ -189,21 +193,22 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
     - add the intent and action to domain file
     """
 
-    def __init__(self, knowldege_base):
-        super(ActionQueryKnowledgeBase, self).__init__(knowldege_base)
+    def __init__(self, knowldege_base, use_last_object_mention=True):
+        super(ActionQueryKnowledgeBase, self).__init__(knowldege_base, use_last_object_mention)
 
     def name(self):
         return "action_query_knowledge_base"
 
-    def utter_rephrase(self, dispatcher):
+    def utter_rephrase(self, dispatcher, tracker):
         """
         Utters a response to the user that indicates that something went wrong. It
         asks the user to rephrase his request.
 
         Args:
             dispatcher: the dispatcher
+            tracker: the tracker
         """
-        dispatcher.utter_message("Sorry, I did not get that. Can you please rephrase?")
+        dispatcher.utter_template("utter_ask_rephrase", tracker)
 
     def utter_attribute_value(
         self, dispatcher, object_name, attribute_name, attribute_value
@@ -281,7 +286,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         new_request = object_type != last_object_type
 
         if not object_type:
-            self.utter_rephrase(dispatcher)
+            self.utter_rephrase(dispatcher, tracker)
             return []
 
         if not attribute or new_request:
@@ -289,7 +294,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         elif attribute:
             return self._query_attribute(dispatcher, tracker)
 
-        self.utter_rephrase(dispatcher)
+        self.utter_rephrase(dispatcher, tracker)
         return []
 
     def _query_objects(self, dispatcher, tracker):
@@ -352,7 +357,7 @@ class ActionQueryKnowledgeBase(ActionKnowledgeBase):
         object_name = self._get_object_name(tracker)
 
         if not object_name or not attribute:
-            self.utter_rephrase(dispatcher)
+            self.utter_rephrase(dispatcher, tracker)
             slots = [SlotSet(SLOT_MENTION, None)]
             return slots
 
