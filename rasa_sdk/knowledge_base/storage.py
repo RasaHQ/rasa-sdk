@@ -1,18 +1,10 @@
+import json
 import logging
+import os
 import random
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
-
-
-SCHEMA_KEYS_KEY = "key"
-SCHEMA_KEYS_ATTRIBUTES = "attributes"
-SCHEMA_KEYS_REPRESENTATION = "representation"
-MANDATORY_SCHEMA_KEYS = [
-    SCHEMA_KEYS_KEY,
-    SCHEMA_KEYS_ATTRIBUTES,
-    SCHEMA_KEYS_REPRESENTATION,
-]
 
 
 class KnowledgeBase(object):
@@ -33,6 +25,9 @@ class KnowledgeBase(object):
             "LAST": lambda l: l[-1],
         }
 
+        self.key_attribute = defaultdict(lambda: "id")
+        self.representation_function = defaultdict(lambda: lambda obj: obj["name"])
+
     def get_attributes_of_object(self, object_type):
         """
         Returns a list of all attributes that belong to the provided object type.
@@ -46,14 +41,14 @@ class KnowledgeBase(object):
 
     def get_key_attribute_of_object(self, object_type):
         """
-        Returns the key attribute for the given object.
+        Returns the key attribute for the given object type.
 
         Args:
             object_type: the object type
 
         Returns: key attribute
         """
-        raise NotImplementedError("Method is not implemented.")
+        return self.key_attribute[object_type]
 
     def get_representation_function_of_object(self, object_type):
         """
@@ -65,7 +60,7 @@ class KnowledgeBase(object):
 
         Returns: lamdba function
         """
-        raise NotImplementedError("Method is not implemented.")
+        return self.representation_function[object_type]
 
     def set_ordinal_mention_mapping(self, mapping):
         """
@@ -91,6 +86,18 @@ class KnowledgeBase(object):
         """
         raise NotImplementedError("Method is not implemented.")
 
+    def get_object(self, object_type, key_attribute_value):
+        """
+        Returns the object of the given type with the given key attribute value.
+
+        Args:
+            object_type: the object type
+            key_attribute_value: value of the key attribute
+
+        Returns: the object of interest
+        """
+        raise NotImplementedError("Method is not implemented.")
+
     def get_attribute(self, object_type, key_attribute_value, attribute):
         """
         Get the value of the given attribute for the provided object.
@@ -108,11 +115,54 @@ class KnowledgeBase(object):
 class InMemoryKnowledgeBase(KnowledgeBase):
     def __init__(self, data):
         self.data = data
-
-        self.key_attribute = defaultdict(lambda: "id")
-        self.representation_function = defaultdict(lambda obj: obj["name"])
-
         super(InMemoryKnowledgeBase, self).__init__()
+
+    @classmethod
+    def load(cls, filename, encoding="utf-8"):
+        """
+        Load the data from the given file and initialize an in-memory knowledge base.
+
+        Args:
+            filename: path to the file that contains the data for the knoweldge base
+
+        Returns: an in-memory knowledge base
+        """
+        try:
+            with open(filename, encoding=encoding) as f:
+                content = f.read()
+        except FileNotFoundError:
+            raise ValueError("File '{}' does not exist.".format(filename))
+
+        try:
+            data = json.loads(content)
+            return cls(data)
+        except ValueError as e:
+            raise ValueError(
+                "Failed to read json from '{}'. Error: "
+                "{}".format(os.path.abspath(filename), e)
+            )
+
+    def set_representation_function_of_object(
+        self, object_type, representation_function
+    ):
+        """
+        Set the representation function of the given object type.
+
+        Args:
+            object_type: the object type
+            representation_function: the representation function
+        """
+        self.representation_function[object_type] = representation_function
+
+    def set_key_attribute_of_object(self, object_type, key_attribute):
+        """
+        Set the key attribute of the given object type.
+
+        Args:
+            object_type: the object type
+            key_attribute: the name of the key attribute
+        """
+        self.key_attribute[object_type] = key_attribute
 
     def get_attributes_of_object(self, object_type):
         if object_type not in self.data or len(self.data[object_type]) < 1:
@@ -121,18 +171,6 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         first_object = self.data[object_type][0]
 
         return list(first_object.keys())
-
-    def set_key_attribute_of_object(self, object_type, key_attribute):
-        self.key_attribute[object_type] = key_attribute
-
-    def get_key_attribute_of_object(self, object_type):
-        return self.key_attribute[object_type]
-
-    def set_representation_function_of_object(self, object_type, representation_function):
-        self.representation_function[object_type] = representation_function
-
-    def get_representation_function_of_object(self, object_type):
-        return self.representation_function[object_type]
 
     def get_objects(self, object_type, attributes, limit=5):
 
@@ -158,6 +196,14 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         return objects[:limit]
 
     def get_attribute(self, object_type, key_attribute_value, attribute):
+        object_of_interest = self.get_object(object_type, key_attribute_value)
+
+        if attribute not in object_of_interest:
+            return None
+
+        return object_of_interest[attribute]
+
+    def get_object(self, object_type, key_attribute_value):
         if object_type not in self.data:
             return None
 
@@ -171,9 +217,13 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         if not object_of_interest or len(object_of_interest) > 1:
             return None
 
-        object_of_interest = object_of_interest[0]
+        return object_of_interest[0]
 
-        if attribute not in object_of_interest:
-            return None
+    def get_object_representation(self, object_type, key_attribute_value):
+        object_of_interest = self.get_object(object_type, key_attribute_value)
 
-        return object_of_interest[attribute]
+        representation_function = self.get_representation_function_of_object(
+            object_type
+        )
+
+        return representation_function(object_of_interest)

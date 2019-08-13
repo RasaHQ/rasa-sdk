@@ -1,6 +1,4 @@
 from rasa_sdk.events import SlotSet
-from rasa_sdk.knowledge_base.storage import SCHEMA_KEYS_ATTRIBUTES, \
-    SCHEMA_KEYS_REPRESENTATION
 
 SLOT_MENTION = "mention"
 SLOT_OBJECT_TYPE = "object_type"
@@ -13,7 +11,7 @@ SLOT_LAST_OBJECT_TYPE = "knowledge_base_last_object_type"
 def get_object_name(tracker, ordinal_mention_mapping, use_last_object_mention=True):
     """
     Get the name of the object the user referred to. Either the NER detected the
-    object and stored its name in the corresponding slot (e.g. "Pasta&Pizza Place"
+    object and stored its name in the corresponding slot (e.g. "PastaBar"
     is detected as "restaurant") or the user referred to the object by any kind of
     mention, such as "first one" or "it".
 
@@ -56,7 +54,7 @@ def resolve_mention(tracker, ordinal_mention_mapping):
     one', to the actual object name. If multiple objects are listed during the
     conversation, the objects are stored in the slot 'knowledge_base_listed_objects'
     as a list. We resolve the mention, such as 'the first one', to the list index
-    and retrieve the actual object.
+    and retrieve the actual object (using the 'ordinal_mention_mapping').
     For any other mention, such as 'it' or 'that restaurant', we just assume the
     user is referring to the last mentioned object in the conversation.
 
@@ -88,25 +86,7 @@ def resolve_mention(tracker, ordinal_mention_mapping):
         return last_object
 
 
-def to_str(object_type, object_dict, knowledge_base):
-    """
-    Converts an object to its string representation using the lambda function
-    defined in the schema.
-
-    Args:
-        object_type: the object type
-        object_dict: the object with all its attributes
-        knowledge_base: the knowledge base
-
-    Returns: a string that represents the object
-    """
-    representation_func = knowledge_base.schema[object_type][
-        SCHEMA_KEYS_REPRESENTATION
-    ]
-    return representation_func(object_dict)
-
-
-def get_attributes_of_object(tracker, object_type, knowledge_base):
+def get_attribute_slots(tracker, object_attributes):
     """
     If the user mentioned one or multiple attributes of the provided object_type in
     an utterance, we extract all attribute values from the tracker and put them
@@ -114,32 +94,27 @@ def get_attributes_of_object(tracker, object_type, knowledge_base):
 
     For example: The user says 'What Italian restaurants do you know?'.
     The NER should detect 'Italian' as 'cuisine'.
-    Due to the schema definition we know that 'cuisine' is an attribute of the
-    object type 'restaurant'.
+    We know that 'cuisine' is an attribute of the object type 'restaurant'.
     Thus, this method returns [{'name': 'cuisine', 'value': 'Italian'}] as
     list of attributes for the object type 'restaurant'.
 
     Args:
         tracker: the tracker
-        object_type: the object type
-        knowledge_base: the knowledge base
+        object_attributes: list of potential attributes of object
 
     Returns: a list of attributes
     """
     attributes = []
 
-    if object_type not in knowledge_base.schema:
-        return attributes
-
-    for attr in knowledge_base.schema[object_type][SCHEMA_KEYS_ATTRIBUTES]:
-        attr_val = tracker.get_slot(attr)
+    for attr in object_attributes:
+        attr_val = tracker.get_slot(attr) if attr in tracker.slots else None
         if attr_val is not None:
             attributes.append({"name": attr, "value": attr_val})
 
     return attributes
 
 
-def reset_attribute_slots(tracker, object_type, knowledge_base):
+def reset_attribute_slots(tracker, object_attributes):
     """
     Reset all attribute slots of the current object type.
 
@@ -159,17 +134,14 @@ def reset_attribute_slots(tracker, object_type, knowledge_base):
     Args:
         object_type: the object type
         tracker: the tracker
-        knowledge_base: the knowledge base
+        object_attributes: list of potential attributes of object
 
     Returns: list of slots
     """
     slots = []
 
-    if object_type not in knowledge_base.schema:
-        return slots
-
-    for attr in knowledge_base.schema[object_type][SCHEMA_KEYS_ATTRIBUTES]:
-        attr_val = tracker.get_slot(attr)
+    for attr in object_attributes:
+        attr_val = tracker.get_slot(attr) if attr in tracker.slots else None
         if attr_val is not None:
             slots.append(SlotSet(attr, None))
 

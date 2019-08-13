@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 from rasa_sdk import Action
 from rasa_sdk.events import SlotSet
-from rasa_sdk.knowledge_base.storage import (
-    SCHEMA_KEYS_ATTRIBUTES,
-    SCHEMA_KEYS_REPRESENTATION,
-    SCHEMA_KEYS_KEY,
+from rasa_sdk.knowledge_base.utils import (
+    SLOT_OBJECT_TYPE,
+    SLOT_LAST_OBJECT_TYPE,
+    SLOT_ATTRIBUTE,
+    reset_attribute_slots,
+    SLOT_MENTION,
+    SLOT_LAST_OBJECT,
+    SLOT_LISTED_OBJECTS,
+    get_object_name,
+    get_attribute_slots,
 )
-from rasa_sdk.knowledge_base.utils import to_str, SLOT_OBJECT_TYPE, \
-    SLOT_LAST_OBJECT_TYPE, SLOT_ATTRIBUTE, get_attributes_of_object, \
-    reset_attribute_slots, SLOT_MENTION, SLOT_LAST_OBJECT, SLOT_LISTED_OBJECTS, \
-    get_object_name
 
 
 class ActionQueryKnowledgeBase(Action):
@@ -80,8 +82,12 @@ class ActionQueryKnowledgeBase(Action):
         dispatcher.utter_message(
             "Found the following objects of type '{}':".format(object_type)
         )
+
+        representation_func = self.knowledge_base.get_representation_function_of_object(
+            object_type
+        )
         for i, obj in enumerate(objects, 1):
-            dispatcher.utter_message("{}: {}".format(i, to_str(object_type, obj, self)))
+            dispatcher.utter_message("{}: {}".format(i, representation_func(obj)))
 
     def utter_no_objects_found(self, dispatcher, object_type):
         """
@@ -111,9 +117,6 @@ class ActionQueryKnowledgeBase(Action):
         Returns: list of slots
 
         """
-        print(tracker.current_state())
-        print(tracker.events)
-
         object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
         last_object_type = tracker.get_slot(SLOT_LAST_OBJECT_TYPE)
         attribute = tracker.get_slot(SLOT_ATTRIBUTE)
@@ -145,20 +148,21 @@ class ActionQueryKnowledgeBase(Action):
         Returns: list of slots
         """
         object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
+        object_attributes = self.knowledge_base.get_attributes_of_object(object_type)
 
         # get all set attribute slots of the object type to be able to filter the
         # list of objects
-        attributes = get_attributes_of_object(tracker, object_type, self)
+        attributes = get_attribute_slots(tracker, object_attributes)
         # query the knowledge base
         objects = self.knowledge_base.get_objects(object_type, attributes)
 
         if not objects:
             self.utter_no_objects_found(dispatcher, tracker)
-            return reset_attribute_slots(tracker, object_type, self)
+            return reset_attribute_slots(tracker, object_attributes)
 
         self.utter_objects(dispatcher, object_type, objects)
 
-        key_attribute = self.knowledge_base.schema[object_type][SCHEMA_KEYS_KEY]
+        key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
 
@@ -173,7 +177,7 @@ class ActionQueryKnowledgeBase(Action):
             ),
         ]
 
-        return slots + reset_attribute_slots(tracker, object_type, self)
+        return slots + reset_attribute_slots(tracker, object_attributes)
 
     def _query_attribute(self, dispatcher, tracker):
         """
@@ -189,18 +193,24 @@ class ActionQueryKnowledgeBase(Action):
         object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
         attribute = tracker.get_slot(SLOT_ATTRIBUTE)
 
-        object_name = get_object_name(tracker, self.knowledge_base.ordinal_mention_mapping, self.use_last_object_mention)
+        object_name = get_object_name(
+            tracker,
+            self.knowledge_base.ordinal_mention_mapping,
+            self.use_last_object_mention,
+        )
 
         if not object_name or not attribute:
             self.utter_rephrase(dispatcher, tracker)
             slots = [SlotSet(SLOT_MENTION, None)]
             return slots
 
-        value = self.knowledge_base.get_attribute(
-            object_type, object_name, attribute
+        value = self.knowledge_base.get_attribute(object_type, object_name, attribute)
+
+        object_representation = self.knowledge_base.get_object_representation(
+            object_type, object_name
         )
 
-        self.utter_attribute_value(dispatcher, object_name, attribute, value)
+        self.utter_attribute_value(dispatcher, object_representation, attribute, value)
 
         slots = [
             SlotSet(SLOT_OBJECT_TYPE, object_type),
