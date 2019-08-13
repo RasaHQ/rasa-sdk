@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea on how to improve Rasa
+about: Suggest an idea on how to improve the Rasa SDK
 title: ''
 labels: enhancement
 assignees: ''
