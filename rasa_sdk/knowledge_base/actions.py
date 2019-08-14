@@ -33,17 +33,6 @@ class ActionQueryKnowledgeBase(Action):
     def name(self):
         return "action_query_knowledge_base"
 
-    def utter_rephrase(self, dispatcher, tracker):
-        """
-        Utters a response to the user that indicates that something went wrong. It
-        asks the user to rephrase his request.
-
-        Args:
-            dispatcher: the dispatcher
-            tracker: the tracker
-        """
-        dispatcher.utter_template("utter_ask_rephrase", tracker)
-
     def utter_attribute_value(
         self, dispatcher, object_name, attribute_name, attribute_value
     ):
@@ -79,27 +68,20 @@ class ActionQueryKnowledgeBase(Action):
             object_type: the object type
             objects: the list of objects
         """
-        dispatcher.utter_message(
-            "Found the following objects of type '{}':".format(object_type)
-        )
+        if objects:
+            dispatcher.utter_message(
+                "Found the following objects of type '{}':".format(object_type)
+            )
 
-        representation_func = self.knowledge_base.get_representation_function_of_object(
-            object_type
-        )
-        for i, obj in enumerate(objects, 1):
-            dispatcher.utter_message("{}: {}".format(i, representation_func(obj)))
-
-    def utter_no_objects_found(self, dispatcher, object_type):
-        """
-        Utters a response that informs the user that no object could be found.
-
-        Args:
-            dispatcher: the dispatcher
-            object_type: the object type
-        """
-        dispatcher.utter_message(
-            "I could not find any objects of type '{}'.".format(object_type)
-        )
+            repr_function = self.knowledge_base.get_representation_function_of_object(
+                object_type
+            )
+            for i, obj in enumerate(objects, 1):
+                dispatcher.utter_message("{}: {}".format(i, repr_function(obj)))
+        else:
+            dispatcher.utter_message(
+                "I could not find any objects of type '{}'.".format(object_type)
+            )
 
     def run(self, dispatcher, tracker, domain):
         """
@@ -124,7 +106,7 @@ class ActionQueryKnowledgeBase(Action):
         new_request = object_type != last_object_type
 
         if not object_type:
-            self.utter_rephrase(dispatcher, tracker)
+            dispatcher.utter_template("utter_ask_rephrase", tracker)
             return []
 
         if not attribute or new_request:
@@ -132,7 +114,7 @@ class ActionQueryKnowledgeBase(Action):
         elif attribute:
             return self._query_attribute(dispatcher, tracker)
 
-        self.utter_rephrase(dispatcher, tracker)
+        dispatcher.utter_template("utter_ask_rephrase", tracker)
         return []
 
     def _query_objects(self, dispatcher, tracker):
@@ -156,11 +138,10 @@ class ActionQueryKnowledgeBase(Action):
         # query the knowledge base
         objects = self.knowledge_base.get_objects(object_type, attributes)
 
-        if not objects:
-            self.utter_no_objects_found(dispatcher, tracker)
-            return reset_attribute_slots(tracker, object_attributes)
-
         self.utter_objects(dispatcher, object_type, objects)
+
+        if not objects:
+            return reset_attribute_slots(tracker, object_attributes)
 
         key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
 
@@ -200,22 +181,29 @@ class ActionQueryKnowledgeBase(Action):
         )
 
         if not object_name or not attribute:
-            self.utter_rephrase(dispatcher, tracker)
-            slots = [SlotSet(SLOT_MENTION, None)]
-            return slots
+            dispatcher.utter_template("utter_ask_rephrase", tracker)
+            return [SlotSet(SLOT_MENTION, None)]
 
-        value = self.knowledge_base.get_attribute(object_type, object_name, attribute)
+        object_of_interest = self.knowledge_base.get_object(object_type, object_name)
 
-        object_representation = self.knowledge_base.get_object_representation(
-            object_type, object_name
+        if not object_of_interest or attribute not in object_of_interest:
+            dispatcher.utter_template("utter_ask_rephrase", tracker)
+            return [SlotSet(SLOT_MENTION, None)]
+
+        value = object_of_interest[attribute]
+        repr_function = self.knowledge_base.get_representation_function_of_object(
+            object_type
         )
+        object_representation = repr_function(object_of_interest)
+        key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
+        object_identifier = object_of_interest[key_attribute]
 
         self.utter_attribute_value(dispatcher, object_representation, attribute, value)
 
         slots = [
             SlotSet(SLOT_OBJECT_TYPE, object_type),
             SlotSet(SLOT_MENTION, None),
-            SlotSet(SLOT_LAST_OBJECT, object_name),
+            SlotSet(SLOT_LAST_OBJECT, object_identifier),
             SlotSet(SLOT_LAST_OBJECT_TYPE, object_type),
         ]
 

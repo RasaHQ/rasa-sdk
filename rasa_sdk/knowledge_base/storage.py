@@ -86,28 +86,15 @@ class KnowledgeBase(object):
         """
         raise NotImplementedError("Method is not implemented.")
 
-    def get_object(self, object_type, key_attribute_value):
+    def get_object(self, object_type, object_identifier):
         """
         Returns the object of the given type with the given key attribute value.
 
         Args:
             object_type: the object type
-            key_attribute_value: value of the key attribute
+            object_identifier: value of the key attribute or the string representation of the object
 
         Returns: the object of interest
-        """
-        raise NotImplementedError("Method is not implemented.")
-
-    def get_attribute(self, object_type, key_attribute_value, attribute):
-        """
-        Get the value of the given attribute for the provided object.
-
-        Args:
-            object_type: object type
-            key_attribute_value: value of the key attribute
-            attribute: attribute of interest
-
-        Returns: the value of the attribute of interest
         """
         raise NotImplementedError("Method is not implemented.")
 
@@ -124,6 +111,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         Args:
             filename: path to the file that contains the data for the knoweldge base
+            encoding: file encoding
 
         Returns: an in-memory knowledge base
         """
@@ -195,35 +183,35 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         return objects[:limit]
 
-    def get_attribute(self, object_type, key_attribute_value, attribute):
-        object_of_interest = self.get_object(object_type, key_attribute_value)
-
-        if attribute not in object_of_interest:
-            return None
-
-        return object_of_interest[attribute]
-
-    def get_object(self, object_type, key_attribute_value):
+    def get_object(self, object_type, object_identifier):
         if object_type not in self.data:
             return None
 
         objects = self.data[object_type]
         key_attribute = self.get_key_attribute_of_object(object_type)
 
-        object_of_interest = list(
-            filter(lambda obj: obj[key_attribute] == key_attribute_value, objects)
+        # filter the objects by its key attribute, for example, 'id'
+        objects_of_interest = list(
+            filter(
+                lambda obj: str(obj[key_attribute]).lower()
+                == str(object_identifier).lower(),
+                objects,
+            )
         )
 
-        if not object_of_interest or len(object_of_interest) > 1:
+        # if the object was referred to directly, we need to compare the representation
+        # of each object with the given object identifier
+        if not objects_of_interest:
+            repr_function = self.get_representation_function_of_object(object_type)
+            objects_of_interest = list(
+                filter(
+                    lambda obj: str(object_identifier).lower()
+                    in str(repr_function(obj)).lower(),
+                    objects,
+                )
+            )
+
+        if not objects_of_interest or len(objects_of_interest) > 1:
             return None
 
-        return object_of_interest[0]
-
-    def get_object_representation(self, object_type, key_attribute_value):
-        object_of_interest = self.get_object(object_type, key_attribute_value)
-
-        representation_function = self.get_representation_function_of_object(
-            object_type
-        )
-
-        return representation_function(object_of_interest)
+        return objects_of_interest[0]
