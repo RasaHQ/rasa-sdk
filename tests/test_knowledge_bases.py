@@ -70,7 +70,7 @@ def test_get_attributes_for(object_type, expected_attributes):
 
     actual_attributes = knowledge_base.get_attributes_of_object(object_type=object_type)
 
-    assert expected_attributes == actual_attributes
+    assert set(expected_attributes) == set(actual_attributes)
 
 
 @pytest.mark.parametrize(
