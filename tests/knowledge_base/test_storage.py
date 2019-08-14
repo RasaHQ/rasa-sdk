@@ -115,8 +115,6 @@ def test_get_representation_function_of_object(
         object_type=object_type
     )
 
-    dummy_object = knowledge_base.get_object(
-        object_type, 1
-    )
+    dummy_object = knowledge_base.get_object(object_type, 1)
 
     assert expected_repr_function(dummy_object) == actual_repr_function(dummy_object)
