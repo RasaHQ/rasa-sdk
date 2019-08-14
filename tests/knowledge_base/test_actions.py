@@ -5,8 +5,14 @@ from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.knowledge_base.actions import ActionQueryKnowledgeBase
 from rasa_sdk.knowledge_base.storage import InMemoryKnowledgeBase
-from rasa_sdk.knowledge_base.utils import SLOT_MENTION, SLOT_ATTRIBUTE, \
-    SLOT_OBJECT_TYPE, SLOT_LISTED_OBJECTS, SLOT_LAST_OBJECT, SLOT_LAST_OBJECT_TYPE
+from rasa_sdk.knowledge_base.utils import (
+    SLOT_MENTION,
+    SLOT_ATTRIBUTE,
+    SLOT_OBJECT_TYPE,
+    SLOT_LISTED_OBJECTS,
+    SLOT_LAST_OBJECT,
+    SLOT_LAST_OBJECT_TYPE,
+)
 
 DATA = {
     "restaurant": [
@@ -18,8 +24,8 @@ DATA = {
 
 
 def compare_slots(slot_list_1, slot_list_2):
-    print(slot_list_1)
-    print(slot_list_2)
+    print (slot_list_1)
+    print (slot_list_2)
 
     assert len(slot_list_2) == len(slot_list_1)
 
@@ -51,7 +57,7 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet(SLOT_LAST_OBJECT, None),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
                 SlotSet(SLOT_LISTED_OBJECTS, [3, 2, 1]),
-            ]
+            ],
         ),
         (
             {
@@ -61,7 +67,7 @@ def compare_slots(slot_list_1, slot_list_2):
                 SLOT_LISTED_OBJECTS: None,
                 SLOT_LAST_OBJECT: None,
                 SLOT_LAST_OBJECT_TYPE: "restaurant",
-                "cuisine": "Italian"
+                "cuisine": "Italian",
             },
             [
                 SlotSet(SLOT_MENTION, None),
@@ -70,8 +76,8 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet(SLOT_LAST_OBJECT, None),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
                 SlotSet(SLOT_LISTED_OBJECTS, [3, 1]),
-                SlotSet("cuisine", None)
-            ]
+                SlotSet("cuisine", None),
+            ],
         ),
         (
             {
@@ -87,7 +93,7 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
                 SlotSet(SLOT_LAST_OBJECT, 2),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
-            ]
+            ],
         ),
         (
             {
@@ -104,7 +110,7 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
                 SlotSet(SLOT_LAST_OBJECT, 1),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
-            ]
+            ],
         ),
         (
             {
@@ -115,9 +121,8 @@ def compare_slots(slot_list_1, slot_list_2):
                 SLOT_LAST_OBJECT: None,
                 SLOT_LAST_OBJECT_TYPE: None,
             },
-            [
-            ]
-        )
+            [],
+        ),
     ],
 )
 def test_action_run(slots, expected_slots):
@@ -131,4 +136,3 @@ def test_action_run(slots, expected_slots):
 
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)
-
