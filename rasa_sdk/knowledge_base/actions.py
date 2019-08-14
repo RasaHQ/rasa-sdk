@@ -85,10 +85,10 @@ class ActionQueryKnowledgeBase(Action):
 
     def run(self, dispatcher, tracker, domain):
         """
-        Executes this action. If the user ask an question about an attribute,
+        Executes this action. If the user ask a question about an attribute,
         the knowledge base is queried for that attribute. Otherwise, if no
         attribute was detected in the request or the user is talking about a new
-        object, multiple objects of the requested type are returned from the
+        object type, multiple objects of the requested type are returned from the
         knowledge base.
 
         Args:
@@ -106,6 +106,8 @@ class ActionQueryKnowledgeBase(Action):
         new_request = object_type != last_object_type
 
         if not object_type:
+            # object type always needs to be set as this is needed to query the
+            # knowledge base
             dispatcher.utter_template("utter_ask_rephrase", tracker)
             return []
 

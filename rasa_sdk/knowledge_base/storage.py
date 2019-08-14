@@ -88,11 +88,12 @@ class KnowledgeBase(object):
 
     def get_object(self, object_type, object_identifier):
         """
-        Returns the object of the given type with the given key attribute value.
+        Returns the object of the given type that matches the given object identifier.
 
         Args:
             object_type: the object type
-            object_identifier: value of the key attribute or the string representation of the object
+            object_identifier: value of the key attribute or the string
+            representation of the object
 
         Returns: the object of interest
         """
@@ -123,12 +124,13 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         try:
             data = json.loads(content)
-            return cls(data)
         except ValueError as e:
             raise ValueError(
                 "Failed to read json from '{}'. Error: "
                 "{}".format(os.path.abspath(filename), e)
             )
+
+        return cls(data)
 
     def set_representation_function_of_object(
         self, object_type, representation_function
@@ -153,7 +155,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         self.key_attribute[object_type] = key_attribute
 
     def get_attributes_of_object(self, object_type):
-        if object_type not in self.data or len(self.data[object_type]) < 1:
+        if object_type not in self.data or not self.data[object_type]:
             return []
 
         first_object = self.data[object_type][0]
@@ -161,7 +163,6 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         return list(first_object.keys())
 
     def get_objects(self, object_type, attributes, limit=5):
-
         if object_type not in self.data:
             return []
 
