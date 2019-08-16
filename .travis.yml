@@ -19,9 +19,10 @@ after_success:
 jobs:
   include:
   - stage: test
-    name: Check code style
+    name: "Code Formatting"
     python: 3.6
-    script: pip install black; black --check .
+    script:
+      - make lint
   - stage: deploy
     python: 3.6
     install: skip

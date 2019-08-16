@@ -25,10 +25,11 @@ clean:
 	rm -rf docs/_build
 
 lint:
-	py.test --pep8 -m pep8
+	flake8 rasa_sdk tests
+	black --check rasa_sdk tests
 
 test: clean
-	py.test tests --verbose --pep8 --color=yes $(TEST_PATH)
+	py.test tests --cov rasa_sdk
 
 check-readme:
 	# if this runs through we can be sure the readme is properly shown on pypi

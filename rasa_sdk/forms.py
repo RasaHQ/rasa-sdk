@@ -230,7 +230,6 @@ class FormAction(Action):
                 other_slot_mappings = self.get_mappings_for_slot(slot)
 
                 for other_slot_mapping in other_slot_mappings:
-                    intent = tracker.latest_message.get("intent", {}).get("name")
                     # check whether the slot should be filled
                     # by entity with the same name
                     should_fill_entity_slot = (
