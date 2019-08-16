@@ -125,7 +125,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         Returns: an in-memory knowledge base
         """
         try:
-            with open(self.data_file, encoding="utf-8") as f:
+            with open(self.data_file) as f:
                 content = f.read()
         except IOError:
             raise ValueError("File '{}' does not exist.".format(self.data_file))
