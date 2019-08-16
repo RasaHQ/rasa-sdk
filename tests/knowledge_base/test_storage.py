@@ -3,7 +3,6 @@ import pytest
 from rasa_sdk.knowledge_base.storage import InMemoryKnowledgeBase
 
 
-
 @pytest.mark.parametrize(
     "object_type,attributes,expected_length",
     [

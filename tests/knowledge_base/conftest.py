@@ -11,8 +11,8 @@ DATA = {
 
 
 @fixture
-def data_file(tmpdir_factory):
-    data_file = str(tmpdir_factory.mktemp("knowledge-base").join("data.json"))
-    with open(data_file, 'w') as outfile:
+def data_file(tmpdir):
+    data_file = str(tmpdir.mkdir("knowledge-base").join("data.json"))
+    with open(data_file, "w") as outfile:
         json.dump(DATA, outfile)
     return data_file
