@@ -101,12 +101,20 @@ class KnowledgeBase(object):
 
 
 class InMemoryKnowledgeBase(KnowledgeBase):
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, data_file):
+        """
+        Initialize the in-memory knowledge base.
+        Loads the data from the given data file into memory.
+
+        Args:
+            data_file: the path to the file containing the data
+        """
+        self.data_file = data_file
+        self.data = {}
+        self.load()
         super(InMemoryKnowledgeBase, self).__init__()
 
-    @classmethod
-    def load(cls, filename, encoding="utf-8"):
+    def load(self):
         """
         Load the data from the given file and initialize an in-memory knowledge base.
 
@@ -117,20 +125,18 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         Returns: an in-memory knowledge base
         """
         try:
-            with open(filename, encoding=encoding) as f:
+            with open(self.data_file, encoding="utf-8") as f:
                 content = f.read()
         except FileNotFoundError:
-            raise ValueError("File '{}' does not exist.".format(filename))
+            raise ValueError("File '{}' does not exist.".format(self.data_file))
 
         try:
-            data = json.loads(content)
+            self.data = json.loads(content)
         except ValueError as e:
             raise ValueError(
                 "Failed to read json from '{}'. Error: "
-                "{}".format(os.path.abspath(filename), e)
+                "{}".format(os.path.abspath(self.data_file), e)
             )
-
-        return cls(data)
 
     def set_representation_function_of_object(
         self, object_type, representation_function

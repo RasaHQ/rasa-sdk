@@ -2,13 +2,6 @@ import pytest
 
 from rasa_sdk.knowledge_base.storage import InMemoryKnowledgeBase
 
-DATA = {
-    "restaurant": [
-        {"id": 1, "name": "PastaBar", "cuisine": "Italian", "wifi": False},
-        {"id": 2, "name": "Berlin Burrito Company", "cuisine": "Mexican", "wifi": True},
-        {"id": 3, "name": "I due forni", "cuisine": "Italian", "wifi": False},
-    ]
-}
 
 
 @pytest.mark.parametrize(
@@ -20,8 +13,8 @@ DATA = {
         ("restaurant", [{"name": "cuisine", "value": "Italian"}], 2),
     ],
 )
-def test_query_entities(object_type, attributes, expected_length):
-    knowledge_base = InMemoryKnowledgeBase(DATA)
+def test_query_entities(data_file, object_type, attributes, expected_length):
+    knowledge_base = InMemoryKnowledgeBase(data_file)
 
     entities = knowledge_base.get_objects(
         object_type=object_type, attributes=attributes
@@ -51,8 +44,8 @@ def test_query_entities(object_type, attributes, expected_length):
         ("hotel", None, None),
     ],
 )
-def test_query_object(object_type, object_identifier, expected_value):
-    knowledge_base = InMemoryKnowledgeBase(DATA)
+def test_query_object(data_file, object_type, object_identifier, expected_value):
+    knowledge_base = InMemoryKnowledgeBase(data_file)
 
     actual_value = knowledge_base.get_object(
         object_type=object_type, object_identifier=object_identifier
@@ -65,8 +58,8 @@ def test_query_object(object_type, object_identifier, expected_value):
     "object_type,expected_attributes",
     [("restaurant", ["id", "name", "cuisine", "wifi"])],
 )
-def test_get_attributes_for(object_type, expected_attributes):
-    knowledge_base = InMemoryKnowledgeBase(DATA)
+def test_get_attributes_for(data_file, object_type, expected_attributes):
+    knowledge_base = InMemoryKnowledgeBase(data_file)
 
     actual_attributes = knowledge_base.get_attributes_of_object(object_type=object_type)
 
@@ -78,9 +71,9 @@ def test_get_attributes_for(object_type, expected_attributes):
     [("restaurant", None, "id"), ("restaurant", "name", "name")],
 )
 def test_key_attribute_of_object(
-    object_type, set_key_attribute, expected_key_attribute
+    data_file, object_type, set_key_attribute, expected_key_attribute
 ):
-    knowledge_base = InMemoryKnowledgeBase(DATA)
+    knowledge_base = InMemoryKnowledgeBase(data_file)
     if set_key_attribute:
         knowledge_base.set_key_attribute_of_object(object_type, set_key_attribute)
 
@@ -103,9 +96,9 @@ def test_key_attribute_of_object(
     ],
 )
 def test_get_representation_function_of_object(
-    object_type, set_repr_function, expected_repr_function
+    data_file, object_type, set_repr_function, expected_repr_function
 ):
-    knowledge_base = InMemoryKnowledgeBase(DATA)
+    knowledge_base = InMemoryKnowledgeBase(data_file)
     if set_repr_function:
         knowledge_base.set_representation_function_of_object(
             object_type, set_repr_function

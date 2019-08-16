@@ -14,14 +14,6 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LAST_OBJECT_TYPE,
 )
 
-DATA = {
-    "restaurant": [
-        {"id": 1, "name": "PastaBar", "cuisine": "Italian", "wifi": False},
-        {"id": 2, "name": "Berlin Burrito Company", "cuisine": "Mexican", "wifi": True},
-        {"id": 3, "name": "I due forni", "cuisine": "Italian", "wifi": False},
-    ]
-}
-
 
 def compare_slots(slot_list_1, slot_list_2):
     print (slot_list_1)
@@ -125,8 +117,8 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
     ],
 )
-def test_action_run(slots, expected_slots):
-    knowledge_base = InMemoryKnowledgeBase(DATA)
+def test_action_run(data_file, slots, expected_slots):
+    knowledge_base = InMemoryKnowledgeBase(data_file)
     action = ActionQueryKnowledgeBase(knowledge_base)
 
     dispatcher = CollectingDispatcher()
