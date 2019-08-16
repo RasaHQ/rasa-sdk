@@ -127,7 +127,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         try:
             with open(self.data_file, encoding="utf-8") as f:
                 content = f.read()
-        except FileNotFoundError:
+        except IOError:
             raise ValueError("File '{}' does not exist.".format(self.data_file))
 
         try:
