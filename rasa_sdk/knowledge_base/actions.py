@@ -27,15 +27,18 @@ class ActionQueryKnowledgeBase(Action):
     """
 
     def __init__(self, knowledge_base, use_last_object_mention=True):
+        # type: (KnowledgeBase, bool)
         self.knowledge_base = knowledge_base
         self.use_last_object_mention = use_last_object_mention
 
     def name(self):
+        # type: () -> Text
         return "action_query_knowledge_base"
 
     def utter_attribute_value(
         self, dispatcher, object_name, attribute_name, attribute_value
     ):
+        # type: (CollectingDispatcher, Text, Text, Text) -> None
         """
         Utters a response that informs the user about the attribute value of the
         attribute of interest.
@@ -60,6 +63,7 @@ class ActionQueryKnowledgeBase(Action):
             )
 
     def utter_objects(self, dispatcher, object_type, objects):
+        # type: (CollectingDispatcher, Text, List[Dict[Text, Any]]) -> None
         """
         Utters a response to the user that lists all found objects.
 
@@ -84,6 +88,7 @@ class ActionQueryKnowledgeBase(Action):
             )
 
     def run(self, dispatcher, tracker, domain):
+        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
         """
         Executes this action. If the user ask a question about an attribute,
         the knowledge base is queried for that attribute. Otherwise, if no
@@ -120,6 +125,7 @@ class ActionQueryKnowledgeBase(Action):
         return []
 
     def _query_objects(self, dispatcher, tracker):
+        # type: (CollectingDispatcher, Tracker) -> List[Dict]
         """
         Queries the knowledge base for objects of the requested object type and
         outputs those to the user. The objects are filtered by any attribute the
@@ -163,6 +169,7 @@ class ActionQueryKnowledgeBase(Action):
         return slots + reset_attribute_slots(tracker, object_attributes)
 
     def _query_attribute(self, dispatcher, tracker):
+        # type: (CollectingDispatcher, Tracker) -> List[Dict]
         """
         Queries the knowledge base for the value of the requested attribute of the
         mentioned object and outputs it to the user.

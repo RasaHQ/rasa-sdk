@@ -29,6 +29,7 @@ class KnowledgeBase(object):
         self.representation_function = defaultdict(lambda: lambda obj: obj["name"])
 
     def get_attributes_of_object(self, object_type):
+        # type: (Text) -> List[Text]
         """
         Returns a list of all attributes that belong to the provided object type.
 
@@ -40,6 +41,7 @@ class KnowledgeBase(object):
         raise NotImplementedError("Method is not implemented.")
 
     def get_key_attribute_of_object(self, object_type):
+        # type: (Text) -> Text
         """
         Returns the key attribute for the given object type.
 
@@ -51,6 +53,7 @@ class KnowledgeBase(object):
         return self.key_attribute[object_type]
 
     def get_representation_function_of_object(self, object_type):
+        # type: (Text) -> Text
         """
         Returns a lamdba function that takes the object and returns a string
         representation of it.
@@ -63,6 +66,7 @@ class KnowledgeBase(object):
         return self.representation_function[object_type]
 
     def set_ordinal_mention_mapping(self, mapping):
+        # type: (Dict[Text, Callable]) -> None
         """
         Overwrites the default ordinal mention mapping. E.g. the mapping that
         maps, for example, "first one" to the first element in a list.
@@ -73,6 +77,7 @@ class KnowledgeBase(object):
         self.ordinal_mention_mapping = mapping
 
     def get_objects(self, object_type, attributes, limit=5):
+        # type: (Text, List[Dict[Text, Text]]) -> List[Dict[Text, Any]]
         """
         Query the knowledge base for objects of the given type. Restrict the objects
         by the provided attributes, if any attributes are given.
@@ -87,6 +92,7 @@ class KnowledgeBase(object):
         raise NotImplementedError("Method is not implemented.")
 
     def get_object(self, object_type, object_identifier):
+        # type: (Text, Text) -> Dict[Text, Any]
         """
         Returns the object of the given type that matches the given object identifier.
 
@@ -102,6 +108,7 @@ class KnowledgeBase(object):
 
 class InMemoryKnowledgeBase(KnowledgeBase):
     def __init__(self, data_file):
+        # type: (Text)
         """
         Initialize the in-memory knowledge base.
         Loads the data from the given data file into memory.
@@ -141,6 +148,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
     def set_representation_function_of_object(
         self, object_type, representation_function
     ):
+        # type: (Text, Callable) -> None
         """
         Set the representation function of the given object type.
 
@@ -151,6 +159,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         self.representation_function[object_type] = representation_function
 
     def set_key_attribute_of_object(self, object_type, key_attribute):
+        # type: (Text, Text) -> None
         """
         Set the key attribute of the given object type.
 
@@ -161,6 +170,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         self.key_attribute[object_type] = key_attribute
 
     def get_attributes_of_object(self, object_type):
+        # type: (Text) -> List[Text]
         if object_type not in self.data or not self.data[object_type]:
             return []
 
@@ -169,6 +179,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         return list(first_object.keys())
 
     def get_objects(self, object_type, attributes, limit=5):
+        # type: (Text, List[Dict[Text, Text]]) -> List[Dict[Text, Any]]
         if object_type not in self.data:
             return []
 
@@ -191,6 +202,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         return objects[:limit]
 
     def get_object(self, object_type, object_identifier):
+        # type: (Text, Text) -> Dict[Text, Any]
         if object_type not in self.data:
             return None
 

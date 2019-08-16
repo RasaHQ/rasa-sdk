@@ -9,6 +9,7 @@ SLOT_LAST_OBJECT_TYPE = "knowledge_base_last_object_type"
 
 
 def get_object_name(tracker, ordinal_mention_mapping, use_last_object_mention=True):
+    # type: (Tracker, Dict[Text, Callable], bool) -> Text
     """
     Get the name of the object the user referred to. Either the NER detected the
     object and stored its name in the corresponding slot (e.g. "PastaBar"
@@ -45,6 +46,7 @@ def get_object_name(tracker, ordinal_mention_mapping, use_last_object_mention=Tr
 
 
 def resolve_mention(tracker, ordinal_mention_mapping):
+    # type: (Tracker, Dict[Text, Callable]) -> Text
     """
     Resolve the given mention to the name of the actual object.
 
@@ -87,6 +89,7 @@ def resolve_mention(tracker, ordinal_mention_mapping):
 
 
 def get_attribute_slots(tracker, object_attributes):
+    # type: (Tracker, List[Text]) -> List[Dict[Text, Text]]
     """
     If the user mentioned one or multiple attributes of the provided object_type in
     an utterance, we extract all attribute values from the tracker and put them
@@ -115,6 +118,7 @@ def get_attribute_slots(tracker, object_attributes):
 
 
 def reset_attribute_slots(tracker, object_attributes):
+    # type (Tracker, List[Text]) -> List[Dict]
     """
     Reset all attribute slots of the current object type.
 
