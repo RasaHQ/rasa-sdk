@@ -57,7 +57,7 @@ class ActionQueryKnowledgeBase(Action):
             )
         else:
             dispatcher.utter_message(
-                "Did not found a valid value for attribute '{}' for object '{}'.".format(
+                "Did not find a valid value for attribute '{}' for object '{}'.".format(
                     attribute_name, object_name
                 )
             )
