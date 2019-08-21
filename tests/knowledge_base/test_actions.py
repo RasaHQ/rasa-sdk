@@ -16,9 +16,6 @@ from rasa_sdk.knowledge_base.utils import (
 
 
 def compare_slots(slot_list_1, slot_list_2):
-    print (slot_list_1)
-    print (slot_list_2)
-
     assert len(slot_list_2) == len(slot_list_1)
 
     for slot_1 in slot_list_1:
