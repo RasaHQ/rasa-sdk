@@ -79,6 +79,7 @@ def compare_slots(slot_list_1, slot_list_2):
             },
             [
                 SlotSet(SLOT_MENTION, None),
+                SlotSet(SLOT_ATTRIBUTE, None),
                 SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
                 SlotSet(SLOT_LAST_OBJECT, 2),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
@@ -96,6 +97,7 @@ def compare_slots(slot_list_1, slot_list_2):
             },
             [
                 SlotSet(SLOT_MENTION, None),
+                SlotSet(SLOT_ATTRIBUTE, None),
                 SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
                 SlotSet(SLOT_LAST_OBJECT, 1),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
