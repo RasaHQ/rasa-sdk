@@ -211,6 +211,7 @@ class ActionQueryKnowledgeBase(Action):
 
         slots = [
             SlotSet(SLOT_OBJECT_TYPE, object_type),
+            SlotSet(SLOT_ATTRIBUTE, None),
             SlotSet(SLOT_MENTION, None),
             SlotSet(SLOT_LAST_OBJECT, object_identifier),
             SlotSet(SLOT_LAST_OBJECT_TYPE, object_type),
