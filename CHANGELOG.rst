@@ -6,15 +6,13 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. _master-release:
 
-[Unreleased 1.2.1] - `master`_
+[Unreleased 1.3.1] - `master`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
 
 Added
 -----
-- add ``InMemoryKnowledgeBase`` implementation as a default ``KnowledgeBase``
-- add ``ActionQueryKnowledgeBase`` as a default action to interact with a knowledge base
 
 Changed
 -------
@@ -24,6 +22,14 @@ Fixed
 
 Removed
 -------
+
+[1.3.0a1] - 2019-08-22
+^^^^^^^^^^^^^^^^^^^^^^
+
+Added
+-----
+- add ``InMemoryKnowledgeBase`` implementation as a default ``KnowledgeBase``
+- add ``ActionQueryKnowledgeBase`` as a default action to interact with a knowledge base
 
 [1.2.0] - 2019-08-13
 ^^^^^^^^^^^^^^^^^^^^
