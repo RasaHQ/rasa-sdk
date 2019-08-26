@@ -17,7 +17,7 @@ tests_requires = ["pytest~=4.0", "pytest-cov~=2.0"]
 
 install_requires = [
     "future~=0.17",
-    "requests~=2.22",  # for common use in custom actions code
+    "requests>=2.20",  # for common use in custom actions code
     "ConfigArgParse~=0.14",
     "coloredlogs~=10.0",
     "flask~=1.0",
