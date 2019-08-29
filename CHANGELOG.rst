@@ -16,6 +16,8 @@ Added
 
 Changed
 -------
+- Removed unused ``tracker`` argument from ``utter_template`` and ``utter_button_template``
+  methods
 
 Fixed
 -----
