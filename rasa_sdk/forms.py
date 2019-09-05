@@ -382,7 +382,6 @@ class FormAction(Action):
                 logger.debug("Request next slot '{}'".format(slot))
                 dispatcher.utter_template(
                     "utter_ask_{}".format(slot),
-                    tracker,
                     silent_fail=False,
                     **tracker.slots
                 )

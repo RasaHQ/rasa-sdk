@@ -23,6 +23,14 @@ Fixed
 Removed
 -------
 
+[1.3.1] - 2019-09-05
+^^^^^^^^^^^^^^^^^^^^
+
+Fixed
+-----
+- undid Removed unused ``tracker`` argument from ``utter_template`` and ``utter_button_template``
+  methods as it resulted in compatibility issues
+
 [1.3.0] - 2019-09-05
 ^^^^^^^^^^^^^^^^^^^^
 

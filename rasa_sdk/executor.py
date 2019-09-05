@@ -79,6 +79,7 @@ class CollectingDispatcher(object):
         self,
         template,  # type: Text
         buttons,  # type: List[Dict[Text, Any]]
+        tracker,  # type: Tracker
         silent_fail=False,  # type: bool
         **kwargs  # type: Any
     ):
@@ -94,6 +95,7 @@ class CollectingDispatcher(object):
     def utter_template(
         self,
         template,  # type: Text
+        tracker,  # type: Tracker
         silent_fail=False,  # type: bool
         **kwargs  # type: Any
     ):
