@@ -7,7 +7,7 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 .. _master-release:
 
 [Unreleased 1.3.1] - `master`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
 
@@ -16,8 +16,6 @@ Added
 
 Changed
 -------
-- Removed unused ``tracker`` argument from ``utter_template`` and ``utter_button_template``
-  methods
 
 Fixed
 -----
@@ -25,13 +23,20 @@ Fixed
 Removed
 -------
 
-[1.3.0a1] - 2019-08-22
-^^^^^^^^^^^^^^^^^^^^^^
+[1.3.0] - 2019-09-05
+^^^^^^^^^^^^^^^^^^^^
+
+Compatibility release for Rasa 1.3.0.
 
 Added
 -----
 - add ``InMemoryKnowledgeBase`` implementation as a default ``KnowledgeBase``
 - add ``ActionQueryKnowledgeBase`` as a default action to interact with a knowledge base
+
+Changed
+-------
+- Removed unused ``tracker`` argument from ``utter_template`` and ``utter_button_template``
+  methods
 
 [1.2.0] - 2019-08-13
 ^^^^^^^^^^^^^^^^^^^^
