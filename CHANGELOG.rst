@@ -6,7 +6,7 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. _master-release:
 
-[Unreleased 1.3.2] - `master`_
+[Unreleased 1.3.3] - `master`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
@@ -19,10 +19,17 @@ Changed
 
 Fixed
 -----
-- TypeError on request_next_slot method of FormAction class
+
 
 Removed
 -------
+
+[1.3.2] - 2019-09-06
+^^^^^^^^^^^^^^^^^^^^
+
+Fixed
+-----
+- fixed TypeError on ``request_next_slot`` method of ``FormAction`` class
 
 [1.3.1] - 2019-09-05
 ^^^^^^^^^^^^^^^^^^^^
