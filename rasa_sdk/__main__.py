@@ -15,7 +15,14 @@ def main_from_args(args):
 
     utils.configure_colored_logging(args.loglevel)
 
-    run(args.actions, args.port, args.cors)
+    run(
+        args.actions,
+        args.port,
+        args.cors,
+        args.ssl_certificate,
+        args.ssl_keyfile,
+        args.ssl_password,
+    )
 
 
 def main():
