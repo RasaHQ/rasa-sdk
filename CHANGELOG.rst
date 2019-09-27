@@ -6,7 +6,7 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. _master-release:
 
-[Unreleased 1.3.3] - `master`_
+[Unreleased 1.3.4] - `master`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
@@ -23,6 +23,14 @@ Fixed
 
 Removed
 -------
+
+[1.3.3] - 2019-09-28
+^^^^^^^^^^^^^^^^^^^^
+
+Added
+-----
+- SSL support, certificate can be passed with --ssl-certificate and --ssl-keyfile
+
 
 [1.3.2] - 2019-09-06
 ^^^^^^^^^^^^^^^^^^^^

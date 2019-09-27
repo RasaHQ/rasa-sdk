@@ -11,6 +11,7 @@ import logging
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
+from ssl import SSLContext
 
 from rasa_sdk.cli.arguments import add_endpoint_arguments
 from rasa_sdk.constants import DEFAULT_SERVER_PORT
@@ -21,6 +22,21 @@ import rasa_sdk
 from rasa_sdk import utils
 
 logger = logging.getLogger(__name__)
+
+
+def create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password):
+    """Create a SSL context if a proper certificate is passed."""
+
+    if ssl_certificate:
+        import ssl
+
+        ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
+        ssl_context.load_cert_chain(
+            ssl_certificate, keyfile=ssl_keyfile, password=ssl_password
+        )
+        return ssl_context
+    else:
+        return None
 
 
 def create_argument_parser():
@@ -120,16 +136,30 @@ def check_version_compatibility(rasa_version):
         )
 
 
-def run(action_package_name, port=DEFAULT_SERVER_PORT, cors_origins="*"):
+def run(
+    action_package_name,
+    port=DEFAULT_SERVER_PORT,
+    cors_origins="*",
+    ssl_certificate=None,
+    ssl_keyfile=None,
+    ssl_password=None,
+):
     logger.info("Starting action endpoint server...")
     edp_app = endpoint_app(
         cors_origins=cors_origins, action_package_name=action_package_name
     )
-
-    http_server = WSGIServer(("0.0.0.0", port), edp_app)
-
+    ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
+    protocol = "https" if ssl_context else "http"
+    if ssl_context:
+        http_server = WSGIServer(("0.0.0.0", port), edp_app, ssl_context=ssl_context)
+    else:
+        http_server = WSGIServer(("0.0.0.0", port), edp_app)
     http_server.start()
-    logger.info("Action endpoint is up and running. on {}".format(http_server.address))
+    logger.info(
+        "Action endpoint is up and running on {} {}".format(
+            protocol, http_server.address
+        )
+    )
 
     http_server.serve_forever()
 
