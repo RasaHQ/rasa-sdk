@@ -36,12 +36,12 @@ def add_endpoint_arguments(parser):
     parser.add_argument(
         "--ssl-keyfile",
         default=None,
-        help="Set the SSL Certificate to create a TLS secured server.",
+        help="Set the SSL certificate to create a TLS secured server.",
     )
     parser.add_argument(
         "--ssl-certificate",
         default=None,
-        help="Set the SSL Certificate to create a TLS secured server.",
+        help="Set the SSL certificate to create a TLS secured server.",
     )
     parser.add_argument(
         "--ssl-password",

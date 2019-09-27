@@ -29,7 +29,7 @@ Removed
 
 Added
 -----
-- SSL support, certificate can be passed with --ssl-certificate and --ssl-keyfile
+- SSL support, certificates can be passed with --ssl-certificate and --ssl-keyfile
 
 
 [1.3.2] - 2019-09-06

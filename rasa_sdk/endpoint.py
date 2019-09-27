@@ -11,7 +11,6 @@ import logging
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
-from ssl import SSLContext
 
 from rasa_sdk.cli.arguments import add_endpoint_arguments
 from rasa_sdk.constants import DEFAULT_SERVER_PORT
@@ -25,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password):
-    """Create a SSL context if a proper certificate is passed."""
+    """Create a SSL context if a certificate is passed."""
 
     if ssl_certificate:
         import ssl
