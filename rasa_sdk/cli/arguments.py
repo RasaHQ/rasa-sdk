@@ -33,3 +33,19 @@ def add_endpoint_arguments(parser):
         default=None,
         help="name of action package to be loaded",
     )
+    parser.add_argument(
+        "--ssl-keyfile",
+        default=None,
+        help="Set the SSL certificate to create a TLS secured server.",
+    )
+    parser.add_argument(
+        "--ssl-certificate",
+        default=None,
+        help="Set the SSL certificate to create a TLS secured server.",
+    )
+    parser.add_argument(
+        "--ssl-password",
+        default=None,
+        help="If your ssl-keyfile is protected by a password, you can specify it "
+        "using this paramer.",
+    )
