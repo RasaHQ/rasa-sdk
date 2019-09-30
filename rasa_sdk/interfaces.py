@@ -10,7 +10,7 @@ class Tracker:
     """Maintains the state of a conversation."""
 
     @classmethod
-    def from_dict(cls, state:Dict[Text, Any])->'Tracker':
+    def from_dict(cls, state: Dict[Text, Any]) -> "Tracker":
         """Create a tracker from dump."""
 
         return Tracker(
@@ -56,7 +56,7 @@ class Tracker:
         self.active_form = active_form
         self.latest_action_name = latest_action_name
 
-    def current_state(self)->Dict[Text, Any]:
+    def current_state(self) -> Dict[Text, Any]:
         """Return the current tracker state as an object."""
 
         if len(self.events) > 0:
@@ -76,7 +76,7 @@ class Tracker:
             "latest_action_name": self.latest_action_name,
         }
 
-    def current_slot_values(self)->Dict[Text, Any]:
+    def current_slot_values(self) -> Dict[Text, Any]:
         """Return the currently set values of the slots"""
         return self.slots
 
@@ -89,7 +89,7 @@ class Tracker:
             logger.info("Tried to access non existent slot '{}'".format(key))
             return None
 
-    def get_latest_entity_values(self, entity_type:Text) -> Iterator[Text]:
+    def get_latest_entity_values(self, entity_type: Text) -> Iterator[Text]:
         """Get entity values found for the passed entity name in latest msg.
 
         If you are only interested in the first entity of a given type use
@@ -99,7 +99,7 @@ class Tracker:
         entities = self.latest_message.get("entities", [])
         return (x.get("value") for x in entities if x.get("entity") == entity_type)
 
-    def get_latest_input_channel(self)-> Optional[Text]:
+    def get_latest_input_channel(self) -> Optional[Text]:
         """Get the name of the input_channel of the latest UserUttered event"""
 
         for e in reversed(self.events):
@@ -107,11 +107,11 @@ class Tracker:
                 return e.get("input_channel")
         return None
 
-    def is_paused(self)->bool:
+    def is_paused(self) -> bool:
         """State whether the tracker is currently paused."""
         return self._paused
 
-    def idx_after_latest_restart(self)-> int:
+    def idx_after_latest_restart(self) -> int:
         """Return the idx of the most recent restart in the list of events.
 
         If the conversation has not been restarted, ``0`` is returned."""
@@ -122,20 +122,20 @@ class Tracker:
                 idx = i + 1
         return idx
 
-    def events_after_latest_restart(self)-> List[dict]:
+    def events_after_latest_restart(self) -> List[dict]:
         """Return a list of events after the most recent restart."""
         return list(self.events)[self.idx_after_latest_restart() :]
 
-    def __eq__(self, other:Any)->bool:
+    def __eq__(self, other: Any) -> bool:
         if isinstance(self, type(other)):
             return other.events == self.events and self.sender_id == other.sender_id
         else:
             return False
 
-    def __ne__(self, other:Any)->bool:
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def copy(self)->'Tracker':
+    def copy(self) -> "Tracker":
         return Tracker(
             self.sender_id,
             copy.deepcopy(self.slots),
@@ -157,11 +157,8 @@ class Action:
         raise NotImplementedError("An action must implement a name")
 
     def run(
-        self,
-        dispatcher,
-        tracker: Tracker,
-        domain:  Dict[Text, Any],
-    )-> List[Dict[Text, Any]]:
+        self, dispatcher, tracker: Tracker, domain: Dict[Text, Any]
+    ) -> List[Dict[Text, Any]]:
         """Execute the side effects of this action.
 
         Args:
@@ -191,7 +188,7 @@ class ActionExecutionRejection(Exception):
     """Raising this exception will allow other policies
         to predict another action"""
 
-    def __init__(self, action_name: Text, message: Optional[Text]=None)->None:
+    def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         self.action_name = action_name
         self.message = message or "Custom action '{}' rejected execution of".format(
             action_name

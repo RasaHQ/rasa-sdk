@@ -18,7 +18,7 @@ class Button(dict):
     pass
 
 
-def all_subclasses(cls: Any)->List[Any]:
+def all_subclasses(cls: Any) -> List[Any]:
     """Returns all known (imported) subclasses of a class."""
 
     return cls.__subclasses__() + [
@@ -26,7 +26,7 @@ def all_subclasses(cls: Any)->List[Any]:
     ]
 
 
-def add_logging_option_arguments(parser)->None:
+def add_logging_option_arguments(parser) -> None:
     """Add options to an argument parser to configure logging levels."""
 
     # arguments for logging configuration
@@ -56,7 +56,7 @@ def add_logging_option_arguments(parser)->None:
     )
 
 
-def configure_colored_logging(loglevel)->None:
+def configure_colored_logging(loglevel) -> None:
     import coloredlogs
 
     field_styles = coloredlogs.DEFAULT_FIELD_STYLES.copy()
@@ -72,7 +72,7 @@ def configure_colored_logging(loglevel)->None:
     )
 
 
-def arguments_of(func)->List[Text]:
+def arguments_of(func) -> List[Text]:
     """Return the parameters of the function `func` as a list of their names."""
 
     return inspect.signature(func).parameters.keys()

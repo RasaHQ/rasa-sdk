@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import random
-from typing import Text, Callable, Dict,List,Any, Optional
+from typing import Text, Callable, Dict, List, Any, Optional
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class KnowledgeBase(object):
         """
         raise NotImplementedError("Method is not implemented.")
 
-    def get_key_attribute_of_object(self, object_type: Text)-> Text:
+    def get_key_attribute_of_object(self, object_type: Text) -> Text:
         """
         Returns the key attribute for the given object type.
 
@@ -63,7 +63,7 @@ class KnowledgeBase(object):
         """
         return self.representation_function[object_type]
 
-    def set_ordinal_mention_mapping(self, mapping: Dict[Text, Callable])-> None:
+    def set_ordinal_mention_mapping(self, mapping: Dict[Text, Callable]) -> None:
         """
         Overwrites the default ordinal mention mapping. E.g. the mapping that
         maps, for example, "first one" to the first element in a list.
@@ -73,7 +73,9 @@ class KnowledgeBase(object):
         """
         self.ordinal_mention_mapping = mapping
 
-    def get_objects(self, object_type: Text, attributes: List[Dict[Text, Text]], limit: int =5) -> List[Dict[Text, Any]]:
+    def get_objects(
+        self, object_type: Text, attributes: List[Dict[Text, Text]], limit: int = 5
+    ) -> List[Dict[Text, Any]]:
         """
         Query the knowledge base for objects of the given type. Restrict the objects
         by the provided attributes, if any attributes are given.
@@ -145,7 +147,9 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         """
         self.representation_function[object_type] = representation_function
 
-    def set_key_attribute_of_object(self, object_type: Text, key_attribute: Text) -> None:
+    def set_key_attribute_of_object(
+        self, object_type: Text, key_attribute: Text
+    ) -> None:
         """
         Set the key attribute of the given object type.
 
@@ -163,7 +167,9 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         return list(first_object.keys())
 
-    def get_objects(self, object_type: Text, attributes: List[Dict[Text, Text]], limit: int=5) -> List[Dict[Text, Any]]:
+    def get_objects(
+        self, object_type: Text, attributes: List[Dict[Text, Text]], limit: int = 5
+    ) -> List[Dict[Text, Any]]:
         if object_type not in self.data:
             return []
 
@@ -185,7 +191,9 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         return objects[:limit]
 
-    def get_object(self, object_type: Text, object_identifier: Text)->Optional[Dict[Text, Any]]:
+    def get_object(
+        self, object_type: Text, object_identifier: Text
+    ) -> Optional[Dict[Text, Any]]:
         if object_type not in self.data:
             return None
 

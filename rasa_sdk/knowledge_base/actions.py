@@ -12,7 +12,7 @@ from rasa_sdk.knowledge_base.utils import (
     get_object_name,
     get_attribute_slots,
 )
-from typing import Text, Callable, Dict,List,Any, Optional
+from typing import Text, Callable, Dict, List, Any, Optional
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.interfaces import Tracker
 from rasa_sdk.knowledge_base.storage import KnowledgeBase
@@ -30,7 +30,9 @@ class ActionQueryKnowledgeBase(Action):
     - add the intent and action to domain file
     """
 
-    def __init__(self, knowledge_base:KnowledgeBase, use_last_object_mention:bool=True) -> None:
+    def __init__(
+        self, knowledge_base: KnowledgeBase, use_last_object_mention: bool = True
+    ) -> None:
         self.knowledge_base = knowledge_base
         self.use_last_object_mention = use_last_object_mention
 
@@ -38,7 +40,11 @@ class ActionQueryKnowledgeBase(Action):
         return "action_query_knowledge_base"
 
     def utter_attribute_value(
-        self, dispatcher: CollectingDispatcher, object_name: Text, attribute_name: Text, attribute_value: Text
+        self,
+        dispatcher: CollectingDispatcher,
+        object_name: Text,
+        attribute_name: Text,
+        attribute_value: Text,
     ) -> None:
         """
         Utters a response that informs the user about the attribute value of the
@@ -63,7 +69,12 @@ class ActionQueryKnowledgeBase(Action):
                 )
             )
 
-    def utter_objects(self, dispatcher: CollectingDispatcher, object_type: Text, objects: List[Dict[Text, Any]]) -> None:
+    def utter_objects(
+        self,
+        dispatcher: CollectingDispatcher,
+        object_type: Text,
+        objects: List[Dict[Text, Any]],
+    ) -> None:
         """
         Utters a response to the user that lists all found objects.
 
@@ -87,7 +98,12 @@ class ActionQueryKnowledgeBase(Action):
                 "I could not find any objects of type '{}'.".format(object_type)
             )
 
-    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> List[Dict[Text, Any]]:
         """
         Executes this action. If the user ask a question about an attribute,
         the knowledge base is queried for that attribute. Otherwise, if no
@@ -123,7 +139,9 @@ class ActionQueryKnowledgeBase(Action):
         dispatcher.utter_template("utter_ask_rephrase", tracker)
         return []
 
-    def _query_objects(self, dispatcher: CollectingDispatcher, tracker: Tracker) -> List[Dict]:
+    def _query_objects(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker
+    ) -> List[Dict]:
         """
         Queries the knowledge base for objects of the requested object type and
         outputs those to the user. The objects are filtered by any attribute the
@@ -166,7 +184,9 @@ class ActionQueryKnowledgeBase(Action):
 
         return slots + reset_attribute_slots(tracker, object_attributes)
 
-    def _query_attribute(self, dispatcher: CollectingDispatcher, tracker: Tracker) -> List[Dict]:
+    def _query_attribute(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker
+    ) -> List[Dict]:
         """
         Queries the knowledge base for the value of the requested attribute of the
         mentioned object and outputs it to the user.

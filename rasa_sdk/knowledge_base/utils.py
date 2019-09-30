@@ -1,5 +1,5 @@
 from rasa_sdk.events import SlotSet
-from typing import Text, Callable, Dict,List,Any, Optional
+from typing import Text, Callable, Dict, List, Any, Optional
 import typing
 
 SLOT_MENTION = "mention"
@@ -13,7 +13,11 @@ if typing.TYPE_CHECKING:
     from rasa_sdk.executor import Tracker
 
 
-def get_object_name(tracker:Tracker, ordinal_mention_mapping:Dict[Text, Callable], use_last_object_mention:bool=True) -> Optional[Text]:
+def get_object_name(
+    tracker: Tracker,
+    ordinal_mention_mapping: Dict[Text, Callable],
+    use_last_object_mention: bool = True,
+) -> Optional[Text]:
     """
     Get the name of the object the user referred to. Either the NER detected the
     object and stored its name in the corresponding slot (e.g. "PastaBar"
@@ -49,7 +53,9 @@ def get_object_name(tracker:Tracker, ordinal_mention_mapping:Dict[Text, Callable
     return None
 
 
-def resolve_mention(tracker:Tracker, ordinal_mention_mapping:Dict[Text, Callable])-> Optional[Text]:
+def resolve_mention(
+    tracker: Tracker, ordinal_mention_mapping: Dict[Text, Callable]
+) -> Optional[Text]:
     """
     Resolve the given mention to the name of the actual object.
 
@@ -91,7 +97,9 @@ def resolve_mention(tracker:Tracker, ordinal_mention_mapping:Dict[Text, Callable
         return last_object
 
 
-def get_attribute_slots(tracker:Tracker, object_attributes:List[Text])-> List[Dict[Text, Text]]:
+def get_attribute_slots(
+    tracker: Tracker, object_attributes: List[Text]
+) -> List[Dict[Text, Text]]:
     """
     If the user mentioned one or multiple attributes of the provided object_type in
     an utterance, we extract all attribute values from the tracker and put them
@@ -119,7 +127,9 @@ def get_attribute_slots(tracker:Tracker, object_attributes:List[Text])-> List[Di
     return attributes
 
 
-def reset_attribute_slots(tracker: Tracker, object_attributes:List[Text]) -> List[Dict]:
+def reset_attribute_slots(
+    tracker: Tracker, object_attributes: List[Text]
+) -> List[Dict]:
     """
     Reset all attribute slots of the current object type.
 

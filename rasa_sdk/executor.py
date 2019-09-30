@@ -29,7 +29,7 @@ class CollectingDispatcher:
         )
         self.utter_elements(*elements, **kwargs)
 
-    def utter_elements(self, *elements:Dict[Text, Any], **kwargs:Any) -> None:
+    def utter_elements(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends a message with custom elements to the output channel."""
 
         message = {"text": None, "elements": elements}
@@ -37,7 +37,7 @@ class CollectingDispatcher:
 
         self.messages.append(message)
 
-    def utter_message(self, text: Text, **kwargs: Any)-> None:
+    def utter_message(self, text: Text, **kwargs: Any) -> None:
         """"Send a text to the output channel"""
 
         message = {"text": text}
@@ -45,7 +45,9 @@ class CollectingDispatcher:
 
         self.messages.append(message)
 
-    def utter_button_message(self, text: Text, buttons: List[Dict[Text, Any]], **kwargs: Any)->None:
+    def utter_button_message(
+        self, text: Text, buttons: List[Dict[Text, Any]], **kwargs: Any
+    ) -> None:
         """Sends a message with buttons to the output channel."""
 
         message = {"text": text, "buttons": buttons}
@@ -53,7 +55,7 @@ class CollectingDispatcher:
 
         self.messages.append(message)
 
-    def utter_attachment(self, attachment: Text, **kwargs: Any)->None:
+    def utter_attachment(self, attachment: Text, **kwargs: Any) -> None:
         """Send a message to the client with attachments."""
 
         message = {"text": None, "attachment": attachment}
@@ -67,9 +69,9 @@ class CollectingDispatcher:
         template: Text,
         buttons: List[Dict[Text, Any]],
         tracker: Tracker,
-        silent_fail:bool=False,
+        silent_fail: bool = False,
         **kwargs: Any
-    )-> None:
+    ) -> None:
         """Sends a message template with buttons to the output channel."""
 
         message = {"template": template, "buttons": buttons}
@@ -79,12 +81,8 @@ class CollectingDispatcher:
 
     # noinspection PyUnusedLocal
     def utter_template(
-        self,
-        template: Text,
-        tracker: Tracker,
-        silent_fail:bool=False,
-        **kwargs: Any
-    )->None:
+        self, template: Text, tracker: Tracker, silent_fail: bool = False, **kwargs: Any
+    ) -> None:
         """"Send a message to the client based on a template."""
 
         message = {"template": template}
@@ -92,7 +90,7 @@ class CollectingDispatcher:
 
         self.messages.append(message)
 
-    def utter_custom_json(self, json_message:Dict[Text, Any], **kwargs:Any)->None:
+    def utter_custom_json(self, json_message: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends custom json to the output channel."""
 
         json_message = {"custom": json_message}
@@ -100,7 +98,7 @@ class CollectingDispatcher:
 
         self.messages.append(json_message)
 
-    def utter_image_url(self, image:Text, **kwargs:Any)->None:
+    def utter_image_url(self, image: Text, **kwargs: Any) -> None:
         """Sends url of image attachment to the output channel."""
 
         message = {"image": image}
