@@ -1,7 +1,6 @@
 import argparse
 import logging
 
-from builtins import str
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer

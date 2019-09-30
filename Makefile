@@ -24,6 +24,9 @@ clean:
 	rm -rf *.egg-info
 	rm -rf docs/_build
 
+types:
+	pytype --keep-going rasa_sdk
+
 lint:
 	flake8 rasa_sdk tests
 	black --check rasa_sdk tests
