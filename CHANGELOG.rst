@@ -23,6 +23,7 @@ Fixed
 
 Removed
 -------
+- Removed Python 2.7 support.
 - Removed Python 3.5 support.
 
 
