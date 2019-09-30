@@ -3,7 +3,9 @@ sudo: required
 cache:
   directories:
   - "$HOME/.cache/pip"
-python: '3.6'
+python:
+  - '3.6'
+  - '3.7'
 install:
 - pip install -r dev-requirements.txt
 - pip install -e .
