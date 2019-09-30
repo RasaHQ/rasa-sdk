@@ -25,7 +25,7 @@ class FormAction(Action):
         raise NotImplementedError("A form must implement a name")
 
     @staticmethod
-    def required_slots(tracker: Tracker) -> List[Text]:
+    def required_slots(tracker: "Tracker") -> List[Text]:
         """A list of required slots that the form has to fill.
 
         Use `tracker` to request different list of slots
@@ -170,7 +170,7 @@ class FormAction(Action):
 
     @staticmethod
     def intent_is_desired(
-        requested_slot_mapping: Dict[Text, Any], tracker: Tracker
+        requested_slot_mapping: Dict[Text, Any], tracker: "Tracker"
     ) -> bool:
         """Check whether user intent matches intent conditions"""
 
@@ -185,7 +185,7 @@ class FormAction(Action):
         return intent_not_blacklisted or intent in mapping_intents
 
     @staticmethod
-    def get_entity_value(name: Text, tracker: Tracker) -> Any:
+    def get_entity_value(name: Text, tracker: "Tracker") -> Any:
         """Extract entities for given name"""
 
         # list is used to cover the case of list slot type
@@ -199,8 +199,8 @@ class FormAction(Action):
     # noinspection PyUnusedLocal
     def extract_other_slots(
         self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
         """Extract the values of the other slots
@@ -253,8 +253,8 @@ class FormAction(Action):
     # noinspection PyUnusedLocal
     def extract_requested_slot(
         self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
         """Extract the value of requested slot from a user input
@@ -300,8 +300,8 @@ class FormAction(Action):
     def validate_slots(
         self,
         slot_dict: Dict[Text, Any],
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
         domain: Dict[Text, Any],
     ) -> List[EventType]:
         """Validate slots using helper validation functions.
@@ -329,8 +329,8 @@ class FormAction(Action):
 
     def validate(
         self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
         domain: Dict[Text, Any],
     ) -> List[EventType]:
         """Extract and validate value of requested slot.
@@ -364,8 +364,8 @@ class FormAction(Action):
     # noinspection PyUnusedLocal
     def request_next_slot(
         self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
         domain: Dict[Text, Any],
     ) -> Optional[List[EventType]]:
         """Request the next slot and utter template if needed,
@@ -394,8 +394,8 @@ class FormAction(Action):
 
     def submit(
         self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
         domain: Dict[Text, Any],
     ) -> List[EventType]:
         """Define what the form has to do
@@ -430,7 +430,7 @@ class FormAction(Action):
 
         return self._to_list(intent), self._to_list(not_intent)
 
-    def _log_form_slots(self, tracker: Tracker) -> None:
+    def _log_form_slots(self, tracker: "Tracker") -> None:
         """Logs the values of all required slots before submitting the form."""
 
         req_slots = self.required_slots(tracker)
@@ -445,8 +445,8 @@ class FormAction(Action):
 
     def _activate_if_required(
         self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
         domain: Dict[Text, Any],
     ) -> List[EventType]:
         """Activate form if the form is called for the first time.
@@ -487,8 +487,8 @@ class FormAction(Action):
 
     def _validate_if_required(
         self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
         domain: Dict[Text, Any],
     ) -> List[EventType]:
         """Return a list of events from `self.validate(...)`
@@ -514,8 +514,8 @@ class FormAction(Action):
 
     def run(
         self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
         domain: Dict[Text, Any],
     ) -> List[EventType]:
         """Execute the side effects of this form.

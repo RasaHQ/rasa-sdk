@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
 
 
 def get_object_name(
-    tracker: Tracker,
+    tracker: "Tracker",
     ordinal_mention_mapping: Dict[Text, Callable],
     use_last_object_mention: bool = True,
 ) -> Optional[Text]:
@@ -54,7 +54,7 @@ def get_object_name(
 
 
 def resolve_mention(
-    tracker: Tracker, ordinal_mention_mapping: Dict[Text, Callable]
+    tracker: "Tracker", ordinal_mention_mapping: Dict[Text, Callable]
 ) -> Optional[Text]:
     """
     Resolve the given mention to the name of the actual object.
@@ -98,7 +98,7 @@ def resolve_mention(
 
 
 def get_attribute_slots(
-    tracker: Tracker, object_attributes: List[Text]
+    tracker: "Tracker", object_attributes: List[Text]
 ) -> List[Dict[Text, Text]]:
     """
     If the user mentioned one or multiple attributes of the provided object_type in
@@ -128,7 +128,7 @@ def get_attribute_slots(
 
 
 def reset_attribute_slots(
-    tracker: Tracker, object_attributes: List[Text]
+    tracker: "Tracker", object_attributes: List[Text]
 ) -> List[Dict]:
     """
     Reset all attribute slots of the current object type.
