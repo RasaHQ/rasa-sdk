@@ -1,16 +1,11 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import importlib
 import inspect
 import logging
 import pkgutil
 import warnings
+from typing import Text, List, Dict, Any
 
 import six
-from typing import Text, List, Dict, Any
 
 from rasa_sdk import utils
 from rasa_sdk.interfaces import Action, Tracker

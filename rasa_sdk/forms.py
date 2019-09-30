@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import logging
 import typing
 from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
-from rasa_sdk.interfaces import Action, ActionExecutionRejection
 from rasa_sdk.events import SlotSet, Form
+from rasa_sdk.interfaces import Action, ActionExecutionRejection
 
 logger = logging.getLogger(__name__)
 
