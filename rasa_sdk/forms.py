@@ -507,7 +507,7 @@ class FormAction(Action):
             return []
 
     @staticmethod
-    def _should_request_slot(tracker: Tracker, slot_name: Text) -> bool:
+    def _should_request_slot(tracker: "Tracker", slot_name: Text) -> bool:
         """Check whether form action should request given slot"""
 
         return tracker.get_slot(slot_name) is None
