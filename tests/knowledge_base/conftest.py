@@ -13,6 +13,6 @@ DATA = {
 @fixture
 def data_file(tmpdir):
     data_file = str(tmpdir.mkdir("knowledge-base").join("data.json"))
-    with open(data_file, "w") as outfile:
+    with open(data_file, "w", encoding="utf-8") as outfile:
         json.dump(DATA, outfile)
     return data_file
