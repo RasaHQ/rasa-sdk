@@ -81,9 +81,4 @@ def configure_colored_logging(loglevel):
 def arguments_of(func):
     """Return the parameters of the function `func` as a list of their names."""
 
-    try:
-        # python 3.x is used
-        return inspect.signature(func).parameters.keys()
-    except AttributeError:
-        # python 2.x is used
-        return inspect.getargspec(func).args
+    return inspect.signature(func).parameters.keys()

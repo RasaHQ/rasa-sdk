@@ -13,6 +13,7 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 Added
 -----
+- Added Python 3.7 support.
 
 Changed
 -------
@@ -20,9 +21,10 @@ Changed
 Fixed
 -----
 
-
 Removed
 -------
+- Removed Python 3.5 support.
+
 
 [1.3.3] - 2019-09-28
 ^^^^^^^^^^^^^^^^^^^^

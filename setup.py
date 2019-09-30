@@ -1,6 +1,7 @@
-from setuptools import setup, find_packages
 import io
 import os
+
+from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -14,7 +15,6 @@ with io.open(os.path.join(here, "README.md"), encoding="utf-8") as f:
 
 tests_requires = ["pytest~=4.0", "pytest-cov~=2.0"]
 
-
 install_requires = [
     "future~=0.17",
     "requests>=2.20",  # for common use in custom actions code
@@ -26,7 +26,7 @@ install_requires = [
     "six>=1.10",
 ]
 
-extras_requires = {"test": tests_requires, ":python_version < '3.5'": ["typing~=3.0"]}
+extras_requires = {"test": tests_requires}
 
 setup(
     name="rasa-sdk",
@@ -36,11 +36,11 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         # supported python versions
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Software Development :: Libraries",
     ],
+    python_requires=">=3.6",
     packages=find_packages(exclude=["tests", "tools"]),
     version=__version__,
     install_requires=install_requires,

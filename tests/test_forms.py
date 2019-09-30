@@ -4,10 +4,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import pytest
-from rasa_sdk.forms import FormAction
+
 from rasa_sdk import Tracker, ActionExecutionRejection
-from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet, Form
+from rasa_sdk.executor import CollectingDispatcher
+from rasa_sdk.forms import FormAction
 
 
 def test_extract_requested_slot_default():
@@ -34,6 +35,7 @@ def test_extract_requested_slot_from_entity_no_intent():
     """Test extraction of a slot value from entity with the different name
         and any intent
     """
+
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -63,6 +65,7 @@ def test_extract_requested_slot_from_entity_with_intent():
     """Test extraction of a slot value from entity with the different name
         and certain intent
     """
+
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -118,6 +121,7 @@ def test_extract_requested_slot_from_entity_with_not_intent():
     """Test extraction of a slot value from entity with the different name
         and certain intent
     """
+
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -172,6 +176,7 @@ def test_extract_requested_slot_from_entity_with_not_intent():
 def test_extract_requested_slot_from_intent():
     """Test extraction of a slot value from certain intent
     """
+
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -218,6 +223,7 @@ def test_extract_requested_slot_from_intent():
 def test_extract_requested_slot_from_not_intent():
     """Test extraction of a slot value from certain intent
     """
+
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -266,6 +272,7 @@ def test_extract_requested_slot_from_not_intent():
 def test_extract_requested_slot_from_text_no_intent():
     """Test extraction of a slot value from text with any intent
     """
+
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -294,6 +301,7 @@ def test_extract_requested_slot_from_text_no_intent():
 def test_extract_requested_slot_from_text_with_intent():
     """Test extraction of a slot value from text with certain intent
     """
+
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -341,6 +349,7 @@ def test_extract_requested_slot_from_text_with_intent():
 def test_extract_requested_slot_from_text_with_not_intent():
     """Test extraction of a slot value from text with certain intent
     """
+
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -388,6 +397,7 @@ def test_extract_requested_slot_from_text_with_not_intent():
 def test_extract_trigger_slots():
     """Test extraction of a slot value from trigger intent
     """
+
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -457,6 +467,7 @@ def test_extract_other_slots_no_intent():
     """Test extraction of other not requested slots values
         from entities with the same names
     """
+
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -763,10 +774,6 @@ def test_validate_prefilled_slots():
         Form("some_form"),
         SlotSet("some_slot", "validated_value"),
         SlotSet("some_other_slot", "some_other_value"),
-    ] or events == [  # this 'or' is only necessary for python 2.7 and 3.5
-        Form("some_form"),
-        SlotSet("some_other_slot", "some_other_value"),
-        SlotSet("some_slot", "validated_value"),
     ]
 
     events.extend(
@@ -777,11 +784,6 @@ def test_validate_prefilled_slots():
         Form("some_form"),
         SlotSet("some_slot", "validated_value"),
         SlotSet("some_other_slot", "some_other_value"),
-        SlotSet("some_slot", None),
-    ] or events == [  # this 'or' is only necessary for python 2.7 and 3.5
-        Form("some_form"),
-        SlotSet("some_other_slot", "some_other_value"),
-        SlotSet("some_slot", "validated_value"),
         SlotSet("some_slot", None),
     ]
 
