@@ -4,8 +4,8 @@ import logging
 import pkgutil
 import warnings
 from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
-import types.ModuleType
 import typing
+import types
 from rasa_sdk.interfaces import Tracker
 
 from rasa_sdk import utils
