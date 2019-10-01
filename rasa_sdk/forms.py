@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import logging
 import typing
 from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
+from rasa_sdk.events import SlotSet, Form, EventType
 from rasa_sdk.interfaces import Action, ActionExecutionRejection
-from rasa_sdk.events import SlotSet, Form
 
 logger = logging.getLogger(__name__)
 
@@ -23,15 +19,13 @@ REQUESTED_SLOT = "requested_slot"
 
 
 class FormAction(Action):
-    def name(self):
-        # type: () -> Text
+    def name(self) -> Text:
         """Unique identifier of the form"""
 
         raise NotImplementedError("A form must implement a name")
 
     @staticmethod
-    def required_slots(tracker):
-        # type: (Tracker) -> List[Text]
+    def required_slots(tracker: "Tracker") -> List[Text]:
         """A list of required slots that the form has to fill.
 
         Use `tracker` to request different list of slots
@@ -44,11 +38,10 @@ class FormAction(Action):
 
     def from_entity(
         self,
-        entity,  # type: Text
-        intent=None,  # type: Optional[Union[Text, List[Text]]]
-        not_intent=None,  # type: Optional[Union[Text, List[Text]]]
-    ):
-        # type: (...) -> Dict[Text: Any]
+        entity: Text,
+        intent: Optional[Union[Text, List[Text]]] = None,
+        not_intent: Optional[Union[Text, List[Text]]] = None,
+    ) -> Dict[Text, Any]:
         """A dictionary for slot mapping to extract slot value.
 
         From:
@@ -70,11 +63,10 @@ class FormAction(Action):
 
     def from_trigger_intent(
         self,
-        value,  # type: Any
-        intent=None,  # type: Optional[Union[Text, List[Text]]]
-        not_intent=None,  # type: Optional[Union[Text, List[Text]]]
-    ):
-        # type: (...) -> Dict[Text: Any]
+        value: Any,
+        intent: Optional[Union[Text, List[Text]]] = None,
+        not_intent: Optional[Union[Text, List[Text]]] = None,
+    ) -> Dict[Text, Any]:
         """A dictionary for slot mapping to extract slot value.
 
         From:
@@ -98,11 +90,10 @@ class FormAction(Action):
 
     def from_intent(
         self,
-        value,  # type: Any
-        intent=None,  # type: Optional[Union[Text, List[Text]]]
-        not_intent=None,  # type: Optional[Union[Text, List[Text]]]
-    ):
-        # type: (...) -> Dict[Text: Any]
+        value: Any,
+        intent: Optional[Union[Text, List[Text]]] = None,
+        not_intent: Optional[Union[Text, List[Text]]] = None,
+    ) -> Dict[Text, Any]:
         """A dictionary for slot mapping to extract slot value.
 
         From:
@@ -124,10 +115,9 @@ class FormAction(Action):
 
     def from_text(
         self,
-        intent=None,  # type: Optional[Union[Text, List[Text]]]
-        not_intent=None,  # type: Optional[Union[Text, List[Text]]]
-    ):
-        # type: (...) -> Dict[Text: Any]
+        intent: Optional[Union[Text, List[Text]]] = None,
+        not_intent: Optional[Union[Text, List[Text]]] = None,
+    ) -> Dict[Text, Any]:
         """A dictionary for slot mapping to extract slot value.
 
         From:
@@ -143,8 +133,7 @@ class FormAction(Action):
         return {"type": "from_text", "intent": intent, "not_intent": not_intent}
 
     # noinspection PyMethodMayBeStatic
-    def slot_mappings(self):
-        # type: () -> Dict[Text: Union[Dict, List[Dict]]]
+    def slot_mappings(self) -> Dict[Text, Union[Dict, List[Dict[Text, Any]]]]:
         """A dictionary to map required slots.
 
         Options:
@@ -160,8 +149,7 @@ class FormAction(Action):
 
         return {}
 
-    def get_mappings_for_slot(self, slot_to_fill):
-        # type: (Text) -> List[Dict[Text: Any]]
+    def get_mappings_for_slot(self, slot_to_fill: Text) -> List[Dict[Text, Any]]:
         """Get mappings for requested slot.
 
         If None, map requested slot to an entity with the same name
@@ -181,8 +169,9 @@ class FormAction(Action):
         return requested_slot_mappings
 
     @staticmethod
-    def intent_is_desired(requested_slot_mapping, tracker):
-        # type: (Dict[Text: Any], Tracker) -> bool
+    def intent_is_desired(
+        requested_slot_mapping: Dict[Text, Any], tracker: "Tracker"
+    ) -> bool:
         """Check whether user intent matches intent conditions"""
 
         mapping_intents = requested_slot_mapping.get("intent", [])
@@ -196,8 +185,7 @@ class FormAction(Action):
         return intent_not_blacklisted or intent in mapping_intents
 
     @staticmethod
-    def get_entity_value(name, tracker):
-        # type: (Text, Tracker) -> Any
+    def get_entity_value(name: Text, tracker: "Tracker") -> Any:
         """Extract entities for given name"""
 
         # list is used to cover the case of list slot type
@@ -211,11 +199,10 @@ class FormAction(Action):
     # noinspection PyUnusedLocal
     def extract_other_slots(
         self,
-        dispatcher,  # type: CollectingDispatcher
-        tracker,  # type: Tracker
-        domain,  # type: Dict[Text, Any]
-    ):
-        # type: (...) -> Dict[Text: Any]
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: Dict[Text, Any],
+    ) -> Dict[Text, Any]:
         """Extract the values of the other slots
             if they are set by corresponding entities from the user input
             else return None
@@ -266,11 +253,10 @@ class FormAction(Action):
     # noinspection PyUnusedLocal
     def extract_requested_slot(
         self,
-        dispatcher,  # type: CollectingDispatcher
-        tracker,  # type: Tracker
-        domain,  # type: Dict[Text, Any]
-    ):
-        # type: (...) -> Dict[Text: Any]
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: Dict[Text, Any],
+    ) -> Dict[Text, Any]:
         """Extract the value of requested slot from a user input
             else return None
         """
@@ -311,8 +297,13 @@ class FormAction(Action):
         logger.debug("Failed to extract requested slot '{}'".format(slot_to_fill))
         return {}
 
-    def validate_slots(self, slot_dict, dispatcher, tracker, domain):
-        # type: (Dict[Text, Any], CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
+    def validate_slots(
+        self,
+        slot_dict: Dict[Text, Any],
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: Dict[Text, Any],
+    ) -> List[EventType]:
         """Validate slots using helper validation functions.
 
         Call validate_{slot} function for each slot, value pair to be validated.
@@ -336,8 +327,12 @@ class FormAction(Action):
         # validation succeed, set slots to extracted values
         return [SlotSet(slot, value) for slot, value in slot_dict.items()]
 
-    def validate(self, dispatcher, tracker, domain):
-        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
+    def validate(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: Dict[Text, Any],
+    ) -> List[EventType]:
         """Extract and validate value of requested slot.
 
         If nothing was extracted reject execution of the form action.
@@ -369,11 +364,10 @@ class FormAction(Action):
     # noinspection PyUnusedLocal
     def request_next_slot(
         self,
-        dispatcher,  # type: CollectingDispatcher
-        tracker,  # type: Tracker
-        domain,  # type: Dict[Text, Any]
-    ):
-        # type: (...) -> Optional[List[Dict]]
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: Dict[Text, Any],
+    ) -> Optional[List[EventType]]:
         """Request the next slot and utter template if needed,
             else return None"""
 
@@ -391,16 +385,19 @@ class FormAction(Action):
         # no more required slots to fill
         return None
 
-    def deactivate(self):
-        # type: () -> List[Dict]
+    def deactivate(self) -> List[EventType]:
         """Return `Form` event with `None` as name to deactivate the form
             and reset the requested slot"""
 
         logger.debug("Deactivating the form '{}'".format(self.name()))
         return [Form(None), SlotSet(REQUESTED_SLOT, None)]
 
-    def submit(self, dispatcher, tracker, domain):
-        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
+    def submit(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: Dict[Text, Any],
+    ) -> List[EventType]:
         """Define what the form has to do
             after all required slots are filled"""
 
@@ -408,8 +405,7 @@ class FormAction(Action):
 
     # helpers
     @staticmethod
-    def _to_list(x):
-        # type: (Optional[Any]) -> List[Any]
+    def _to_list(x: Optional[Any]) -> List[Any]:
         """Convert object to a list if it is not a list,
             None converted to empty list
         """
@@ -422,10 +418,9 @@ class FormAction(Action):
 
     def _list_intents(
         self,
-        intent=None,  # type: Optional[Union[Text, List[Text]]]
-        not_intent=None,  # type: Optional[Union[Text, List[Text]]]
-    ):
-        # type: (...) -> Tuple[List[Text], List[Text]]
+        intent: Optional[Union[Text, List[Text]]] = None,
+        not_intent: Optional[Union[Text, List[Text]]] = None,
+    ) -> Tuple[List[Text], List[Text]]:
         """Check provided intent and not_intent"""
         if intent and not_intent:
             raise ValueError(
@@ -435,7 +430,7 @@ class FormAction(Action):
 
         return self._to_list(intent), self._to_list(not_intent)
 
-    def _log_form_slots(self, tracker):
+    def _log_form_slots(self, tracker: "Tracker") -> None:
         """Logs the values of all required slots before submitting the form."""
 
         req_slots = self.required_slots(tracker)
@@ -448,8 +443,12 @@ class FormAction(Action):
             )
         )
 
-    def _activate_if_required(self, dispatcher, tracker, domain):
-        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
+    def _activate_if_required(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: Dict[Text, Any],
+    ) -> List[EventType]:
         """Activate form if the form is called for the first time.
 
         If activating, validate any required slots that were filled before
@@ -486,8 +485,12 @@ class FormAction(Action):
 
             return events
 
-    def _validate_if_required(self, dispatcher, tracker, domain):
-        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
+    def _validate_if_required(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: Dict[Text, Any],
+    ) -> List[EventType]:
         """Return a list of events from `self.validate(...)`
             if validation is required:
             - the form is active
@@ -504,14 +507,17 @@ class FormAction(Action):
             return []
 
     @staticmethod
-    def _should_request_slot(tracker, slot_name):
-        # type: (Tracker, Text) -> bool
+    def _should_request_slot(tracker: "Tracker", slot_name: Text) -> bool:
         """Check whether form action should request given slot"""
 
         return tracker.get_slot(slot_name) is None
 
-    def run(self, dispatcher, tracker, domain):
-        # type: (CollectingDispatcher, Tracker, Dict[Text, Any]) -> List[Dict]
+    def run(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: Dict[Text, Any],
+    ) -> List[EventType]:
         """Execute the side effects of this form.
 
         Steps:
@@ -551,5 +557,5 @@ class FormAction(Action):
 
         return events
 
-    def __str__(self):
+    def __str__(self) -> Text:
         return "FormAction('{}')".format(self.name())

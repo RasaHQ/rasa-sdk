@@ -1,10 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from builtins import str
-
 import argparse
 import logging
 
@@ -12,13 +5,12 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
+import rasa_sdk
+from rasa_sdk import utils
 from rasa_sdk.cli.arguments import add_endpoint_arguments
 from rasa_sdk.constants import DEFAULT_SERVER_PORT
 from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.interfaces import ActionExecutionRejection
-import rasa_sdk
-
-from rasa_sdk import utils
 
 logger = logging.getLogger(__name__)
 
