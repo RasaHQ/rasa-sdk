@@ -3,7 +3,7 @@ import inspect
 import logging
 import pkgutil
 import warnings
-from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
+from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, ModuleType
 import typing
 from rasa_sdk.interfaces import Tracker
 
@@ -145,7 +145,7 @@ class ActionExecutor:
             )
         self.actions[name] = f
 
-    def _import_submodules(self, package: Any, recursive: bool = True) -> None:
+    def _import_submodules(self, package: Union[Text, ModuleType], recursive: bool = True) -> None:
         """ Import all submodules of a module, recursively, including
         subpackages
 
@@ -165,7 +165,7 @@ class ActionExecutor:
             if recursive and is_pkg:
                 self._import_submodules(full_name)
 
-    def register_package(self, package: Any) -> None:
+    def register_package(self, package: Union[Text, ModuleType]) -> None:
         from rasa_sdk.interfaces import Action
 
         try:
