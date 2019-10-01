@@ -3,38 +3,36 @@ import inspect
 import logging
 import pkgutil
 import warnings
-from typing import Text, List, Dict, Any
-
-import six
+from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
+import typing
+from rasa_sdk.interfaces import Tracker
 
 from rasa_sdk import utils
-from rasa_sdk.interfaces import Action, Tracker
+
+if typing.TYPE_CHECKING:
+    from rasa_sdk.interfaces import Action
 
 logger = logging.getLogger(__name__)
 
 
-class CollectingDispatcher(object):
+class CollectingDispatcher:
     """Send messages back to user"""
 
-    def __init__(self):
-        # type: () -> None
+    def __init__(self) -> None:
 
         self.messages = []
 
     # deprecated
-    def utter_custom_message(self, *elements, **kwargs):
-        # type: (Dict[Text, Any], Any) -> None
-
+    def utter_custom_message(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
         warnings.warn(
             "Use of `utter_custom_message` is deprecated. "
             "Use `utter_elements` to send elements, or "
             "`utter_custom_json` to send a custom json message. ",
             DeprecationWarning,
         )
-        self.utter_elements(elements, **kwargs)
+        self.utter_elements(*elements, **kwargs)
 
-    def utter_elements(self, *elements, **kwargs):
-        # type: (Dict[Text, Any], Any) -> None
+    def utter_elements(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends a message with custom elements to the output channel."""
 
         message = {"text": None, "elements": elements}
@@ -42,8 +40,7 @@ class CollectingDispatcher(object):
 
         self.messages.append(message)
 
-    def utter_message(self, text, **kwargs):
-        # type: (Text, Any) -> None
+    def utter_message(self, text: Text, **kwargs: Any) -> None:
         """"Send a text to the output channel"""
 
         message = {"text": text}
@@ -51,8 +48,9 @@ class CollectingDispatcher(object):
 
         self.messages.append(message)
 
-    def utter_button_message(self, text, buttons, **kwargs):
-        # type: (Text, List[Dict[Text, Any]], Any) -> None
+    def utter_button_message(
+        self, text: Text, buttons: List[Dict[Text, Any]], **kwargs: Any
+    ) -> None:
         """Sends a message with buttons to the output channel."""
 
         message = {"text": text, "buttons": buttons}
@@ -60,8 +58,7 @@ class CollectingDispatcher(object):
 
         self.messages.append(message)
 
-    def utter_attachment(self, attachment, **kwargs):
-        # type: (Text, Any) -> None
+    def utter_attachment(self, attachment: Text, **kwargs: Any) -> None:
         """Send a message to the client with attachments."""
 
         message = {"text": None, "attachment": attachment}
@@ -72,13 +69,12 @@ class CollectingDispatcher(object):
     # noinspection PyUnusedLocal
     def utter_button_template(
         self,
-        template,  # type: Text
-        buttons,  # type: List[Dict[Text, Any]]
-        tracker,  # type: Tracker
-        silent_fail=False,  # type: bool
-        **kwargs  # type: Any
-    ):
-        # type: (...) -> None
+        template: Text,
+        buttons: List[Dict[Text, Any]],
+        tracker: Tracker,
+        silent_fail: bool = False,
+        **kwargs: Any
+    ) -> None:
         """Sends a message template with buttons to the output channel."""
 
         message = {"template": template, "buttons": buttons}
@@ -88,13 +84,8 @@ class CollectingDispatcher(object):
 
     # noinspection PyUnusedLocal
     def utter_template(
-        self,
-        template,  # type: Text
-        tracker,  # type: Tracker
-        silent_fail=False,  # type: bool
-        **kwargs  # type: Any
-    ):
-        # type: (...) -> None
+        self, template: Text, tracker: Tracker, silent_fail: bool = False, **kwargs: Any
+    ) -> None:
         """"Send a message to the client based on a template."""
 
         message = {"template": template}
@@ -102,8 +93,7 @@ class CollectingDispatcher(object):
 
         self.messages.append(message)
 
-    def utter_custom_json(self, json_message, **kwargs):
-        # type: (Dict[Text, Any], Any) -> None
+    def utter_custom_json(self, json_message: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends custom json to the output channel."""
 
         json_message = {"custom": json_message}
@@ -111,8 +101,7 @@ class CollectingDispatcher(object):
 
         self.messages.append(json_message)
 
-    def utter_image_url(self, image, **kwargs):
-        # type: (Text, Any) -> None
+    def utter_image_url(self, image: Text, **kwargs: Any) -> None:
         """Sends url of image attachment to the output channel."""
 
         message = {"image": image}
@@ -121,11 +110,13 @@ class CollectingDispatcher(object):
         self.messages.append(message)
 
 
-class ActionExecutor(object):
+class ActionExecutor:
     def __init__(self):
         self.actions = {}
 
-    def register_action(self, action):
+    def register_action(self, action: Union[Type["Action"], "Action"]) -> None:
+        from rasa_sdk.interfaces import Action
+
         if inspect.isclass(action):
             if action.__module__.startswith("rasa."):
                 logger.warning("Skipping built in Action {}.".format(action))
@@ -141,7 +132,7 @@ class ActionExecutor(object):
                 "a function, use `register_function` instead."
             )
 
-    def register_function(self, name, f):
+    def register_function(self, name: Text, f: Callable) -> None:
         logger.info("Registered function for '{}'.".format(name))
         valid_keys = utils.arguments_of(f)
         if len(valid_keys) < 3:
@@ -154,7 +145,7 @@ class ActionExecutor(object):
             )
         self.actions[name] = f
 
-    def _import_submodules(self, package, recursive=True):
+    def _import_submodules(self, package: Any, recursive: bool = True) -> None:
         """ Import all submodules of a module, recursively, including
         subpackages
 
@@ -162,7 +153,7 @@ class ActionExecutor(object):
         :type package: str | module
         :rtype: dict[str, types.ModuleType]
         """
-        if isinstance(package, six.string_types):
+        if isinstance(package, str):
             package = importlib.import_module(package)
         if not getattr(package, "__path__", None):
             return
@@ -174,7 +165,9 @@ class ActionExecutor(object):
             if recursive and is_pkg:
                 self._import_submodules(full_name)
 
-    def register_package(self, package):
+    def register_package(self, package: Any) -> None:
+        from rasa_sdk.interfaces import Action
+
         try:
             self._import_submodules(package)
         except ImportError:
@@ -195,11 +188,13 @@ class ActionExecutor(object):
                 self.register_action(action)
 
     @staticmethod
-    def _create_api_response(events, messages):
+    def _create_api_response(
+        events: List[Dict[Text, Any]], messages: List[Dict[Text, Any]]
+    ) -> Dict[Text, Any]:
         return {"events": events, "responses": messages}
 
     @staticmethod
-    def validate_events(events, action_name):
+    def validate_events(events: List[Dict[Text, Any]], action_name: Text):
         validated = []
         for e in events:
             if isinstance(e, dict):
@@ -231,7 +226,9 @@ class ActionExecutor(object):
                 # we won't append this to validated events -> will be ignored
         return validated
 
-    def run(self, action_call):
+    def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
+        from rasa_sdk.interfaces import Tracker
+
         action_name = action_call.get("next_action")
         if action_name:
             logger.debug("Received request to run '{}'".format(action_name))

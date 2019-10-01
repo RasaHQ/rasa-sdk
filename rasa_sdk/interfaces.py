@@ -3,18 +3,14 @@ import logging
 import typing
 from typing import Any, Dict, Iterator, List, Optional, Text
 
-if typing.TYPE_CHECKING:
-    from rasa_sdk.executor import CollectingDispatcher
-
 logger = logging.getLogger(__name__)
 
 
-class Tracker(object):
+class Tracker:
     """Maintains the state of a conversation."""
 
     @classmethod
-    def from_dict(cls, state):
-        # type: (Dict[Text, Any]) -> Tracker
+    def from_dict(cls, state: Dict[Text, Any]) -> "Tracker":
         """Create a tracker from dump."""
 
         return Tracker(
@@ -30,15 +26,15 @@ class Tracker(object):
 
     def __init__(
         self,
-        sender_id,
-        slots,
-        latest_message,
-        events,
-        paused,
-        followup_action,
-        active_form,
-        latest_action_name,
-    ):
+        sender_id: Text,
+        slots: Dict[Text, Any],
+        latest_message: Optional[Dict[Text, Any]],
+        events: List[Dict[Text, Any]],
+        paused: bool,
+        followup_action: Optional[Text],
+        active_form: Optional[Text],
+        latest_action_name: Optional[Text],
+    ) -> None:
         """Initialize the tracker."""
 
         # list of previously seen events
@@ -60,8 +56,7 @@ class Tracker(object):
         self.active_form = active_form
         self.latest_action_name = latest_action_name
 
-    def current_state(self):
-        # type: () -> Dict[Text, Any]
+    def current_state(self) -> Dict[Text, Any]:
         """Return the current tracker state as an object."""
 
         if len(self.events) > 0:
@@ -81,13 +76,11 @@ class Tracker(object):
             "latest_action_name": self.latest_action_name,
         }
 
-    def current_slot_values(self):
-        # type: () -> Dict[Text, Any]
+    def current_slot_values(self) -> Dict[Text, Any]:
         """Return the currently set values of the slots"""
         return self.slots
 
-    def get_slot(self, key):
-        # type: (Text) -> Optional[Any]
+    def get_slot(self, key) -> Optional[Any]:
         """Retrieves the value of a slot."""
 
         if key in self.slots:
@@ -96,8 +89,7 @@ class Tracker(object):
             logger.info("Tried to access non existent slot '{}'".format(key))
             return None
 
-    def get_latest_entity_values(self, entity_type):
-        # type: (Text) -> Iterator[Text]
+    def get_latest_entity_values(self, entity_type: Text) -> Iterator[Text]:
         """Get entity values found for the passed entity name in latest msg.
 
         If you are only interested in the first entity of a given type use
@@ -107,8 +99,7 @@ class Tracker(object):
         entities = self.latest_message.get("entities", [])
         return (x.get("value") for x in entities if x.get("entity") == entity_type)
 
-    def get_latest_input_channel(self):
-        # type: () -> Optional[Text]
+    def get_latest_input_channel(self) -> Optional[Text]:
         """Get the name of the input_channel of the latest UserUttered event"""
 
         for e in reversed(self.events):
@@ -116,13 +107,11 @@ class Tracker(object):
                 return e.get("input_channel")
         return None
 
-    def is_paused(self):
-        # type: () -> bool
+    def is_paused(self) -> bool:
         """State whether the tracker is currently paused."""
         return self._paused
 
-    def idx_after_latest_restart(self):
-        # type: () -> int
+    def idx_after_latest_restart(self) -> int:
         """Return the idx of the most recent restart in the list of events.
 
         If the conversation has not been restarted, ``0`` is returned."""
@@ -133,21 +122,20 @@ class Tracker(object):
                 idx = i + 1
         return idx
 
-    def events_after_latest_restart(self):
-        # type: () -> List[dict]
+    def events_after_latest_restart(self) -> List[dict]:
         """Return a list of events after the most recent restart."""
         return list(self.events)[self.idx_after_latest_restart() :]
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(self, type(other)):
             return other.events == self.events and self.sender_id == other.sender_id
         else:
             return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def copy(self):
+    def copy(self) -> "Tracker":
         return Tracker(
             self.sender_id,
             copy.deepcopy(self.slots),
@@ -160,45 +148,39 @@ class Tracker(object):
         )
 
 
-class Action(object):
+class Action:
     """Next action to be taken in response to a dialogue state."""
 
-    def name(self):
-        # type: () -> Text
+    def name(self) -> Text:
         """Unique identifier of this simple action."""
 
         raise NotImplementedError("An action must implement a name")
 
     def run(
-        self,
-        dispatcher,  # type: CollectingDispatcher
-        tracker,  # type: Tracker
-        domain,  # type:  Dict[Text, Any]
-    ):
-        # type: (...) -> List[Dict[Text, Any]]
+        self, dispatcher, tracker: Tracker, domain: Dict[Text, Any]
+    ) -> List[Dict[Text, Any]]:
         """Execute the side effects of this action.
 
         Args:
-            dispatcher (CollectingDispatcher): the dispatcher which is used to
+            dispatcher: the dispatcher which is used to
                 send messages back to the user. Use
                 ``dipatcher.utter_message()`` or any other
                 ``rasa_sdk.executor.CollectingDispatcher``
                 method.
-            tracker (Tracker): the state tracker for the current
+            tracker: the state tracker for the current
                 user. You can access slot values using
                 ``tracker.get_slot(slot_name)``, the most recent user message
                 is ``tracker.latest_message.text`` and any other
                 ``rasa_sdk.Tracker`` property.
-            domain (Dict[Text, Any]): the bot's domain
+            domain: the bot's domain
         Returns:
-            List[Dict[Text, Any]]: A dictionary of
-                ``rasa_sdk.events.Event`` instances that is
+            A dictionary of ``rasa_sdk.events.Event`` instances that is
                 returned through the endpoint
         """
 
         raise NotImplementedError("An action must implement its run method")
 
-    def __str__(self):
+    def __str__(self) -> Text:
         return "Action('{}')".format(self.name())
 
 
@@ -206,11 +188,11 @@ class ActionExecutionRejection(Exception):
     """Raising this exception will allow other policies
         to predict another action"""
 
-    def __init__(self, action_name, message=None):
+    def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         self.action_name = action_name
         self.message = message or "Custom action '{}' rejected execution of".format(
             action_name
         )
 
-    def __str__(self):
+    def __str__(self) -> Text:
         return self.message
