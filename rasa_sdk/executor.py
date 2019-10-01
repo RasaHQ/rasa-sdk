@@ -3,11 +3,14 @@ import inspect
 import logging
 import pkgutil
 import warnings
-from typing import Text, List, Dict, Any
+from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
 import typing
 from rasa_sdk.interfaces import Tracker
 
 from rasa_sdk import utils
+
+if typing.TYPE_CHECKING:
+    from rasa_sdk.interfaces import Action
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +114,7 @@ class ActionExecutor:
     def __init__(self):
         self.actions = {}
 
-    def register_action(self, action):
+    def register_action(self, action: Union[Type["Action"], "Action"]) -> None:
         from rasa_sdk.interfaces import Action
 
         if inspect.isclass(action):
@@ -129,7 +132,7 @@ class ActionExecutor:
                 "a function, use `register_function` instead."
             )
 
-    def register_function(self, name, f):
+    def register_function(self, name: Text, f: Callable) -> None:
         logger.info("Registered function for '{}'.".format(name))
         valid_keys = utils.arguments_of(f)
         if len(valid_keys) < 3:
@@ -142,7 +145,7 @@ class ActionExecutor:
             )
         self.actions[name] = f
 
-    def _import_submodules(self, package, recursive=True):
+    def _import_submodules(self, package: Any, recursive: bool = True) -> None:
         """ Import all submodules of a module, recursively, including
         subpackages
 
@@ -162,7 +165,7 @@ class ActionExecutor:
             if recursive and is_pkg:
                 self._import_submodules(full_name)
 
-    def register_package(self, package):
+    def register_package(self, package: Any) -> None:
         from rasa_sdk.interfaces import Action
 
         try:
@@ -185,11 +188,13 @@ class ActionExecutor:
                 self.register_action(action)
 
     @staticmethod
-    def _create_api_response(events, messages):
+    def _create_api_response(
+        events: List[Dict[Text, Any]], messages: List[Dict[Text, Any]]
+    ) -> Dict[Text, Any]:
         return {"events": events, "responses": messages}
 
     @staticmethod
-    def validate_events(events, action_name):
+    def validate_events(events: List[Dict[Text, Any]], action_name: Text):
         validated = []
         for e in events:
             if isinstance(e, dict):
@@ -221,7 +226,7 @@ class ActionExecutor:
                 # we won't append this to validated events -> will be ignored
         return validated
 
-    def run(self, action_call):
+    def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
         from rasa_sdk.interfaces import Tracker
 
         action_name = action_call.get("next_action")
