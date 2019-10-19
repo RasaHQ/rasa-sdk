@@ -74,7 +74,7 @@ class CollectingDispatcher:
         buttons: List[Dict[Text, Any]],
         tracker: Tracker,
         silent_fail: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Sends a message template with buttons to the output channel."""
 

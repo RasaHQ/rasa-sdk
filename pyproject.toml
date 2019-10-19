@@ -1,12 +1,13 @@
 [tool.black]
 line-length = 88
-target-version = ['py27', 'py35', 'py36']
+target-version = ['py36', 'py37']
 exclude = '''
 
 (
   /(
       \.eggs
     | \.git
+    | \.pytype
     | \.pytest_cache
     | build
     | dist
