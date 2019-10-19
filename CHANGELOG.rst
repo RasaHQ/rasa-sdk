@@ -4,6 +4,25 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
+.. _master-release:
+
+[Unreleased 1.5.0a1] - `master`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note:: This version is not yet released and is under active development.
+
+Added
+-----
+
+Changed
+-------
+
+Fixed
+-----
+
+Removed
+-------
+
 [1.4.0] - 2019-10-19
 ^^^^^^^^^^^^^^^^^^^^
 
