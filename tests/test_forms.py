@@ -767,8 +767,6 @@ def test_validate_prefilled_slots():
     # check that the form was activated and prefilled slots were validated
     assert events == [
         Form("some_form"),
-        SlotSet("some_slot", "validated_value"),
-        SlotSet("some_other_slot", "some_other_value"),
     ]
 
     events.extend(
@@ -777,8 +775,6 @@ def test_validate_prefilled_slots():
     # check that entities picked up in input overwrite prefilled slots
     assert events == [
         Form("some_form"),
-        SlotSet("some_slot", "validated_value"),
-        SlotSet("some_other_slot", "some_other_value"),
         SlotSet("some_slot", None),
     ]
 
