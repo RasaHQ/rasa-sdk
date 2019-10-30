@@ -467,22 +467,6 @@ class FormAction(Action):
             logger.debug("Activated the form '{}'".format(self.name()))
             events = [Form(self.name())]
 
-            # collect values of required slots filled before activation
-            prefilled_slots = {}
-            for slot_name in self.required_slots(tracker):
-                if not self._should_request_slot(tracker, slot_name):
-                    prefilled_slots[slot_name] = tracker.get_slot(slot_name)
-
-            if prefilled_slots:
-                logger.debug(
-                    "Validating pre-filled required slots: {}".format(prefilled_slots)
-                )
-                events.extend(
-                    self.validate_slots(prefilled_slots, dispatcher, tracker, domain)
-                )
-            else:
-                logger.debug("No pre-filled required slots to validate.")
-
             return events
 
     def _validate_if_required(
