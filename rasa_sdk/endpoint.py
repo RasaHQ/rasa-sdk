@@ -1,11 +1,11 @@
 import argparse
 import logging
+import types
 from typing import List, Text, Union
 
-from gevent.pywsgi import WSGIServer
 from sanic import Sanic
 from sanic.response import json
-from sanic_cors import CORS, cross_origin
+from sanic_cors import CORS
 
 import rasa_sdk
 from rasa_sdk import utils
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def configure_cors(
-        app: Sanic, cors_origins: Union[Text, List[Text], None] = ""
+    app: Sanic, cors_origins: Union[Text, List[Text], None] = ""
 ) -> None:
     """Configure CORS origins for the given app."""
 
@@ -51,7 +51,10 @@ def create_argument_parser():
     return parser
 
 
-def endpoint_app(cors_origins: Union[Text, List[Text], None] = "*", action_package_name=None):
+def endpoint_app(
+    action_package_name: Union[Text, types.ModuleType],
+    cors_origins: Union[Text, List[Text], None] = "*",
+):
     app = Sanic(__name__)
 
     configure_cors(app, cors_origins)
@@ -134,31 +137,27 @@ def check_version_compatibility(rasa_version):
 
 
 def run(
-        action_package_name,
-        port=DEFAULT_SERVER_PORT,
-        cors_origins="*",
-        ssl_certificate=None,
-        ssl_keyfile=None,
-        ssl_password=None,
+    action_package_name,
+    port=DEFAULT_SERVER_PORT,
+    cors_origins="*",
+    ssl_certificate=None,
+    ssl_keyfile=None,
+    ssl_password=None,
 ):
     logger.info("Starting action endpoint server...")
-    edp_app = endpoint_app(
-        cors_origins=cors_origins, action_package_name=action_package_name
+    app = endpoint_app(
+        action_package_name, cors_origins=cors_origins,
     )
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
     protocol = "https" if ssl_context else "http"
+    host = "0.0.0.0"
     if ssl_context:
-        http_server = WSGIServer(("0.0.0.0", port), edp_app, ssl_context=ssl_context)
+        app.run(host, port, ssl=ssl_context, workers=utils.number_of_sanic_workers())
     else:
-        http_server = WSGIServer(("0.0.0.0", port), edp_app)
-    http_server.start()
+        app.run(host, port, workers=utils.number_of_sanic_workers())
     logger.info(
-        "Action endpoint is up and running on {} {}".format(
-            protocol, http_server.address
-        )
+        "Action endpoint is up and running on {} {}:{}".format(protocol, host, port)
     )
-
-    http_server.serve_forever()
 
 
 if __name__ == "__main__":
