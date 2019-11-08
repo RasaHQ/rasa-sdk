@@ -229,7 +229,7 @@ class ActionExecutor:
                 # we won't append this to validated events -> will be ignored
         return validated
 
-    def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
+    async def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
         from rasa_sdk.interfaces import Tracker
 
         action_name = action_call.get("next_action")
@@ -246,7 +246,7 @@ class ActionExecutor:
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
 
-            events = action(dispatcher, tracker, domain)
+            events = await action(dispatcher, tracker, domain)
             if not events:
                 # make sure the action did not just return `None`...
                 events = []

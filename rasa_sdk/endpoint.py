@@ -1,6 +1,7 @@
 import argparse
 import logging
 import types
+import asyncio
 from typing import List, Text, Union
 
 from sanic import Sanic
@@ -63,17 +64,17 @@ def endpoint_app(
     executor.register_package(action_package_name)
 
     @app.get("/health")
-    def health(request):
+    async def health(request):
         """Ping endpoint to check if the server is running and well."""
         return json({"status": "ok"})
 
     @app.post("/webhook")
-    def webhook(request):
+    async def webhook(request):
         """Webhook to retrieve action calls."""
         action_call = request.json
         check_version_compatibility(action_call.get("version"))
         try:
-            response = executor.run(action_call)
+            response = await executor.run(action_call)
         except ActionExecutionRejection as e:
             logger.error(str(e))
             result = {"error": str(e), "action_name": e.action_name}
@@ -84,7 +85,7 @@ def endpoint_app(
         return json(response)
 
     @app.get("/actions")
-    def actions(request):
+    async def actions(request):
         """List all registered actions."""
         return json([{"name": k} for k in executor.actions.keys()])
 
