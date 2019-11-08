@@ -1,8 +1,10 @@
 import inspect
 import logging
 import os
+
 from typing import Any, List, Text
 
+import rasa_sdk
 from rasa_sdk.constants import DEFAULT_SANIC_WORKERS, ENV_SANIC_WORKERS
 
 logger = logging.getLogger(__name__)
@@ -114,3 +116,48 @@ def number_of_sanic_workers() -> int:
 
     logger.debug(f"Using {env_value} Sanic workers.")
     return env_value
+
+
+def check_version_compatibility(rasa_version):
+    """Check if the version of rasa and rasa_sdk are compatible.
+
+    The version check relies on the version string being formatted as
+    'x.y.z' and compares whether the numbers x and y are the same for both
+    rasa and rasa_sdk.
+    Args:
+        rasa_version - A string containing the version of rasa that
+        is making the call to the action server.
+    Raises:
+        Warning - The version of rasa version unknown or not compatible with
+        this version of rasa_sdk.
+    """
+    # Check for versions of Rasa that are too old to report their version number
+    if rasa_version is None:
+        logger.warning(
+            "You are using an old version of rasa which might "
+            "not be compatible with this version of rasa_sdk "
+            "({}).\n"
+            "To ensure compatibility use the same version "
+            "for both, modulo the last number, i.e. using version "
+            "A.B.x the numbers A and B should be identical for "
+            "both rasa and rasa_sdk."
+            "".format(rasa_sdk.__version__)
+        )
+        return
+
+    rasa = rasa_version.split(".")[:-1]
+    sdk = rasa_sdk.__version__.split(".")[:-1]
+
+    if rasa != sdk:
+        logger.warning(
+            "Your versions of rasa and "
+            "rasa_sdk might not be compatible. You "
+            "are currently running rasa version {} "
+            "and rasa_sdk version {}.\n"
+            "To ensure compatibility use the same "
+            "version for both, modulo the last number, "
+            "i.e. using version A.B.x the numbers A and "
+            "B should be identical for "
+            "both rasa and rasa_sdk."
+            "".format(rasa_version, rasa_sdk.__version__)
+        )

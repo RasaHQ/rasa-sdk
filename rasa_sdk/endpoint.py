@@ -1,14 +1,13 @@
 import argparse
 import logging
 import types
-import asyncio
-from typing import List, Text, Union
+from typing import List, Text, Union, Optional
+from ssl import SSLContext
 
 from sanic import Sanic
 from sanic.response import json
 from sanic_cors import CORS
 
-import rasa_sdk
 from rasa_sdk import utils
 from rasa_sdk.cli.arguments import add_endpoint_arguments
 from rasa_sdk.constants import DEFAULT_SERVER_PORT
@@ -28,7 +27,11 @@ def configure_cors(
     )
 
 
-def create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password):
+def create_ssl_context(
+    ssl_certificate: Optional[Text],
+    ssl_keyfile: Optional[Text],
+    ssl_password: Optional[Text] = None,
+) -> Optional[SSLContext]:
     """Create a SSL context if a certificate is passed."""
 
     if ssl_certificate:
@@ -52,10 +55,10 @@ def create_argument_parser():
     return parser
 
 
-def endpoint_app(
+def create_app(
     action_package_name: Union[Text, types.ModuleType],
-    cors_origins: Union[Text, List[Text], None] = "*",
-):
+    cors_origins: Union[Text, List[Text], None],
+) -> Sanic:
     app = Sanic(__name__, configure_logging=False)
 
     configure_cors(app, cors_origins)
@@ -72,7 +75,7 @@ def endpoint_app(
     async def webhook(request):
         """Webhook to retrieve action calls."""
         action_call = request.json
-        check_version_compatibility(action_call.get("version"))
+        utils.check_version_compatibility(action_call.get("version"))
         try:
             response = await executor.run(action_call)
         except ActionExecutionRejection as e:
@@ -92,61 +95,16 @@ def endpoint_app(
     return app
 
 
-def check_version_compatibility(rasa_version):
-    """Check if the version of rasa and rasa_sdk are compatible.
-
-    The version check relies on the version string being formatted as
-    'x.y.z' and compares whether the numbers x and y are the same for both
-    rasa and rasa_sdk.
-    Args:
-        rasa_version - A string containing the version of rasa that
-        is making the call to the action server.
-    Raises:
-        Warning - The version of rasa version unknown or not compatible with
-        this version of rasa_sdk.
-    """
-    # Check for versions of Rasa that are too old to report their version number
-    if rasa_version is None:
-        logger.warning(
-            "You are using an old version of rasa which might "
-            "not be compatible with this version of rasa_sdk "
-            "({}).\n"
-            "To ensure compatibility use the same version "
-            "for both, modulo the last number, i.e. using version "
-            "A.B.x the numbers A and B should be identical for "
-            "both rasa and rasa_sdk."
-            "".format(rasa_sdk.__version__)
-        )
-        return
-
-    rasa = rasa_version.split(".")[:-1]
-    sdk = rasa_sdk.__version__.split(".")[:-1]
-
-    if rasa != sdk:
-        logger.warning(
-            "Your versions of rasa and "
-            "rasa_sdk might not be compatible. You "
-            "are currently running rasa version {} "
-            "and rasa_sdk version {}.\n"
-            "To ensure compatibility use the same "
-            "version for both, modulo the last number, "
-            "i.e. using version A.B.x the numbers A and "
-            "B should be identical for "
-            "both rasa and rasa_sdk."
-            "".format(rasa_version, rasa_sdk.__version__)
-        )
-
-
 def run(
-    action_package_name,
-    port=DEFAULT_SERVER_PORT,
-    cors_origins="*",
-    ssl_certificate=None,
-    ssl_keyfile=None,
-    ssl_password=None,
+    action_package_name: Union[Text, types.ModuleType],
+    port: int = DEFAULT_SERVER_PORT,
+    cors_origins: Union[Text, List[Text], None] = "*",
+    ssl_certificate: Optional[Text] = None,
+    ssl_keyfile: Optional[Text] = None,
+    ssl_password: Optional[Text] = None,
 ):
     logger.info("Starting action endpoint server...")
-    app = endpoint_app(action_package_name, cors_origins=cors_origins,)
+    app = create_app(action_package_name, cors_origins=cors_origins)
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
 
     app.run("0.0.0.0", port, ssl=ssl_context, workers=utils.number_of_sanic_workers())
