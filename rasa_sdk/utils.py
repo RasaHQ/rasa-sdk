@@ -84,9 +84,7 @@ def arguments_of(func) -> List[Text]:
 
 def number_of_sanic_workers() -> int:
     """Get the number of Sanic workers to use in `app.run()`.
-    If the environment variable constants.ENV_SANIC_WORKERS is set and is not equal to
-    1, that value will only be permitted if the used lock store supports shared
-    resources across multiple workers (e.g. ``RedisLockStore``).
+    If the environment variable constants.ENV_SANIC_WORKERS is set and is not equal to 1.
     """
 
     def _log_and_get_default_number_of_workers():

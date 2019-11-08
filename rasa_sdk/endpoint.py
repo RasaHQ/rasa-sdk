@@ -55,7 +55,7 @@ def endpoint_app(
     action_package_name: Union[Text, types.ModuleType],
     cors_origins: Union[Text, List[Text], None] = "*",
 ):
-    app = Sanic(__name__)
+    app = Sanic(__name__, configure_logging=False)
 
     configure_cors(app, cors_origins)
 
@@ -145,19 +145,10 @@ def run(
     ssl_password=None,
 ):
     logger.info("Starting action endpoint server...")
-    app = endpoint_app(
-        action_package_name, cors_origins=cors_origins,
-    )
+    app = endpoint_app(action_package_name, cors_origins=cors_origins,)
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
-    protocol = "https" if ssl_context else "http"
-    host = "0.0.0.0"
-    if ssl_context:
-        app.run(host, port, ssl=ssl_context, workers=utils.number_of_sanic_workers())
-    else:
-        app.run(host, port, workers=utils.number_of_sanic_workers())
-    logger.info(
-        "Action endpoint is up and running on {} {}:{}".format(protocol, host, port)
-    )
+
+    app.run("0.0.0.0", port, ssl=ssl_context, workers=utils.number_of_sanic_workers())
 
 
 if __name__ == "__main__":
