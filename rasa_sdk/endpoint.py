@@ -1,10 +1,11 @@
 import argparse
 import logging
+from typing import List, Text, Union
 
+from gevent.pywsgi import WSGIServer
 from sanic import Sanic
 from sanic.response import json
 from sanic_cors import CORS, cross_origin
-from gevent.pywsgi import WSGIServer
 
 import rasa_sdk
 from rasa_sdk import utils
@@ -14,6 +15,16 @@ from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.interfaces import ActionExecutionRejection
 
 logger = logging.getLogger(__name__)
+
+
+def configure_cors(
+        app: Sanic, cors_origins: Union[Text, List[Text], None] = ""
+) -> None:
+    """Configure CORS origins for the given app."""
+
+    CORS(
+        app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True
+    )
 
 
 def create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password):
@@ -40,25 +51,20 @@ def create_argument_parser():
     return parser
 
 
-def endpoint_app(cors_origins=None, action_package_name=None):
+def endpoint_app(cors_origins: Union[Text, List[Text], None] = "*", action_package_name=None):
     app = Sanic(__name__)
 
-    if not cors_origins:
-        cors_origins = []
+    configure_cors(app, cors_origins)
 
     executor = ActionExecutor()
     executor.register_package(action_package_name)
 
-    CORS(app, resources={r"/*": {"origins": cors_origins}})
-
-    @app.route("/health", methods=["GET", "OPTIONS"])
-    @cross_origin(origins=cors_origins, app=app)
+    @app.get("/health")
     def health(request):
         """Ping endpoint to check if the server is running and well."""
         return json({"status": "ok"})
 
-    @app.route("/webhook", methods=["POST", "OPTIONS"])
-    @cross_origin(app=app)
+    @app.post("/webhook")
     def webhook(request):
         """Webhook to retrieve action calls."""
         action_call = request.json
@@ -74,8 +80,7 @@ def endpoint_app(cors_origins=None, action_package_name=None):
 
         return json(response)
 
-    @app.route("/actions", methods=["GET", "OPTIONS"])
-    @cross_origin(origins=cors_origins, app=app)
+    @app.get("/actions")
     def actions(request):
         """List all registered actions."""
         return json([{"name": k} for k in executor.actions.keys()])
@@ -129,12 +134,12 @@ def check_version_compatibility(rasa_version):
 
 
 def run(
-    action_package_name,
-    port=DEFAULT_SERVER_PORT,
-    cors_origins="*",
-    ssl_certificate=None,
-    ssl_keyfile=None,
-    ssl_password=None,
+        action_package_name,
+        port=DEFAULT_SERVER_PORT,
+        cors_origins="*",
+        ssl_certificate=None,
+        ssl_keyfile=None,
+        ssl_password=None,
 ):
     logger.info("Starting action endpoint server...")
     edp_app = endpoint_app(
