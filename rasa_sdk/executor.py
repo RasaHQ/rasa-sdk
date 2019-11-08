@@ -64,7 +64,7 @@ class CollectingDispatcher:
             "Use of `utter_elements` is deprecated. Use `utter_message` instead.",
             DeprecationWarning,
         )
-        self.utter_message(*elements)
+        self.utter_message(*elements, **kwargs)
 
     def utter_button_message(
         self, text: Text, buttons: List[Dict[Text, Any]], **kwargs: Any
@@ -76,7 +76,7 @@ class CollectingDispatcher:
             DeprecationWarning,
         )
 
-        self.utter_message(text=text, buttons=buttons)
+        self.utter_message(text=text, buttons=buttons, **kwargs)
 
     def utter_attachment(self, attachment: Text, **kwargs: Any) -> None:
         """Send a message to the client with attachments."""
@@ -85,7 +85,7 @@ class CollectingDispatcher:
             DeprecationWarning,
         )
 
-        self.utter_message(attachment=attachment)
+        self.utter_message(attachment=attachment, **kwargs)
 
     # noinspection PyUnusedLocal
     def utter_button_template(
@@ -103,7 +103,7 @@ class CollectingDispatcher:
             DeprecationWarning,
         )
 
-        self.utter_message(template=template, buttons=buttons)
+        self.utter_message(template=template, buttons=buttons, **kwargs)
 
     # noinspection PyUnusedLocal
     def utter_template(
@@ -115,7 +115,7 @@ class CollectingDispatcher:
             DeprecationWarning,
         )
 
-        self.utter_message(template=template)
+        self.utter_message(template=template, **kwargs)
 
     def utter_custom_json(self, json_message: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends custom json to the output channel."""
@@ -124,7 +124,7 @@ class CollectingDispatcher:
             DeprecationWarning,
         )
 
-        self.utter_message(json_message=json_message)
+        self.utter_message(json_message=json_message, **kwargs)
 
     def utter_image_url(self, image: Text, **kwargs: Any) -> None:
         """Sends url of image attachment to the output channel."""
@@ -133,7 +133,7 @@ class CollectingDispatcher:
             DeprecationWarning,
         )
 
-        self.utter_message(image=image)
+        self.utter_message(image=image, **kwargs)
 
 
 class ActionExecutor:
