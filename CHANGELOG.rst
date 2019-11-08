@@ -16,6 +16,12 @@ Added
 
 Changed
 -------
+- ``CollectingDispatcher.utter_message`` can now do anything that other
+  dispatcher methods can do. 
+- The  ``CollectingDispatcher`` methods ``utter_custom_message``, 
+  ``utter_elements``, ``utter_button_message``,  ``utter_attachment``, 
+  ``utter_button_template``, ``utter_template``, ``utter_custom_json`` 
+  and ``utter_image_url`` were deprecated in favor of ``utter_message``.
 
 Fixed
 -----

@@ -23,49 +23,69 @@ class CollectingDispatcher:
 
         self.messages = []
 
+    def utter_message(
+        self,
+        image: Optional[Text] = None,
+        json_message: Dict[Text, Any] = None,
+        template: Optional[Text] = None,
+        attachment: Optional[Text] = None,
+        text: Optional[Text] = None,
+        buttons: Optional[List[Dict[Text, Any]]] = None,
+        *elements: Dict[Text, Any],
+        **kwargs: Any,
+    ) -> None:
+        """"Send a text to the output channel"""
+
+        message = {
+            "text": text,
+            "buttons": buttons,
+            "elements": elements,
+            "custom": json_message,
+            "template": template,
+            "image": image,
+            "attachment": attachment,
+        }
+        message.update(kwargs)
+
+        self.messages.append(message)
+
     # deprecated
     def utter_custom_message(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
         warnings.warn(
             "Use of `utter_custom_message` is deprecated. "
-            "Use `utter_elements` to send elements, or "
-            "`utter_custom_json` to send a custom json message. ",
+            "Use `utter_message` instead.",
             DeprecationWarning,
         )
         self.utter_elements(*elements, **kwargs)
 
     def utter_elements(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends a message with custom elements to the output channel."""
-
-        message = {"text": None, "elements": elements}
-        message.update(kwargs)
-
-        self.messages.append(message)
-
-    def utter_message(self, text: Text, **kwargs: Any) -> None:
-        """"Send a text to the output channel"""
-
-        message = {"text": text}
-        message.update(kwargs)
-
-        self.messages.append(message)
+        warnings.warn(
+            "Use of `utter_elements` is deprecated. Use `utter_message` instead.",
+            DeprecationWarning,
+        )
+        self.utter_message(*elements, **kwargs)
 
     def utter_button_message(
         self, text: Text, buttons: List[Dict[Text, Any]], **kwargs: Any
     ) -> None:
         """Sends a message with buttons to the output channel."""
+        warnings.warn(
+            "Use of `utter_button_message` is deprecated. "
+            "Use `utter_message` instead.",
+            DeprecationWarning,
+        )
 
-        message = {"text": text, "buttons": buttons}
-        message.update(kwargs)
-
-        self.messages.append(message)
+        self.utter_message(text=text, buttons=buttons, **kwargs)
 
     def utter_attachment(self, attachment: Text, **kwargs: Any) -> None:
         """Send a message to the client with attachments."""
+        warnings.warn(
+            "Use of `utter_attachment` is deprecated. Use `utter_message` instead.",
+            DeprecationWarning,
+        )
 
-        message = {"text": None, "attachment": attachment}
-        message.update(kwargs)
-
-        self.messages.append(message)
+        self.utter_message(attachment=attachment, **kwargs)
 
     # noinspection PyUnusedLocal
     def utter_button_template(
@@ -77,38 +97,43 @@ class CollectingDispatcher:
         **kwargs: Any,
     ) -> None:
         """Sends a message template with buttons to the output channel."""
+        warnings.warn(
+            "Use of `utter_button_template` is deprecated. "
+            "Use `utter_message` instead.",
+            DeprecationWarning,
+        )
 
-        message = {"template": template, "buttons": buttons}
-        message.update(kwargs)
-
-        self.messages.append(message)
+        self.utter_message(template=template, buttons=buttons, **kwargs)
 
     # noinspection PyUnusedLocal
     def utter_template(
         self, template: Text, tracker: Tracker, silent_fail: bool = False, **kwargs: Any
     ) -> None:
         """"Send a message to the client based on a template."""
+        warnings.warn(
+            "Use of `utter_template` is deprecated. Use `utter_message` instead.",
+            DeprecationWarning,
+        )
 
-        message = {"template": template}
-        message.update(kwargs)
-
-        self.messages.append(message)
+        self.utter_message(template=template, **kwargs)
 
     def utter_custom_json(self, json_message: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends custom json to the output channel."""
+        warnings.warn(
+            "Use of `utter_custom_json` is deprecated. Use `utter_message` instead.",
+            DeprecationWarning,
+        )
 
-        json_message = {"custom": json_message}
-        json_message.update(kwargs)
-
-        self.messages.append(json_message)
+        self.utter_message(json_message=json_message, **kwargs)
 
     def utter_image_url(self, image: Text, **kwargs: Any) -> None:
         """Sends url of image attachment to the output channel."""
+        warnings.warn(
+            "Use of `utter_image_url` is deprecated. Use `utter_message` instead.",
+            DeprecationWarning,
+        )
 
-        message = {"image": image}
-        message.update(kwargs)
-
-        self.messages.append(message)
+        self.utter_message(image=image, **kwargs)
 
 
 class ActionExecutor:
