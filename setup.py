@@ -19,8 +19,9 @@ install_requires = [
     "requests>=2.20",  # for common use in custom actions code
     "ConfigArgParse>=0.14",
     "coloredlogs~=10.0",
-    "flask~=1.0",
-    "flask_cors~=3.0",
+    "sanic~=19.9",
+    "sanic-cors==0.9.9.post1",
+    "sanic-jwt~=1.3",
     "gevent>=1.4",
 ]
 

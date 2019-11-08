@@ -1,8 +1,9 @@
 import argparse
 import logging
 
-from flask import Flask, jsonify, request
-from flask_cors import CORS, cross_origin
+from sanic import Sanic
+from sanic.response import json
+from sanic_cors import CORS, cross_origin
 from gevent.pywsgi import WSGIServer
 
 import rasa_sdk
@@ -40,7 +41,7 @@ def create_argument_parser():
 
 
 def endpoint_app(cors_origins=None, action_package_name=None):
-    app = Flask(__name__)
+    app = Sanic(__name__)
 
     if not cors_origins:
         cors_origins = []
@@ -51,14 +52,14 @@ def endpoint_app(cors_origins=None, action_package_name=None):
     CORS(app, resources={r"/*": {"origins": cors_origins}})
 
     @app.route("/health", methods=["GET", "OPTIONS"])
-    @cross_origin(origins=cors_origins)
-    def health():
+    @cross_origin(origins=cors_origins, app=app)
+    def health(request):
         """Ping endpoint to check if the server is running and well."""
-        return jsonify({"status": "ok"})
+        return json({"status": "ok"})
 
     @app.route("/webhook", methods=["POST", "OPTIONS"])
-    @cross_origin()
-    def webhook():
+    @cross_origin(app=app)
+    def webhook(request):
         """Webhook to retrieve action calls."""
         action_call = request.json
         check_version_compatibility(action_call.get("version"))
@@ -67,17 +68,17 @@ def endpoint_app(cors_origins=None, action_package_name=None):
         except ActionExecutionRejection as e:
             logger.error(str(e))
             result = {"error": str(e), "action_name": e.action_name}
-            response = jsonify(result)
+            response = json(result)
             response.status_code = 400
             return response
 
-        return jsonify(response)
+        return json(response)
 
     @app.route("/actions", methods=["GET", "OPTIONS"])
-    @cross_origin(origins=cors_origins)
-    def actions():
+    @cross_origin(origins=cors_origins, app=app)
+    def actions(request):
         """List all registered actions."""
-        return jsonify([{"name": k} for k in executor.actions.keys()])
+        return json([{"name": k} for k in executor.actions.keys()])
 
     return app
 
