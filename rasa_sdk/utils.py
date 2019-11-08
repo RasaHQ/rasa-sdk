@@ -9,6 +9,7 @@ from rasa_sdk.constants import DEFAULT_SANIC_WORKERS, ENV_SANIC_WORKERS
 
 logger = logging.getLogger(__name__)
 
+
 class Element(dict):
     __acceptable_keys = ["title", "item_url", "image_url", "subtitle", "buttons"]
 

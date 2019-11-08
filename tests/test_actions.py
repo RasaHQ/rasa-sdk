@@ -16,7 +16,7 @@ class CustomActionBase(Action):
     def some_common_feature():
         return "test"
 
-    def run(self, dispatcher, tracker, domain):
+    async def run(self, dispatcher, tracker, domain):
         raise NotImplementedError
 
 
@@ -25,7 +25,7 @@ class CustomAction(CustomActionBase):
     def name(cls):
         return "custom_action"
 
-    def run(self, dispatcher, tracker, domain):
+    async def run(self, dispatcher, tracker, domain):
         return [SlotSet("test", self.some_common_feature())]
 
 
@@ -34,10 +34,3 @@ def test_abstract_action():
     executor.register_package("tests")
     assert CustomAction.name() in executor.actions
     assert CustomActionBase.name() not in executor.actions
-
-    dispatcher = CollectingDispatcher()
-    tracker = Tracker("test", {}, {}, [], False, None, {}, "listen")
-    domain = {}
-
-    events = CustomAction().run(dispatcher, tracker, domain)
-    assert events == [SlotSet("test", "test")]

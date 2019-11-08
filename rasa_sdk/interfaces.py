@@ -196,3 +196,14 @@ class ActionExecutionRejection(Exception):
 
     def __str__(self) -> Text:
         return self.message
+
+
+class ActionNotFoundRejection(Exception):
+    def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
+        self.action_name = action_name
+        self.message = message or "No registered Action found for name '{}'.".format(
+            action_name
+        )
+
+    def __str__(self) -> Text:
+        return self.message

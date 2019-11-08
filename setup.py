@@ -16,13 +16,10 @@ with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
 tests_requires = ["pytest~=4.0", "pytest-cov~=2.0"]
 
 install_requires = [
-    "requests>=2.20",  # for common use in custom actions code
     "ConfigArgParse>=0.14",
     "coloredlogs~=10.0",
-    "sanic~=19.9",
+    "sanic~=19.6",
     "sanic-cors==0.9.9.post1",
-    "sanic-jwt~=1.3",
-    "gevent>=1.4",
 ]
 
 extras_requires = {"test": tests_requires}
