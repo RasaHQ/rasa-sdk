@@ -4,15 +4,14 @@ import types
 from typing import List, Text, Union, Optional, Any
 from ssl import SSLContext
 
-from sanic import Sanic
-from sanic.response import json, HTTPResponse
+from sanic import Sanic, response
 from sanic_cors import CORS
 
 from rasa_sdk import utils
 from rasa_sdk.cli.arguments import add_endpoint_arguments
 from rasa_sdk.constants import DEFAULT_SERVER_PORT
 from rasa_sdk.executor import ActionExecutor
-from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundRejection
+from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
 
 logger = logging.getLogger(__name__)
 
@@ -55,20 +54,6 @@ def create_argument_parser():
     return parser
 
 
-def create_ok_response(body: Any, status: int = 200) -> HTTPResponse:
-    response = json(body)
-    response.status = status
-    return response
-
-
-def create_error_response(
-    message: Text, action_name: Text, status: int = 500
-) -> HTTPResponse:
-    response = json({"error": message, "action_name": action_name})
-    response.status = status
-    return response
-
-
 def create_app(
     action_package_name: Union[Text, types.ModuleType],
     cors_origins: Union[Text, List[Text], None] = "*",
@@ -83,7 +68,8 @@ def create_app(
     @app.get("/health")
     async def health(request):
         """Ping endpoint to check if the server is running and well."""
-        return create_ok_response({"status": "ok"})
+        body = {"status": "ok"}
+        return response.json(body, status=200)
 
     @app.post("/webhook")
     async def webhook(request):
@@ -93,18 +79,21 @@ def create_app(
         try:
             result = await executor.run(action_call)
         except ActionExecutionRejection as e:
-            logger.error(str(e))
-            return create_error_response(str(e), e.action_name, 400)
-        except ActionNotFoundRejection as e:
-            logger.error(str(e))
-            return create_error_response(str(e), e.action_name, 404)
+            logger.error(e)
+            body = {"error": e.message, "action_name": e.action_name}
+            return response.json(body, status=400)
+        except ActionNotFoundException as e:
+            logger.error(e)
+            body = {"error": e.message, "action_name": e.action_name}
+            return response.json(body, status=404)
 
-        return create_ok_response(result)
+        return response.json(result, status=200)
 
     @app.get("/actions")
     async def actions(request):
         """List all registered actions."""
-        return create_ok_response([{"name": k} for k in executor.actions.keys()])
+        body = [{"name": k} for k in executor.actions.keys()]
+        return response.json(body, status=200)
 
     return app
 

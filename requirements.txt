@@ -1,5 +1,5 @@
 ## Setup py requirements
 ConfigArgParse==0.15.1
 coloredlogs==10.0
-sanic==19.6.3
-sanic-cors==0.9.9.post1
+sanic==19.9.0
+sanic-cors==0.9.9.post3

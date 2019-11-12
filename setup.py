@@ -18,8 +18,8 @@ tests_requires = ["pytest~=4.0", "pytest-cov~=2.0"]
 install_requires = [
     "ConfigArgParse>=0.14",
     "coloredlogs~=10.0",
-    "sanic~=19.6",
-    "sanic-cors==0.9.9.post1",
+    "sanic~=19.9",
+    "sanic-cors==0.9.9.post3",
 ]
 
 extras_requires = {"test": tests_requires}

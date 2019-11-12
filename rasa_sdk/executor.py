@@ -6,7 +6,7 @@ import warnings
 from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
 import typing
 import types
-from rasa_sdk.interfaces import Tracker, ActionNotFoundRejection
+from rasa_sdk.interfaces import Tracker, ActionNotFoundException
 
 from rasa_sdk import utils
 
@@ -237,7 +237,7 @@ class ActionExecutor:
             logger.debug("Received request to run '{}'".format(action_name))
             action = self.actions.get(action_name)
             if not action:
-                raise ActionNotFoundRejection(action_name)
+                raise ActionNotFoundException(action_name)
 
             tracker_json = action_call.get("tracker")
             domain = action_call.get("domain", {})

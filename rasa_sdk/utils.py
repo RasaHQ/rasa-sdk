@@ -87,7 +87,7 @@ def arguments_of(func) -> List[Text]:
 
 def number_of_sanic_workers() -> int:
     """Get the number of Sanic workers to use in `app.run()`.
-    If the environment variable constants.ENV_SANIC_WORKERS is set and is not equal to 1.
+    If the environment variable `constants.ENV_SANIC_WORKERS` is set and is not equal to 1.
     """
 
     def _log_and_get_default_number_of_workers():
@@ -109,7 +109,7 @@ def number_of_sanic_workers() -> int:
         return _log_and_get_default_number_of_workers()
 
     if env_value < 1:
-        logger.debug(
+        logger.warning(
             f"Cannot set number of Sanic workers to the desired value "
             f"({env_value}). The number of workers must be at least 1."
         )
