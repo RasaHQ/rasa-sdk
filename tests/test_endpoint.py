@@ -34,6 +34,15 @@ def test_server_webhook_custom_action_returns_200():
     assert response.status == 200
 
 
+def test_server_webhook_custom_async_action_returns_200():
+    data = {
+        "next_action": "custom_async_action",
+        "tracker": {"sender_id": "1", "conversation_id": "default"},
+    }
+    request, response = app.test_client.post("/webhook", data=json.dumps(data))
+    assert response.status == 200
+
+
 def test_arg_parser_actions_params_folder_style():
     parser = ep.create_argument_parser()
     args = ["--actions", "actions/act"]

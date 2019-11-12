@@ -244,7 +244,11 @@ class ActionExecutor:
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
 
-            events = await action(dispatcher, tracker, domain)
+            if inspect.iscoroutinefunction(action):
+                events = await action(dispatcher, tracker, domain)
+            else:
+                events = action(dispatcher, tracker, domain)
+
             if not events:
                 # make sure the action did not just return `None`...
                 events = []
