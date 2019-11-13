@@ -90,7 +90,7 @@ def create_app(
         return response.json(result, status=200)
 
     @app.get("/actions")
-    async def actions(request):
+    async def actions(_) -> HTTPResponse:
         """List all registered actions."""
         body = [{"name": k} for k in executor.actions.keys()]
         return response.json(body, status=200)
