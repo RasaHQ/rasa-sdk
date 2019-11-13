@@ -73,5 +73,5 @@ def test_abstract_action():
 
 
 def test_action_async_check():
-    assert is_coroutine_action(CustomAction.run) == False
+    assert not is_coroutine_action(CustomAction.run)
     assert is_coroutine_action(CustomAsyncAction.run)
