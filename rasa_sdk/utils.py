@@ -163,3 +163,7 @@ def check_version_compatibility(rasa_version: Optional[Text]) -> None:
             "both rasa and rasa_sdk."
             "".format(rasa_version, rasa_sdk.__version__)
         )
+
+
+def is_coroutine_action(action) -> bool:
+    return inspect.iscoroutinefunction(action)

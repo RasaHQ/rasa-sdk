@@ -9,11 +9,13 @@ app = ep.create_app("actions.act")
 def test_server_health_returns_200():
     request, response = app.test_client.get("/health")
     assert response.status == 200
+    assert response.json == {"status": "ok"}
 
 
 def test_server_list_actions_returns_200():
     request, response = app.test_client.get("/actions")
     assert response.status == 200
+    assert len(response.json) == 2
 
 
 def test_server_webhook_unknown_action_returns_404():

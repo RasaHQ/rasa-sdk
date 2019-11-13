@@ -77,6 +77,10 @@ def create_app(
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
         action_call = request.json
+        if action_call is None:
+            body = {"error": "Invalid body request"}
+            return response.json(body, status=400)
+
         utils.check_version_compatibility(action_call.get("version"))
         try:
             result = await executor.run(action_call)
