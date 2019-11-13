@@ -17,7 +17,7 @@ class CustomAsyncAction(Action):
         tracker: Tracker,
         domain: Dict[Text, Any],
     ) -> List[Dict[Text, Any]]:
-        return [SlotSet("test", "foo")]
+        return [SlotSet("test", "foo"), SlotSet("test2", "boo")]
 
 
 class CustomActionBase(Action):

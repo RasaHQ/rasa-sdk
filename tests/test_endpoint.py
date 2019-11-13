@@ -2,6 +2,7 @@ import pytest
 import json
 
 import rasa_sdk.endpoint as ep
+from rasa_sdk.events import SlotSet
 
 app = ep.create_app("actions.act")
 
@@ -33,6 +34,9 @@ def test_server_webhook_custom_action_returns_200():
         "tracker": {"sender_id": "1", "conversation_id": "default"},
     }
     request, response = app.test_client.post("/webhook", data=json.dumps(data))
+    events = response.json.get("events")
+
+    assert events == [SlotSet("test", "test")]
     assert response.status == 200
 
 
@@ -42,6 +46,9 @@ def test_server_webhook_custom_async_action_returns_200():
         "tracker": {"sender_id": "1", "conversation_id": "default"},
     }
     request, response = app.test_client.post("/webhook", data=json.dumps(data))
+    events = response.json.get("events")
+
+    assert events == [SlotSet("test", "foo"), SlotSet("test2", "boo")]
     assert response.status == 200
 
 
