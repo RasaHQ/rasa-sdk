@@ -19,7 +19,7 @@ install_requires = [
     "ConfigArgParse>=0.14",
     "coloredlogs~=10.0",
     "sanic~=19.9",
-    "sanic-cors==0.9.9.post3",
+    "sanic-cors==0.9.9.post1",
 ]
 
 extras_requires = {"test": tests_requires}

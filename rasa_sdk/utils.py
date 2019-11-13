@@ -1,8 +1,9 @@
 import inspect
 import logging
+import warnings
 import os
 
-from typing import Any, List, Text
+from typing import Any, List, Text, Optional
 
 import rasa_sdk
 from rasa_sdk.constants import DEFAULT_SANIC_WORKERS, ENV_SANIC_WORKERS
@@ -109,7 +110,7 @@ def number_of_sanic_workers() -> int:
         return _log_and_get_default_number_of_workers()
 
     if env_value < 1:
-        logger.warning(
+        warnings.warn(
             f"Cannot set number of Sanic workers to the desired value "
             f"({env_value}). The number of workers must be at least 1."
         )
@@ -119,7 +120,7 @@ def number_of_sanic_workers() -> int:
     return env_value
 
 
-def check_version_compatibility(rasa_version):
+def check_version_compatibility(rasa_version: Optional[Text]) -> None:
     """Check if the version of rasa and rasa_sdk are compatible.
 
     The version check relies on the version string being formatted as
@@ -134,7 +135,7 @@ def check_version_compatibility(rasa_version):
     """
     # Check for versions of Rasa that are too old to report their version number
     if rasa_version is None:
-        logger.warning(
+        warnings.warn(
             "You are using an old version of rasa which might "
             "not be compatible with this version of rasa_sdk "
             "({}).\n"
@@ -150,7 +151,7 @@ def check_version_compatibility(rasa_version):
     sdk = rasa_sdk.__version__.split(".")[:-1]
 
     if rasa != sdk:
-        logger.warning(
+        warnings.warn(
             "Your versions of rasa and "
             "rasa_sdk might not be compatible. You "
             "are currently running rasa version {} "
