@@ -66,7 +66,7 @@ def create_app(
     executor.register_package(action_package_name)
 
     @app.get("/health")
-    async def health(request):
+    async def health(_) -> HTTPResponse:
         """Ping endpoint to check if the server is running and well."""
         body = {"status": "ok"}
         return response.json(body, status=200)
