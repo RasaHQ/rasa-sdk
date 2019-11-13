@@ -5,6 +5,8 @@ from typing import List, Text, Union, Optional, Any
 from ssl import SSLContext
 
 from sanic import Sanic, response
+from sanic.response import HTTPResponse
+from sanic.request import Request
 from sanic_cors import CORS
 
 from rasa_sdk import utils
