@@ -72,7 +72,7 @@ def create_app(
         return response.json(body, status=200)
 
     @app.post("/webhook")
-    async def webhook(request):
+    async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
         action_call = request.json
         utils.check_version_compatibility(action_call.get("version"))
