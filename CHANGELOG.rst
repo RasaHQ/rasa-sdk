@@ -13,15 +13,26 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 Added
 -----
+- add unit tests of endpoints, actions and utils
+- add support of multiple sanic workers
+- add support of async run method inside the action class
+- add typing for methods across the package
+- add handler of unknown action
+- add handler of empty body requests sent to webhook endpoint
 
 Changed
 -------
+- replace ``flask`` server framework by ``sanic``
+- replace ``flask_cors`` by ``sanic-cors``
 
 Fixed
 -----
 
 Removed
 -------
+- remove ``flask`` framework and ``flask_cors``
+- remove ``requests`` package
+- remove ``gevent`` package
 
 [1.4.0] - 2019-10-19
 ^^^^^^^^^^^^^^^^^^^^
