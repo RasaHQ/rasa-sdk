@@ -20,6 +20,10 @@ COPY . .
 
 RUN pip install -e . --no-cache-dir
 
+RUN groupadd -g 1000 nonroot && \
+  useradd -r -u 1000 -g nonroot nonroot
+USER nonroot
+
 VOLUME ["/app/actions"]
 
 EXPOSE 5055
