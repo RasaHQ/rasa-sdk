@@ -8,7 +8,6 @@ import typing
 import types
 
 from rasa_sdk.interfaces import Tracker, ActionNotFoundException
-from rasa_sdk.utils import is_coroutine_action
 
 from rasa_sdk import utils
 
@@ -246,7 +245,7 @@ class ActionExecutor:
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
 
-            if is_coroutine_action(action):
+            if utils.is_coroutine_action(action):
                 events = await action(dispatcher, tracker, domain)
             else:
                 events = action(dispatcher, tracker, domain)
