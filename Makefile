@@ -32,7 +32,7 @@ lint:
 	black --check rasa_sdk tests
 
 test: clean
-	py.test tests --cov rasa_sdk
+	py.test tests --cov rasa_sdk -W ignore
 
 check-readme:
 	# if this runs through we can be sure the readme is properly shown on pypi

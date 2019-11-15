@@ -6,7 +6,8 @@ import warnings
 from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
 import typing
 import types
-from rasa_sdk.interfaces import Tracker
+
+from rasa_sdk.interfaces import Tracker, ActionNotFoundException
 
 from rasa_sdk import utils
 
@@ -254,7 +255,7 @@ class ActionExecutor:
                 # we won't append this to validated events -> will be ignored
         return validated
 
-    def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
+    async def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
         from rasa_sdk.interfaces import Tracker
 
         action_name = action_call.get("next_action")
@@ -262,16 +263,18 @@ class ActionExecutor:
             logger.debug("Received request to run '{}'".format(action_name))
             action = self.actions.get(action_name)
             if not action:
-                raise Exception(
-                    "No registered Action found for name '{}'.".format(action_name)
-                )
+                raise ActionNotFoundException(action_name)
 
             tracker_json = action_call.get("tracker")
             domain = action_call.get("domain", {})
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
 
-            events = action(dispatcher, tracker, domain)
+            if utils.is_coroutine_action(action):
+                events = await action(dispatcher, tracker, domain)
+            else:
+                events = action(dispatcher, tracker, domain)
+
             if not events:
                 # make sure the action did not just return `None`...
                 events = []

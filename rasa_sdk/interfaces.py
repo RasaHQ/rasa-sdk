@@ -156,7 +156,7 @@ class Action:
 
         raise NotImplementedError("An action must implement a name")
 
-    def run(
+    async def run(
         self, dispatcher, tracker: Tracker, domain: Dict[Text, Any]
     ) -> List[Dict[Text, Any]]:
         """Execute the side effects of this action.
@@ -191,6 +191,17 @@ class ActionExecutionRejection(Exception):
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         self.action_name = action_name
         self.message = message or "Custom action '{}' rejected execution of".format(
+            action_name
+        )
+
+    def __str__(self) -> Text:
+        return self.message
+
+
+class ActionNotFoundException(Exception):
+    def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
+        self.action_name = action_name
+        self.message = message or "No registered Action found for name '{}'.".format(
             action_name
         )
 

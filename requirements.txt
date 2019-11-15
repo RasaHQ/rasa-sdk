@@ -1,7 +1,5 @@
 ## Setup py requirements
-requests==2.22.0
 ConfigArgParse==0.15.1
 coloredlogs==10.0
-flask==1.1.1
-flask_cors==3.0.8
-gevent==1.4.0
+sanic==19.9.0
+sanic-cors==0.9.9.post1

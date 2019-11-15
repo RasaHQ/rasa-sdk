@@ -13,9 +13,15 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 Added
 -----
+- Add support for multiple sanic workers (configurable with the ``ACTION_SERVER_SANIC_WORKERS` environment variable)
+- Add support for async ``run`` methods in the ``Action`` class
+- Return status code ``404` in case requested action was not found
+- Return status code ``400`` in case an empty request body was sent to the ``/webhook`` endpoint
 
 Changed
 -------
+- Replace ``flask`` server framework with ``sanic``
+- Replace ``flask_cors`` with ``sanic-cors``
 - ``CollectingDispatcher.utter_message`` can now do anything that other
   dispatcher methods can do. 
 - The  ``CollectingDispatcher`` methods ``utter_custom_message``, 
@@ -28,6 +34,8 @@ Fixed
 
 Removed
 -------
+- Remove ``requests`` dependency
+- Remove ``gevent`` dependency
 
 [1.4.0] - 2019-10-19
 ^^^^^^^^^^^^^^^^^^^^
