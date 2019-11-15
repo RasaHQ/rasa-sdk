@@ -13,10 +13,12 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 Added
 -----
-- Add support for multiple sanic workers (configurable with the ``ACTION_SERVER_SANIC_WORKERS` environment variable)
+- Add support for multiple sanic workers (configurable with the
+  ``ACTION_SERVER_SANIC_WORKERS`` environment variable)
 - Add support for async ``run`` methods in the ``Action`` class
-- Return status code ``404` in case requested action was not found
-- Return status code ``400`` in case an empty request body was sent to the ``/webhook`` endpoint
+- Return status code ``404`` in case requested action was not found
+- Return status code ``400`` in case an empty request body was sent to the ``/webhook``
+  endpoint
 
 Changed
 -------
