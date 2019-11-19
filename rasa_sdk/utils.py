@@ -19,7 +19,7 @@ class Element(dict):
             key: value for key, value in kwargs.items() if key in self.__acceptable_keys
         }
 
-        super(Element, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class Button(dict):

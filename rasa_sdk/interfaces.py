@@ -86,7 +86,7 @@ class Tracker:
         if key in self.slots:
             return self.slots[key]
         else:
-            logger.info("Tried to access non existent slot '{}'".format(key))
+            logger.info(f"Tried to access non existent slot '{key}'")
             return None
 
     def get_latest_entity_values(self, entity_type: Text) -> Iterator[Text]:

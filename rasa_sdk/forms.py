@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 import typing
 from typing import Dict, Text, Any, List, Union, Optional, Tuple
@@ -261,13 +259,13 @@ class FormAction(Action):
             else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
-        logger.debug("Trying to extract requested slot '{}' ...".format(slot_to_fill))
+        logger.debug(f"Trying to extract requested slot '{slot_to_fill}' ...")
 
         # get mapping for requested slot
         requested_slot_mappings = self.get_mappings_for_slot(slot_to_fill)
 
         for requested_slot_mapping in requested_slot_mappings:
-            logger.debug("Got mapping '{}'".format(requested_slot_mapping))
+            logger.debug(f"Got mapping '{requested_slot_mapping}'")
 
             if self.intent_is_desired(requested_slot_mapping, tracker):
                 mapping_type = requested_slot_mapping["type"]
@@ -294,7 +292,7 @@ class FormAction(Action):
                     )
                     return {slot_to_fill: value}
 
-        logger.debug("Failed to extract requested slot '{}'".format(slot_to_fill))
+        logger.debug(f"Failed to extract requested slot '{slot_to_fill}'")
         return {}
 
     def validate_slots(
@@ -311,14 +309,12 @@ class FormAction(Action):
         """
 
         for slot, value in list(slot_dict.items()):
-            validate_func = getattr(
-                self, "validate_{}".format(slot), lambda *x: {slot: value}
-            )
+            validate_func = getattr(self, f"validate_{slot}", lambda *x: {slot: value})
             validation_output = validate_func(value, dispatcher, tracker, domain)
             if not isinstance(validation_output, dict):
                 logger.warning(
                     "Returning values in helper validation methods is deprecated. "
-                    + "Your `validate_{}()` method should return ".format(slot)
+                    + f"Your `validate_{slot}()` method should return "
                     + "a dict of {'slot_name': value} instead."
                 )
                 validation_output = {slot: validation_output}
@@ -354,11 +350,11 @@ class FormAction(Action):
                 # it will allow other policies to predict another action
                 raise ActionExecutionRejection(
                     self.name(),
-                    "Failed to extract slot {0} "
-                    "with action {1}"
+                    "Failed to extract slot {} "
+                    "with action {}"
                     "".format(slot_to_fill, self.name()),
                 )
-        logger.debug("Validating extracted slots: {}".format(slot_values))
+        logger.debug(f"Validating extracted slots: {slot_values}")
         return self.validate_slots(slot_values, dispatcher, tracker, domain)
 
     # noinspection PyUnusedLocal
@@ -373,10 +369,8 @@ class FormAction(Action):
 
         for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
-                logger.debug("Request next slot '{}'".format(slot))
-                dispatcher.utter_message(
-                    template="utter_ask_{}".format(slot), **tracker.slots
-                )
+                logger.debug(f"Request next slot '{slot}'")
+                dispatcher.utter_message(template=f"utter_ask_{slot}", **tracker.slots)
                 return [SlotSet(REQUESTED_SLOT, slot)]
 
         # no more required slots to fill
@@ -454,7 +448,7 @@ class FormAction(Action):
         """
 
         if tracker.active_form.get("name") is not None:
-            logger.debug("The form '{}' is active".format(tracker.active_form))
+            logger.debug(f"The form '{tracker.active_form}' is active")
         else:
             logger.debug("There is no active form")
 
@@ -471,9 +465,7 @@ class FormAction(Action):
                     prefilled_slots[slot_name] = tracker.get_slot(slot_name)
 
             if prefilled_slots:
-                logger.debug(
-                    "Validating pre-filled required slots: {}".format(prefilled_slots)
-                )
+                logger.debug(f"Validating pre-filled required slots: {prefilled_slots}")
                 events.extend(
                     self.validate_slots(prefilled_slots, dispatcher, tracker, domain)
                 )
@@ -497,7 +489,7 @@ class FormAction(Action):
         if tracker.latest_action_name == "action_listen" and tracker.active_form.get(
             "validate", True
         ):
-            logger.debug("Validating user input '{}'".format(tracker.latest_message))
+            logger.debug(f"Validating user input '{tracker.latest_message}'")
             return self.validate(dispatcher, tracker, domain)
         else:
             logger.debug("Skipping validation")

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from rasa_sdk import Action
 from rasa_sdk.events import SlotSet
 from rasa_sdk.knowledge_base.utils import (
@@ -85,7 +84,7 @@ class ActionQueryKnowledgeBase(Action):
         """
         if objects:
             dispatcher.utter_message(
-                "Found the following objects of type '{}':".format(object_type)
+                f"Found the following objects of type '{object_type}':"
             )
 
             repr_function = self.knowledge_base.get_representation_function_of_object(
@@ -95,7 +94,7 @@ class ActionQueryKnowledgeBase(Action):
                 dispatcher.utter_message("{}: {}".format(i, repr_function(obj)))
         else:
             dispatcher.utter_message(
-                "I could not find any objects of type '{}'.".format(object_type)
+                f"I could not find any objects of type '{object_type}'."
             )
 
     def run(
