@@ -30,6 +30,7 @@ Changed
   ``utter_elements``, ``utter_button_message``,  ``utter_attachment``, 
   ``utter_button_template``, ``utter_template``, ``utter_custom_json`` 
   and ``utter_image_url`` were deprecated in favor of ``utter_message``.
+- Updated format strings to f-strings where appropriate.
 
 Fixed
 -----
