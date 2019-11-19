@@ -249,8 +249,7 @@ class ActionExecutor:
             else:
                 logger.error(
                     f"Your action's '{action_name}' run method returned an invalid "
-                    "event. Event will be ignored. "
-                    "Event: '{e}'."
+                    f"event. Event will be ignored. Event: '{e}'."
                 )
                 # we won't append this to validated events -> will be ignored
         return validated

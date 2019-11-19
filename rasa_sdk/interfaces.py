@@ -200,7 +200,7 @@ class ActionNotFoundException(Exception):
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         self.action_name = action_name
         self.message = (
-            message or f"No registered Action found for name '{action_name}'."
+            message or f"No registered action found for name '{action_name}'."
         )
 
     def __str__(self) -> Text:
