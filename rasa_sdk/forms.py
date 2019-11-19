@@ -374,11 +374,8 @@ class FormAction(Action):
         for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
                 logger.debug("Request next slot '{}'".format(slot))
-                dispatcher.utter_template(
-                    "utter_ask_{}".format(slot),
-                    tracker,
-                    silent_fail=False,
-                    **tracker.slots,
+                dispatcher.utter_message(
+                    template="utter_ask_{}".format(slot), **tracker.slots
                 )
                 return [SlotSet(REQUESTED_SLOT, slot)]
 
