@@ -8,7 +8,7 @@ from collections import defaultdict
 logger = logging.getLogger(__name__)
 
 
-class KnowledgeBase(object):
+class KnowledgeBase:
     def __init__(self) -> None:
 
         self.ordinal_mention_mapping = {
@@ -115,7 +115,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         self.data_file = data_file
         self.data = {}
         self.load()
-        super(InMemoryKnowledgeBase, self).__init__()
+        super().__init__()
 
     def load(self) -> None:
         """
@@ -124,15 +124,14 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         try:
             with open(self.data_file, encoding="utf-8") as f:
                 content = f.read()
-        except IOError:
-            raise ValueError("File '{}' does not exist.".format(self.data_file))
+        except OSError:
+            raise ValueError(f"File '{self.data_file}' does not exist.")
 
         try:
             self.data = json.loads(content)
         except ValueError as e:
             raise ValueError(
-                "Failed to read json from '{}'. Error: "
-                "{}".format(os.path.abspath(self.data_file), e)
+                f"Failed to read json from '{os.path.abspath(self.data_file)}'. Error: {e}"
             )
 
     def set_representation_function_of_object(

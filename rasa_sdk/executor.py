@@ -146,7 +146,7 @@ class ActionExecutor:
 
         if inspect.isclass(action):
             if action.__module__.startswith("rasa."):
-                logger.warning("Skipping built in Action {}.".format(action))
+                logger.warning(f"Skipping built in Action {action}.")
                 return
             else:
                 action = action()
@@ -160,15 +160,15 @@ class ActionExecutor:
             )
 
     def register_function(self, name: Text, f: Callable) -> None:
-        logger.info("Registered function for '{}'.".format(name))
+        logger.info(f"Registered function for '{name}'.")
         valid_keys = utils.arguments_of(f)
         if len(valid_keys) < 3:
             raise Exception(
                 "You can only register functions that take "
                 "3 parameters as arguments. The three parameters "
                 "your function will receive are: dispatcher, "
-                "tracker, domain. Your function accepts only {} "
-                "parameters.".format(len(valid_keys))
+                f"tracker, domain. Your function accepts only {len(valid_keys)} "
+                "parameters."
             )
         self.actions[name] = f
 
@@ -200,7 +200,7 @@ class ActionExecutor:
         try:
             self._import_submodules(package)
         except ImportError:
-            logger.exception("Failed to register package '{}'.".format(package))
+            logger.exception(f"Failed to register package '{package}'.")
 
         actions = utils.all_subclasses(Action)
 
@@ -229,10 +229,10 @@ class ActionExecutor:
             if isinstance(e, dict):
                 if not e.get("event"):
                     logger.error(
-                        "Your action '{}' returned an action dict "
+                        f"Your action '{action_name}' returned an action dict "
                         "without the `event` property. Please use "
                         "the helpers in `rasa_sdk.events`! Event will"
-                        "be ignored! Event: {}".format(action_name, e)
+                        f"be ignored! Event: {e}"
                     )
                 else:
                     validated.append(e)
@@ -248,9 +248,8 @@ class ActionExecutor:
                 validated.append(e.as_dict())
             else:
                 logger.error(
-                    "Your action's '{}' run method returned an invalid "
-                    "event. Event will be ignored. "
-                    "Event: '{}'.".format(action_name, e)
+                    f"Your action's '{action_name}' run method returned an invalid "
+                    f"event. Event will be ignored. Event: '{e}'."
                 )
                 # we won't append this to validated events -> will be ignored
         return validated
@@ -260,7 +259,7 @@ class ActionExecutor:
 
         action_name = action_call.get("next_action")
         if action_name:
-            logger.debug("Received request to run '{}'".format(action_name))
+            logger.debug(f"Received request to run '{action_name}'")
             action = self.actions.get(action_name)
             if not action:
                 raise ActionNotFoundException(action_name)
@@ -280,7 +279,7 @@ class ActionExecutor:
                 events = []
 
             validated_events = self.validate_events(events, action_name)
-            logger.debug("Finished running '{}'".format(action_name))
+            logger.debug(f"Finished running '{action_name}'")
             return self._create_api_response(validated_events, dispatcher.messages)
         else:
             logger.warning("Received an action call without an action.")

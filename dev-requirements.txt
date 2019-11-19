@@ -6,6 +6,6 @@ pytest==4.5.0
 pytest-cov==2.7.1
 
 # lint/format/types
-black==19.3b0; python_version>='3.6'
+black==19.10b0
 flake8==3.7.8
 pytype==2019.7.11

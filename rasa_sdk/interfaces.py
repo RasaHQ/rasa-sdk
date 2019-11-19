@@ -86,7 +86,7 @@ class Tracker:
         if key in self.slots:
             return self.slots[key]
         else:
-            logger.info("Tried to access non existent slot '{}'".format(key))
+            logger.info(f"Tried to access non existent slot '{key}'")
             return None
 
     def get_latest_entity_values(self, entity_type: Text) -> Iterator[Text]:
@@ -181,7 +181,7 @@ class Action:
         raise NotImplementedError("An action must implement its run method")
 
     def __str__(self) -> Text:
-        return "Action('{}')".format(self.name())
+        return f"Action('{self.name()}')"
 
 
 class ActionExecutionRejection(Exception):
@@ -190,9 +190,7 @@ class ActionExecutionRejection(Exception):
 
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         self.action_name = action_name
-        self.message = message or "Custom action '{}' rejected execution of".format(
-            action_name
-        )
+        self.message = message or f"Custom action '{action_name}' rejected execution."
 
     def __str__(self) -> Text:
         return self.message
@@ -201,8 +199,8 @@ class ActionExecutionRejection(Exception):
 class ActionNotFoundException(Exception):
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         self.action_name = action_name
-        self.message = message or "No registered Action found for name '{}'.".format(
-            action_name
+        self.message = (
+            message or f"No registered action found for name '{action_name}'."
         )
 
     def __str__(self) -> Text:

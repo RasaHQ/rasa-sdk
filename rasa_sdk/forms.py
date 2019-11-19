@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 import typing
 from typing import Dict, Text, Any, List, Union, Optional, Tuple
@@ -239,11 +237,7 @@ class FormAction(Action):
                         value = None
 
                     if value is not None:
-                        logger.debug(
-                            "Extracted '{}' "
-                            "for extra slot '{}'"
-                            "".format(value, slot)
-                        )
+                        logger.debug(f"Extracted '{value}' for extra slot '{slot}'.")
                         slot_values[slot] = value
                         # this slot is done, check  next
                         break
@@ -261,13 +255,13 @@ class FormAction(Action):
             else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
-        logger.debug("Trying to extract requested slot '{}' ...".format(slot_to_fill))
+        logger.debug(f"Trying to extract requested slot '{slot_to_fill}' ...")
 
         # get mapping for requested slot
         requested_slot_mappings = self.get_mappings_for_slot(slot_to_fill)
 
         for requested_slot_mapping in requested_slot_mappings:
-            logger.debug("Got mapping '{}'".format(requested_slot_mapping))
+            logger.debug(f"Got mapping '{requested_slot_mapping}'")
 
             if self.intent_is_desired(requested_slot_mapping, tracker):
                 mapping_type = requested_slot_mapping["type"]
@@ -288,13 +282,11 @@ class FormAction(Action):
 
                 if value is not None:
                     logger.debug(
-                        "Successfully extracted '{}' "
-                        "for requested slot '{}'"
-                        "".format(value, slot_to_fill)
+                        f"Successfully extracted '{value}' for requested slot '{slot_to_fill}'"
                     )
                     return {slot_to_fill: value}
 
-        logger.debug("Failed to extract requested slot '{}'".format(slot_to_fill))
+        logger.debug(f"Failed to extract requested slot '{slot_to_fill}'")
         return {}
 
     def validate_slots(
@@ -311,14 +303,12 @@ class FormAction(Action):
         """
 
         for slot, value in list(slot_dict.items()):
-            validate_func = getattr(
-                self, "validate_{}".format(slot), lambda *x: {slot: value}
-            )
+            validate_func = getattr(self, f"validate_{slot}", lambda *x: {slot: value})
             validation_output = validate_func(value, dispatcher, tracker, domain)
             if not isinstance(validation_output, dict):
                 logger.warning(
                     "Returning values in helper validation methods is deprecated. "
-                    + "Your `validate_{}()` method should return ".format(slot)
+                    + f"Your `validate_{slot}()` method should return "
                     + "a dict of {'slot_name': value} instead."
                 )
                 validation_output = {slot: validation_output}
@@ -354,11 +344,9 @@ class FormAction(Action):
                 # it will allow other policies to predict another action
                 raise ActionExecutionRejection(
                     self.name(),
-                    "Failed to extract slot {0} "
-                    "with action {1}"
-                    "".format(slot_to_fill, self.name()),
+                    f"Failed to extract slot {slot_to_fill} with action {self.name()}",
                 )
-        logger.debug("Validating extracted slots: {}".format(slot_values))
+        logger.debug(f"Validating extracted slots: {slot_values}")
         return self.validate_slots(slot_values, dispatcher, tracker, domain)
 
     # noinspection PyUnusedLocal
@@ -373,10 +361,8 @@ class FormAction(Action):
 
         for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
-                logger.debug("Request next slot '{}'".format(slot))
-                dispatcher.utter_message(
-                    template="utter_ask_{}".format(slot), **tracker.slots
-                )
+                logger.debug(f"Request next slot '{slot}'")
+                dispatcher.utter_message(template=f"utter_ask_{slot}", **tracker.slots)
                 return [SlotSet(REQUESTED_SLOT, slot)]
 
         # no more required slots to fill
@@ -386,7 +372,7 @@ class FormAction(Action):
         """Return `Form` event with `None` as name to deactivate the form
             and reset the requested slot"""
 
-        logger.debug("Deactivating the form '{}'".format(self.name()))
+        logger.debug(f"Deactivating the form '{self.name()}'")
         return [Form(None), SlotSet(REQUESTED_SLOT, None)]
 
     def submit(
@@ -421,8 +407,7 @@ class FormAction(Action):
         """Check provided intent and not_intent"""
         if intent and not_intent:
             raise ValueError(
-                "Providing  both intent '{}' and not_intent '{}' "
-                "is not supported".format(intent, not_intent)
+                f"Providing  both intent '{intent}' and not_intent '{not_intent}' is not supported."
             )
 
         return self._to_list(intent), self._to_list(not_intent)
@@ -432,12 +417,10 @@ class FormAction(Action):
 
         req_slots = self.required_slots(tracker)
         slot_values = "\n".join(
-            ["\t{}: {}".format(slot, tracker.get_slot(slot)) for slot in req_slots]
+            [f"\t{slot}: {tracker.get_slot(slot)}" for slot in req_slots]
         )
         logger.debug(
-            "No slots left to request, all required slots are filled:\n{}".format(
-                slot_values
-            )
+            f"No slots left to request, all required slots are filled:\n{slot_values}"
         )
 
     def _activate_if_required(
@@ -454,14 +437,14 @@ class FormAction(Action):
         """
 
         if tracker.active_form.get("name") is not None:
-            logger.debug("The form '{}' is active".format(tracker.active_form))
+            logger.debug(f"The form '{tracker.active_form}' is active")
         else:
             logger.debug("There is no active form")
 
         if tracker.active_form.get("name") == self.name():
             return []
         else:
-            logger.debug("Activated the form '{}'".format(self.name()))
+            logger.debug(f"Activated the form '{self.name()}'")
             events = [Form(self.name())]
 
             # collect values of required slots filled before activation
@@ -471,9 +454,7 @@ class FormAction(Action):
                     prefilled_slots[slot_name] = tracker.get_slot(slot_name)
 
             if prefilled_slots:
-                logger.debug(
-                    "Validating pre-filled required slots: {}".format(prefilled_slots)
-                )
+                logger.debug(f"Validating pre-filled required slots: {prefilled_slots}")
                 events.extend(
                     self.validate_slots(prefilled_slots, dispatcher, tracker, domain)
                 )
@@ -497,7 +478,7 @@ class FormAction(Action):
         if tracker.latest_action_name == "action_listen" and tracker.active_form.get(
             "validate", True
         ):
-            logger.debug("Validating user input '{}'".format(tracker.latest_message))
+            logger.debug(f"Validating user input '{tracker.latest_message}'")
             return self.validate(dispatcher, tracker, domain)
         else:
             logger.debug("Skipping validation")
@@ -547,7 +528,7 @@ class FormAction(Action):
             else:
                 # there is nothing more to request, so we can submit
                 self._log_form_slots(temp_tracker)
-                logger.debug("Submitting the form '{}'".format(self.name()))
+                logger.debug(f"Submitting the form '{self.name()}'")
                 events.extend(self.submit(dispatcher, temp_tracker, domain))
                 # deactivate the form after submission
                 events.extend(self.deactivate())
@@ -555,4 +536,4 @@ class FormAction(Action):
         return events
 
     def __str__(self) -> Text:
-        return "FormAction('{}')".format(self.name())
+        return f"FormAction('{self.name()}')"
