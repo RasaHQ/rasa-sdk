@@ -25,7 +25,7 @@ Changed
 
 Fixed
 -----
-- ``rasa-sdk`` containers will now not run as root
+- ``rasa-sdk`` containers will now not run as ``root``
 
 Removed
 -------
