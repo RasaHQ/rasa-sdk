@@ -128,7 +128,7 @@ class ActionQueryKnowledgeBase(Action):
         if not object_type:
             # object type always needs to be set as this is needed to query the
             # knowledge base
-            dispatcher.utter_template("utter_ask_rephrase", tracker)
+            dispatcher.utter_message(template="utter_ask_rephrase")
             return []
 
         if not attribute or new_request:
@@ -136,7 +136,7 @@ class ActionQueryKnowledgeBase(Action):
         elif attribute:
             return self._query_attribute(dispatcher, tracker)
 
-        dispatcher.utter_template("utter_ask_rephrase", tracker)
+        dispatcher.utter_message(template="utter_ask_rephrase")
         return []
 
     def _query_objects(
@@ -207,13 +207,13 @@ class ActionQueryKnowledgeBase(Action):
         )
 
         if not object_name or not attribute:
-            dispatcher.utter_template("utter_ask_rephrase", tracker)
+            dispatcher.utter_message(template="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 
         object_of_interest = self.knowledge_base.get_object(object_type, object_name)
 
         if not object_of_interest or attribute not in object_of_interest:
-            dispatcher.utter_template("utter_ask_rephrase", tracker)
+            dispatcher.utter_message(template="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 
         value = object_of_interest[attribute]
