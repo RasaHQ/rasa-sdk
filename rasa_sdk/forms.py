@@ -237,11 +237,7 @@ class FormAction(Action):
                         value = None
 
                     if value is not None:
-                        logger.debug(
-                            "Extracted '{}' "
-                            "for extra slot '{}'"
-                            "".format(value, slot)
-                        )
+                        logger.debug(f"Extracted '{value}' for extra slot '{slot}'.")
                         slot_values[slot] = value
                         # this slot is done, check  next
                         break
@@ -286,9 +282,7 @@ class FormAction(Action):
 
                 if value is not None:
                     logger.debug(
-                        "Successfully extracted '{}' "
-                        "for requested slot '{}'"
-                        "".format(value, slot_to_fill)
+                        f"Successfully extracted '{value}' for requested slot '{slot_to_fill}'"
                     )
                     return {slot_to_fill: value}
 
@@ -350,9 +344,7 @@ class FormAction(Action):
                 # it will allow other policies to predict another action
                 raise ActionExecutionRejection(
                     self.name(),
-                    "Failed to extract slot {} "
-                    "with action {}"
-                    "".format(slot_to_fill, self.name()),
+                    f"Failed to extract slot {slot_to_fill} with action {self.name()}",
                 )
         logger.debug(f"Validating extracted slots: {slot_values}")
         return self.validate_slots(slot_values, dispatcher, tracker, domain)
@@ -380,7 +372,7 @@ class FormAction(Action):
         """Return `Form` event with `None` as name to deactivate the form
             and reset the requested slot"""
 
-        logger.debug("Deactivating the form '{}'".format(self.name()))
+        logger.debug(f"Deactivating the form '{self.name()}'")
         return [Form(None), SlotSet(REQUESTED_SLOT, None)]
 
     def submit(
@@ -415,8 +407,7 @@ class FormAction(Action):
         """Check provided intent and not_intent"""
         if intent and not_intent:
             raise ValueError(
-                "Providing  both intent '{}' and not_intent '{}' "
-                "is not supported".format(intent, not_intent)
+                f"Providing  both intent '{intent}' and not_intent '{not_intent}' is not supported."
             )
 
         return self._to_list(intent), self._to_list(not_intent)
@@ -426,12 +417,10 @@ class FormAction(Action):
 
         req_slots = self.required_slots(tracker)
         slot_values = "\n".join(
-            ["\t{}: {}".format(slot, tracker.get_slot(slot)) for slot in req_slots]
+            [f"\t{slot}: {tracker.get_slot(slot)}" for slot in req_slots]
         )
         logger.debug(
-            "No slots left to request, all required slots are filled:\n{}".format(
-                slot_values
-            )
+            f"No slots left to request, all required slots are filled:\n{slot_values}"
         )
 
     def _activate_if_required(
@@ -455,7 +444,7 @@ class FormAction(Action):
         if tracker.active_form.get("name") == self.name():
             return []
         else:
-            logger.debug("Activated the form '{}'".format(self.name()))
+            logger.debug(f"Activated the form '{self.name()}'")
             events = [Form(self.name())]
 
             # collect values of required slots filled before activation
@@ -539,7 +528,7 @@ class FormAction(Action):
             else:
                 # there is nothing more to request, so we can submit
                 self._log_form_slots(temp_tracker)
-                logger.debug("Submitting the form '{}'".format(self.name()))
+                logger.debug(f"Submitting the form '{self.name()}'")
                 events.extend(self.submit(dispatcher, temp_tracker, domain))
                 # deactivate the form after submission
                 events.extend(self.deactivate())
@@ -547,4 +536,4 @@ class FormAction(Action):
         return events
 
     def __str__(self) -> Text:
-        return "FormAction('{}')".format(self.name())
+        return f"FormAction('{self.name()}')"

@@ -138,12 +138,11 @@ def check_version_compatibility(rasa_version: Optional[Text]) -> None:
         warnings.warn(
             "You are using an old version of rasa which might "
             "not be compatible with this version of rasa_sdk "
-            "({}).\n"
+            f"({rasa_sdk.__version__}).\n"
             "To ensure compatibility use the same version "
             "for both, modulo the last number, i.e. using version "
             "A.B.x the numbers A and B should be identical for "
             "both rasa and rasa_sdk."
-            "".format(rasa_sdk.__version__)
         )
         return
 
@@ -154,14 +153,13 @@ def check_version_compatibility(rasa_version: Optional[Text]) -> None:
         warnings.warn(
             "Your versions of rasa and "
             "rasa_sdk might not be compatible. You "
-            "are currently running rasa version {} "
-            "and rasa_sdk version {}.\n"
+            f"are currently running rasa version {rasa_version} "
+            f"and rasa_sdk version {rasa_sdk.__version__}.\n"
             "To ensure compatibility use the same "
             "version for both, modulo the last number, "
             "i.e. using version A.B.x the numbers A and "
             "B should be identical for "
             "both rasa and rasa_sdk."
-            "".format(rasa_version, rasa_sdk.__version__)
         )
 
 

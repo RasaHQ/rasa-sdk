@@ -57,15 +57,11 @@ class ActionQueryKnowledgeBase(Action):
         """
         if attribute_value:
             dispatcher.utter_message(
-                "'{}' has the value '{}' for attribute '{}'.".format(
-                    object_name, attribute_value, attribute_name
-                )
+                f"'{object_name}' has the value '{attribute_value}' for attribute '{attribute_name}'."
             )
         else:
             dispatcher.utter_message(
-                "Did not find a valid value for attribute '{}' for object '{}'.".format(
-                    attribute_name, object_name
-                )
+                f"Did not find a valid value for attribute '{attribute_name}' for object '{object_name}'."
             )
 
     def utter_objects(
@@ -91,7 +87,7 @@ class ActionQueryKnowledgeBase(Action):
                 object_type
             )
             for i, obj in enumerate(objects, 1):
-                dispatcher.utter_message("{}: {}".format(i, repr_function(obj)))
+                dispatcher.utter_message(f"{i}: {repr_function(obj)}")
         else:
             dispatcher.utter_message(
                 f"I could not find any objects of type '{object_type}'."

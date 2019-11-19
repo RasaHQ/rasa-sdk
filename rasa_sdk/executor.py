@@ -167,8 +167,8 @@ class ActionExecutor:
                 "You can only register functions that take "
                 "3 parameters as arguments. The three parameters "
                 "your function will receive are: dispatcher, "
-                "tracker, domain. Your function accepts only {} "
-                "parameters.".format(len(valid_keys))
+                f"tracker, domain. Your function accepts only {len(valid_keys)} "
+                "parameters."
             )
         self.actions[name] = f
 
@@ -229,10 +229,10 @@ class ActionExecutor:
             if isinstance(e, dict):
                 if not e.get("event"):
                     logger.error(
-                        "Your action '{}' returned an action dict "
+                        f"Your action '{action_name}' returned an action dict "
                         "without the `event` property. Please use "
                         "the helpers in `rasa_sdk.events`! Event will"
-                        "be ignored! Event: {}".format(action_name, e)
+                        f"be ignored! Event: {e}"
                     )
                 else:
                     validated.append(e)
@@ -248,9 +248,9 @@ class ActionExecutor:
                 validated.append(e.as_dict())
             else:
                 logger.error(
-                    "Your action's '{}' run method returned an invalid "
+                    f"Your action's '{action_name}' run method returned an invalid "
                     "event. Event will be ignored. "
-                    "Event: '{}'.".format(action_name, e)
+                    "Event: '{e}'."
                 )
                 # we won't append this to validated events -> will be ignored
         return validated

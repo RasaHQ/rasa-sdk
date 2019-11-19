@@ -131,8 +131,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
             self.data = json.loads(content)
         except ValueError as e:
             raise ValueError(
-                "Failed to read json from '{}'. Error: "
-                "{}".format(os.path.abspath(self.data_file), e)
+                f"Failed to read json from '{os.path.abspath(self.data_file)}'. Error: {e}"
             )
 
     def set_representation_function_of_object(
