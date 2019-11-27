@@ -26,22 +26,22 @@ class CollectingDispatcher:
 
     def utter_message(
         self,
+        text: Optional[Text] = None,
         image: Optional[Text] = None,
-        json_message: Dict[Text, Any] = None,
+        json_message: Optional[Dict[Text, Any]] = None,
         template: Optional[Text] = None,
         attachment: Optional[Text] = None,
-        text: Optional[Text] = None,
         buttons: Optional[List[Dict[Text, Any]]] = None,
-        *elements: Dict[Text, Any],
+        elements: Optional[List[Dict[Text, Any]]] = None,
         **kwargs: Any,
     ) -> None:
         """"Send a text to the output channel"""
 
         message = {
             "text": text,
-            "buttons": buttons,
-            "elements": elements,
-            "custom": json_message,
+            "buttons": buttons or [],
+            "elements": elements or [],
+            "custom": json_message or {},
             "template": template,
             "image": image,
             "attachment": attachment,
@@ -57,7 +57,7 @@ class CollectingDispatcher:
             "Use `utter_message(elements=<list of elements>)` instead.",
             FutureWarning,
         )
-        self.utter_elements(*elements, **kwargs)
+        self.utter_message(elements=list(elements), **kwargs)
 
     def utter_elements(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends a message with custom elements to the output channel."""
@@ -66,7 +66,7 @@ class CollectingDispatcher:
             "Use `utter_message(elements=<list of elements>)` instead.",
             FutureWarning,
         )
-        self.utter_message(*elements, **kwargs)
+        self.utter_message(elements=list(elements), **kwargs)
 
     def utter_button_message(
         self, text: Text, buttons: List[Dict[Text, Any]], **kwargs: Any
