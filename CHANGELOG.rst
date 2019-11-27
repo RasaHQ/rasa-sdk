@@ -15,6 +15,10 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 [Unreleased 1.5.1]
 ^^^^^^^^^^^^^^^^^^
 
+Added
+-----
+- Added ``LOG_LEVEL_LIBRARIES`` environment variable to set log level of libraries, such as ``sanic``
+
 Changed
 -------
 - ``DeprecationWarning``s are now ``FutureWarning``s, as they should be seen
