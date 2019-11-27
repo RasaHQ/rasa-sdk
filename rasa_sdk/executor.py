@@ -115,7 +115,7 @@ class CollectingDispatcher:
         """"Send a message to the client based on a template."""
         warnings.warn(
             "Use of `utter_template` is deprecated. "
-            "Use `utter_message(template=<template_name> , tracker)` instead.",
+            "Use `utter_message(template=<template_name>)` instead.",
             FutureWarning,
         )
 
