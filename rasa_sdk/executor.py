@@ -39,7 +39,7 @@ class CollectingDispatcher:
 
         message = {
             "text": text,
-            "buttons": buttons,
+            "buttons": buttons or [],
             "elements": elements,
             "custom": json_message,
             "template": template,
