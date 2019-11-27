@@ -30,5 +30,3 @@ def test_deprecated_utter_elements():
         "image": None,
         "attachment": None,
     }
-
-
