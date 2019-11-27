@@ -9,6 +9,7 @@ def main_from_args(args):
     logging.getLogger("matplotlib").setLevel(logging.WARN)
 
     utils.configure_colored_logging(args.loglevel)
+    utils.update_sanic_log_level()
 
     run(
         args.actions,
