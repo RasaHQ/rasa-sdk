@@ -26,11 +26,11 @@ class CollectingDispatcher:
 
     def utter_message(
         self,
+        text: Optional[Text] = None,
         image: Optional[Text] = None,
         json_message: Dict[Text, Any] = None,
         template: Optional[Text] = None,
         attachment: Optional[Text] = None,
-        text: Optional[Text] = None,
         buttons: Optional[List[Dict[Text, Any]]] = None,
         *elements: Dict[Text, Any],
         **kwargs: Any,
