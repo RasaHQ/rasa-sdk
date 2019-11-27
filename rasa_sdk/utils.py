@@ -6,7 +6,12 @@ import os
 from typing import Any, List, Text, Optional
 
 import rasa_sdk
-from rasa_sdk.constants import DEFAULT_SANIC_WORKERS, ENV_SANIC_WORKERS
+from rasa_sdk.constants import (
+    DEFAULT_SANIC_WORKERS,
+    ENV_SANIC_WORKERS,
+    DEFAULT_LOG_LEVEL_LIBRARIES,
+    ENV_LOG_LEVEL_LIBRARIES,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -136,13 +141,13 @@ def check_version_compatibility(rasa_version: Optional[Text]) -> None:
     # Check for versions of Rasa that are too old to report their version number
     if rasa_version is None:
         warnings.warn(
-            "You are using an old version of rasa which might "
-            "not be compatible with this version of rasa_sdk "
+            f"You are using an old version of rasa which might "
+            f"not be compatible with this version of rasa_sdk "
             f"({rasa_sdk.__version__}).\n"
-            "To ensure compatibility use the same version "
-            "for both, modulo the last number, i.e. using version "
-            "A.B.x the numbers A and B should be identical for "
-            "both rasa and rasa_sdk."
+            f"To ensure compatibility use the same version "
+            f"for both, modulo the last number, i.e. using version "
+            f"A.B.x the numbers A and B should be identical for "
+            f"both rasa and rasa_sdk."
         )
         return
 
@@ -151,17 +156,36 @@ def check_version_compatibility(rasa_version: Optional[Text]) -> None:
 
     if rasa != sdk:
         warnings.warn(
-            "Your versions of rasa and "
-            "rasa_sdk might not be compatible. You "
+            f"Your versions of rasa and "
+            f"rasa_sdk might not be compatible. You "
             f"are currently running rasa version {rasa_version} "
             f"and rasa_sdk version {rasa_sdk.__version__}.\n"
-            "To ensure compatibility use the same "
-            "version for both, modulo the last number, "
-            "i.e. using version A.B.x the numbers A and "
-            "B should be identical for "
-            "both rasa and rasa_sdk."
+            f"To ensure compatibility use the same "
+            f"version for both, modulo the last number, "
+            f"i.e. using version A.B.x the numbers A and "
+            f"B should be identical for "
+            f"both rasa and rasa_sdk."
         )
 
 
 def is_coroutine_action(action) -> bool:
     return inspect.iscoroutinefunction(action)
+
+
+def update_sanic_log_level() -> None:
+    """Set the log level of sanic loggers.
+
+    Use the environment variable 'LOG_LEVEL_LIBRARIES', or default to
+    `DEFAULT_LOG_LEVEL_LIBRARIES` if undefined.
+    """
+    from sanic.log import logger, error_logger, access_logger
+
+    log_level = os.environ.get(ENV_LOG_LEVEL_LIBRARIES, DEFAULT_LOG_LEVEL_LIBRARIES)
+
+    logger.setLevel(log_level)
+    error_logger.setLevel(log_level)
+    access_logger.setLevel(log_level)
+
+    logger.propagate = False
+    error_logger.propagate = False
+    access_logger.propagate = False
