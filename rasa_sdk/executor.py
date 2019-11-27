@@ -32,7 +32,7 @@ class CollectingDispatcher:
         template: Optional[Text] = None,
         attachment: Optional[Text] = None,
         buttons: Optional[List[Dict[Text, Any]]] = None,
-        *elements: Dict[Text, Any],
+        elements: Optional[typing.Tuple[Dict[Text, Any]]] = None,
         **kwargs: Any,
     ) -> None:
         """"Send a text to the output channel"""
@@ -40,7 +40,7 @@ class CollectingDispatcher:
         message = {
             "text": text,
             "buttons": buttons or [],
-            "elements": elements,
+            "elements": elements or [],
             "custom": json_message,
             "template": template,
             "image": image,
@@ -57,7 +57,7 @@ class CollectingDispatcher:
             "Use `utter_message` instead.",
             DeprecationWarning,
         )
-        self.utter_elements(*elements, **kwargs)
+        self.utter_message(elements=elements, **kwargs)
 
     def utter_elements(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends a message with custom elements to the output channel."""
@@ -65,7 +65,7 @@ class CollectingDispatcher:
             "Use of `utter_elements` is deprecated. Use `utter_message` instead.",
             DeprecationWarning,
         )
-        self.utter_message(*elements, **kwargs)
+        self.utter_message(elements=elements, **kwargs)
 
     def utter_button_message(
         self, text: Text, buttons: List[Dict[Text, Any]], **kwargs: Any

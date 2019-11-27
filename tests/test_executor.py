@@ -1,6 +1,6 @@
 import pytest
 
-from rasa_sdk.executor import ActionExecutor
+from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
 
 
 @pytest.mark.parametrize(
@@ -14,3 +14,18 @@ def test_event_validation_accepts_dicts_with_event():
     assert ActionExecutor.validate_events([{"event": "user"}], "myaction") == [
         {"event": "user"}
     ]
+
+
+def test_deprecated_utter_elements():
+    dispatcher = CollectingDispatcher()
+    dispatcher.utter_elements(1, 2, 3)
+
+    assert dispatcher.messages[0] == {
+        "text": None,
+        "buttons": [],
+        "elements": (1, 2, 3),
+        "custom": None,
+        "template": None,
+        "image": None,
+        "attachment": None,
+    }
