@@ -41,7 +41,7 @@ class CollectingDispatcher:
             "text": text,
             "buttons": buttons or [],
             "elements": elements or [],
-            "custom": json_message,
+            "custom": json_message or {},
             "template": template,
             "image": image,
             "attachment": attachment,

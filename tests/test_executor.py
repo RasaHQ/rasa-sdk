@@ -25,7 +25,7 @@ def test_deprecated_utter_elements():
         "text": None,
         "buttons": [],
         "elements": [1, 2, 3],
-        "custom": None,
+        "custom": {},
         "template": None,
         "image": None,
         "attachment": None,
