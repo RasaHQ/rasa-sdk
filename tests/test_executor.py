@@ -18,7 +18,8 @@ def test_event_validation_accepts_dicts_with_event():
 
 def test_deprecated_utter_elements():
     dispatcher = CollectingDispatcher()
-    dispatcher.utter_elements(1, 2, 3)
+    with pytest.warns(FutureWarning):
+        dispatcher.utter_elements(1, 2, 3)
 
     assert dispatcher.messages[0] == {
         "text": None,
