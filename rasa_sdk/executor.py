@@ -55,7 +55,7 @@ class CollectingDispatcher:
         warnings.warn(
             "Use of `utter_custom_message` is deprecated. "
             "Use `utter_message` instead.",
-            DeprecationWarning,
+            FutureWarning,
         )
         self.utter_elements(*elements, **kwargs)
 
@@ -63,7 +63,7 @@ class CollectingDispatcher:
         """Sends a message with custom elements to the output channel."""
         warnings.warn(
             "Use of `utter_elements` is deprecated. Use `utter_message` instead.",
-            DeprecationWarning,
+            FutureWarning,
         )
         self.utter_message(*elements, **kwargs)
 
@@ -74,7 +74,7 @@ class CollectingDispatcher:
         warnings.warn(
             "Use of `utter_button_message` is deprecated. "
             "Use `utter_message` instead.",
-            DeprecationWarning,
+            FutureWarning,
         )
 
         self.utter_message(text=text, buttons=buttons, **kwargs)
@@ -83,7 +83,7 @@ class CollectingDispatcher:
         """Send a message to the client with attachments."""
         warnings.warn(
             "Use of `utter_attachment` is deprecated. Use `utter_message` instead.",
-            DeprecationWarning,
+            FutureWarning,
         )
 
         self.utter_message(attachment=attachment, **kwargs)
@@ -101,7 +101,7 @@ class CollectingDispatcher:
         warnings.warn(
             "Use of `utter_button_template` is deprecated. "
             "Use `utter_message` instead.",
-            DeprecationWarning,
+            FutureWarning,
         )
 
         self.utter_message(template=template, buttons=buttons, **kwargs)
@@ -113,7 +113,7 @@ class CollectingDispatcher:
         """"Send a message to the client based on a template."""
         warnings.warn(
             "Use of `utter_template` is deprecated. Use `utter_message` instead.",
-            DeprecationWarning,
+            FutureWarning,
         )
 
         self.utter_message(template=template, **kwargs)
@@ -122,7 +122,7 @@ class CollectingDispatcher:
         """Sends custom json to the output channel."""
         warnings.warn(
             "Use of `utter_custom_json` is deprecated. Use `utter_message` instead.",
-            DeprecationWarning,
+            FutureWarning,
         )
 
         self.utter_message(json_message=json_message, **kwargs)
@@ -131,7 +131,7 @@ class CollectingDispatcher:
         """Sends url of image attachment to the output channel."""
         warnings.warn(
             "Use of `utter_image_url` is deprecated. Use `utter_message` instead.",
-            DeprecationWarning,
+            FutureWarning,
         )
 
         self.utter_message(image=image, **kwargs)
