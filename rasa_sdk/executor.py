@@ -54,18 +54,19 @@ class CollectingDispatcher:
     def utter_custom_message(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
         warnings.warn(
             "Use of `utter_custom_message` is deprecated. "
-            "Use `utter_message` instead.",
+            "Use `utter_message(elements= )` instead.",
             FutureWarning,
         )
-        self.utter_elements(*elements, **kwargs)
+        self.utter_message(elements, **kwargs)
 
     def utter_elements(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends a message with custom elements to the output channel."""
         warnings.warn(
-            "Use of `utter_elements` is deprecated. Use `utter_message` instead.",
+            "Use of `utter_elements` is deprecated. "
+            "Use `utter_message(elements=)` instead.",
             FutureWarning,
         )
-        self.utter_message(*elements, **kwargs)
+        self.utter_message(elements, **kwargs)
 
     def utter_button_message(
         self, text: Text, buttons: List[Dict[Text, Any]], **kwargs: Any
@@ -73,7 +74,7 @@ class CollectingDispatcher:
         """Sends a message with buttons to the output channel."""
         warnings.warn(
             "Use of `utter_button_message` is deprecated. "
-            "Use `utter_message` instead.",
+            "Use `utter_message(text= , buttons= )` instead.",
             FutureWarning,
         )
 
@@ -82,7 +83,8 @@ class CollectingDispatcher:
     def utter_attachment(self, attachment: Text, **kwargs: Any) -> None:
         """Send a message to the client with attachments."""
         warnings.warn(
-            "Use of `utter_attachment` is deprecated. Use `utter_message` instead.",
+            "Use of `utter_attachment` is deprecated. "
+            "Use `utter_message(attachment= )` instead.",
             FutureWarning,
         )
 
@@ -100,7 +102,7 @@ class CollectingDispatcher:
         """Sends a message template with buttons to the output channel."""
         warnings.warn(
             "Use of `utter_button_template` is deprecated. "
-            "Use `utter_message` instead.",
+            "Use `utter_message(template=, buttons= )` instead.",
             FutureWarning,
         )
 
@@ -112,7 +114,8 @@ class CollectingDispatcher:
     ) -> None:
         """"Send a message to the client based on a template."""
         warnings.warn(
-            "Use of `utter_template` is deprecated. Use `utter_message` instead.",
+            "Use of `utter_template` is deprecated. "
+            "Use `utter_message(template= , tracker)` instead.",
             FutureWarning,
         )
 
@@ -121,7 +124,8 @@ class CollectingDispatcher:
     def utter_custom_json(self, json_message: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends custom json to the output channel."""
         warnings.warn(
-            "Use of `utter_custom_json` is deprecated. Use `utter_message` instead.",
+            "Use of `utter_custom_json` is deprecated. "
+            "Use `utter_message(json_message= )` instead.",
             FutureWarning,
         )
 
@@ -130,7 +134,8 @@ class CollectingDispatcher:
     def utter_image_url(self, image: Text, **kwargs: Any) -> None:
         """Sends url of image attachment to the output channel."""
         warnings.warn(
-            "Use of `utter_image_url` is deprecated. Use `utter_message` instead.",
+            "Use of `utter_image_url` is deprecated. "
+            "Use `utter_message(image= )` instead.",
             FutureWarning,
         )
 
