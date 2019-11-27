@@ -189,5 +189,3 @@ def update_sanic_log_level() -> None:
     logger.propagate = False
     error_logger.propagate = False
     access_logger.propagate = False
-
-
