@@ -19,7 +19,12 @@ Changed
 -------
 - ``DeprecationWarning``s are now ``FutureWarning``s, as they should be seen
   by end users
+- ``text`` is now the first positional argument in ``utter_message`` instead of
+  ``image``
 
+Fixed
+-----
+- The deprecated ``utter_elements`` now correctly uses ``utter_message``
 
 [1.5.0] - 2019-11-22
 ^^^^^^^^^^^^^^^^^^^^
