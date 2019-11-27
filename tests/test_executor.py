@@ -23,9 +23,11 @@ def test_deprecated_utter_elements():
     assert dispatcher.messages[0] == {
         "text": None,
         "buttons": [],
-        "elements": (1, 2, 3),
+        "elements": [1, 2, 3],
         "custom": None,
         "template": None,
         "image": None,
         "attachment": None,
     }
+
+
