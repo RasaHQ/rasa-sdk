@@ -57,7 +57,7 @@ class CollectingDispatcher:
             "Use `utter_message(elements= )` instead.",
             FutureWarning,
         )
-        self.utter_message(elements=list(elements), **kwargs)
+        self.utter_elements(*elements, **kwargs)
 
     def utter_elements(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends a message with custom elements to the output channel."""
@@ -66,7 +66,7 @@ class CollectingDispatcher:
             "Use `utter_message(elements=)` instead.",
             FutureWarning,
         )
-        self.utter_message(elements=list(elements), **kwargs)
+        self.utter_message(*elements, **kwargs)
 
     def utter_button_message(
         self, text: Text, buttons: List[Dict[Text, Any]], **kwargs: Any

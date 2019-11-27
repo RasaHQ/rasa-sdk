@@ -12,6 +12,14 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. note:: This version is not yet released and is under active development.
 
+[Unreleased 1.5.1]
+^^^^^^^^^^^^^^^^^^
+
+Changed
+-------
+- ``DeprecationWarning``s are now ``FutureWarning``s, as they should be seen
+  by end users
+
 
 [1.5.0] - 2019-11-22
 ^^^^^^^^^^^^^^^^^^^^
