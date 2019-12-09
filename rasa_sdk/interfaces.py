@@ -57,7 +57,10 @@ class Tracker:
         self.latest_action_name = latest_action_name
 
     def current_state(self) -> Dict[Text, Any]:
-        """Return the current tracker state as an object."""
+        """Return a dict containing information about the current
+        state of the tracker, the available keys are "sender_id", "slots",
+        "latest_message", "latest_event_time", "paused", "events", 
+        "latest_input_channel", "active_form", "latest_action_name"."""
 
         if len(self.events) > 0:
             latest_event_time = self.events[-1].get("timestamp")
@@ -108,7 +111,7 @@ class Tracker:
         return None
 
     def is_paused(self) -> bool:
-        """State whether the tracker is currently paused."""
+        """Returns ``true`` if the tracker is paused, else ``false``."""
         return self._paused
 
     def idx_after_latest_restart(self) -> int:
