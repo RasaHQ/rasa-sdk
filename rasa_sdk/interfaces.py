@@ -59,7 +59,7 @@ class Tracker:
     def current_state(self) -> Dict[Text, Any]:
         """Return a dict containing information about the current
         state of the tracker, the available keys are "sender_id", "slots",
-        "latest_message", "latest_event_time", "paused", "events", 
+        "latest_message", "latest_event_time", "paused", "events",
         "latest_input_channel", "active_form", "latest_action_name"."""
 
         if len(self.events) > 0:
