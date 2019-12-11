@@ -17,7 +17,6 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 Fixed
 -----
-
 - Pinned ``multidict`` dependency to 4.6.1 to prevent sanic from breaking,
   see https://github.com/huge-success/sanic/issues/1729
 
