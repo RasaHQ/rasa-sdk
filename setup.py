@@ -20,6 +20,8 @@ install_requires = [
     "coloredlogs~=10.0",
     "sanic~=19.9",
     "sanic-cors==0.9.9.post1",
+    # needed because of https://github.com/huge-success/sanic/issues/1729
+    "multidict==4.6.1",
 ]
 
 extras_requires = {"test": tests_requires}
