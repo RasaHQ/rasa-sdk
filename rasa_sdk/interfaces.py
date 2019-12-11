@@ -5,6 +5,8 @@ from typing import Any, Dict, Iterator, List, Optional, Text
 
 logger = logging.getLogger(__name__)
 
+ACTION_LISTEN_NAME = "action_listen"
+
 
 class Tracker:
     """Maintains the state of a conversation."""
@@ -146,6 +148,54 @@ class Tracker:
             self.active_form,
             self.latest_action_name,
         )
+
+    def last_executed_action_has(self, name, skip=0):
+        last = self.get_last_event_for(
+            "action", exclude=[ACTION_LISTEN_NAME], skip=skip
+        )
+        return last is not None and last["name"] == name
+
+    def get_last_event_for(self, event_type, exclude=[], skip=0):
+        def filter_function(e: Dict):
+            has_instance = e["event"] == event_type
+            excluded = e["event"] == "action" and e["name"] in exclude
+
+            return has_instance and not excluded
+
+        filtered = filter(filter_function, reversed(self.applied_events()))
+        for _ in range(skip):
+            next(filtered, None)
+
+        return next(filtered, None)
+
+    def applied_events(self) -> List[Dict]:
+        """Returns all actions that should be applied - w/o reverted events."""
+
+        def undo_till_previous(event_type, done_events):
+            """Removes events from `done_events` until the first
+                occurrence `event_type` is found which is also removed."""
+            # list gets modified - hence we need to copy events!
+            for e in reversed(done_events[:]):
+                del done_events[-1]
+                if e["event"] == event_type:
+                    break
+
+        applied_events = []
+        for event in self.events:
+            if event.get("name", None) == "restart":
+                applied_events = []
+            elif event.get("name", None) == "undo":
+                undo_till_previous("action", applied_events)
+            elif event.get("name", None) == "rewind":
+                # Seeing a user uttered event automatically implies there was
+                # a listen event right before it, so we'll first rewind the
+                # user utterance, then get the action right before it (also removes
+                # the `action_listen` action right before it).
+                undo_till_previous("user", applied_events)
+                undo_till_previous("action", applied_events)
+            else:
+                applied_events.append(event)
+        return applied_events
 
 
 class Action:
