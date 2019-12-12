@@ -178,7 +178,7 @@ class Action:
             domain: the bot's domain
         Returns:
             A dictionary of ``rasa_sdk.events.Event`` instances that is
-                returned through the endpoint
+            returned through the endpoint
         """
 
         raise NotImplementedError("An action must implement its run method")

@@ -35,7 +35,8 @@ class CollectingDispatcher:
         elements: Optional[List[Dict[Text, Any]]] = None,
         **kwargs: Any,
     ) -> None:
-        """"Send a text to the output channel"""
+        """Send a message to the output channel. The message may be an image,
+        buttons, a template, text, have an attachment, or be a custom json."""
 
         message = {
             "text": text,
