@@ -52,6 +52,11 @@ def Restarted(timestamp: Optional[float] = None) -> EventType:
 
 
 # noinspection PyPep8Naming
+def SessionStarted(timestamp: Optional[float] = None) -> EventType:
+    return {"event": "session_started", "timestamp": timestamp}
+
+
+# noinspection PyPep8Naming
 def UserUtteranceReverted(timestamp: Optional[float] = None) -> EventType:
     return {"event": "rewind", "timestamp": timestamp}
 
