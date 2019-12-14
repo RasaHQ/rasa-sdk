@@ -12,6 +12,12 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. note:: This version is not yet released and is under active development.
 
+Added
+-----
+- Added ``SessionStarted`` event for compatibility with conversation sessions in Rasa
+  1.6.0.
+
+
 [1.5.2] - 2019-12-11
 ^^^^^^^^^^^^^^^^^^^^
 
