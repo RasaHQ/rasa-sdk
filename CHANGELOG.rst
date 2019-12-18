@@ -7,10 +7,13 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 .. _master-release:
 
 
-[Unreleased 1.6.0a1] - `master`_
+[Unreleased 1.6.1a1] - `master`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
+
+[1.6.0] - 2019-12-18
+^^^^^^^^^^^^^^^^^^^^
 
 Added
 -----
