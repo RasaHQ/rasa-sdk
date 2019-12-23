@@ -310,7 +310,9 @@ class FormAction(Action):
         for slot, value in list(slot_dict.items()):
             validate_func = getattr(self, f"validate_{slot}", lambda *x: {slot: value})
             if utils.is_coroutine_action(validate_func):
-                validation_output = await validate_func(value, dispatcher, tracker, domain)
+                validation_output = await validate_func(
+                    value, dispatcher, tracker, domain
+                )
             else:
                 validation_output = validate_func(value, dispatcher, tracker, domain)
             if not isinstance(validation_output, dict):
@@ -468,7 +470,9 @@ class FormAction(Action):
             if prefilled_slots:
                 logger.debug(f"Validating pre-filled required slots: {prefilled_slots}")
                 events.extend(
-                    await self.validate_slots(prefilled_slots, dispatcher, tracker, domain)
+                    await self.validate_slots(
+                        prefilled_slots, dispatcher, tracker, domain
+                    )
                 )
             else:
                 logger.debug("No pre-filled required slots to validate.")
@@ -535,7 +539,9 @@ class FormAction(Action):
                 if e["event"] == "slot":
                     temp_tracker.slots[e["name"]] = e["value"]
 
-            next_slot_events = await self.request_next_slot(dispatcher, temp_tracker, domain)
+            next_slot_events = await self.request_next_slot(
+                dispatcher, temp_tracker, domain
+            )
 
             if next_slot_events is not None:
                 # request next slot

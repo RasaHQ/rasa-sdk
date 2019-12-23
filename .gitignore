@@ -110,3 +110,6 @@ examples/moodbot/models/
 *~
 
 *.DS_Store
+
+.idea
+venv
