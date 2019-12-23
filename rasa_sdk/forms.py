@@ -426,7 +426,7 @@ class FormAction(Action):
 
         return self._to_list(intent), self._to_list(not_intent)
 
-    def _log_form_slots(self, tracker: "Tracker") -> None:
+    async def _log_form_slots(self, tracker: "Tracker") -> None:
         """Logs the values of all required slots before submitting the form."""
 
         if utils.is_coroutine_action(self.required_slots):
@@ -555,7 +555,7 @@ class FormAction(Action):
                 events.extend(next_slot_events)
             else:
                 # there is nothing more to request, so we can submit
-                self._log_form_slots(temp_tracker)
+                await self._log_form_slots(temp_tracker)
                 logger.debug(f"Submitting the form '{self.name()}'")
                 if utils.is_coroutine_action(self.submit):
                     events.extend(await self.submit(dispatcher, temp_tracker, domain))
