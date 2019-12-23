@@ -1,4 +1,5 @@
 import pytest
+import asyncio
 
 from rasa_sdk import Tracker
 from rasa_sdk.events import SlotSet
@@ -123,7 +124,9 @@ def test_action_run(data_file, slots, expected_slots):
     dispatcher = CollectingDispatcher()
     tracker = Tracker("default", slots, {}, [], False, None, {}, "action_listen")
 
-    actual_slots = action.run(dispatcher, tracker, {})
+    loop = asyncio.new_event_loop()
+    actual_slots = loop.run_until_complete(action.run(dispatcher, tracker, {}))
+    loop.close()
 
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)

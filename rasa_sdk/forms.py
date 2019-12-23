@@ -491,7 +491,10 @@ class FormAction(Action):
             "validate", True
         ):
             logger.debug(f"Validating user input '{tracker.latest_message}'")
-            return await self.validate(dispatcher, tracker, domain)
+            if utils.is_coroutine_action(self.validate):
+                return await self.validate(dispatcher, tracker, domain)
+            else:
+                return self.validate(dispatcher, tracker, domain)
         else:
             logger.debug("Skipping validation")
             return []
