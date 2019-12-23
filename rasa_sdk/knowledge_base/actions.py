@@ -12,6 +12,7 @@ from rasa_sdk.knowledge_base.utils import (
     get_attribute_slots,
 )
 from typing import Text, Callable, Dict, List, Any, Optional
+from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.interfaces import Tracker
 from rasa_sdk.knowledge_base.storage import KnowledgeBase
@@ -93,7 +94,7 @@ class ActionQueryKnowledgeBase(Action):
                 text=f"I could not find any objects of type '{object_type}'."
             )
 
-    def run(
+    async def run(
         self,
         dispatcher: CollectingDispatcher,
         tracker: Tracker,
@@ -127,14 +128,14 @@ class ActionQueryKnowledgeBase(Action):
             return []
 
         if not attribute or new_request:
-            return self._query_objects(dispatcher, tracker)
+            return await self._query_objects(dispatcher, tracker)
         elif attribute:
-            return self._query_attribute(dispatcher, tracker)
+            return await self._query_attribute(dispatcher, tracker)
 
         dispatcher.utter_message(template="utter_ask_rephrase")
         return []
 
-    def _query_objects(
+    async def _query_objects(
         self, dispatcher: CollectingDispatcher, tracker: Tracker
     ) -> List[Dict]:
         """
@@ -149,20 +150,32 @@ class ActionQueryKnowledgeBase(Action):
         Returns: list of slots
         """
         object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
-        object_attributes = self.knowledge_base.get_attributes_of_object(object_type)
+        if utils.is_coroutine_action(self.knowledge_base.get_attributes_of_object):
+            object_attributes = await self.knowledge_base.get_attributes_of_object(object_type)
+        else:
+            object_attributes = self.knowledge_base.get_attributes_of_object(object_type)
 
         # get all set attribute slots of the object type to be able to filter the
         # list of objects
         attributes = get_attribute_slots(tracker, object_attributes)
         # query the knowledge base
-        objects = self.knowledge_base.get_objects(object_type, attributes)
+        if utils.is_coroutine_action(self.knowledge_base.get_objects):
+            objects = await self.knowledge_base.get_objects(object_type, attributes)
+        else:
+            objects = self.knowledge_base.get_objects(object_type, attributes)
 
-        self.utter_objects(dispatcher, object_type, objects)
+        if utils.is_coroutine_action(self.utter_objects):
+            await self.utter_objects(dispatcher, object_type, objects)
+        else:
+            self.utter_objects(dispatcher, object_type, objects)
 
         if not objects:
             return reset_attribute_slots(tracker, object_attributes)
 
-        key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
+        if utils.is_coroutine_action(self.knowledge_base.get_key_attribute_of_object):
+            key_attribute = await self.knowledge_base.get_key_attribute_of_object(object_type)
+        else:
+            key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
 
@@ -179,7 +192,7 @@ class ActionQueryKnowledgeBase(Action):
 
         return slots + reset_attribute_slots(tracker, object_attributes)
 
-    def _query_attribute(
+    async def _query_attribute(
         self, dispatcher: CollectingDispatcher, tracker: Tracker
     ) -> List[Dict]:
         """
@@ -205,21 +218,35 @@ class ActionQueryKnowledgeBase(Action):
             dispatcher.utter_message(template="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 
-        object_of_interest = self.knowledge_base.get_object(object_type, object_name)
+        if utils.is_coroutine_action(self.knowledge_base.get_object):
+            object_of_interest = await self.knowledge_base.get_object(object_type, object_name)
+        else:
+            object_of_interest = self.knowledge_base.get_object(object_type, object_name)
 
         if not object_of_interest or attribute not in object_of_interest:
             dispatcher.utter_message(template="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 
         value = object_of_interest[attribute]
-        repr_function = self.knowledge_base.get_representation_function_of_object(
-            object_type
-        )
+        if utils.is_coroutine_action(self.knowledge_base.get_representation_function_of_object):
+            repr_function = await self.knowledge_base.get_representation_function_of_object(
+                object_type
+            )
+        else:
+            repr_function = self.knowledge_base.get_representation_function_of_object(
+                object_type
+            )
         object_representation = repr_function(object_of_interest)
-        key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
+        if utils.is_coroutine_action(self.knowledge_base.get_key_attribute_of_object):
+            key_attribute = await self.knowledge_base.get_key_attribute_of_object(object_type)
+        else:
+            key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
         object_identifier = object_of_interest[key_attribute]
 
-        self.utter_attribute_value(dispatcher, object_representation, attribute, value)
+        if utils.is_coroutine_action(self.utter_attribute_value):
+            await self.utter_attribute_value(dispatcher, object_representation, attribute, value)
+        else:
+            self.utter_attribute_value(dispatcher, object_representation, attribute, value)
 
         slots = [
             SlotSet(SLOT_OBJECT_TYPE, object_type),
