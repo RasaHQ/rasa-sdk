@@ -429,9 +429,12 @@ class FormAction(Action):
     def _log_form_slots(self, tracker: "Tracker") -> None:
         """Logs the values of all required slots before submitting the form."""
 
-        req_slots = self.required_slots(tracker)
+        if utils.is_coroutine_action(self.required_slots):
+            required_slots = await self.required_slots(tracker)
+        else:
+            required_slots = self.required_slots(tracker)
         slot_values = "\n".join(
-            [f"\t{slot}: {tracker.get_slot(slot)}" for slot in req_slots]
+            [f"\t{slot}: {tracker.get_slot(slot)}" for slot in required_slots]
         )
         logger.debug(
             f"No slots left to request, all required slots are filled:\n{slot_values}"
