@@ -463,7 +463,11 @@ class FormAction(Action):
 
             # collect values of required slots filled before activation
             prefilled_slots = {}
-            for slot_name in self.required_slots(tracker):
+            if utils.is_coroutine_action(self.required_slots):
+                required_slots = await self.required_slots(tracker)
+            else:
+                required_slots = self.required_slots(tracker)
+            for slot_name in required_slots:
                 if not self._should_request_slot(tracker, slot_name):
                     prefilled_slots[slot_name] = tracker.get_slot(slot_name)
 
