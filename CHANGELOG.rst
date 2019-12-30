@@ -42,6 +42,11 @@ Bugfixes
 --------
 - Pinned ``sanic~=19.9.0`` to fix breaking changes introduced in sanic 19.9.12.
 
+Added
+-----
+- Copied over instance methods `last_executed_action_has`, `get_last_event_for` and
+  `applied_events` from the Rasa Tracker class to the SDK Tracker class.
+
 [1.6.0] - 2019-12-18
 ^^^^^^^^^^^^^^^^^^^^
 
