@@ -19,11 +19,6 @@ Fixed
 -----
 - Pinned ``sanic~=19.9.0`` to fix breaking changes introduced in sanic 19.9.12.
 
-Added
------
-- Added ``SessionStarted`` event for compatibility with conversation sessions in Rasa
-  1.6.0.
-
 [1.6.0] - 2019-12-18
 ^^^^^^^^^^^^^^^^^^^^
 
