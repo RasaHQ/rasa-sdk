@@ -68,7 +68,8 @@ def AllSlotsReset(timestamp: Optional[float] = None) -> EventType:
 
 # noinspection PyPep8Naming
 def ReminderScheduled(
-    action_name: Text,
+    intent: Text,
+    entities: Dict[Text, Any],
     trigger_date_time: datetime.datetime,
     name: Optional[Text] = None,
     kill_on_user_message: bool = True,
@@ -77,7 +78,8 @@ def ReminderScheduled(
     return {
         "event": "reminder",
         "timestamp": timestamp,
-        "action": action_name,
+        "intent": intent,
+        "entities": entities,
         "date_time": trigger_date_time.isoformat(),
         "name": name,
         "kill_on_user_msg": kill_on_user_message,
@@ -86,12 +88,12 @@ def ReminderScheduled(
 
 # noinspection PyPep8Naming
 def ReminderCancelled(
-    action_name: Text, name: Optional[Text] = None, timestamp: Optional[float] = None
+    intent_name: Text, name: Optional[Text] = None, timestamp: Optional[float] = None
 ) -> EventType:
     return {
         "event": "cancel_reminder",
         "timestamp": timestamp,
-        "action": action_name,
+        "intent": intent_name,
         "name": name,
     }
 
