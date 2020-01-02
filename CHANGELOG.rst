@@ -7,10 +7,22 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 .. _master-release:
 
 
-[Unreleased 1.6.1a1] - `master`_
+[Unreleased 1.6.2a1] - `master`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This version is not yet released and is under active development.
+
+[1.6.1] - 2020-01-02
+^^^^^^^^^^^^^^^^^^^^
+
+Fixed
+-----
+- Pinned ``sanic~=19.9.0`` to fix breaking changes introduced in sanic 19.9.12.
+
+Added
+-----
+- Added ``SessionStarted`` event for compatibility with conversation sessions in Rasa
+  1.6.0.
 
 [1.6.0] - 2019-12-18
 ^^^^^^^^^^^^^^^^^^^^

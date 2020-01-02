@@ -18,7 +18,7 @@ tests_requires = ["pytest~=4.0", "pytest-cov~=2.0"]
 install_requires = [
     "ConfigArgParse>=0.14",
     "coloredlogs~=10.0",
-    "sanic~=19.9",
+    "sanic~=19.9.0",
     "sanic-cors==0.9.9.post1",
     # needed because of https://github.com/huge-success/sanic/issues/1729
     "multidict==4.6.1",
