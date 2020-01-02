@@ -69,8 +69,8 @@ def AllSlotsReset(timestamp: Optional[float] = None) -> EventType:
 # noinspection PyPep8Naming
 def ReminderScheduled(
     intent: Text,
-    entities: Dict[Text, Any],
     trigger_date_time: datetime.datetime,
+    entities: Dict[Text, Any] = None,
     name: Optional[Text] = None,
     kill_on_user_message: bool = True,
     timestamp: Optional[float] = None,
