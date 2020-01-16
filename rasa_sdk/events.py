@@ -70,7 +70,7 @@ def AllSlotsReset(timestamp: Optional[float] = None) -> EventType:
 def ReminderScheduled(
     intent: Text,
     trigger_date_time: datetime.datetime,
-    entities: Union[List[Dict[Text, Any]], Dict[Text, Text]] = None,
+    entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
     name: Optional[Text] = None,
     kill_on_user_message: bool = True,
     timestamp: Optional[float] = None,
