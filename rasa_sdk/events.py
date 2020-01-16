@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Text, Any, List, Optional
+from typing import Dict, Text, Any, List, Optional, Union
 import datetime
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ def AllSlotsReset(timestamp: Optional[float] = None) -> EventType:
 def ReminderScheduled(
     intent: Text,
     trigger_date_time: datetime.datetime,
-    entities: Dict[Text, Any] = None,
+    entities: Union[List[Dict[Text, Any]], Dict[Text, Text]] = None,
     name: Optional[Text] = None,
     kill_on_user_message: bool = True,
     timestamp: Optional[float] = None,
@@ -88,12 +88,16 @@ def ReminderScheduled(
 
 # noinspection PyPep8Naming
 def ReminderCancelled(
-    intent_name: Text, name: Optional[Text] = None, timestamp: Optional[float] = None
+    name: Optional[Text] = None,
+    intent_name: Optional[Text] = None,
+    entities: Union[List[Dict[Text, Any]], Dict[Text, Text]] = None,
+    timestamp: Optional[float] = None,
 ) -> EventType:
     return {
         "event": "cancel_reminder",
         "timestamp": timestamp,
         "intent": intent_name,
+        "entities": entities,
         "name": name,
     }
 
