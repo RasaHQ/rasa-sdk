@@ -12,6 +12,13 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. note:: This version is not yet released and is under active development.
 
+[1.7.0] - 2020-01-16
+^^^^^^^^^^^^^^^^^^^^
+
+Changed
+-------
+- ``ReminderScheduled`` and ``ReminderCancelled`` now take ``intent`` and ``entities`` as options, instead of ``action``. This is because starting with Rasa 1.7 reminders trigger intents (with entities) instead of actions.
+
 [1.6.0] - 2019-12-18
 ^^^^^^^^^^^^^^^^^^^^
 
