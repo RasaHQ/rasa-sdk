@@ -90,7 +90,7 @@ def ReminderScheduled(
 def ReminderCancelled(
     name: Optional[Text] = None,
     intent_name: Optional[Text] = None,
-    entities: Union[List[Dict[Text, Any]], Dict[Text, Text]] = None,
+    entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
     timestamp: Optional[float] = None,
 ) -> EventType:
     return {
