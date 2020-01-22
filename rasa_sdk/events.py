@@ -80,13 +80,13 @@ def ReminderScheduled(
         warnings.warn(
             f"ReminderCancelled intent starts with 'utter_'"
             f"If {intent_name} is an intent, you can ignore this warning.",
-            DeprecationWarning,
+            FutureWarning,
         )
     elif intent_name.startswith("action_"):
         warnings.warn(
             f"ReminderCancelled intent starts with 'action_'"
             f"If {intent_name} is an intent, you can ignore this warning.",
-            DeprecationWarning
+            FutureWarning
         )
     return {
         "event": "reminder",
@@ -110,13 +110,13 @@ def ReminderCancelled(
         warnings.warn(
             f"ReminderCancelled intent starts with 'utter_'"
             f"If {intent_name} is an intent, you can ignore this warning.",
-            DeprecationWarning,
+            FutureWarning,
         )
     elif intent_name.startswith("action_"):
         warnings.warn(
             f"ReminderCancelled intent starts with 'action_'"
             f"If {intent_name} is an intent, you can ignore this warning.",
-            DeprecationWarning
+            FutureWarning
         )
     return {
         "event": "cancel_reminder",
