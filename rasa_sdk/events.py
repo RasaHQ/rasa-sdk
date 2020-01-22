@@ -1,4 +1,5 @@
 import logging
+import warnings
 from typing import Dict, Text, Any, List, Optional, Union
 import datetime
 
@@ -68,17 +69,29 @@ def AllSlotsReset(timestamp: Optional[float] = None) -> EventType:
 
 # noinspection PyPep8Naming
 def ReminderScheduled(
-    intent: Text,
+    intent_name: Text,
     trigger_date_time: datetime.datetime,
     entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
     name: Optional[Text] = None,
     kill_on_user_message: bool = True,
     timestamp: Optional[float] = None,
 ) -> EventType:
+    if intent_name.startswith("utter_"):
+        warnings.warn(
+            f"ReminderCancelled intent starts with 'utter_'"
+            f"If {intent_name} is an intent, you can ignore this warning.",
+            DeprecationWarning,
+        )
+    elif intent_name.startswith("action_"):
+        warnings.warn(
+            f"ReminderCancelled intent starts with 'action_'"
+            f"If {intent_name} is an intent, you can ignore this warning.",
+            DeprecationWarning
+        )
     return {
         "event": "reminder",
         "timestamp": timestamp,
-        "intent": intent,
+        "intent": intent_name,
         "entities": entities,
         "date_time": trigger_date_time.isoformat(),
         "name": name,
@@ -93,6 +106,18 @@ def ReminderCancelled(
     entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
     timestamp: Optional[float] = None,
 ) -> EventType:
+    if intent_name.startswith("utter_"):
+        warnings.warn(
+            f"ReminderCancelled intent starts with 'utter_'"
+            f"If {intent_name} is an intent, you can ignore this warning.",
+            DeprecationWarning,
+        )
+    elif intent_name.startswith("action_"):
+        warnings.warn(
+            f"ReminderCancelled intent starts with 'action_'"
+            f"If {intent_name} is an intent, you can ignore this warning.",
+            DeprecationWarning
+        )
     return {
         "event": "cancel_reminder",
         "timestamp": timestamp,
