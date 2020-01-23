@@ -106,16 +106,10 @@ def ReminderCancelled(
     entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
     timestamp: Optional[float] = None,
 ) -> EventType:
-    if intent_name and intent_name.startswith("utter_"):
+    if intent_name and (intent_name.startswith("utter_") or intent_name.startswith("action_")):
         warnings.warn(
-            f"ReminderCancelled intent starts with 'utter_'"
-            f"If {intent_name} is an intent, you can ignore this warning.",
-            FutureWarning,
-        )
-    elif intent_name and intent_name.startswith("action_"):
-        warnings.warn(
-            f"ReminderCancelled intent starts with 'action_'"
-            f"If {intent_name} is an intent, you can ignore this warning.",
+            f"ReminderCancelled intent starts with 'utter_' or 'action_'. "
+            f"If {intent_name} is indeed an intent, then you can ignore this warning.",
             FutureWarning,
         )
     return {
