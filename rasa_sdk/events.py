@@ -86,7 +86,7 @@ def ReminderScheduled(
         warnings.warn(
             f"ReminderCancelled intent starts with 'action_'"
             f"If {intent_name} is an intent, you can ignore this warning.",
-            FutureWarning
+            FutureWarning,
         )
     return {
         "event": "reminder",
@@ -106,17 +106,17 @@ def ReminderCancelled(
     entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
     timestamp: Optional[float] = None,
 ) -> EventType:
-    if intent_name.startswith("utter_"):
+    if intent_name and intent_name.startswith("utter_"):
         warnings.warn(
             f"ReminderCancelled intent starts with 'utter_'"
             f"If {intent_name} is an intent, you can ignore this warning.",
             FutureWarning,
         )
-    elif intent_name.startswith("action_"):
+    elif intent_name and intent_name.startswith("action_"):
         warnings.warn(
             f"ReminderCancelled intent starts with 'action_'"
             f"If {intent_name} is an intent, you can ignore this warning.",
-            FutureWarning
+            FutureWarning,
         )
     return {
         "event": "cancel_reminder",
