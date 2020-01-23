@@ -9,14 +9,10 @@ def test_reminder_scheduled_correctly():
         events.ReminderScheduled("greet", datetime.now())
 
 
-def test_reminder_scheduled_with_action():
+@pytest.mark.parametrize("intent", ["action_something", "utter_greet"])
+def test_reminder_scheduled_with_action(intent):
     with pytest.warns(FutureWarning):
-        events.ReminderScheduled("action_greet", datetime.now())
-
-
-def test_reminder_scheduled_with_utter_action():
-    with pytest.warns(FutureWarning):
-        events.ReminderScheduled("utter_greet", datetime.now())
+        events.ReminderScheduled(intent, datetime.now())
 
 
 def test_reminder_cancelled_correctly():
@@ -24,11 +20,7 @@ def test_reminder_cancelled_correctly():
         events.ReminderScheduled("greet", datetime.now())
 
 
-def test_reminder_cancelled_with_action():
+@pytest.mark.parametrize("intent", ["action_something", "utter_greet"])
+def test_reminder_cancelled_with_action(intent):
     with pytest.warns(FutureWarning):
         events.ReminderScheduled("action_greet", datetime.now())
-
-
-def test_reminder_cancelled_with_utter_action():
-    with pytest.warns(FutureWarning):
-        events.ReminderScheduled("utter_greet", datetime.now())
