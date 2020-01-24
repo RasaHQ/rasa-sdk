@@ -67,6 +67,10 @@ def AllSlotsReset(timestamp: Optional[float] = None) -> EventType:
     return {"event": "reset_slots", "timestamp": timestamp}
 
 
+def _is_probably_action_name(name: Optional[Text]) -> bool:
+    return name and (name.startswith("utter_") or name.startswith("action_"))
+
+
 # noinspection PyPep8Naming
 def ReminderScheduled(
     intent_name: Text,
@@ -76,9 +80,7 @@ def ReminderScheduled(
     kill_on_user_message: bool = True,
     timestamp: Optional[float] = None,
 ) -> EventType:
-    if intent_name and (
-        intent_name.startswith("utter_") or intent_name.startswith("action_")
-    ):
+    if _is_probably_action_name(intent_name):
         warnings.warn(
             f"ReminderScheduled intent starts with 'utter_' or 'action_'. "
             f"If '{intent_name}' is indeed an intent, then you can ignore this warning.",
@@ -102,9 +104,7 @@ def ReminderCancelled(
     entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
     timestamp: Optional[float] = None,
 ) -> EventType:
-    if intent_name and (
-        intent_name.startswith("utter_") or intent_name.startswith("action_")
-    ):
+    if _is_probably_action_name(intent_name):
         warnings.warn(
             f"ReminderCancelled intent starts with 'utter_' or 'action_'. "
             f"If '{intent_name}' is indeed an intent, then you can ignore this warning.",
