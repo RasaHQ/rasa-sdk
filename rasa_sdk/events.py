@@ -1,5 +1,6 @@
 import logging
-from typing import Dict, Text, Any, List, Optional
+import warnings
+from typing import Dict, Text, Any, List, Optional, Union
 import datetime
 
 logger = logging.getLogger(__name__)
@@ -66,18 +67,32 @@ def AllSlotsReset(timestamp: Optional[float] = None) -> EventType:
     return {"event": "reset_slots", "timestamp": timestamp}
 
 
+def _is_probably_action_name(name: Optional[Text]) -> bool:
+    return name is not None and (
+        name.startswith("utter_") or name.startswith("action_")
+    )
+
+
 # noinspection PyPep8Naming
 def ReminderScheduled(
-    action_name: Text,
+    intent_name: Text,
     trigger_date_time: datetime.datetime,
+    entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
     name: Optional[Text] = None,
     kill_on_user_message: bool = True,
     timestamp: Optional[float] = None,
 ) -> EventType:
+    if _is_probably_action_name(intent_name):
+        warnings.warn(
+            f"ReminderScheduled intent starts with 'utter_' or 'action_'. "
+            f"If '{intent_name}' is indeed an intent, then you can ignore this warning.",
+            FutureWarning,
+        )
     return {
         "event": "reminder",
         "timestamp": timestamp,
-        "action": action_name,
+        "intent": intent_name,
+        "entities": entities,
         "date_time": trigger_date_time.isoformat(),
         "name": name,
         "kill_on_user_msg": kill_on_user_message,
@@ -86,12 +101,22 @@ def ReminderScheduled(
 
 # noinspection PyPep8Naming
 def ReminderCancelled(
-    action_name: Text, name: Optional[Text] = None, timestamp: Optional[float] = None
+    name: Optional[Text] = None,
+    intent_name: Optional[Text] = None,
+    entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
+    timestamp: Optional[float] = None,
 ) -> EventType:
+    if _is_probably_action_name(intent_name):
+        warnings.warn(
+            f"ReminderCancelled intent starts with 'utter_' or 'action_'. "
+            f"If '{intent_name}' is indeed an intent, then you can ignore this warning.",
+            FutureWarning,
+        )
     return {
         "event": "cancel_reminder",
         "timestamp": timestamp,
-        "action": action_name,
+        "intent": intent_name,
+        "entities": entities,
         "name": name,
     }
 
