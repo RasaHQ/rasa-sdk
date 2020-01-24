@@ -68,7 +68,9 @@ def AllSlotsReset(timestamp: Optional[float] = None) -> EventType:
 
 
 def _is_probably_action_name(name: Optional[Text]) -> bool:
-    return name is not None and (name.startswith("utter_") or name.startswith("action_"))
+    return name is not None and (
+        name.startswith("utter_") or name.startswith("action_")
+    )
 
 
 # noinspection PyPep8Naming
