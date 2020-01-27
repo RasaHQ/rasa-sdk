@@ -1,3 +1,0 @@
-rasa_core_sdk
-rasa_sdk
-tests
