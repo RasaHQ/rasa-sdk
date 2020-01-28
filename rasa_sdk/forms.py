@@ -209,11 +209,7 @@ class FormAction(Action):
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
         slot_values = {}
-        if utils.is_coroutine_action(self.required_slots):
-            required_slots = await self.required_slots(tracker)
-        else:
-            required_slots = self.required_slots(tracker)
-        for slot in required_slots:
+        for slot in self.required_slots(tracker):
             # look for other slots
             if slot != slot_to_fill:
                 # list is used to cover the case of list slot type
@@ -360,7 +356,7 @@ class FormAction(Action):
         return await self.validate_slots(slot_values, dispatcher, tracker, domain)
 
     # noinspection PyUnusedLocal
-    async def request_next_slot(
+    def request_next_slot(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
@@ -369,11 +365,7 @@ class FormAction(Action):
         """Request the next slot and utter template if needed,
             else return None"""
 
-        if utils.is_coroutine_action(self.required_slots):
-            required_slots = await self.required_slots(tracker)
-        else:
-            required_slots = self.required_slots(tracker)
-        for slot in required_slots:
+        for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
                 logger.debug(f"Request next slot '{slot}'")
                 dispatcher.utter_message(template=f"utter_ask_{slot}", **tracker.slots)
@@ -389,7 +381,7 @@ class FormAction(Action):
         logger.debug(f"Deactivating the form '{self.name()}'")
         return [Form(None), SlotSet(REQUESTED_SLOT, None)]
 
-    def submit(
+    async def submit(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
@@ -426,15 +418,10 @@ class FormAction(Action):
 
         return self._to_list(intent), self._to_list(not_intent)
 
-    async def _log_form_slots(self, tracker: "Tracker") -> None:
+    def _log_form_slots(self, tracker: "Tracker") -> None:
         """Logs the values of all required slots before submitting the form."""
-
-        if utils.is_coroutine_action(self.required_slots):
-            required_slots = await self.required_slots(tracker)
-        else:
-            required_slots = self.required_slots(tracker)
         slot_values = "\n".join(
-            [f"\t{slot}: {tracker.get_slot(slot)}" for slot in required_slots]
+            [f"\t{slot}: {tracker.get_slot(slot)}" for slot in self.required_slots(tracker)]
         )
         logger.debug(
             f"No slots left to request, all required slots are filled:\n{slot_values}"
