@@ -421,7 +421,10 @@ class FormAction(Action):
     def _log_form_slots(self, tracker: "Tracker") -> None:
         """Logs the values of all required slots before submitting the form."""
         slot_values = "\n".join(
-            [f"\t{slot}: {tracker.get_slot(slot)}" for slot in self.required_slots(tracker)]
+            [
+                f"\t{slot}: {tracker.get_slot(slot)}"
+                for slot in self.required_slots(tracker)
+            ]
         )
         logger.debug(
             f"No slots left to request, all required slots are filled:\n{slot_values}"
