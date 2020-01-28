@@ -152,7 +152,7 @@ class ActionQueryKnowledgeBase(Action):
         object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
         if utils.is_coroutine_action(self.knowledge_base.get_attributes_of_object):
             object_attributes = await self.knowledge_base.get_attributes_of_object(
-                object_type
+                object_type  # type: ignore
             )
         else:
             object_attributes = self.knowledge_base.get_attributes_of_object(
@@ -164,12 +164,12 @@ class ActionQueryKnowledgeBase(Action):
         attributes = get_attribute_slots(tracker, object_attributes)
         # query the knowledge base
         if utils.is_coroutine_action(self.knowledge_base.get_objects):
-            objects = await self.knowledge_base.get_objects(object_type, attributes)
+            objects = await self.knowledge_base.get_objects(object_type, attributes)  # type: ignore
         else:
             objects = self.knowledge_base.get_objects(object_type, attributes)
 
         if utils.is_coroutine_action(self.utter_objects):
-            await self.utter_objects(dispatcher, object_type, objects)
+            await self.utter_objects(dispatcher, object_type, objects)  # type: ignore
         else:
             self.utter_objects(dispatcher, object_type, objects)
 
@@ -178,7 +178,7 @@ class ActionQueryKnowledgeBase(Action):
 
         if utils.is_coroutine_action(self.knowledge_base.get_key_attribute_of_object):
             key_attribute = await self.knowledge_base.get_key_attribute_of_object(
-                object_type
+                object_type  # type: ignore
             )
         else:
             key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
@@ -226,7 +226,7 @@ class ActionQueryKnowledgeBase(Action):
 
         if utils.is_coroutine_action(self.knowledge_base.get_object):
             object_of_interest = await self.knowledge_base.get_object(
-                object_type, object_name
+                object_type, object_name  # type: ignore
             )
         else:
             object_of_interest = self.knowledge_base.get_object(
@@ -242,7 +242,7 @@ class ActionQueryKnowledgeBase(Action):
             self.knowledge_base.get_representation_function_of_object
         ):
             repr_function = await self.knowledge_base.get_representation_function_of_object(
-                object_type
+                object_type  # type: ignore
             )
         else:
             repr_function = self.knowledge_base.get_representation_function_of_object(
@@ -251,7 +251,7 @@ class ActionQueryKnowledgeBase(Action):
         object_representation = repr_function(object_of_interest)
         if utils.is_coroutine_action(self.knowledge_base.get_key_attribute_of_object):
             key_attribute = await self.knowledge_base.get_key_attribute_of_object(
-                object_type
+                object_type  # type: ignore
             )
         else:
             key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
@@ -259,7 +259,7 @@ class ActionQueryKnowledgeBase(Action):
 
         if utils.is_coroutine_action(self.utter_attribute_value):
             await self.utter_attribute_value(
-                dispatcher, object_representation, attribute, value
+                dispatcher, object_representation, attribute, value  # type: ignore
             )
         else:
             self.utter_attribute_value(

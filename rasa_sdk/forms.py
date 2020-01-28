@@ -456,11 +456,8 @@ class FormAction(Action):
 
             # collect values of required slots filled before activation
             prefilled_slots = {}
-            if utils.is_coroutine_action(self.required_slots):
-                required_slots = await self.required_slots(tracker)
-            else:
-                required_slots = self.required_slots(tracker)
-            for slot_name in required_slots:
+
+            for slot_name in self.required_slots(tracker):
                 if not self._should_request_slot(tracker, slot_name):
                     prefilled_slots[slot_name] = tracker.get_slot(slot_name)
 
@@ -536,16 +533,14 @@ class FormAction(Action):
                 if e["event"] == "slot":
                     temp_tracker.slots[e["name"]] = e["value"]
 
-            next_slot_events = await self.request_next_slot(
-                dispatcher, temp_tracker, domain
-            )
+            next_slot_events = self.request_next_slot(dispatcher, temp_tracker, domain)
 
             if next_slot_events is not None:
                 # request next slot
                 events.extend(next_slot_events)
             else:
                 # there is nothing more to request, so we can submit
-                await self._log_form_slots(temp_tracker)
+                self._log_form_slots(temp_tracker)
                 logger.debug(f"Submitting the form '{self.name()}'")
                 if utils.is_coroutine_action(self.submit):
                     events.extend(await self.submit(dispatcher, temp_tracker, domain))
@@ -553,7 +548,7 @@ class FormAction(Action):
                     events.extend(self.submit(dispatcher, temp_tracker, domain))
                 # deactivate the form after submission
                 if utils.is_coroutine_action(self.deactivate):
-                    events.extend(await self.deactivate())
+                    events.extend(await self.deactivate())  # type: ignore
                 else:
                     events.extend(self.deactivate())
 
