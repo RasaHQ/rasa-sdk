@@ -390,7 +390,7 @@ def test_extract_requested_slot_from_text_with_not_intent():
     assert slot_values == {"some_slot": "some_text"}
 
 
-def test_extract_trigger_slots():
+async def test_extract_trigger_slots():
     """Test extraction of a slot value from trigger intent
     """
 
@@ -423,10 +423,7 @@ def test_extract_trigger_slots():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    slot_values = loop.run_until_complete(
-        form.extract_other_slots(CollectingDispatcher(), tracker, {})
-    )
+    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was extracted for correct intent
     assert slot_values == {"some_slot": "some_value"}
 
@@ -441,9 +438,7 @@ def test_extract_trigger_slots():
         "action_listen",
     )
 
-    slot_values = loop.run_until_complete(
-        form.extract_other_slots(CollectingDispatcher(), tracker, {})
-    )
+    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was not extracted for incorrect intent
     assert slot_values == {}
 
@@ -459,15 +454,12 @@ def test_extract_trigger_slots():
         "action_listen",
     )
 
-    slot_values = loop.run_until_complete(
-        form.extract_other_slots(CollectingDispatcher(), tracker, {})
-    )
-    loop.close()
+    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was not extracted for correct intent
     assert slot_values == {}
 
 
-def test_extract_other_slots_no_intent():
+async def test_extract_other_slots_no_intent():
     """Test extraction of other not requested slots values
         from entities with the same names
     """
@@ -494,10 +486,7 @@ def test_extract_other_slots_no_intent():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    slot_values = loop.run_until_complete(
-        form.extract_other_slots(CollectingDispatcher(), tracker, {})
-    )
+    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was not extracted for requested slot
     assert slot_values == {}
 
@@ -512,9 +501,7 @@ def test_extract_other_slots_no_intent():
         "action_listen",
     )
 
-    slot_values = loop.run_until_complete(
-        form.extract_other_slots(CollectingDispatcher(), tracker, {})
-    )
+    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was extracted for non requested slot
     assert slot_values == {"some_other_slot": "some_other_value"}
 
@@ -534,15 +521,13 @@ def test_extract_other_slots_no_intent():
         "action_listen",
     )
 
-    slot_values = loop.run_until_complete(
-        form.extract_other_slots(CollectingDispatcher(), tracker, {})
-    )
-    loop.close()
+    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
+
     # check that the value was extracted only for non requested slot
     assert slot_values == {"some_other_slot": "some_other_value"}
 
 
-def test_extract_other_slots_with_intent():
+async def test_extract_other_slots_with_intent():
     """Test extraction of other not requested slots values
         from entities with the same names
     """
@@ -579,10 +564,7 @@ def test_extract_other_slots_with_intent():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    slot_values = loop.run_until_complete(
-        form.extract_other_slots(CollectingDispatcher(), tracker, {})
-    )
+    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was extracted for non requested slot
     assert slot_values == {}
 
@@ -600,15 +582,12 @@ def test_extract_other_slots_with_intent():
         "action_listen",
     )
 
-    slot_values = loop.run_until_complete(
-        form.extract_other_slots(CollectingDispatcher(), tracker, {})
-    )
-    loop.close()
+    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was extracted only for non requested slot
     assert slot_values == {"some_other_slot": "some_other_value"}
 
 
-def test_validate():
+async def test_validate():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -636,8 +615,7 @@ def test_validate():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    events = loop.run_until_complete(form.validate(CollectingDispatcher(), tracker, {}))
+    events = await form.validate(CollectingDispatcher(), tracker, {})
     # check that validation succeed
     assert events == [
         SlotSet("some_other_slot", "some_other_value"),
@@ -658,7 +636,7 @@ def test_validate():
         "action_listen",
     )
 
-    events = loop.run_until_complete(form.validate(CollectingDispatcher(), tracker, {}))
+    events = await form.validate(CollectingDispatcher(), tracker, {})
     # check that validation succeed because other slot was extracted
     assert events == [SlotSet("some_other_slot", "some_other_value")]
 
@@ -673,8 +651,7 @@ def test_validate():
         "action_listen",
     )
     with pytest.raises(Exception) as execinfo:
-        loop.run_until_complete(form.validate(CollectingDispatcher(), tracker, {}))
-    loop.close()
+        await form.validate(CollectingDispatcher(), tracker, {})
 
     # check that validation failed gracefully
     assert execinfo.type == ActionExecutionRejection
@@ -683,7 +660,7 @@ def test_validate():
     )
 
 
-def test_set_slot_within_helper():
+async def test_set_slot_within_helper():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -713,9 +690,8 @@ def test_set_slot_within_helper():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    events = loop.run_until_complete(form.validate(CollectingDispatcher(), tracker, {}))
-    loop.close()
+    events = await form.validate(CollectingDispatcher(), tracker, {})
+
     # check that some_slot gets validated correctly
     assert events == [
         SlotSet("some_other_slot", "other_value"),
@@ -726,7 +702,7 @@ def test_set_slot_within_helper():
     ]
 
 
-def test_validate_extracted_no_requested():
+async def test_validate_extracted_no_requested():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -753,14 +729,13 @@ def test_validate_extracted_no_requested():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    events = loop.run_until_complete(form.validate(CollectingDispatcher(), tracker, {}))
-    loop.close()
+    events = await form.validate(CollectingDispatcher(), tracker, {})
+
     # check that some_slot gets validated correctly
     assert events == [SlotSet("some_slot", "validated_value")]
 
 
-def test_validate_prefilled_slots():
+async def test_validate_prefilled_slots():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -792,10 +767,7 @@ def test_validate_prefilled_slots():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    events = loop.run_until_complete(
-        form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
-    )
+    events = await form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
     # check that the form was activated and prefilled slots were validated
     assert events == [
         Form("some_form"),
@@ -804,11 +776,9 @@ def test_validate_prefilled_slots():
     ]
 
     events.extend(
-        loop.run_until_complete(
-            form._validate_if_required(dispatcher=None, tracker=tracker, domain=None)
-        )
+        await form._validate_if_required(dispatcher=None, tracker=tracker, domain=None)
     )
-    loop.close()
+
     # check that entities picked up in input overwrite prefilled slots
     assert events == [
         Form("some_form"),
@@ -818,7 +788,7 @@ def test_validate_prefilled_slots():
     ]
 
 
-def test_validate_trigger_slots():
+async def test_validate_trigger_slots():
     """Test validation results of from_trigger_intent slot mappings
     """
 
@@ -851,10 +821,7 @@ def test_validate_trigger_slots():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    slot_values = loop.run_until_complete(
-        form.validate(CollectingDispatcher(), tracker, {})
-    )
+    slot_values = await form.validate(CollectingDispatcher(), tracker, {})
 
     # check that the value was extracted on form activation
     assert slot_values == [
@@ -879,9 +846,7 @@ def test_validate_trigger_slots():
         "action_listen",
     )
 
-    slot_values = loop.run_until_complete(
-        form.validate(CollectingDispatcher(), tracker, {})
-    )
+    slot_values = await form.validate(CollectingDispatcher(), tracker, {})
     # check that the value was not extracted after form activation
     assert slot_values == []
 
@@ -906,10 +871,7 @@ def test_validate_trigger_slots():
         "action_listen",
     )
 
-    slot_values = loop.run_until_complete(
-        form.validate(CollectingDispatcher(), tracker, {})
-    )
-    loop.close()
+    slot_values = await form.validate(CollectingDispatcher(), tracker, {})
 
     # check that validation failed gracefully
     assert slot_values == [
@@ -922,7 +884,7 @@ def test_validate_trigger_slots():
     ]
 
 
-def test_activate_if_required():
+async def test_activate_if_required():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -945,10 +907,7 @@ def test_activate_if_required():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    events = loop.run_until_complete(
-        form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
-    )
+    events = await form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
     # check that the form was activated
     assert events == [Form("some_form")]
 
@@ -963,15 +922,12 @@ def test_activate_if_required():
         "action_listen",
     )
 
-    events = loop.run_until_complete(
-        form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
-    )
-    loop.close()
+    events = await form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
     # check that the form was not activated again
     assert events == []
 
 
-def test_validate_if_required():
+async def test_validate_if_required():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -999,10 +955,7 @@ def test_validate_if_required():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    events = loop.run_until_complete(
-        form._validate_if_required(CollectingDispatcher(), tracker, {})
-    )
+    events = await form._validate_if_required(CollectingDispatcher(), tracker, {})
     # check that validation was performed
     assert events == [
         SlotSet("some_other_slot", "some_other_value"),
@@ -1028,9 +981,7 @@ def test_validate_if_required():
         "action_listen",
     )
 
-    events = loop.run_until_complete(
-        form._validate_if_required(CollectingDispatcher(), tracker, {})
-    )
+    events = await form._validate_if_required(CollectingDispatcher(), tracker, {})
     # check that validation was skipped because 'validate': False
     assert events == []
 
@@ -1050,16 +1001,14 @@ def test_validate_if_required():
         "some_form",
     )
 
-    events = loop.run_until_complete(
-        form._validate_if_required(CollectingDispatcher(), tracker, {})
-    )
-    loop.close()
+    events = await form._validate_if_required(CollectingDispatcher(), tracker, {})
+
     # check that validation was skipped
     # because previous action is not action_listen
     assert events == []
 
 
-def test_deprecated_helper_style():
+async def test_deprecated_helper_style():
     # noinspection PyAbstractClass
     # This method tests the old style of returning values instead of {'slot':'value'}
     # dicts, and can be removed if we officially stop supporting the deprecated style.
@@ -1088,15 +1037,13 @@ def test_deprecated_helper_style():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    events = loop.run_until_complete(form.validate(CollectingDispatcher(), tracker, {}))
-    loop.close()
+    events = await form.validate(CollectingDispatcher(), tracker, {})
 
     # check that some_slot gets validated correctly
     assert events == [SlotSet("some_slot", "validated_value")]
 
 
-def test_early_deactivation():
+async def test_early_deactivation():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
         def name(self):
@@ -1122,11 +1069,7 @@ def test_early_deactivation():
         "action_listen",
     )
 
-    loop = asyncio.new_event_loop()
-    events = loop.run_until_complete(
-        form.run(dispatcher=None, tracker=tracker, domain=None)
-    )
-    loop.close()
+    events = await form.run(dispatcher=None, tracker=tracker, domain=None)
 
     # check that form was deactivated before requesting next slot
     assert events == [Form(None), SlotSet("requested_slot", None)]

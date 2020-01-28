@@ -4,6 +4,7 @@
 # test
 pytest==4.5.0
 pytest-cov==2.7.1
+pytest-sanic==1.1.2
 
 # lint/format/types
 black==19.10b0
