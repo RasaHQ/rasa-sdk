@@ -5,6 +5,8 @@ import random
 from typing import Text, Callable, Dict, List, Any, Optional
 from collections import defaultdict
 
+from rasa_sdk import utils
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,7 +31,7 @@ class KnowledgeBase:
         self.key_attribute = defaultdict(lambda: "id")
         self.representation_function = defaultdict(lambda: lambda obj: obj["name"])
 
-    def get_attributes_of_object(self, object_type: Text) -> List[Text]:
+    async def get_attributes_of_object(self, object_type: Text) -> List[Text]:
         """
         Returns a list of all attributes that belong to the provided object type.
 
@@ -40,7 +42,7 @@ class KnowledgeBase:
         """
         raise NotImplementedError("Method is not implemented.")
 
-    def get_key_attribute_of_object(self, object_type: Text) -> Text:
+    async def get_key_attribute_of_object(self, object_type: Text) -> Text:
         """
         Returns the key attribute for the given object type.
 
@@ -51,7 +53,9 @@ class KnowledgeBase:
         """
         return self.key_attribute[object_type]
 
-    def get_representation_function_of_object(self, object_type: Text) -> Callable:
+    async def get_representation_function_of_object(
+        self, object_type: Text
+    ) -> Callable:
         """
         Returns a lamdba function that takes the object and returns a string
         representation of it.
@@ -73,7 +77,7 @@ class KnowledgeBase:
         """
         self.ordinal_mention_mapping = mapping
 
-    def get_objects(
+    async def get_objects(
         self, object_type: Text, attributes: List[Dict[Text, Text]], limit: int = 5
     ) -> List[Dict[Text, Any]]:
         """
@@ -89,7 +93,9 @@ class KnowledgeBase:
         """
         raise NotImplementedError("Method is not implemented.")
 
-    def get_object(self, object_type: Text, object_identifier: Text) -> Dict[Text, Any]:
+    async def get_object(
+        self, object_type: Text, object_identifier: Text
+    ) -> Dict[Text, Any]:
         """
         Returns the object of the given type that matches the given object identifier.
 
@@ -158,7 +164,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         """
         self.key_attribute[object_type] = key_attribute
 
-    def get_attributes_of_object(self, object_type: Text) -> List[Text]:
+    async def get_attributes_of_object(self, object_type: Text) -> List[Text]:
         if object_type not in self.data or not self.data[object_type]:
             return []
 
@@ -166,7 +172,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         return list(first_object.keys())
 
-    def get_objects(
+    async def get_objects(
         self, object_type: Text, attributes: List[Dict[Text, Text]], limit: int = 5
     ) -> List[Dict[Text, Any]]:
         if object_type not in self.data:
@@ -190,14 +196,18 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         return objects[:limit]
 
-    def get_object(
+    async def get_object(
         self, object_type: Text, object_identifier: Text
     ) -> Optional[Dict[Text, Any]]:
         if object_type not in self.data:
             return None
 
         objects = self.data[object_type]
-        key_attribute = self.get_key_attribute_of_object(object_type)
+
+        if utils.is_coroutine_action(self.get_key_attribute_of_object):
+            key_attribute = await self.get_key_attribute_of_object(object_type)
+        else:
+            key_attribute = self.get_key_attribute_of_object(object_type)
 
         # filter the objects by its key attribute, for example, 'id'
         objects_of_interest = list(
@@ -211,7 +221,13 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         # if the object was referred to directly, we need to compare the representation
         # of each object with the given object identifier
         if not objects_of_interest:
-            repr_function = self.get_representation_function_of_object(object_type)
+            if utils.is_coroutine_action(self.get_representation_function_of_object):
+                repr_function = await self.get_representation_function_of_object(
+                    object_type
+                )
+            else:
+                repr_function = self.get_representation_function_of_object(object_type)
+
             objects_of_interest = list(
                 filter(
                     lambda obj: str(object_identifier).lower()

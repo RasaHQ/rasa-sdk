@@ -2,6 +2,7 @@ import logging
 import typing
 from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
+from rasa_sdk import utils
 from rasa_sdk.events import SlotSet, Form, EventType
 from rasa_sdk.interfaces import Action, ActionExecutionRejection
 
@@ -289,7 +290,7 @@ class FormAction(Action):
         logger.debug(f"Failed to extract requested slot '{slot_to_fill}'")
         return {}
 
-    def validate_slots(
+    async def validate_slots(
         self,
         slot_dict: Dict[Text, Any],
         dispatcher: "CollectingDispatcher",
@@ -304,7 +305,12 @@ class FormAction(Action):
 
         for slot, value in list(slot_dict.items()):
             validate_func = getattr(self, f"validate_{slot}", lambda *x: {slot: value})
-            validation_output = validate_func(value, dispatcher, tracker, domain)
+            if utils.is_coroutine_action(validate_func):
+                validation_output = await validate_func(
+                    value, dispatcher, tracker, domain
+                )
+            else:
+                validation_output = validate_func(value, dispatcher, tracker, domain)
             if not isinstance(validation_output, dict):
                 logger.warning(
                     "Returning values in helper validation methods is deprecated. "
@@ -317,7 +323,7 @@ class FormAction(Action):
         # validation succeed, set slots to extracted values
         return [SlotSet(slot, value) for slot, value in slot_dict.items()]
 
-    def validate(
+    async def validate(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
@@ -347,7 +353,7 @@ class FormAction(Action):
                     f"Failed to extract slot {slot_to_fill} with action {self.name()}",
                 )
         logger.debug(f"Validating extracted slots: {slot_values}")
-        return self.validate_slots(slot_values, dispatcher, tracker, domain)
+        return await self.validate_slots(slot_values, dispatcher, tracker, domain)
 
     # noinspection PyUnusedLocal
     def request_next_slot(
@@ -375,7 +381,7 @@ class FormAction(Action):
         logger.debug(f"Deactivating the form '{self.name()}'")
         return [Form(None), SlotSet(REQUESTED_SLOT, None)]
 
-    def submit(
+    async def submit(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
@@ -414,16 +420,17 @@ class FormAction(Action):
 
     def _log_form_slots(self, tracker: "Tracker") -> None:
         """Logs the values of all required slots before submitting the form."""
-
-        req_slots = self.required_slots(tracker)
         slot_values = "\n".join(
-            [f"\t{slot}: {tracker.get_slot(slot)}" for slot in req_slots]
+            [
+                f"\t{slot}: {tracker.get_slot(slot)}"
+                for slot in self.required_slots(tracker)
+            ]
         )
         logger.debug(
             f"No slots left to request, all required slots are filled:\n{slot_values}"
         )
 
-    def _activate_if_required(
+    async def _activate_if_required(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
@@ -449,6 +456,7 @@ class FormAction(Action):
 
             # collect values of required slots filled before activation
             prefilled_slots = {}
+
             for slot_name in self.required_slots(tracker):
                 if not self._should_request_slot(tracker, slot_name):
                     prefilled_slots[slot_name] = tracker.get_slot(slot_name)
@@ -456,14 +464,16 @@ class FormAction(Action):
             if prefilled_slots:
                 logger.debug(f"Validating pre-filled required slots: {prefilled_slots}")
                 events.extend(
-                    self.validate_slots(prefilled_slots, dispatcher, tracker, domain)
+                    await self.validate_slots(
+                        prefilled_slots, dispatcher, tracker, domain
+                    )
                 )
             else:
                 logger.debug("No pre-filled required slots to validate.")
 
             return events
 
-    def _validate_if_required(
+    async def _validate_if_required(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
@@ -479,7 +489,10 @@ class FormAction(Action):
             "validate", True
         ):
             logger.debug(f"Validating user input '{tracker.latest_message}'")
-            return self.validate(dispatcher, tracker, domain)
+            if utils.is_coroutine_action(self.validate):
+                return await self.validate(dispatcher, tracker, domain)
+            else:
+                return self.validate(dispatcher, tracker, domain)
         else:
             logger.debug("Skipping validation")
             return []
@@ -490,7 +503,7 @@ class FormAction(Action):
 
         return tracker.get_slot(slot_name) is None
 
-    def run(
+    async def run(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
@@ -508,9 +521,9 @@ class FormAction(Action):
         """
 
         # activate the form
-        events = self._activate_if_required(dispatcher, tracker, domain)
+        events = await self._activate_if_required(dispatcher, tracker, domain)
         # validate user input
-        events.extend(self._validate_if_required(dispatcher, tracker, domain))
+        events.extend(await self._validate_if_required(dispatcher, tracker, domain))
         # check that the form wasn't deactivated in validation
         if Form(None) not in events:
 
@@ -529,9 +542,15 @@ class FormAction(Action):
                 # there is nothing more to request, so we can submit
                 self._log_form_slots(temp_tracker)
                 logger.debug(f"Submitting the form '{self.name()}'")
-                events.extend(self.submit(dispatcher, temp_tracker, domain))
+                if utils.is_coroutine_action(self.submit):
+                    events.extend(await self.submit(dispatcher, temp_tracker, domain))
+                else:
+                    events.extend(self.submit(dispatcher, temp_tracker, domain))
                 # deactivate the form after submission
-                events.extend(self.deactivate())
+                if utils.is_coroutine_action(self.deactivate):
+                    events.extend(await self.deactivate())  # type: ignore
+                else:
+                    events.extend(self.deactivate())
 
         return events
 

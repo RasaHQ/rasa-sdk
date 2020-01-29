@@ -12,10 +12,10 @@ from rasa_sdk.knowledge_base.storage import InMemoryKnowledgeBase
         ("restaurant", [{"name": "cuisine", "value": "Italian"}], 2),
     ],
 )
-def test_query_entities(data_file, object_type, attributes, expected_length):
+async def test_query_entities(data_file, object_type, attributes, expected_length):
     knowledge_base = InMemoryKnowledgeBase(data_file)
 
-    entities = knowledge_base.get_objects(
+    entities = await knowledge_base.get_objects(
         object_type=object_type, attributes=attributes
     )
     assert expected_length == len(entities)
@@ -43,10 +43,10 @@ def test_query_entities(data_file, object_type, attributes, expected_length):
         ("hotel", None, None),
     ],
 )
-def test_query_object(data_file, object_type, object_identifier, expected_value):
+async def test_query_object(data_file, object_type, object_identifier, expected_value):
     knowledge_base = InMemoryKnowledgeBase(data_file)
 
-    actual_value = knowledge_base.get_object(
+    actual_value = await knowledge_base.get_object(
         object_type=object_type, object_identifier=object_identifier
     )
 
@@ -57,10 +57,12 @@ def test_query_object(data_file, object_type, object_identifier, expected_value)
     "object_type,expected_attributes",
     [("restaurant", ["id", "name", "cuisine", "wifi"])],
 )
-def test_get_attributes_for(data_file, object_type, expected_attributes):
+async def test_get_attributes_for(data_file, object_type, expected_attributes):
     knowledge_base = InMemoryKnowledgeBase(data_file)
 
-    actual_attributes = knowledge_base.get_attributes_of_object(object_type=object_type)
+    actual_attributes = await knowledge_base.get_attributes_of_object(
+        object_type=object_type
+    )
 
     assert set(expected_attributes) == set(actual_attributes)
 
@@ -69,14 +71,14 @@ def test_get_attributes_for(data_file, object_type, expected_attributes):
     "object_type,set_key_attribute,expected_key_attribute",
     [("restaurant", None, "id"), ("restaurant", "name", "name")],
 )
-def test_key_attribute_of_object(
+async def test_key_attribute_of_object(
     data_file, object_type, set_key_attribute, expected_key_attribute
 ):
     knowledge_base = InMemoryKnowledgeBase(data_file)
     if set_key_attribute:
         knowledge_base.set_key_attribute_of_object(object_type, set_key_attribute)
 
-    actual_key_attribute = knowledge_base.get_key_attribute_of_object(
+    actual_key_attribute = await knowledge_base.get_key_attribute_of_object(
         object_type=object_type
     )
 
@@ -94,7 +96,7 @@ def test_key_attribute_of_object(
         ),
     ],
 )
-def test_get_representation_function_of_object(
+async def test_get_representation_function_of_object(
     data_file, object_type, set_repr_function, expected_repr_function
 ):
     knowledge_base = InMemoryKnowledgeBase(data_file)
@@ -103,10 +105,10 @@ def test_get_representation_function_of_object(
             object_type, set_repr_function
         )
 
-    actual_repr_function = knowledge_base.get_representation_function_of_object(
+    actual_repr_function = await knowledge_base.get_representation_function_of_object(
         object_type=object_type
     )
 
-    dummy_object = knowledge_base.get_object(object_type, 1)
+    dummy_object = await knowledge_base.get_object(object_type, 1)
 
     assert expected_repr_function(dummy_object) == actual_repr_function(dummy_object)

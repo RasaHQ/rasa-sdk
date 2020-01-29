@@ -116,14 +116,14 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
     ],
 )
-def test_action_run(data_file, slots, expected_slots):
+async def test_action_run(data_file, slots, expected_slots):
     knowledge_base = InMemoryKnowledgeBase(data_file)
     action = ActionQueryKnowledgeBase(knowledge_base)
 
     dispatcher = CollectingDispatcher()
     tracker = Tracker("default", slots, {}, [], False, None, {}, "action_listen")
 
-    actual_slots = action.run(dispatcher, tracker, {})
+    actual_slots = await action.run(dispatcher, tracker, {})
 
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)
