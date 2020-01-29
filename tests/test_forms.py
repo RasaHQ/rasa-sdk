@@ -1103,7 +1103,7 @@ class FormSyncSubmit(FormAction):
         return ["some_slot"]
 
     def submit(self, dispatcher, tracker, domain):
-        return []
+        return [SlotSet("other_slot", 42)]
 
 
 class FormAsyncSubmit(FormSyncSubmit):
@@ -1111,14 +1111,14 @@ class FormAsyncSubmit(FormSyncSubmit):
         # Not really necessary, just to emphasize this is async
         await asyncio.sleep(0)
 
-        return []
+        return [SlotSet("other_slot", 42)]
 
 
 @pytest.mark.parametrize("form_class", [FormSyncSubmit, FormAsyncSubmit])
 async def test_submit(form_class: Type[FormAction]):
     tracker = Tracker(
         "default",
-        {"some_slot": "foobar"},
+        {"some_slot": "foobar", "other_slot": None},
         {"intent": "greet"},
         [],
         False,
@@ -1128,4 +1128,7 @@ async def test_submit(form_class: Type[FormAction]):
     )
 
     form = form_class()
-    await form.run(dispatcher=None, tracker=tracker, domain=None)
+    events = await form.run(dispatcher=None, tracker=tracker, domain=None)
+
+    print(events)
+    assert events[0]["value"] == 42
