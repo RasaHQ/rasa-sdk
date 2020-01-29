@@ -1,5 +1,6 @@
 import pytest
 import asyncio
+from typing import Type
 
 from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.events import SlotSet, Form
@@ -767,7 +768,9 @@ async def test_validate_prefilled_slots():
         "action_listen",
     )
 
-    events = await form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
+    events = await form._activate_if_required(
+        dispatcher=None, tracker=tracker, domain=None
+    )
     # check that the form was activated and prefilled slots were validated
     assert events == [
         Form("some_form"),
@@ -907,7 +910,9 @@ async def test_activate_if_required():
         "action_listen",
     )
 
-    events = await form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
+    events = await form._activate_if_required(
+        dispatcher=None, tracker=tracker, domain=None
+    )
     # check that the form was activated
     assert events == [Form("some_form")]
 
@@ -922,7 +927,9 @@ async def test_activate_if_required():
         "action_listen",
     )
 
-    events = await form._activate_if_required(dispatcher=None, tracker=tracker, domain=None)
+    events = await form._activate_if_required(
+        dispatcher=None, tracker=tracker, domain=None
+    )
     # check that the form was not activated again
     assert events == []
 
@@ -1043,20 +1050,31 @@ async def test_deprecated_helper_style():
     assert events == [SlotSet("some_slot", "validated_value")]
 
 
-async def test_early_deactivation():
+class FormSyncValidate(FormAction):
+    def name(self):
+        return "some_form"
+
+    @staticmethod
+    def required_slots(_tracker):
+        return ["some_slot", "some_other_slot"]
+
+    def validate(self, dispatcher, tracker, domain):
+        return self.deactivate()
+
+
+class FormAsyncValidate(FormSyncValidate):
+    async def validate(self, dispatcher, tracker, domain):
+        # Not really necessary, just to emphasize this is async
+        await asyncio.sleep(0)
+
+        return self.deactivate()
+
+
+@pytest.mark.parametrize("form_class", [FormSyncValidate, FormAsyncValidate])
+async def test_early_deactivation(form_class: Type[FormAction]):
     # noinspection PyAbstractClass
-    class CustomFormAction(FormAction):
-        def name(self):
-            return "some_form"
 
-        @staticmethod
-        def required_slots(_tracker):
-            return ["some_slot", "some_other_slot"]
-
-        def validate(self, dispatcher, tracker, domain):
-            return self.deactivate()
-
-    form = CustomFormAction()
+    form = form_class()
 
     tracker = Tracker(
         "default",
@@ -1074,3 +1092,40 @@ async def test_early_deactivation():
     # check that form was deactivated before requesting next slot
     assert events == [Form(None), SlotSet("requested_slot", None)]
     assert SlotSet("requested_slot", "some_other_slot") not in events
+
+
+class FormSyncSubmit(FormAction):
+    def name(self):
+        return "some_form"
+
+    @staticmethod
+    def required_slots(_tracker):
+        return ["some_slot"]
+
+    def submit(self, dispatcher, tracker, domain):
+        return []
+
+
+class FormAsyncSubmit(FormSyncSubmit):
+    async def submit(self, dispatcher, tracker, domain):
+        # Not really necessary, just to emphasize this is async
+        await asyncio.sleep(0)
+
+        return []
+
+
+@pytest.mark.parametrize("form_class", [FormSyncSubmit, FormAsyncSubmit])
+async def test_submit(form_class: Type[FormAction]):
+    tracker = Tracker(
+        "default",
+        {"some_slot": "foobar"},
+        {"intent": "greet"},
+        [],
+        False,
+        None,
+        {"name": "some_form", "validate": False, "rejected": False},
+        "action_listen",
+    )
+
+    form = form_class()
+    await form.run(dispatcher=None, tracker=tracker, domain=None)
