@@ -12,13 +12,25 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. note:: This version is not yet released and is under active development.
 
-
-[1.7.0] - 2020-01-16
-^^^^^^^^^^^^^^^^^^^^
-
 Changed
 -------
-- ``ReminderScheduled`` and ``ReminderCancelled`` now take ``intent`` and ``entities`` as options, instead of ``action``. This is because starting with Rasa 1.7 reminders trigger intents (with entities) instead of actions.
+- ``ReminderScheduled`` and ``ReminderCancelled`` now take ``intent`` and ``entities``
+  as options, instead of ``action``. This is because starting with Rasa 1.7 reminders
+  trigger intents (with entities) instead of actions.
+- The following ``FormAction`` methods are now ``async`` by default: ``validate_slots``,
+  ``validate``, ``submit`` and ``run``. User-defined classes inheriting from
+  ``FormAction`` should be adapted to use ``async`` for these methods. Existing
+  synchronous implementations will continue to work as normal, but this behaviour will
+  be deprecated in the future.
+- The following ``ActionQueryKnowledgeBase`` methods are now ``async``:
+  ``utter_objects`` and ``run``.
+- The following ``KnowledgeBase`` methods are now ``async``:
+  ``get_attributes_of_object``, ``get_key_attribute_of_object``,
+  ``get_representation_function_of_object``, ``get_objects`` and ``get_object``. Same
+  warning for ``FormAction`` applies here - user-defined classes should be updated to
+  use ``async``, but will continue to work for the moment.
+- The following ``InMemoryKnowledgeBase`` methods are now ``async``:
+  ``get_attributes_of_object``, ``get_objects`` and ``get_object``.
 
 [1.6.1] - 2020-01-07
 ^^^^^^^^^^^^^^^^^^^^

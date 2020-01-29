@@ -108,5 +108,7 @@ examples/moodbot/models/
 
 # emacs
 *~
+.dir-locals.el
 
 *.DS_Store
+
