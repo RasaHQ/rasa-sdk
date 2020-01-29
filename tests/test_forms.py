@@ -390,7 +390,7 @@ def test_extract_requested_slot_from_text_with_not_intent():
     assert slot_values == {"some_slot": "some_text"}
 
 
-async def test_extract_trigger_slots():
+def test_extract_trigger_slots():
     """Test extraction of a slot value from trigger intent
     """
 
@@ -423,7 +423,7 @@ async def test_extract_trigger_slots():
         "action_listen",
     )
 
-    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was extracted for correct intent
     assert slot_values == {"some_slot": "some_value"}
 
@@ -438,7 +438,7 @@ async def test_extract_trigger_slots():
         "action_listen",
     )
 
-    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was not extracted for incorrect intent
     assert slot_values == {}
 
@@ -454,12 +454,12 @@ async def test_extract_trigger_slots():
         "action_listen",
     )
 
-    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was not extracted for correct intent
     assert slot_values == {}
 
 
-async def test_extract_other_slots_no_intent():
+def test_extract_other_slots_no_intent():
     """Test extraction of other not requested slots values
         from entities with the same names
     """
@@ -486,7 +486,7 @@ async def test_extract_other_slots_no_intent():
         "action_listen",
     )
 
-    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was not extracted for requested slot
     assert slot_values == {}
 
@@ -501,7 +501,7 @@ async def test_extract_other_slots_no_intent():
         "action_listen",
     )
 
-    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was extracted for non requested slot
     assert slot_values == {"some_other_slot": "some_other_value"}
 
@@ -521,13 +521,13 @@ async def test_extract_other_slots_no_intent():
         "action_listen",
     )
 
-    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
 
     # check that the value was extracted only for non requested slot
     assert slot_values == {"some_other_slot": "some_other_value"}
 
 
-async def test_extract_other_slots_with_intent():
+def test_extract_other_slots_with_intent():
     """Test extraction of other not requested slots values
         from entities with the same names
     """
@@ -564,7 +564,7 @@ async def test_extract_other_slots_with_intent():
         "action_listen",
     )
 
-    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was extracted for non requested slot
     assert slot_values == {}
 
@@ -582,7 +582,7 @@ async def test_extract_other_slots_with_intent():
         "action_listen",
     )
 
-    slot_values = await form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was extracted only for non requested slot
     assert slot_values == {"some_other_slot": "some_other_value"}
 

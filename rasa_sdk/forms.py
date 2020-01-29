@@ -196,7 +196,7 @@ class FormAction(Action):
         return value
 
     # noinspection PyUnusedLocal
-    async def extract_other_slots(
+    def extract_other_slots(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
@@ -337,7 +337,7 @@ class FormAction(Action):
 
         # extract other slots that were not requested
         # but set by corresponding entity or trigger intent mapping
-        slot_values = await self.extract_other_slots(dispatcher, tracker, domain)
+        slot_values = self.extract_other_slots(dispatcher, tracker, domain)
 
         # extract requested slot
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
