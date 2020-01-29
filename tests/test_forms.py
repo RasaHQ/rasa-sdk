@@ -1130,5 +1130,4 @@ async def test_submit(form_class: Type[FormAction]):
     form = form_class()
     events = await form.run(dispatcher=None, tracker=tracker, domain=None)
 
-    print(events)
     assert events[0]["value"] == 42
