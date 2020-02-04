@@ -1,29 +1,35 @@
-FROM python:3.6-slim
+FROM python:3.6-alpine as python_builder
+RUN apk update && \
+  apk add \
+  build-base \
+  curl \
+  git
 
-SHELL ["/bin/bash", "-c"]
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+ENV PATH "/root/.poetry/bin:/opt/venv/bin:${PATH}"
 
-RUN apt-get update -qq && \
-  apt-get install -y --no-install-recommends \
-  build-essential && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-  mkdir /app
+COPY poetry.lock pyproject.toml /opt/project/
+RUN python -m venv /opt/venv && \
+  source /opt/venv/bin/activate && \
+  pip install -U pip && \
+  cd /opt/project && \
+  poetry install --no-dev --no-interaction
 
-WORKDIR /app
+COPY . /opt/project
+RUN source /opt/venv/bin/activate && \
+  cd /opt/project && \
+  poetry install --no-dev --no-interaction
 
-# Copy as early as possible so we can cache ...
-COPY requirements.txt .
+FROM python:3.6-alpine
+RUN apk update && apk add bash
 
-RUN pip install -r requirements.txt --no-cache-dir
-
-COPY . .
-
-RUN pip install -e . --no-cache-dir
+COPY --from=python_builder /opt /opt
+ENV PATH="/opt/venv/bin:$PATH"
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 VOLUME ["/app/actions"]
-
 EXPOSE 5055
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["./opt/project/entrypoint.sh"]
 
 CMD ["start", "--actions", "actions.actions"]
