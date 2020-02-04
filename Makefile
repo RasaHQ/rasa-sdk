@@ -11,11 +11,9 @@ help:
 	@echo "        Run py.test"
 	@echo "    init"
 	@echo "        Install Rasa SDK dependencies"
-	@echo "    release"
-	@echo "        Prepare a new release"
 
 init:
-	pip3 install -r requirements.txt
+	poetry install
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -30,15 +28,8 @@ types:
 	pytype --keep-going rasa_sdk
 
 lint:
-	flake8 rasa_sdk tests
+	flakehell lint rasa_sdk tests
 	black --check rasa_sdk tests
 
 test: clean
 	py.test tests --cov rasa_sdk -W ignore
-
-check-readme:
-	# if this runs through we can be sure the readme is properly shown on pypi
-	python3 setup.py check --restructuredtext --strict
-
-release:
-	python3 scripts/release.py

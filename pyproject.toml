@@ -1,55 +1,51 @@
+[tool.poetry]
+name = "rasa-sdk"
+version = "1.6.2b1"
+description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
+authors = ["Rasa Technologies GmbH <hi@rasa.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+configargparse = "^1.0"
+coloredlogs = "^10.0"
+sanic = "^19.12.2"
+sanic-cors = "0.10.0b1"
+multidict = "^4.7.4"
+
+[tool.poetry.dev-dependencies]
+pytest-cov = "^2.8.1"
+pytest = "^5.3.4"
+black = "^19.10b0"
+flake8 = "^3.7.9"
+pytype = "^2020.1.24"
+flakehell = "^0.3.3"
+
 [tool.black]
-    line-length = 88
-    target-version = ['py36', 'py37']
-    exclude = '''
+line-length = 88
+target-version = ['py36', 'py37']
+exclude = '''
 
-    (
-      /(
-          \.eggs
-        | \.git
-        | \.pytype
-        | \.pytest_cache
-        | build
-        | dist
-      )/
-    )
-    '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.pytype
+    | \.pytest_cache
+    | build
+    | dist
+  )/
+)
+'''
 
-[tool.towncrier]
-    package = "rasa_sdk"
-    package_dir = "rasa_sdk"
-    filename = "CHANGELOG.rst"
-    directory = "./changelog"
-    underlines = "^-_"
-    title_format = "[{version}] - {project_date}"
-    template = "./changelog/_template.jinja2"
+[tool.flakehell]
+max_line_length = 88
 
-    [[tool.towncrier.type]]
-        directory = "removal"
-        name = "Deprecations and Removals"
-        showcontent = true
+[tool.flakehell.plugins]
+pycodestyle = ["+*"]
+pyflakes = ["+*"]
+pylint = ["+*", "-W503", "-E121", "-E126", "-E211", "-E225", "-E501", "-E203", "-E402", "-F401", "-F811", "-F821"]
 
-    [[tool.towncrier.type]]
-        directory = "feature"
-        name = "Features"
-        showcontent = true
+[build-system]
+requires = ["poetry>=1.0.3"]
+build-backend = "poetry.masonry.api"
 
-    [[tool.towncrier.type]]
-        directory = "improvement"
-        name = "Improvements"
-        showcontent = true
-
-    [[tool.towncrier.type]]
-        directory = "bugfix"
-        name = "Bugfixes"
-        showcontent = true
-
-    [[tool.towncrier.type]]
-        directory = "doc"
-        name = "Improved Documentation"
-        showcontent = true
-
-    [[tool.towncrier.type]]
-        directory = "misc"
-        name = "Miscellaneous internal changes"
-        showcontent = false
