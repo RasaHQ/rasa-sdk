@@ -6,7 +6,7 @@ help:
 	@echo "    clean"
 	@echo "        Remove python artifacts and build artifacts."
 	@echo "    lint"
-	@echo "        Check style with flake8."
+	@echo "        Check style with flakehell."
 	@echo "    test"
 	@echo "        Run py.test"
 	@echo "    init"
