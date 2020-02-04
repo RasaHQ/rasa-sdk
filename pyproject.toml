@@ -42,9 +42,7 @@ exclude = '''
 max_line_length = 88
 
 [tool.flakehell.plugins]
-pycodestyle = ["+*"]
-pyflakes = ["+*"]
-pylint = ["+*", "-W503", "-E121", "-E126", "-E211", "-E225", "-E501", "-E203", "-E402", "-F401", "-F811", "-F821"]
+pylint = ["+E*", "+F*", "-W503", "-E121", "-E126", "-E211", "-E225", "-E501", "-E203", "-E402", "-F401", "-F811", "-F821"]
 
 [build-system]
 requires = ["poetry>=1.0.3"]
