@@ -6,7 +6,7 @@ help:
 	@echo "    clean"
 	@echo "        Remove python artifacts and build artifacts."
 	@echo "    lint"
-	@echo "        Check style with flakehell."
+	@echo "        Check style with flake8."
 	@echo "    test"
 	@echo "        Run py.test"
 	@echo "    init"
@@ -28,7 +28,7 @@ types:
 	pytype --keep-going rasa_sdk
 
 lint:
-	flakehell lint rasa_sdk tests
+	flake8 rasa_sdk tests
 	black --check rasa_sdk tests
 
 test: clean

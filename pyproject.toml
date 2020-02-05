@@ -1,16 +1,23 @@
 [tool.poetry]
 name = "rasa-sdk"
-version = "1.6.2b1"
+version = "1.7.0"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
 authors = ["Rasa Technologies GmbH <hi@rasa.com>"]
+maintainers = []
+homepage = ""
+repository = ""
+documentation = ""
+classifiers = []
+keywords = []
+include = []
+readme = "README.md"
+license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-configargparse = "^1.0"
 coloredlogs = "^10.0"
 sanic = "^19.12.2"
-sanic-cors = "0.10.0b1"
-multidict = "^4.7.4"
+sanic-cors = "^0.10.0b1"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^2.8.1"
@@ -18,7 +25,6 @@ pytest = "^5.3.4"
 black = "^19.10b0"
 flake8 = "^3.7.9"
 pytype = "^2020.1.24"
-flakehell = "^0.3.3"
 pytest-sanic = "^1.1.2"
 
 [tool.black]
@@ -37,12 +43,6 @@ exclude = '''
   )/
 )
 '''
-
-[tool.flakehell]
-max_line_length = 88
-
-[tool.flakehell.plugins]
-pylint = ["+E*", "+F*", "-W503", "-E121", "-E126", "-E211", "-E225", "-E501", "-E203", "-E402", "-F401", "-F811", "-F821"]
 
 [build-system]
 requires = ["poetry>=1.0.3"]
