@@ -86,6 +86,29 @@ To reformat files execute
 black .
 ```
 
+## Steps to release a new version
+Releasing a new version is quite simple, as the packages are build and distributed by travis.
+
+*Release steps*:
+1. Switch to the branch you want to cut the release from (`master` in case of a 
+  major / minor, the current release branch for patch releases).
+2. Run `make release`
+3. Create a PR against master or the release branch (e.g. `1.2.x`)
+4. Once your PR is merged, tag a new release (this SHOULD always happen on 
+  master or release branches), e.g. using
+    ```bash
+    git tag 1.2.0 -m "next release"
+    git push origin 1.2.0 --tags
+    ```
+    travis will build this tag and push a package to 
+    [pypi](https://pypi.python.org/pypi/rasa-sdk).
+5. **If this is a minor release**, a new release branch should be created 
+  pointing to the same commit as the tag to allow for future patch releases, 
+  e.g.
+    ```bash
+    git checkout -b 1.2.x
+    git push origin 1.2.x
+    ```
 
 ## License
 Licensed under the Apache License, Version 2.0. Copyright 2019 Rasa
