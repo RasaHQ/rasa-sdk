@@ -1,17 +1,64 @@
+[build-system]
+requires = [ "poetry>=1.0.3",]
+build-backend = "poetry.masonry.api"
+
 [tool.poetry]
 name = "rasa-sdk"
-version = "1.7.0"
+version = "1.9.9"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
-authors = ["Rasa Technologies GmbH <hi@rasa.com>"]
-maintainers = []
-homepage = ""
-repository = ""
-documentation = ""
-classifiers = []
-keywords = []
-include = []
+authors = [ "Rasa Technologies GmbH <hi@rasa.com>",]
+maintainers = [ "Tom Bocklisch <tom@rasa.com>",]
+homepage = "https://rasa.com"
+repository = "https://github.com/rasahq/rasa-sdk"
+documentation = "https://rasa.com/docs"
+classifiers = [ "Development Status :: 4 - Beta", "Intended Audience :: Developers", "License :: OSI Approved :: Apache Software License", "Programming Language :: Python", "Programming Language :: Python :: 3.6", "Programming Language :: Python :: 3.7", "Topic :: Software Development :: Libraries",]
+keywords = [ "nlp", "machine-learning", "machine-learning-library", "bot", "bots", "botkit", "rasa conversational-agents", "conversational-ai", "chatbot", "chatbot-framework", "bot-framework",]
+include = [ "LICENSE.txt", "README.md",]
 readme = "README.md"
 license = "Apache-2.0"
+
+[tool.black]
+line-length = 88
+target-version = [ "py36", "py37",]
+exclude = "((.eggs | .git | .pytype | .pytest_cache | build | dist))"
+
+[tool.towncrier]
+package = "rasa_sdk"
+package_dir = "rasa_sdk"
+filename = "CHANGELOG.rst"
+directory = "./changelog"
+underlines = "^-_"
+title_format = "[{version}] - {project_date}"
+template = "./changelog/_template.jinja2"
+[[tool.towncrier.type]]
+directory = "removal"
+name = "Deprecations and Removals"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "feature"
+name = "Features"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "improvement"
+name = "Improvements"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "bugfix"
+name = "Bugfixes"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "doc"
+name = "Improved Documentation"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "misc"
+name = "Miscellaneous internal changes"
+showcontent = false
 
 [tool.poetry.dependencies]
 python = "^3.6"
@@ -29,25 +76,4 @@ pytest-sanic = "^1.1.2"
 questionary = "^1.5.1"
 towncrier = "^19.2.0"
 toml = "^0.10.0"
-
-[tool.black]
-line-length = 88
-target-version = ['py36', 'py37']
-exclude = '''
-
-(
-  /(
-      \.eggs
-    | \.git
-    | \.pytype
-    | \.pytest_cache
-    | build
-    | dist
-  )/
-)
-'''
-
-[build-system]
-requires = ["poetry>=1.0.3"]
-build-backend = "poetry.masonry.api"
-
+semantic_version = "^2.8.4"
