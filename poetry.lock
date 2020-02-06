@@ -674,6 +674,14 @@ sanic = ">=18.12.0"
 
 [[package]]
 category = "dev"
+description = "A library implementing the 'SemVer' scheme."
+name = "semantic-version"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "2.8.4"
+
+[[package]]
+category = "dev"
 description = "Python 2 and 3 compatibility utilities"
 name = "six"
 optional = false
@@ -792,7 +800,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools"]
 
 [metadata]
-content-hash = "70b5e1d2fddceff1b475b8f94c6159a874d53c9b75f194e0a13431c2a37af2ca"
+content-hash = "53a195dd81fca3c40cb2244996f021646066abe82cce4ab7643e0bcabc86219a"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -1162,6 +1170,10 @@ sanic-cors = [
 sanic-plugins-framework = [
     {file = "Sanic-Plugins-Framework-0.9.0b1.tar.gz", hash = "sha256:50bb26c3c2c2d87ae09a65efd72e62d78b939c0f5d9e928426d70946c8f2b588"},
     {file = "Sanic_Plugins_Framework-0.9.0b1-py2.py3-none-any.whl", hash = "sha256:cc18f764048567b278e22a0433ae00c51243ba04307d8f2f230249d02d6ea033"},
+]
+semantic-version = [
+    {file = "semantic_version-2.8.4-py2.py3-none-any.whl", hash = "sha256:4eedff095ecdd7790a9e6d7130d49250209e0c7bf6741423c4a4017d9bac4c04"},
+    {file = "semantic_version-2.8.4.tar.gz", hash = "sha256:352459f640f3db86551d8054d1288608b29a96e880c7746f0a59c92879d412a3"},
 ]
 six = [
     {file = "six-1.14.0-py2.py3-none-any.whl", hash = "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"},

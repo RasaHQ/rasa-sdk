@@ -11,6 +11,8 @@ help:
 	@echo "        Run py.test"
 	@echo "    init"
 	@echo "        Install Rasa SDK dependencies"
+	@echo "    release"
+	@echo "        Prepare a new release"
 
 init:
 	poetry install
@@ -33,3 +35,6 @@ lint:
 
 test: clean
 	py.test tests --cov rasa_sdk -W ignore
+
+release:
+	python3 scripts/release.py
