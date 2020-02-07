@@ -38,7 +38,7 @@ USER 1001
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # create a mount point for custom actions and the entry point
-VOLUME ["/app/actions"]
+WORKDIR /app/actions
 EXPOSE 5055
 ENTRYPOINT ["./opt/rasa/entrypoint.sh"]
 CMD ["start", "--actions", "actions.actions"]

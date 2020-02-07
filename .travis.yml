@@ -4,10 +4,14 @@ cache:
   directories:
   - "$HOME/.cache/pip"
 python:
-  - '3.6'
-  - '3.7'
+- '3.6'
+- '3.7'
+env:
+  global:
+  - PYPI_USER=amn41
+  - secure: DjRCTHbXFMtRSY5E9CC6w844baGckt7A1qCSvbxUXW2ELqN40ZUUMDPDbBY0ktZtdTePr+Vaj5WnAsB6GNgw0d62b3UG9b+PO0bZN/vzPH3g+KDl6ch9G/uizEBtolTVjnRumWj8GegauEKVtZUfkFZC/bju9QZtzW/yd0+kz5y90ovN/1fB5W1Ol5Bz/ZDW82D9mQKgYL93+3ZHCX+IJDWx3tI9FSZgWV4c3SwNT9Ut/vqiDENVF5GEgPIiGOw0gGHYj9fo6AWBTb7NRNxTa89Fr/nQN5ciBUVI1afoVjDyDaXZIyfweQiluTAJdI/ErCRWfdSUH9q5fd0SLOA3aGlmh66NtQ3X57ixRafpr3rkB4igESsE/XhO07SZb2RnXj+/+wnLpG3E96pV8YFfC16G4OMkBLdB7v43jbdgWrCp3QnRcHKLIRwKTyHZnQTa7waHoqOjRVTdCgdXA37CGfeAd3ShINPMTEJ3qbAcbi6HLjumEnEn/jqpmV6bq/ykDqJN+QSpOueOOG2Pkl6Je1jR0OOCMqGy/cnyi3Oi7/9Sj3jZ1MQfDwrLs2iuW84qrud81eCBL69cCYukEC2BOvLDZAXGQrEPCRlMunkAWXrdjOxv5BhV20/D45ULq/ZBzLGJrCaC2hH8lD4htcvVVxOVmh4P8B8ZqRDftIGmBMU=
 before_install:
-- pip install poetry==1.0.3
+- pip install poetry~=1.0.3
 install:
 - poetry install
 script:
@@ -17,12 +21,12 @@ after_success:
 jobs:
   include:
   - stage: test
-    name: "Code Formatting"
+    name: Code Formatting
     python: 3.6
     script:
-      - make lint
+    - make lint
   - stage: test
-    name: "Type Check"
+    name: Type Check
     python: 3.6
     script:
     - make types
@@ -30,16 +34,11 @@ jobs:
     python: 3.6
     install: skip
     script: skip
-    env:
-    - PYPI_USER=amn41
-    - secure: "<encrypted PYPI_PASSWORD=password>"
     before_deploy:
     - poetry config http-basic.pypi $PYPI_USER $PYPI_PASSWORD
     - poetry build
     deploy:
-      provider: script
+    - provider: script
       script: poetry publish
       on:
         branch: master
-        tags: true
-    after_deploy: ./scripts/ping_slack_about_package_release.sh
