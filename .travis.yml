@@ -31,8 +31,8 @@ jobs:
     install: skip
     script: skip
     env:
-    - PYPI_USER=amn41
-    - secure: "<encrypted PYPI_PASSWORD=password>"
+    - PYPI_USER=alwx
+    - secure: "TWlRQTXlR9QRRmYzGSgqdfa+/BLFKuSS6MzwUEFu+9kqXBpVMF/zw8vH6t9VkKg7Ophj334dHt2yv/H7XjxqUWVWStQ+yAiEbe5uKrzyXbuf19Ff7nKup2oxRVXTsNem+ugDThWjbj78MWnrwXrt5IiO2mPZ47fBc07+xOW/Gmoaxz/S0kadhTj+EKpVSkH7ZEgqw05T/p7c1vtMtSNcmNGZYQLxMxDR6GSCmDuhsSBT4HbUO2tM+ONqynb8BEMWWULrBz34bUB5CgQcERzi30chA/ZdHjIAJaC3xy3DH5f/K955hQM9Ay+dXdXdNJr/8sLPEd0hHMrqIGJMKLiJyv/+qWx+4C0HaXK6mBXvUOu+Piha8EP+hayX6cUlGqvcvVRvtWdY4TodlBeN54qVjsmXOgRBtpimOGakGHKmS8c1pkhCKZXYzSkAKhg5Mybdy4Fmu5QNEqydQ3YVtYSIJqU5jJo33Sw0xhAsr/NwyuZdd/aSBlUR5rVVRTOfNIWp8Agdb1bDpuToRh1oOlYIcC6XmWjhMioF40bkWLBab5lnQa0GjNjn82QYuKWL2eTpB+Tl9RAVcHMa57YqSAQT2/pyFyn4Yvdz+PNh/Uvb51pVLdBo0+b83gyBfk3Tfejz4aBCxWX4seKJo5cbj5CPQKCLAkDFSkeZ5oLj8Id82yM="
     before_deploy:
     - poetry config http-basic.pypi $PYPI_USER $PYPI_PASSWORD
     - poetry build
@@ -40,6 +40,6 @@ jobs:
       provider: script
       script: poetry publish
       on:
-        branch: master
-        tags: true
-    after_deploy: ./scripts/ping_slack_about_package_release.sh
+        branch: poetry-master
+        # tags: true
+    # after_deploy: ./scripts/ping_slack_about_package_release.sh
