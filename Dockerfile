@@ -10,7 +10,7 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
 ENV PATH "/root/.poetry/bin:/opt/venv/bin:${PATH}"
 
 # install dependencies
-COPY poetry.lock pyproject.toml /opt/rasa/
+COPY README.md poetry.lock pyproject.toml setup.cfg /opt/rasa/
 RUN python -m venv /opt/venv && \
   . /opt/venv/bin/activate && \
   pip install -U pip && \

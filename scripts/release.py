@@ -78,8 +78,10 @@ def write_version_to_pyproject(version: Text) -> None:
             toml.dump(data, f)
     except (FileNotFoundError, TypeError):
         print(f"Unable to update {pyproject_file}: file not found.")
+        sys.exit(1)
     except toml.TomlDecodeError:
         print(f"Unable to parse {pyproject_file}: incorrect TOML file.")
+        sys.exit(1)
 
 
 def get_current_version() -> Text:
