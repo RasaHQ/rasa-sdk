@@ -10,28 +10,23 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
 ENV PATH "/root/.poetry/bin:/opt/venv/bin:${PATH}"
 
 # install dependencies
-COPY README.md poetry.lock pyproject.toml setup.cfg /opt/rasa/
+COPY . /app/
 RUN python -m venv /opt/venv && \
   . /opt/venv/bin/activate && \
-  pip install -U pip && \
-  cd /opt/rasa && \
-  poetry install --no-dev --no-interaction
-
-# build and install rasa-sdk
-COPY . /opt/rasa
-RUN . /opt/venv/bin/activate && \
-  cd /opt/rasa && \
+  pip install --no-cache-dir -U pip && \
+  cd /app && \
   poetry install --no-dev --no-interaction
 
 # start a new build stage
 FROM python:3.6-slim
 
 # copy everything from /opt
-COPY --from=python_builder /opt /opt
+COPY --from=python_builder /opt/venv /opt/venv
+COPY --from=python_builder /app /app
 ENV PATH="/opt/venv/bin:$PATH"
 
-# change user
-RUN chgrp -R 0 /opt/rasa && chmod -R g=u /opt/rasa
+# update permissions & change user
+RUN chgrp -R 0 /app && chmod -R g=u /app
 USER 1001
 
 # change shell
@@ -40,5 +35,5 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # create a mount point for custom actions and the entry point
 WORKDIR /app/actions
 EXPOSE 5055
-ENTRYPOINT ["./opt/rasa/entrypoint.sh"]
+ENTRYPOINT ["./../entrypoint.sh"]
 CMD ["start", "--actions", "actions.actions"]
