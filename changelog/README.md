@@ -11,6 +11,14 @@ punctuation, examples:
     Slots will be correctly interpolated if there are lists in custom response templates.
 
     Previously this resulted in no interpolation.
+    
+or
+
+    Added new Action execution module.
+    
+or
+
+    Fixed Forms not working when conversation length exceeded 1000 messages.
 
 Each file should be named like ``<ISSUE>.<TYPE>.rst``, where
 ``<ISSUE>`` is an issue / PR number, and ``<TYPE>`` is one of:
