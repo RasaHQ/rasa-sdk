@@ -11,9 +11,11 @@ help:
 	@echo "        Run py.test"
 	@echo "    init"
 	@echo "        Install Rasa SDK dependencies"
+	@echo "    release"
+	@echo "        Prepare a new release"
 
 init:
-	pip install -r requirements.txt
+	pip3 install -r requirements.txt
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -36,4 +38,7 @@ test: clean
 
 check-readme:
 	# if this runs through we can be sure the readme is properly shown on pypi
-	python setup.py check --restructuredtext --strict
+	python3 setup.py check --restructuredtext --strict
+
+release:
+	python3 scripts/release.py

@@ -4,18 +4,19 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
-.. _master-release:
-
-[Unreleased 1.7.1a1] - `master`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note:: This version is not yet released and is under active development.
+..
+    You should **NOT** be adding new change log entries to this file, this
+    file is managed by ``towncrier``.
+    You **may** edit previous change logs to fix problems like typo corrections or such.
+    You can find more information on how to add a new change log entry at
+    https://github.com/RasaHQ/rasa-sdk/tree/master/changelog/ .
+.. towncrier release notes start
 
 [1.7.0] - 2020-01-29
 ^^^^^^^^^^^^^^^^^^^^
 
-Changed
--------
+Improvements
+------------
 - ``ReminderScheduled`` and ``ReminderCancelled`` now take ``intent`` and ``entities``
   as options, instead of ``action``. This is because starting with Rasa 1.7 reminders
   trigger intents (with entities) instead of actions.
@@ -37,15 +38,15 @@ Changed
 [1.6.1] - 2020-01-07
 ^^^^^^^^^^^^^^^^^^^^
 
-Fixed
------
+Bugfixes
+--------
 - Pinned ``sanic~=19.9.0`` to fix breaking changes introduced in sanic 19.9.12.
 
 [1.6.0] - 2019-12-18
 ^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - Added ``SessionStarted`` event for compatibility with conversation sessions in Rasa
   1.6.0.
 
@@ -53,34 +54,34 @@ Added
 [1.5.2] - 2019-12-11
 ^^^^^^^^^^^^^^^^^^^^
 
-Fixed
------
+Bugfixes
+--------
 - Pinned ``multidict`` dependency to 4.6.1 to prevent sanic from breaking,
   see https://github.com/huge-success/sanic/issues/1729
 
 [1.5.1] - 2019-11-27
 ^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - Added ``LOG_LEVEL_LIBRARIES`` environment variable to set log level of libraries, such as ``sanic``
 
-Changed
--------
+Improvements
+------------
 - ``DeprecationWarning``s are now ``FutureWarning``s, as they should be seen
   by end users
 - ``text`` is now the first positional argument in ``utter_message`` instead of
   ``image``
 
-Fixed
------
+Bugfixes
+--------
 - The deprecated ``utter_elements`` now correctly uses ``utter_message``
 
 [1.5.0] - 2019-11-22
 ^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - Add support for multiple sanic workers (configurable with the
   ``ACTION_SERVER_SANIC_WORKERS`` environment variable).
 - Add support for async ``run`` methods in the ``Action`` class.
@@ -88,8 +89,8 @@ Added
 - Return status code ``400`` in case an empty request body was sent to the ``/webhook``
   endpoint.
 
-Changed
--------
+Improvements
+------------
 - Replace ``flask`` server framework with ``sanic``.
 - Replace ``flask_cors`` with ``sanic-cors``.
 - ``CollectingDispatcher.utter_message`` can now do anything that other dispatcher
@@ -100,20 +101,20 @@ Changed
   favor of ``utter_message``.
 - Updated format strings to f-strings where appropriate.
 
-Removed
--------
+Deprecations and Removals
+-------------------------
 - Remove ``requests`` dependency
 - Remove ``gevent`` dependency
 
 [1.4.0] - 2019-10-19
 ^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - Added Python 3.7 support.
 
-Removed
--------
+Deprecations and Removals
+-------------------------
 - Removed Python 2.7 support.
 - Removed Python 3.5 support.
 
@@ -121,23 +122,23 @@ Removed
 [1.3.3] - 2019-09-28
 ^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - SSL support, certificates can be passed with --ssl-certificate and --ssl-keyfile
 
 
 [1.3.2] - 2019-09-06
 ^^^^^^^^^^^^^^^^^^^^
 
-Fixed
------
+Bugfixes
+--------
 - fixed TypeError on ``request_next_slot`` method of ``FormAction`` class
 
 [1.3.1] - 2019-09-05
 ^^^^^^^^^^^^^^^^^^^^
 
-Fixed
------
+Bugfixes
+--------
 - undid Removed unused ``tracker`` argument from ``utter_template`` and ``utter_button_template``
   methods as it resulted in compatibility issues
 
@@ -146,13 +147,13 @@ Fixed
 
 Compatibility release for Rasa 1.3.0.
 
-Added
------
+Features
+--------
 - add ``InMemoryKnowledgeBase`` implementation as a default ``KnowledgeBase``
 - add ``ActionQueryKnowledgeBase`` as a default action to interact with a knowledge base
 
-Changed
--------
+Improvements
+------------
 - Removed unused ``tracker`` argument from ``utter_template`` and ``utter_button_template``
   methods
 
@@ -165,12 +166,12 @@ additional changes.
 [1.1.1] - 2019-07-25
 ^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - ``dispatcher.utter_image_url()`` to dispatch images from custom actions
 
-Fixed
------
+Bugfixes
+--------
 - correct slots print in debug mode before submitting a form
 
 [1.1.0] - 2019-06-13
@@ -182,13 +183,13 @@ additional changes.
 [1.0.0] - 2019-05-21
 ^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - validate events returned from action - checks for sanity
 - endpoint to retrieve all registered actions at ``/actions``
 
-Changed
--------
+Improvements
+------------
 - package renamed from ``rasa_core_sdk`` to ``rasa_sdk`` - please make sure to
   update your imports accordingly
 
@@ -201,28 +202,28 @@ additional changes when compared to ``0.13.1``.
 [0.13.1] - 2019-04-16
 ^^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - add formatter 'black'
 - Slots filled before the start of a form are now validated upon form start
 - In debug mode, the values of required slots for a form are now printed
   before submitting
 
-Changed
--------
+Improvements
+------------
 - validate_{} functions for slots now return dictionaries of form {slot: value}
   instead of value
 
-Fixed
------
+Bugfixes
+--------
 - Slots extracted from entities in user input upon calling form activation are
   now correctly validated
 
 [0.13.0] - 2019-03-26
 ^^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - Abstract Actions can now be subclassed
 - add warning in case of mismatched version of rasa_core and rasa_core_sdk
 - ``FormAction.from_trigger_intent`` allows slot extraction from message
@@ -233,16 +234,16 @@ Added
 [0.12.2] - 2019-02-17
 ^^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - add optional `validate_{slot}` methods to `FormAction`
 - forms can now be deactivated during the validation function by returning
   `self.deactivate()`
 - Function to get latest input channel from the tracker with
   ``tracker.get_latest_input_channel()``
 
-Changed
--------
+Improvements
+------------
 - ``self._deactivate()`` method from the ``FormAction`` class has been
   renamed to ``self.deactivate()``
 - changed endpoint function so that it is now accessible with Python as well
@@ -250,15 +251,15 @@ Changed
 [0.12.1] - 2018-11-11
 ^^^^^^^^^^^^^^^^^^^^^
 
-Fixed
------
+Bugfixes
+--------
 - doc formatting preventing successful rasa core travis build
 
 [0.12.0] - 2018-11-11
 ^^^^^^^^^^^^^^^^^^^^^
 
-Added
------
+Features
+--------
 - added Dockerfile for rasa_core_sdk
 - add ``active_form`` and ``latest_action_name`` properties to ``Tracker``
 - add ``FormAction.slot_mapping()`` method to specify the mapping between
@@ -268,8 +269,8 @@ Added
 - add ``FormAction.validate(...)`` method to validate user input
 - add warning in case of mismatched version of rasa_core and rasa_core_sdk
 
-Changed
--------
+Improvements
+------------
 
 - ``FormAction`` class was completely refactored
 - ``required_fields()`` is changed to ``required_slots(tracker)``
@@ -280,26 +281,26 @@ Changed
 - logic of requesting next slot can be customized in
   ``FormAction.request_next_slot(...)`` method
 
-Removed
--------
+Deprecations and Removals
+-------------------------
 
 - ``FormField`` class and its subclasses
 
-Fixed
------
+Bugfixes
+--------
 
 [0.11.5] - 2018-09-24
 ^^^^^^^^^^^^^^^^^^^^^
 
-Fixed
------
+Bugfixes
+--------
 - current state call in tracker
 
 [0.11.4] - 2018-09-17
 ^^^^^^^^^^^^^^^^^^^^^
 
-Fixed
------
+Bugfixes
+--------
 - wrong event name for the ``AgentUttered`` event - due to the wrong name,
   rasa core would deserialise the wrong event.
 
