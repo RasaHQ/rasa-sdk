@@ -27,14 +27,14 @@ clean:
 	rm -rf docs/_build
 
 types:
-	pytype --keep-going rasa_sdk
+	poetry run pytype --keep-going rasa_sdk
 
 lint:
-	flake8 rasa_sdk tests
-	black --check rasa_sdk tests
+	poetry run flake8 rasa_sdk tests
+	poetry run black --check rasa_sdk tests
 
 test: clean
-	py.test tests --cov rasa_sdk -W ignore
+	poetry run py.test tests --cov rasa_sdk -W ignore
 
 release:
-	python3 scripts/release.py
+	poetry run python scripts/release.py
