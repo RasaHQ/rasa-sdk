@@ -16,8 +16,6 @@ install:
 - poetry install
 script:
 - travis_wait py.test tests --cov rasa_sdk -v
-after_success:
-- poetry run coveralls
 jobs:
   include:
   - stage: test
