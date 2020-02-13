@@ -1,0 +1,119 @@
+name: Continous Integration
+
+on: [push]
+
+# SECRETS
+# - COVERALLS_REPO_TOKEN: can be found on the coveralls page for the repo
+# - PYPI_TOKEN: publishing token for amn41 account, needs to be maintainer of
+#               RasaHQ/rasa-sdk on pypi (account credentials in 1password)
+
+jobs:
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout git repository 🕝
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.7 🐍
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+
+    - name: Install poetry 🦄
+      uses: Gr1N/setup-poetry@v1
+      with:
+        # keep this in sync with the version in pyproject.toml and Dockerfile
+        poetry-version: 1.0.3
+
+    - name: Load Poetry Cached Libraries ⬇
+      uses: actions/cache@v1
+      with:
+        path: ~/.cache/pypoetry/virtualenvs
+        key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: ${{ runner.os }}-poetry-
+
+    - name: Install Dependencies 📦
+      run: make install
+
+    - name: Lint Code 🎎
+      run: make lint
+
+    - name: Check Types 📚
+      run: make types
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 2
+      matrix:
+        python-version: [3.6, 3.7]
+
+    steps:
+    - name: Checkout git repository 🕝
+      uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }} 🐍
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install poetry 🦄
+      uses: Gr1N/setup-poetry@v1
+      with:
+        # keep this in sync with the version in pyproject.toml and Dockerfile
+        poetry-version: 1.0.3
+
+    - name: Load Poetry Cached Libraries ⬇
+      uses: actions/cache@v1
+      with:
+        path: ~/.cache/pypoetry/virtualenvs
+        key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: ${{ runner.os }}-poetry-
+
+    - name: Install Dependencies 📦
+      run: make install
+
+    - name: Test Code 🔍
+      run: make test
+
+    - name: Send Coverage Report 📊
+      if: matrix.python-version == 3.6
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        COVERALLS_SERVICE_NAME: github-ci
+      run: poetry run coveralls
+
+  deploy:
+    name: Deploy to PyPI
+    runs-on: ubuntu-latest
+
+    # deploy will only be run when there is a tag available
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    needs: [quality, test]     # only run after all other stages succeeded
+
+    steps:
+    - name: Checkout git repository 🕝
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.6 🐍
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+
+    - name: Install poetry 🦄
+      uses: Gr1N/setup-poetry@v1
+      with:
+        # keep this in sync with the version in pyproject.toml and Dockerfile
+        poetry-version: 1.0.3
+
+    - name: Build ⚒️ Distributions
+      run: poetry build
+
+    - name: Publish to PyPI 📦
+      uses: pypa/gh-action-pypi-publish@37e305e7413032d8422456179fee28fac7d25187
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}

@@ -14,7 +14,7 @@ help:
 	@echo "    release"
 	@echo "        Prepare a new release"
 
-init:
+install:
 	poetry install
 
 clean:
@@ -34,7 +34,7 @@ lint:
 	poetry run black --check rasa_sdk tests
 
 test: clean
-	poetry run py.test tests --cov rasa_sdk -W ignore
+	poetry run py.test tests --cov rasa_sdk -v
 
 release:
 	poetry run python scripts/release.py
