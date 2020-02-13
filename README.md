@@ -1,6 +1,7 @@
 # Rasa Python-SDK
 [![Join the chat on Rasa Community Forum](https://img.shields.io/badge/forum-join%20discussions-brightgreen.svg)](https://forum.rasa.com/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.com/RasaHQ/rasa-sdk.svg?branch=master)](https://travis-ci.com/RasaHQ/rasa-sdk)
+[![Build Status](https://github.com/RasaHQ/rasa-sdk/workflows/Continous%20Integration/badge.svg?event=push)](https://github.com/RasaHQ/rasa-sdk/actions/runs/)
+[![Coverage Status](https://coveralls.io/repos/github/RasaHQ/rasa-sdk/badge.svg?branch=master)](https://coveralls.io/github/RasaHQ/rasa-sdk?branch=master)
 [![PyPI version](https://img.shields.io/pypi/v/rasa-sdk.svg)](https://pypi.python.org/pypi/rasa-sdk)
 [![Documentation Status](https://img.shields.io/badge/docs-stable-brightgreen.svg)](https://rasa.com/docs)
 
@@ -75,7 +76,7 @@ RUN pip install --no-cache-dir <A_REQUIRED_PACKAGE_ON_PYPI>
 ## Code Style
 
 To ensure a standardized code style we use the formatter [black](https://github.com/ambv/black).
-If your code is not formatted properly, travis will fail to build.
+If your code is not formatted properly, GitHub CI will fail to build.
 
 If you want to automatically format your code on every commit, you can use [pre-commit](https://pre-commit.com/).
 Just install it via `pip install pre-commit` and execute `pre-commit install`.
@@ -87,7 +88,8 @@ black .
 ```
 
 ## Steps to release a new version
-Releasing a new version is quite simple, as the packages are build and distributed by travis.
+Releasing a new version is quite simple, as the packages are build and distributed 
+by GitHub Actions.
 
 *Release steps*:
 1. Switch to the branch you want to cut the release from (`master` in case of a 
@@ -100,7 +102,7 @@ Releasing a new version is quite simple, as the packages are build and distribut
     git tag 1.2.0 -m "next release"
     git push origin 1.2.0 --tags
     ```
-    travis will build this tag and push a package to 
+    GitHub Actions will build this tag and push a package to 
     [pypi](https://pypi.python.org/pypi/rasa-sdk).
 5. **If this is a minor release**, a new release branch should be created 
   pointing to the same commit as the tag to allow for future patch releases, 
