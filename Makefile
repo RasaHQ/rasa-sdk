@@ -15,7 +15,7 @@ help:
 	@echo "        Prepare a new release"
 
 init:
-	pip3 install -r requirements.txt
+	poetry install
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -27,18 +27,14 @@ clean:
 	rm -rf docs/_build
 
 types:
-	pytype --keep-going rasa_sdk
+	poetry run pytype --keep-going rasa_sdk
 
 lint:
-	flake8 rasa_sdk tests
-	black --check rasa_sdk tests
+	poetry run flake8 rasa_sdk tests
+	poetry run black --check rasa_sdk tests
 
 test: clean
-	py.test tests --cov rasa_sdk -W ignore
-
-check-readme:
-	# if this runs through we can be sure the readme is properly shown on pypi
-	python3 setup.py check --restructuredtext --strict
+	poetry run py.test tests --cov rasa_sdk -W ignore
 
 release:
-	python3 scripts/release.py
+	poetry run python scripts/release.py

@@ -4,26 +4,27 @@ cache:
   directories:
   - "$HOME/.cache/pip"
 python:
-  - '3.6'
-  - '3.7'
+- '3.6'
+- '3.7'
+env:
+  global:
+  - PYPI_USER=amn41
+  - secure: "OWe6Fd/tXcCNvRBMJvFIXtDpnA0rQMFE/rLrzEZqmR9KOZs5dfEu3Bb7SW/22iIsAxSUjvGlqlcdp+QBPAw1XiD17aAJYvbCxh+c6xo264PyHOIhKzac23vmEzFr97LT3LKRIr1wULqGN05wMPGdzK7QK03aXfIRneBOphHM7fbT0Hl8zBTL7YwSuaA+Xic67fIFcd75Ynq8SGP1Gmoyu7NFfWRGxhL5+tPR+iuGkGfGf6nOBl0h9bfwU3moR9cVIe3mrcllcp5TonxfDtS8i7Mgs/jxCyNqWP1PufaLZVM/iFG9s25Yzpy478EH0rhLPRWAfXnTVov/5KOMrVSc1jrrO3eyxVXxubwAemgd4RTT6tihzZunAdFVQL0NTT78uPpqofJrvI0HAFt+0jJz4Ok+KFSqHjTPqSmndD1CtFh3hdIRydpV+Yp/ixC3c60gPTT+hydFtg3nARk+BPdUed0iF8j0AnPfDzW5QNKsYYFudm7FfjdOtCIu/tdKckfdh2mk+q4PcqJtgz97gc8b+X3l87bJFNmIWAIGMpKzK788N+EB18JR4gIOi6WqynUJaeq965lNIoDQtCxI/w7iRegE3UlRf/WZXUgL8jgN6w/EQXJDGZBkBi7W51AXuVYMvh7YK94j1IvXar6oNhYFqjsYW02vLgnG8Nwx3YR1Zr8="
+before_install:
+- pip install poetry~=1.0.3 # keep this in sync with the version in pyproject.toml and Dockerfile
 install:
-- pip install -r dev-requirements.txt
-- pip install -e .
-- pip install coveralls==1.3.0
-- pip list
+- poetry install
 script:
 - travis_wait py.test tests --cov rasa_sdk -v
-after_success:
-- coveralls
 jobs:
   include:
   - stage: test
-    name: "Code Formatting"
+    name: Code Formatting
     python: 3.6
     script:
-      - make lint
+    - make lint
   - stage: test
-    name: "Type Check"
+    name: Type Check
     python: 3.6
     script:
     - make types
@@ -31,13 +32,11 @@ jobs:
     python: 3.6
     install: skip
     script: skip
+    before_deploy:
+    - poetry config http-basic.pypi $PYPI_USER $PYPI_PASSWORD
+    - poetry build
     deploy:
-      provider: pypi
-      user: amn41
-      distributions: "sdist bdist_wheel"
+    - provider: script
+      script: poetry publish
       on:
         branch: master
-        tags: true
-      password:
-        secure: "a1ur/UMpxoPv6bTPC8Bgc9UVKG/FU8IZR2+dnr5oq3XGPP1WkyyEed95QrSQ+QNHgHPjSUMRxu1zuflQbxAW9i+y+1qLjKMHc1Xr1aUsuXIOjrTg62hKpB6Wx5hRBFPZXchU7mr6rVF7m+iQtK+dy0P7Qoffou603TzivYTDT1N9640gzlAWjeBjyC46KBjpXVJlIEaGNqiNCsbC7B0g3hCgdIIOmNGW+aoiZsy+LU6c/coADsly7CrHdld0GuGNxeHZDvVv6EJGkc8igLnmRsgoU9rlq/ZSlF3Ob8hXOzy20dm9XU+zTNcQglkyI6ebSOywrGtv4Rc6y+Ik5Qjg958Eujme7KephQ5l7hqkkp6kPMThhLHss7mH8hnxiFeTdMCrKZshektsSWNsYAV07cL9S52VOI47Nm7gpqXjtYhNu7MHbC/jio42k+wbZvVHNq71/S63ejosf1IO5pqlCajnSRHCaQH3mDrmuV9WyFgNL/Hdwp9do95XE+fyWAq3h/x6m7SxvzLbYQ+Km4fvlW5apb6XZLyFFXXaauxpLzPq5Cm/amrGx85+n9vH+PMtpu2mCmlgfCT3RV97AV9yNgGUvTMCVVXMV0n3EdX8tAGu7XkEbzDsxTAUSbJt3x+/d9gCn/FVStp02AcTlHgyFl+S6vta6Howp5nzY+KjZU0="
-    after_deploy: ./scripts/ping_slack_about_package_release.sh
