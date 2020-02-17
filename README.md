@@ -73,6 +73,24 @@ RUN apt-get update -qq && \
 RUN pip install --no-cache-dir <A_REQUIRED_PACKAGE_ON_PYPI>
 ```
 
+
+## Building from source
+
+Rasa SDK uses Poetry for packaging and dependency management. If you want to build it from source,
+you have to install Poetry first. This is how it can be done:
+
+```
+curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3
+```
+
+There are several other ways to install Poetry. Please, follow 
+[the official guide](https://python-poetry.org/docs/#installation) to see all possible options.
+
+To install dependencies and `rasa-sdk` itself in editable mode execute
+```
+make install
+```
+
 ## Code Style
 
 To ensure a standardized code style we use the formatter [black](https://github.com/ambv/black).
@@ -81,10 +99,9 @@ If your code is not formatted properly, GitHub CI will fail to build.
 If you want to automatically format your code on every commit, you can use [pre-commit](https://pre-commit.com/).
 Just install it via `pip install pre-commit` and execute `pre-commit install`.
 
-If you want to set it up manually, install black via `pip install black`.
-To reformat files execute
+To check and reformat files execute
 ```
-black .
+make lint
 ```
 
 ## Steps to release a new version
