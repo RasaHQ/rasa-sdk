@@ -149,14 +149,16 @@ class Tracker:
             self.latest_action_name,
         )
 
-    def last_executed_action_has(self, name, skip=0):
+    def last_executed_action_has(self, name: Text, skip: int = 0) -> bool:
         last = self.get_last_event_for(
             "action", exclude=[ACTION_LISTEN_NAME], skip=skip
         )
         return last is not None and last["name"] == name
 
-    def get_last_event_for(self, event_type, exclude=[], skip=0):
-        def filter_function(e: Dict):
+    def get_last_event_for(
+        self, event_type: Text, exclude: List[Text] = [], skip: int = 0
+    ) -> Dict[Text, Any]:
+        def filter_function(e: Dict[Text, Any]) -> bool:
             has_instance = e["event"] == event_type
             excluded = e["event"] == "action" and e["name"] in exclude
 
@@ -168,10 +170,10 @@ class Tracker:
 
         return next(filtered, None)
 
-    def applied_events(self) -> List[Dict]:
+    def applied_events(self) -> List[Dict[Text, Any]]:
         """Returns all actions that should be applied - w/o reverted events."""
 
-        def undo_till_previous(event_type, done_events):
+        def undo_till_previous(event_type: Text, done_events: List[Dict[Text, Any]]):
             """Removes events from `done_events` until the first
                 occurrence `event_type` is found which is also removed."""
             # list gets modified - hence we need to copy events!
@@ -182,11 +184,11 @@ class Tracker:
 
         applied_events = []
         for event in self.events:
-            if event.get("name", None) == "restart":
+            if event.get("name") == "restart":
                 applied_events = []
-            elif event.get("name", None) == "undo":
+            elif event.get("name") == "undo":
                 undo_till_previous("action", applied_events)
-            elif event.get("name", None) == "rewind":
+            elif event.get("name") == "rewind":
                 # Seeing a user uttered event automatically implies there was
                 # a listen event right before it, so we'll first rewind the
                 # user utterance, then get the action right before it (also removes
