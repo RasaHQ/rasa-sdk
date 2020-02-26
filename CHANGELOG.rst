@@ -12,15 +12,6 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
     https://github.com/RasaHQ/rasa-sdk/tree/master/changelog/ .
 .. towncrier release notes start
 
-[PR] - 2020-02-23
-^^^^^^^^^^^^^^^^^^^^
-
-Added
------
-- Copied over instance methods ``last_executed_action_has()``, ``get_last_event_for()`` and
-  ``applied_events`` from the Rasa ``DialogueStateTracker`` class to the SDK ``Tracker`` class.
-
-
 [1.7.0] - 2020-01-29
 ^^^^^^^^^^^^^^^^^^^^
 
