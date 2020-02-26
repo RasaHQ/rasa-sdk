@@ -1,1 +1,0 @@
-Switch to GitHub Actions for CI, removed travis integration.

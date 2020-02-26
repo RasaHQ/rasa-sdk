@@ -1,1 +1,0 @@
-Add "Building from source" section to ``README.md``.

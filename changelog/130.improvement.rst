@@ -1,2 +1,0 @@
-Copied over instance methods ``last_executed_action_has()``, ``get_last_event_for()`` and
-  ``applied_events`` from the Rasa ``DialogueStateTracker`` class to the SDK ``Tracker`` class.
