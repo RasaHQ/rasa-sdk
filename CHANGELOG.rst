@@ -10,7 +10,22 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
     You **may** edit previous change logs to fix problems like typo corrections or such.
     You can find more information on how to add a new change log entry at
     https://github.com/RasaHQ/rasa-sdk/tree/master/changelog/ .
+
 .. towncrier release notes start
+
+[1.8.0] - 2020-02-26
+^^^^^^^^^^^^^^^^^^^^
+
+Improvements
+------------
+- `#130 <https://github.com/rasahq/rasa/issues/130>`_: Copied over instance methods ``last_executed_action_has()``, ``get_last_event_for()`` and
+    ``applied_events`` from the Rasa ``DialogueStateTracker`` class to the SDK ``Tracker`` class.
+- `#145 <https://github.com/rasahq/rasa/issues/145>`_: Add ``poetry`` for dependency management and reduce the size of Docker image.
+
+Miscellaneous internal changes
+------------------------------
+- #148, #149
+
 
 [1.7.0] - 2020-01-29
 ^^^^^^^^^^^^^^^^^^^^
