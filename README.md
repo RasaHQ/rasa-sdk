@@ -117,7 +117,7 @@ by GitHub Actions.
   master or release branches), e.g. using
     ```bash
     git tag 1.2.0 -m "next release"
-    git push origin 1.2.0 --tags
+    git push origin 1.2.0
     ```
     GitHub Actions will build this tag and push a package to 
     [pypi](https://pypi.python.org/pypi/rasa-sdk).
