@@ -83,6 +83,8 @@ def write_version_to_pyproject(version: Text) -> None:
         print(f"Unable to parse {pyproject_file}: incorrect TOML file.")
         sys.exit(1)
 
+    check_call(["git", "add", str(pyproject_file.absolute())])
+
 
 def get_current_version() -> Text:
     """Return the current library version."""
