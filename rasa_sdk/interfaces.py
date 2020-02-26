@@ -157,7 +157,7 @@ class Tracker:
 
     def get_last_event_for(
         self, event_type: Text, exclude: List[Text] = [], skip: int = 0
-    ) -> Dict[Text, Any]:
+    ) -> Optional[Dict[Text, Any]]:
         def filter_function(e: Dict[Text, Any]) -> bool:
             has_instance = e["event"] == event_type
             excluded = e["event"] == "action" and e["name"] in exclude
