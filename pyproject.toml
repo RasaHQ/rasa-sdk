@@ -66,7 +66,7 @@ python = "^3.6"
 coloredlogs = "^10.0"
 sanic = "^19.12.2"
 sanic-cors = "^0.10.0b1"
-requests = "^2.23"
+requests = "^2.0"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^2.8.1"
