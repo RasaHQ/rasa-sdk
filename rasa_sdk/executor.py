@@ -188,11 +188,11 @@ class ActionExecutor:
         :rtype: dict[str, types.ModuleType]
         """
         if isinstance(package, str):
-            if package=="actions":
+            if package == "actions":
                 try:
                     package = importlib.import_module(package)
                 except ImportError:
-                    print("Could not find a module `actions`. Did you provide the correct path to the actions file or folder via the '--actions' parameter?")
+                    logger.exception(f"Could not import actions. Actions not found.")
                     exit()
             else:
                 package = importlib.import_module(package)
