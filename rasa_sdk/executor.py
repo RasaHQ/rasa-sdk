@@ -196,6 +196,8 @@ class ActionExecutor:
                     exit()
             else:
                 package = importlib.import_module(package)
+                if type(package) == str:
+                    exit()
 
         if not getattr(package, "__path__", None):
             return
