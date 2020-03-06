@@ -192,7 +192,7 @@ class ActionExecutor:
                 try:
                     package = importlib.import_module(package)
                 except ImportError:
-                    logger.exception(f"Could not import actions. Actions not found.")
+                    logger.exception(f"Could not import actions. Actions not found")
                     exit()
             else:
                 package = importlib.import_module(package)
