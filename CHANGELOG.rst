@@ -13,6 +13,14 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. towncrier release notes start
 
+[1.8.1] - 2020-03-09
+^^^^^^^^^^^^^^^^^^^^
+
+Bugfixes
+--------
+- `#153 <https://github.com/rasahq/rasa/issues/153>`_: Make it possible to use the ``requests`` library inside the default Rasa SDK container.
+
+
 [1.8.0] - 2020-02-26
 ^^^^^^^^^^^^^^^^^^^^
 
