@@ -188,16 +188,7 @@ class ActionExecutor:
         :rtype: dict[str, types.ModuleType]
         """
         if isinstance(package, str):
-            if package == "actions":
-                try:
-                    package = importlib.import_module(package)
-                except ImportError:
-                    logger.exception(f"Could not import actions.")
-                    exit(1)
-            else:
-                package = importlib.import_module(package)
-                if type(package) == str:
-                    exit(1)
+            package = importlib.import_module(package)
 
         if not getattr(package, "__path__", None):
             return
@@ -216,6 +207,7 @@ class ActionExecutor:
             self._import_submodules(package)
         except ImportError:
             logger.exception(f"Failed to register package '{package}'.")
+            exit(1)
 
         actions = utils.all_subclasses(Action)
 
