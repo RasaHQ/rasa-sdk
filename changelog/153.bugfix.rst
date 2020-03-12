@@ -1,1 +1,1 @@
-Make it possible to use the ``requests`` library inside the default Rasa SDK container.
+Adding sys.exit(1) right after Import Error in register_package().
