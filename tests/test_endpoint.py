@@ -7,9 +7,11 @@ from rasa_sdk.events import SlotSet
 # noinspection PyTypeChecker
 app = ep.create_app(None)
 
+
 def test_endpoint_exit_for_unknown_actions_package():
     with pytest.raises(SystemExit):
         ep.create_app("non-existing-actions-package")
+
 
 def test_server_health_returns_200():
     request, response = app.test_client.get("/health")
