@@ -1,3 +1,4 @@
 Exit program (``python -m rasa_sdk --actions actions`` or 
 ``rasa run actions --actions actions``) if a requested module under the 
-``--actions`` command-line option cannot be found. 
+``--actions`` command-line option cannot be found,
+by adding sys.exit(1) after Import Error in in register_package() function in executer.py
