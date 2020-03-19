@@ -6,6 +6,7 @@ import warnings
 from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
 import typing
 import types
+import sys
 
 from rasa_sdk.interfaces import Tracker, ActionNotFoundException
 
