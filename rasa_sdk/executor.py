@@ -207,7 +207,7 @@ class ActionExecutor:
             self._import_submodules(package)
         except ImportError:
             logger.exception(f"Failed to register package '{package}'.")
-            exit(1)
+            sys.exit(1)
 
         actions = utils.all_subclasses(Action)
 
