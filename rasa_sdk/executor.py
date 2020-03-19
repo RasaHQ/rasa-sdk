@@ -6,6 +6,7 @@ import warnings
 from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
 import typing
 import types
+import sys
 
 from rasa_sdk.interfaces import Tracker, ActionNotFoundException
 
@@ -189,6 +190,7 @@ class ActionExecutor:
         """
         if isinstance(package, str):
             package = importlib.import_module(package)
+
         if not getattr(package, "__path__", None):
             return
 
@@ -206,6 +208,7 @@ class ActionExecutor:
             self._import_submodules(package)
         except ImportError:
             logger.exception(f"Failed to register package '{package}'.")
+            sys.exit(1)
 
         actions = utils.all_subclasses(Action)
 
