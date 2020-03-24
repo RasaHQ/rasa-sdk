@@ -1,3 +1,0 @@
-Exit program (``python -m rasa_sdk --actions actions`` or
-``rasa run actions --actions actions``) if a requested module under the
-``--actions`` command-line option cannot be found.
