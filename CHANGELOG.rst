@@ -13,6 +13,16 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. towncrier release notes start
 
+[1.9.0] - 2020-03-24
+^^^^^^^^^^^^^^^^^^^^
+
+Bugfixes
+--------
+- `#110 <https://github.com/rasahq/rasa/issues/110>`_: Exit program (``python -m rasa_sdk --actions actions`` or
+  ``rasa run actions --actions actions``) if a requested module under the
+  ``--actions`` command-line option cannot be found.
+
+
 [1.8.1] - 2020-03-09
 ^^^^^^^^^^^^^^^^^^^^
 
