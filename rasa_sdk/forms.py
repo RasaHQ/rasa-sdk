@@ -40,6 +40,8 @@ class FormAction(Action):
         entity: Text,
         intent: Optional[Union[Text, List[Text]]] = None,
         not_intent: Optional[Union[Text, List[Text]]] = None,
+        role: Optional[Text] = None,
+        group: Optional[Text] = None,
     ) -> Dict[Text, Any]:
         """A dictionary for slot mapping to extract slot value.
 
@@ -49,6 +51,8 @@ class FormAction(Action):
             - intent if it is not None
             - not_intent if it is not None,
                 meaning user intent should not be this intent
+            - role if it is not None
+            - group if it is not None
         """
 
         intent, not_intent = self._list_intents(intent, not_intent)
@@ -58,6 +62,8 @@ class FormAction(Action):
             "entity": entity,
             "intent": intent,
             "not_intent": not_intent,
+            "role": role,
+            "group": group,
         }
 
     def from_trigger_intent(
@@ -184,11 +190,27 @@ class FormAction(Action):
         return intent_not_blacklisted or intent in mapping_intents
 
     @staticmethod
-    def get_entity_value(name: Text, tracker: "Tracker") -> Any:
-        """Extract entities for given name"""
+    def get_entity_value(
+        name: Text,
+        tracker: "Tracker",
+        role: Optional[Text] = None,
+        group: Optional[Text] = None,
+    ) -> Any:
+        """Extract entities for given name and optional role and group.
 
+        Args:
+            name: entity type (name) of interest
+            tracker: the tracker
+            role: optional entity role of interest
+            group: optional entity group of interest
+
+        Returns:
+            Value of entity.
+        """
         # list is used to cover the case of list slot type
-        value = list(tracker.get_latest_entity_values(name))
+        value = list(
+            tracker.get_latest_entity_values(name, entity_group=group, entity_role=role)
+        )
         if len(value) == 0:
             value = None
         elif len(value) == 1:
@@ -269,7 +291,10 @@ class FormAction(Action):
 
                 if mapping_type == "from_entity":
                     value = self.get_entity_value(
-                        requested_slot_mapping.get("entity"), tracker
+                        requested_slot_mapping.get("entity"),
+                        tracker,
+                        role=requested_slot_mapping.get("role"),
+                        group=requested_slot_mapping.get("group"),
                     )
                 elif mapping_type == "from_intent":
                     value = requested_slot_mapping.get("value")
