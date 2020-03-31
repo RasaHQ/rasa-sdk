@@ -170,6 +170,126 @@ def test_extract_requested_slot_from_entity_with_not_intent():
     assert slot_values == {"some_slot": "some_value"}
 
 
+def test_extract_requested_slot_from_entity_with_role():
+    """Test extraction of a slot value from entity with role."""
+
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        def slot_mappings(self):
+            return {
+                "some_slot": self.from_entity(entity="some_entity", role="some_role")
+            }
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {"requested_slot": "some_slot"},
+        {
+            "intent": {"name": "some_intent", "confidence": 1.0},
+            "entities": [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "role": "some_other_role",
+                }
+            ],
+        },
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    # check that the value was extracted for correct intent
+    assert slot_values == {}
+
+    tracker = Tracker(
+        "default",
+        {"requested_slot": "some_slot"},
+        {
+            "intent": {"name": "some_intent", "confidence": 1.0},
+            "entities": [
+                {"entity": "some_entity", "value": "some_value", "role": "some_role"}
+            ],
+        },
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    # check that the value was not extracted for incorrect intent
+    assert slot_values == {"some_slot": "some_value"}
+
+
+def test_extract_requested_slot_from_entity_with_group():
+    """Test extraction of a slot value from entity with group."""
+
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        def slot_mappings(self):
+            return {
+                "some_slot": self.from_entity(entity="some_entity", group="some_group")
+            }
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {"requested_slot": "some_slot"},
+        {
+            "intent": {"name": "some_intent", "confidence": 1.0},
+            "entities": [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "group": "some_other_group",
+                }
+            ],
+        },
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    # check that the value was extracted for correct intent
+    assert slot_values == {}
+
+    tracker = Tracker(
+        "default",
+        {"requested_slot": "some_slot"},
+        {
+            "intent": {"name": "some_intent", "confidence": 1.0},
+            "entities": [
+                {"entity": "some_entity", "value": "some_value", "group": "some_group"}
+            ],
+        },
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    # check that the value was not extracted for incorrect intent
+    assert slot_values == {"some_slot": "some_value"}
+
+
 def test_extract_requested_slot_from_intent():
     """Test extraction of a slot value from certain intent
     """
