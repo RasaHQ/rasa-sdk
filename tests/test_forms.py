@@ -266,7 +266,6 @@ def test_extract_requested_slot_from_entity_with_not_intent(
     )
 
     slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
-    # check that the value was extracted for correct intent
     assert slot_values == expected_slot_values
 
 
