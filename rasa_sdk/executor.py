@@ -218,8 +218,12 @@ class ActionExecutor:
         """
         module = importlib.import_module(name)
 
-        timestamp = os.path.getmtime(module.__file__)
-        self._modules[module.__file__] = (timestamp, module)
+        if module.__file__:
+            # If the module we're importing is a namespace package (a package
+            # without __init__.py), then there's nothing to watch for the
+            # package itself.
+            timestamp = os.path.getmtime(module.__file__)
+            self._modules[module.__file__] = (timestamp, module)
 
         return module
 
@@ -233,17 +237,17 @@ class ActionExecutor:
         self._register_all_actions()
 
     def _register_all_actions(self) -> None:
+        import inspect
+
         actions = utils.all_subclasses(Action)
 
         for action in actions:
-            meta = action.__dict__.get("Meta", False)
-            abstract = getattr(meta, "abstract", False)
             if (
                 not action.__module__.startswith("rasa_core.")
                 and not action.__module__.startswith("rasa.")
                 and not action.__module__.startswith("rasa_sdk.")
                 and not action.__module__.startswith("rasa_core_sdk.")
-                and not abstract
+                and not inspect.isabstract(action)
             ):
                 self.register_action(action)
 

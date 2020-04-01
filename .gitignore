@@ -111,3 +111,4 @@ examples/moodbot/models/
 .dir-locals.el
 
 *.DS_Store
+tests/executor_test_packages
