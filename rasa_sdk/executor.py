@@ -7,13 +7,11 @@ from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
 import typing
 import types
 import sys
+import os
 
-from rasa_sdk.interfaces import Tracker, ActionNotFoundException
+from rasa_sdk.interfaces import Tracker, ActionNotFoundException, Action
 
 from rasa_sdk import utils
-
-if typing.TYPE_CHECKING:
-    from rasa_sdk.interfaces import Action
 
 logger = logging.getLogger(__name__)
 
@@ -146,16 +144,25 @@ class CollectingDispatcher:
 class ActionExecutor:
     def __init__(self):
         self.actions = {}
+        self._modules = {}
 
     def register_action(self, action: Union[Type["Action"], "Action"]) -> None:
-        from rasa_sdk.interfaces import Action
-
         if inspect.isclass(action):
             if action.__module__.startswith("rasa."):
                 logger.warning(f"Skipping built in Action {action}.")
                 return
             else:
+                if getattr(action, "_sdk_loaded", False):
+                    # This Action subclass has already been loaded in the past;
+                    # do not try to load it again as either 1) it is already
+                    # loaded or 2) it has been replaced by a newer version
+                    # already.
+                    return
+
+                # Mark the class as "loaded"
+                action._sdk_loaded = True
                 action = action()
+
         if isinstance(action, Action):
             self.register_function(action.name(), action.run)
         else:
@@ -166,7 +173,6 @@ class ActionExecutor:
             )
 
     def register_function(self, name: Text, f: Callable) -> None:
-        logger.info(f"Registered function for '{name}'.")
         valid_keys = utils.arguments_of(f)
         if len(valid_keys) < 3:
             raise Exception(
@@ -176,6 +182,12 @@ class ActionExecutor:
                 f"tracker, domain. Your function accepts only {len(valid_keys)} "
                 "parameters."
             )
+
+        if name in self.actions:
+            logger.info(f"Re-registered function for '{name}'.")
+        else:
+            logger.info(f"Registered function for '{name}'.")
+
         self.actions[name] = f
 
     def _import_submodules(
@@ -189,27 +201,38 @@ class ActionExecutor:
         :rtype: dict[str, types.ModuleType]
         """
         if isinstance(package, str):
-            package = importlib.import_module(package)
+            package = self._import_module(package)
 
         if not getattr(package, "__path__", None):
             return
 
-        results = {}
         for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
             full_name = package.__name__ + "." + name
-            results[full_name] = importlib.import_module(full_name)
+            self._import_module(full_name)
+
             if recursive and is_pkg:
                 self._import_submodules(full_name)
 
-    def register_package(self, package: Union[Text, types.ModuleType]) -> None:
-        from rasa_sdk.interfaces import Action
+    def _import_module(self, name: Text) -> types.ModuleType:
+        """TODO
+        """
+        module = importlib.import_module(name)
 
+        timestamp = os.path.getmtime(module.__file__)
+        self._modules[module.__file__] = (timestamp, module)
+
+        return module
+
+    def register_package(self, package: Union[Text, types.ModuleType]) -> None:
         try:
             self._import_submodules(package)
         except ImportError:
             logger.exception(f"Failed to register package '{package}'.")
             sys.exit(1)
 
+        self._register_all_actions()
+
+    def _register_all_actions(self) -> None:
         actions = utils.all_subclasses(Action)
 
         for action in actions:
@@ -223,6 +246,40 @@ class ActionExecutor:
                 and not abstract
             ):
                 self.register_action(action)
+
+    def reload(self) -> None:
+        to_reload = {}
+
+        for path, (timestamp, module) in self._modules.items():
+            try:
+                new_timestamp = os.path.getmtime(path)
+            except OSError:
+                # Ignore missing files
+                continue
+
+            if new_timestamp > timestamp:
+                to_reload[path] = (new_timestamp, module)
+
+        module_reloaded = False
+
+        for path, (timestamp, module) in to_reload.items():
+            try:
+                new_module = importlib.reload(module)
+                self._modules[path] = (timestamp, new_module)
+                logger.info(
+                    f"Reloaded module/package: '{module.__name__}' "
+                    f"(file: '{os.path.relpath(path)}')"
+                )
+                module_reloaded = True
+            except (SyntaxError, ImportError):
+                logger.exception(
+                    f"Error while reloading module/package: '{module.__name__}' "
+                    f"(file: '{os.path.relpath(path)}'):"
+                )
+                logger.info("Please fix the error(s) in the Python file and try again.")
+
+        if module_reloaded:
+            self._register_all_actions()
 
     @staticmethod
     def _create_api_response(

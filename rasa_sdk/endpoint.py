@@ -59,6 +59,7 @@ def create_argument_parser():
 def create_app(
     action_package_name: Union[Text, types.ModuleType],
     cors_origins: Union[Text, List[Text], None] = "*",
+    auto_reload: bool = False,
 ) -> Sanic:
     app = Sanic(__name__, configure_logging=False)
 
@@ -82,6 +83,10 @@ def create_app(
             return response.json(body, status=400)
 
         utils.check_version_compatibility(action_call.get("version"))
+
+        if auto_reload:
+            executor.reload()
+
         try:
             result = await executor.run(action_call)
         except ActionExecutionRejection as e:
@@ -98,6 +103,9 @@ def create_app(
     @app.get("/actions")
     async def actions(_) -> HTTPResponse:
         """List all registered actions."""
+        if auto_reload:
+            executor.reload()
+
         body = [{"name": k} for k in executor.actions.keys()]
         return response.json(body, status=200)
 
@@ -111,9 +119,12 @@ def run(
     ssl_certificate: Optional[Text] = None,
     ssl_keyfile: Optional[Text] = None,
     ssl_password: Optional[Text] = None,
+    auto_reload: bool = False,
 ):
     logger.info("Starting action endpoint server...")
-    app = create_app(action_package_name, cors_origins=cors_origins)
+    app = create_app(
+        action_package_name, cors_origins=cors_origins, auto_reload=auto_reload
+    )
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
 
     app.run("0.0.0.0", port, ssl=ssl_context, workers=utils.number_of_sanic_workers())
