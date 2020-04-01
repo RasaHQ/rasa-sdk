@@ -255,7 +255,7 @@ def test_extract_requested_slot_from_entity_with_not_intent(
     tracker = Tracker(
         "default",
         {"requested_slot": "some_slot"},
-        {"intent": {"name": intent, "confidence": 1.0}, "entities": entities,},
+        {"intent": {"name": intent, "confidence": 1.0}, "entities": entities},
         [],
         False,
         None,
