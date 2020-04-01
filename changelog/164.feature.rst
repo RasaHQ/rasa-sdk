@@ -1,0 +1,4 @@
+Added new ``--auto-reload`` CLI argument. When specified, modules containing ``Action``
+subclasses will be automatically reloaded if they have been modified since the last HTTP
+request. By using this, one can avoid having to re-start the actions server when
+developing new actions.
