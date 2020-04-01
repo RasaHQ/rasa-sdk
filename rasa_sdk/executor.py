@@ -193,12 +193,12 @@ class ActionExecutor:
     def _import_submodules(
         self, package: Union[Text, types.ModuleType], recursive: bool = True
     ) -> None:
-        """ Import all submodules of a module, recursively, including
-        subpackages
+        """Import a module, or a package and its submodules recursively.
 
-        :param package: package (name or actual module)
-        :type package: str | module
-        :rtype: dict[str, types.ModuleType]
+        Args:
+            package: Package or module name, or an already loaded Python module.
+            recursive: If `True`, and `package` is a package, import all of its
+                sub-packages as well.
         """
         if isinstance(package, str):
             package = self._import_module(package)
@@ -214,7 +214,13 @@ class ActionExecutor:
                 self._import_submodules(full_name)
 
     def _import_module(self, name: Text) -> types.ModuleType:
-        """TODO
+        """Import a Python module. If possible, register the file where it came from.
+
+        Args:
+            name: The module's name using Python's module path syntax.
+
+        Returns:
+            The loaded module.
         """
         module = importlib.import_module(name)
 
@@ -228,6 +234,12 @@ class ActionExecutor:
         return module
 
     def register_package(self, package: Union[Text, types.ModuleType]) -> None:
+        """Register all the `Action` subclasses contained in a Python module or
+        package.
+
+        Args:
+            package: Module or package name, or an already loaded Python module.
+        """
         try:
             self._import_submodules(package)
         except ImportError:
@@ -237,6 +249,8 @@ class ActionExecutor:
         self._register_all_actions()
 
     def _register_all_actions(self) -> None:
+        """Scan for all user subclasses of `Action`, and register them.
+        """
         import inspect
 
         actions = utils.all_subclasses(Action)
@@ -252,6 +266,17 @@ class ActionExecutor:
                 self.register_action(action)
 
     def reload(self) -> None:
+        """Reload all Python modules that have been loaded in the past.
+
+        To check if a module should be reloaded, the file's last timestamp is
+        checked against the current one. If the current last-modified timestamp
+        is larger than the previous one, the module is re-imported using
+        `importlib.reload`.
+
+        If one or more modules are reloaded during this process, the entire
+        `Action` class hierarchy is scanned again to see what new classes can
+        be registered.
+        """
         to_reload = {}
 
         for path, (timestamp, module) in self._modules.items():
