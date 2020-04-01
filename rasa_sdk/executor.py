@@ -224,12 +224,13 @@ class ActionExecutor:
         """
         module = importlib.import_module(name)
 
-        if module.__file__:
+        module_file = getattr(module, "__file__", None)
+        if module_file:
             # If the module we're importing is a namespace package (a package
             # without __init__.py), then there's nothing to watch for the
             # package itself.
-            timestamp = os.path.getmtime(module.__file__)
-            self._modules[module.__file__] = (timestamp, module)
+            timestamp = os.path.getmtime(module_file)
+            self._modules[module_file] = (timestamp, module)
 
         return module
 
