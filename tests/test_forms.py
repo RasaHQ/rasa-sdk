@@ -232,9 +232,7 @@ def test_extract_requested_slot_from_entity_with_not_intent(
     intent: Text,
     expected_slot_values: Dict[Text, Text],
 ):
-    """Test extraction of a slot value from entity with the different name
-        and certain intent
-    """
+    """Test extraction of a slot value from entity with the different restrictions."""
 
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
