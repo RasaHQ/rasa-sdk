@@ -189,7 +189,7 @@ class FormAction(Action):
 
         return intent_not_blacklisted or intent in mapping_intents
 
-    def slot_is_desired(
+    def entity_is_desired(
         self, requested_slot_mapping: Dict[Text, Any], slot: Text, tracker: "Tracker"
     ) -> bool:
         """Check whether slot should be filled or not."""
@@ -197,8 +197,8 @@ class FormAction(Action):
         # slot name is equal to the entity type
         slot_equal_entity = slot == requested_slot_mapping.get("entity")
 
-        # use the custom slot mapping defined by the user to fill a slot based on
-        # a role or group
+        # use the custom slot mapping defined by the user to check whether we can
+        # fil a slot with an entity that has a role or group set
         slot_fulfils_entity_mapping = False
         if requested_slot_mapping.get("role") or requested_slot_mapping.get("group"):
             matching_values = self.get_entity_value(
@@ -265,7 +265,7 @@ class FormAction(Action):
                     should_fill_entity_slot = (
                         other_slot_mapping["type"] == "from_entity"
                         and self.intent_is_desired(other_slot_mapping, tracker)
-                        and self.slot_is_desired(other_slot_mapping, slot, tracker)
+                        and self.entity_is_desired(other_slot_mapping, slot, tracker)
                     )
                     # check whether the slot should be
                     # filled from trigger intent mapping
