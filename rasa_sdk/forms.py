@@ -259,10 +259,6 @@ class FormAction(Action):
                 # list is used to cover the case of list slot type
                 other_slot_mappings = self.get_mappings_for_slot(slot)
 
-                print("#####")
-                print(slot)
-                print(other_slot_mappings)
-
                 for other_slot_mapping in other_slot_mappings:
                     # check whether the slot should be filled
                     # by entity with the same name
