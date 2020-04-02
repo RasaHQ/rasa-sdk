@@ -685,8 +685,126 @@ def test_extract_other_slots_with_intent():
     assert slot_values == {"some_other_slot": "some_other_value"}
 
 
-def test_extract_other_slots_with_entity():
-    """Test extraction of other not requested slots values from entities with roles.
+@pytest.mark.parametrize(
+    "mapping_not_intent, mapping_intent, mapping_role, mapping_group, entities, intent, expected_slot_values",
+    [
+        (
+            None,
+            None,
+            "some_role",
+            None,
+            [
+                {
+                    "entity": "entity_type",
+                    "value": "some_value",
+                    "role": "some_other_role",
+                }
+            ],
+            "some_intent",
+            {},
+        ),
+        (
+            None,
+            None,
+            "some_role",
+            None,
+            [
+                {
+                    "entity": "entity_type",
+                    "value": "some_value",
+                    "role": "some_role",
+                }
+            ],
+            "some_intent",
+            {"some_other_slot": "some_value"},
+        ),
+        (
+            None,
+            None,
+            None,
+            "some_group",
+            [
+                {
+                    "entity": "entity_type",
+                    "value": "some_value",
+                    "group": "some_other_group",
+                }
+            ],
+            "some_intent",
+            {},
+        ),
+        (
+            None,
+            None,
+            None,
+            "some_group",
+            [
+                {
+                    "entity": "entity_type",
+                    "value": "some_value",
+                    "group": "some_group",
+                }
+            ],
+            "some_intent",
+            {"some_other_slot": "some_value"},
+        ),
+        (
+            None,
+            None,
+            "some_role",
+            "some_group",
+            [
+                {
+                    "entity": "entity_type",
+                    "value": "some_value",
+                    "role": "some_role",
+                    "group": "some_group",
+                }
+            ],
+            "some_intent",
+            {"some_other_slot": "some_value"},
+        ),
+        (
+            None,
+            None,
+            None,
+            None,
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                }
+            ],
+            "some_intent",
+            {},
+        ),
+        (
+            None,
+            None,
+            None,
+            None,
+            [
+                {
+                    "entity": "entity_type",
+                    "value": "some_value",
+                }
+            ],
+            "some_intent",
+            {},
+        )
+    ],
+)
+def test_extract_other_slots_with_entity(
+    mapping_not_intent,
+    mapping_intent,
+    mapping_role,
+    mapping_group,
+    entities,
+    intent,
+    expected_slot_values,
+):
+    """Test extraction of other not requested slots values from entities with
+    roles/groups.
     """
 
     # noinspection PyAbstractClass
@@ -701,7 +819,11 @@ def test_extract_other_slots_with_entity():
         def slot_mappings(self):
             return {
                 "some_other_slot": self.from_entity(
-                    entity="some_other_slot", intent="some_intent", role="some_role"
+                    entity="entity_type",
+                    intent=mapping_intent,
+                    not_intent=mapping_not_intent,
+                    role=mapping_role,
+                    group=mapping_group,
                 )
             }
 
@@ -710,16 +832,7 @@ def test_extract_other_slots_with_entity():
     tracker = Tracker(
         "default",
         {"requested_slot": "some_slot"},
-        {
-            "intent": {"name": "some_other_intent", "confidence": 1.0},
-            "entities": [
-                {
-                    "entity": "some_other_slot",
-                    "value": "some_other_value",
-                    "role": "some_role",
-                }
-            ],
-        },
+        {"intent": {"name": intent, "confidence": 1.0}, "entities": entities,},
         [],
         False,
         None,
@@ -729,31 +842,7 @@ def test_extract_other_slots_with_entity():
 
     slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was extracted for non requested slot
-    assert slot_values == {}
-
-    tracker = Tracker(
-        "default",
-        {"requested_slot": "some_slot"},
-        {
-            "intent": {"name": "some_intent", "confidence": 1.0},
-            "entities": [
-                {
-                    "entity": "some_other_slot",
-                    "value": "some_other_value",
-                    "role": "some_role",
-                }
-            ],
-        },
-        [],
-        False,
-        None,
-        {},
-        "action_listen",
-    )
-
-    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
-    # check that the value was extracted only for non requested slot
-    assert slot_values == {"some_other_slot": "some_other_value"}
+    assert slot_values == expected_slot_values
 
 
 async def test_validate():
