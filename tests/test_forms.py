@@ -685,6 +685,77 @@ def test_extract_other_slots_with_intent():
     assert slot_values == {"some_other_slot": "some_other_value"}
 
 
+def test_extract_other_slots_with_entity():
+    """Test extraction of other not requested slots values from entities with roles.
+    """
+
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        def slot_mappings(self):
+            return {
+                "some_other_slot": self.from_entity(
+                    entity="some_other_slot", intent="some_intent", role="some_role"
+                )
+            }
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {"requested_slot": "some_slot"},
+        {
+            "intent": {"name": "some_other_intent", "confidence": 1.0},
+            "entities": [
+                {
+                    "entity": "some_other_slot",
+                    "value": "some_other_value",
+                    "role": "some_role",
+                }
+            ],
+        },
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    # check that the value was extracted for non requested slot
+    assert slot_values == {}
+
+    tracker = Tracker(
+        "default",
+        {"requested_slot": "some_slot"},
+        {
+            "intent": {"name": "some_intent", "confidence": 1.0},
+            "entities": [
+                {
+                    "entity": "some_other_slot",
+                    "value": "some_other_value",
+                    "role": "some_role",
+                }
+            ],
+        },
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    # check that the value was extracted only for non requested slot
+    assert slot_values == {"some_other_slot": "some_other_value"}
+
+
 async def test_validate():
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
