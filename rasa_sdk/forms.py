@@ -197,17 +197,15 @@ class FormAction(Action):
         # slot name is equal to the entity type
         slot_equal_entity = slot == requested_slot_mapping.get("entity")
 
-        # use the custom slot mapping defined by the user to check whether we can
-        # fil a slot with an entity that has a role or group set
-        slot_fulfils_entity_mapping = False
-        if requested_slot_mapping.get("role") or requested_slot_mapping.get("group"):
-            matching_values = self.get_entity_value(
-                requested_slot_mapping.get("entity"),
-                tracker,
-                requested_slot_mapping.get("role"),
-                requested_slot_mapping.get("group"),
-            )
-            slot_fulfils_entity_mapping = matching_values is not None
+        # use the custom slot mapping 'from_entity' defined by the user to check
+        # whether we can fil a slot with an entity
+        matching_values = self.get_entity_value(
+            requested_slot_mapping.get("entity"),
+            tracker,
+            requested_slot_mapping.get("role"),
+            requested_slot_mapping.get("group"),
+        )
+        slot_fulfils_entity_mapping = matching_values is not None
 
         return slot_equal_entity or slot_fulfils_entity_mapping
 
