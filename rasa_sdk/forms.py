@@ -198,7 +198,7 @@ class FormAction(Action):
         slot_equal_entity = slot == requested_slot_mapping.get("entity")
 
         # use the custom slot mapping 'from_entity' defined by the user to check
-        # whether we can fil a slot with an entity
+        # whether we can fill a slot with an entity
         matching_values = self.get_entity_value(
             requested_slot_mapping.get("entity"),
             tracker,
