@@ -13,6 +13,18 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. towncrier release notes start
 
+[1.10.0-alpha1] - 2020-04-03
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Features
+--------
+- `#3765 <https://github.com/rasahq/rasa/issues/3765>`_: Add support for composite entities.
+
+  If you use ``from_entity`` in your custom slot mapping, you can now also specify a role and group label.
+  If you set a role or group label, the slot is only filled if the entity has the specific role or group label set.
+  If you don't specify a role or group label, the function behaves as before.
+
+
 [1.9.0] - 2020-03-24
 ^^^^^^^^^^^^^^^^^^^^
 
