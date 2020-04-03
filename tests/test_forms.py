@@ -686,9 +686,10 @@ def test_extract_other_slots_with_intent():
 
 
 @pytest.mark.parametrize(
-    "mapping_role, mapping_group, entities, intent, expected_slot_values",
+    "mapping_entity, mapping_role, mapping_group, entities, intent, expected_slot_values",
     [
         (
+            "entity_type",
             "some_role",
             None,
             [
@@ -702,6 +703,7 @@ def test_extract_other_slots_with_intent():
             {},
         ),
         (
+            "entity_type",
             "some_role",
             None,
             [{"entity": "entity_type", "value": "some_value", "role": "some_role"}],
@@ -709,6 +711,7 @@ def test_extract_other_slots_with_intent():
             {"some_other_slot": "some_value"},
         ),
         (
+            "entity_type",
             None,
             "some_group",
             [
@@ -722,6 +725,7 @@ def test_extract_other_slots_with_intent():
             {},
         ),
         (
+            "entity_type",
             None,
             "some_group",
             [{"entity": "entity_type", "value": "some_value", "group": "some_group"}],
@@ -729,6 +733,7 @@ def test_extract_other_slots_with_intent():
             {"some_other_slot": "some_value"},
         ),
         (
+            "entity_type",
             "some_role",
             "some_group",
             [
@@ -743,6 +748,7 @@ def test_extract_other_slots_with_intent():
             {"some_other_slot": "some_value"},
         ),
         (
+            "entity_type",
             None,
             None,
             [{"entity": "some_entity", "value": "some_value"}],
@@ -750,24 +756,32 @@ def test_extract_other_slots_with_intent():
             {},
         ),
         (
+            "some_entity",
             None,
             None,
             [{"entity": "entity_type", "value": "some_value"}],
             "some_intent",
             {},
         ),
+        (
+            "entity_type",
+            None,
+            None,
+            [{"entity": "entity_type", "value": "some_value"}],
+            "some_intent",
+            {"some_other_slot": "some_value"},
+        ),
     ],
 )
 def test_extract_other_slots_with_entity(
+    mapping_entity: Text,
     mapping_role: Optional[Text],
     mapping_group: Optional[Text],
     entities: List[Dict[Text, Any]],
     intent: Text,
     expected_slot_values: Dict[Text, Text],
 ):
-    """Test extraction of other not requested slots values from entities with
-    roles/groups.
-    """
+    """Test extraction of other not requested slots values from entities."""
 
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
@@ -781,7 +795,7 @@ def test_extract_other_slots_with_entity(
         def slot_mappings(self):
             return {
                 "some_other_slot": self.from_entity(
-                    entity="entity_type", role=mapping_role, group=mapping_group
+                    entity=mapping_entity, role=mapping_role, group=mapping_group
                 )
             }
 
