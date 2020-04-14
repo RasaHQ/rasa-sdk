@@ -144,6 +144,7 @@ class CollectingDispatcher:
 
 TimestampModule = namedtuple("TimestampModule", ["timestamp", "module"])
 
+
 class ActionExecutor:
     def __init__(self):
         self.actions = {}
