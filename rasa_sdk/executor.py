@@ -4,6 +4,7 @@ import logging
 import pkgutil
 import warnings
 from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
+from collections import namedtuple
 import typing
 import types
 import sys
@@ -141,10 +142,12 @@ class CollectingDispatcher:
         self.utter_message(image=image, **kwargs)
 
 
+TimestampModule = namedtuple("TimestampModule", ["timestamp", "module"])
+
 class ActionExecutor:
     def __init__(self):
         self.actions = {}
-        self._modules = {}
+        self._modules: Dict[Text, TimestampModule] = {}
 
     def register_action(self, action: Union[Type["Action"], "Action"]) -> None:
         if inspect.isclass(action):
@@ -230,13 +233,16 @@ class ActionExecutor:
             # without __init__.py), then there's nothing to watch for the
             # package itself.
             timestamp = os.path.getmtime(module_file)
-            self._modules[module_file] = (timestamp, module)
+            self._modules[module_file] = TimestampModule(timestamp, module)
 
         return module
 
     def register_package(self, package: Union[Text, types.ModuleType]) -> None:
         """Register all the `Action` subclasses contained in a Python module or
         package.
+
+        If an `ImportError` is raised when loading the module or package, the
+        action server is stopped with exit code 1.
 
         Args:
             package: Module or package name, or an already loaded Python module.
@@ -266,6 +272,29 @@ class ActionExecutor:
             ):
                 self.register_action(action)
 
+    def _find_modules_to_reload(self) -> Dict[Text, TimestampModule]:
+        """Finds all Python modules that should be reloaded by checking their
+        files' timestamps.
+
+        Returns:
+            Dictionary containing file paths, new timestamps and Python modules
+            that should be reloaded.
+        """
+
+        to_reload = {}
+
+        for path, (timestamp, module) in self._modules.items():
+            try:
+                new_timestamp = os.path.getmtime(path)
+            except OSError:
+                # Ignore missing files
+                continue
+
+            if new_timestamp > timestamp:
+                to_reload[path] = TimestampModule(new_timestamp, module)
+
+        return to_reload
+
     def reload(self) -> None:
         """Reload all Python modules that have been loaded in the past.
 
@@ -278,29 +307,18 @@ class ActionExecutor:
         `Action` class hierarchy is scanned again to see what new classes can
         be registered.
         """
-        to_reload = {}
-
-        for path, (timestamp, module) in self._modules.items():
-            try:
-                new_timestamp = os.path.getmtime(path)
-            except OSError:
-                # Ignore missing files
-                continue
-
-            if new_timestamp > timestamp:
-                to_reload[path] = (new_timestamp, module)
-
-        module_reloaded = False
+        to_reload = self._find_modules_to_reload()
+        any_module_reloaded = False
 
         for path, (timestamp, module) in to_reload.items():
             try:
                 new_module = importlib.reload(module)
-                self._modules[path] = (timestamp, new_module)
+                self._modules[path] = TimestampModule(timestamp, new_module)
                 logger.info(
                     f"Reloaded module/package: '{module.__name__}' "
                     f"(file: '{os.path.relpath(path)}')"
                 )
-                module_reloaded = True
+                any_module_reloaded = True
             except (SyntaxError, ImportError):
                 logger.exception(
                     f"Error while reloading module/package: '{module.__name__}' "
@@ -308,7 +326,7 @@ class ActionExecutor:
                 )
                 logger.info("Please fix the error(s) in the Python file and try again.")
 
-        if module_reloaded:
+        if any_module_reloaded:
             self._register_all_actions()
 
     @staticmethod

@@ -61,6 +61,17 @@ def create_app(
     cors_origins: Union[Text, List[Text], None] = "*",
     auto_reload: bool = False,
 ) -> Sanic:
+    """Create a Sanic application and return it.
+
+    Args:
+        action_package_name: Name of the package or module to load actions
+            from.
+        cors_origins: CORS origins to allow.
+        auto_reload: When `True`, auto-reloading of actions is enabled.
+
+    Returns:
+        A new Sanic application ready to be run.
+    """
     app = Sanic(__name__, configure_logging=False)
 
     configure_cors(app, cors_origins)

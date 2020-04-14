@@ -3,7 +3,7 @@ import shutil
 import random
 import string
 import time
-from typing import Text
+from typing import Text, Optional, Generator
 
 import pytest
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
@@ -28,7 +28,7 @@ def _write_action_file(
     file_name: Text,
     class_name: Text,
     action_name: Text,
-    message: Text = None,
+    message: Optional[Text] = None,
 ) -> None:
     with open(os.path.join(package_path, file_name), "w") as f:
         f.write(
@@ -68,7 +68,7 @@ def test_deprecated_utter_elements():
 
 
 @pytest.fixture()
-def package_path() -> None:
+def package_path() -> Generator[Text, None, Text]:
     # Create an empty directory somewhere reached by the Python import search
     # paths
     name = "".join(random.choice(string.ascii_lowercase) for _ in range(10))
