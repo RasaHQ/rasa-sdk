@@ -62,7 +62,7 @@ showcontent = false
 
 [tool.poetry.dependencies]
 python = "^3.6"
-coloredlogs = "^10.0"
+coloredlogs = ">=10,<15"
 sanic = "^19.12.2"
 sanic-cors = "^0.10.0b1"
 requests = "^2.0"
