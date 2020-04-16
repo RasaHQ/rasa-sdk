@@ -588,7 +588,7 @@ description = "a pytest plugin for Sanic"
 name = "pytest-sanic"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.6.0"
+version = "1.6.1"
 
 [package.dependencies]
 aiohttp = ">=3.6.2,<4.0.0"
@@ -857,7 +857,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "4b5ae6c6cc50f66f7a1620ab86ab9dffa9d8f3c707c03bf696a541a0a45d7926"
+content-hash = "9bbba37ddc983fb7d12edd7a6dfb50ffb9a74288b13d13b3a3c08a450cb9ebe3"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -1184,8 +1184,8 @@ pytest-cov = [
     {file = "pytest_cov-2.8.1-py2.py3-none-any.whl", hash = "sha256:cdbdef4f870408ebdbfeb44e63e07eb18bb4619fae852f6e760645fa36172626"},
 ]
 pytest-sanic = [
-    {file = "pytest-sanic-1.6.0.tar.gz", hash = "sha256:c7689bfb039c306b2f0b78c772b77c0cac516d85a4e3ef6bcb47ac23f092cd76"},
-    {file = "pytest_sanic-1.6.0-py3-none-any.whl", hash = "sha256:000371ff8af4681a7639725b23ea3d7fdd119185a251f7df3ae13e92185d7eb2"},
+    {file = "pytest-sanic-1.6.1.tar.gz", hash = "sha256:99e02c28cfa18a0a9af0cd151dddf0eca373279b9bac808733746f7ed7030ecc"},
+    {file = "pytest_sanic-1.6.1-py3-none-any.whl", hash = "sha256:f258c7e34818d316ff75882f865a8b08714c732461fad2d54fbe7bc7c266e6c7"},
 ]
 pytype = [
     {file = "pytype-2020.2.6.tar.gz", hash = "sha256:53803f0f1fadf4923efc88a0bd0cfa4c242d2fa3f04421b6f8ab4d658ffd2b90"},
