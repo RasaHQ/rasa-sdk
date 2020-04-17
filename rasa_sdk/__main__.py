@@ -18,6 +18,7 @@ def main_from_args(args):
         args.ssl_certificate,
         args.ssl_keyfile,
         args.ssl_password,
+        args.auto_reload,
     )
 
 
