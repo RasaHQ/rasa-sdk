@@ -1,7 +1,7 @@
 import argparse
 import logging
 import types
-from typing import List, Text, Union, Optional, Any, NoReturn
+from typing import List, Text, Union, Optional, Any
 from ssl import SSLContext
 
 from sanic import Sanic, response
@@ -131,7 +131,7 @@ def run(
     ssl_keyfile: Optional[Text] = None,
     ssl_password: Optional[Text] = None,
     auto_reload: bool = False,
-) -> NoReturn:
+) -> None:
     logger.info("Starting action endpoint server...")
     app = create_app(
         action_package_name, cors_origins=cors_origins, auto_reload=auto_reload
