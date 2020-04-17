@@ -1,7 +1,7 @@
 import argparse
 import logging
 import types
-from typing import List, Text, Union, Optional, Any
+from typing import List, Text, Union, Optional, Any, NoReturn
 from ssl import SSLContext
 
 from sanic import Sanic, response
