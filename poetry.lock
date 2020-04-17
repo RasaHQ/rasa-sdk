@@ -124,7 +124,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "7.0"
 
 [[package]]
-category = "main"
+category = "dev"
 description = "Cross-platform colored terminal text."
 marker = "sys_platform == \"win32\""
 name = "colorama"
@@ -137,12 +137,11 @@ category = "main"
 description = "Colored terminal output for Python's logging module"
 name = "coloredlogs"
 optional = false
-python-versions = "*"
-version = "10.0"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+version = "14.0"
 
 [package.dependencies]
-colorama = "*"
-humanfriendly = ">=4.7"
+humanfriendly = ">=7.1"
 
 [package.extras]
 cron = ["capturer (>=2.4)"]
@@ -175,16 +174,16 @@ category = "dev"
 description = "Show coverage stats online via coveralls.io"
 name = "coveralls"
 optional = false
-python-versions = "*"
-version = "1.11.1"
+python-versions = ">= 3.5"
+version = "2.0.0"
 
 [package.dependencies]
-coverage = ">=3.6,<6.0"
+coverage = ">=4.1,<6.0"
 docopt = ">=0.6.1"
 requests = ">=1.0.0"
 
 [package.extras]
-yaml = ["PyYAML (>=3.10,<5.3)"]
+yaml = ["PyYAML (>=3.10)"]
 
 [[package]]
 category = "dev"
@@ -548,7 +547,7 @@ description = "pytest: simple powerful testing with Python"
 name = "pytest"
 optional = false
 python-versions = ">=3.5"
-version = "5.3.5"
+version = "5.4.1"
 
 [package.dependencies]
 atomicwrites = ">=1.0"
@@ -589,7 +588,7 @@ description = "a pytest plugin for Sanic"
 name = "pytest-sanic"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.6.0"
+version = "1.6.1"
 
 [package.dependencies]
 aiohttp = ">=3.6.2,<4.0.0"
@@ -617,7 +616,7 @@ category = "dev"
 description = "YAML parser and emitter for Python"
 name = "pyyaml"
 optional = false
-python-versions = "*"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 version = "5.3"
 
 [[package]]
@@ -626,13 +625,13 @@ description = "Python library to build pretty command line user prompts ⭐️"
 name = "questionary"
 optional = false
 python-versions = "*"
-version = "1.5.1"
+version = "1.5.2"
 
 [package.dependencies]
 prompt-toolkit = ">=2.0,<4.0"
 
 [package.extras]
-test = ["pytest (>=4.0,<5.0)", "pytest-pycodestyle (>=1.3,<2.0)", "pytest-cov (>=2.6,<3.0)", "coveralls (>=1.3,<2.0)"]
+test = ["pytest", "pytest-pycodestyle", "pytest-cov", "coveralls"]
 
 [[package]]
 category = "dev"
@@ -858,7 +857,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "d4e767918b1d6502d16a8ef9d422f1f40b65bfa37e0d8cb5e354b18c798bfb73"
+content-hash = "33e39927b9775160be47f9b36d310d3400f4c356e02a4b1b75877bf0c010fa6c"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -921,8 +920,8 @@ colorama = [
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
 ]
 coloredlogs = [
-    {file = "coloredlogs-10.0-py2.py3-none-any.whl", hash = "sha256:34fad2e342d5a559c31b6c889e8d14f97cb62c47d9a2ae7b5ed14ea10a79eff8"},
-    {file = "coloredlogs-10.0.tar.gz", hash = "sha256:b869a2dda3fa88154b9dd850e27828d8755bfab5a838a1c97fbc850c6e377c36"},
+    {file = "coloredlogs-14.0-py2.py3-none-any.whl", hash = "sha256:346f58aad6afd48444c2468618623638dadab76e4e70d5e10822676f2d32226a"},
+    {file = "coloredlogs-14.0.tar.gz", hash = "sha256:a1fab193d2053aa6c0a97608c4342d031f1f93a3d1218432c59322441d31a505"},
 ]
 contextvars = [
     {file = "contextvars-2.4.tar.gz", hash = "sha256:f38c908aaa59c14335eeea12abea5f443646216c4e29380d7bf34d2018e2c39e"},
@@ -961,8 +960,8 @@ coverage = [
     {file = "coverage-5.0.3.tar.gz", hash = "sha256:77afca04240c40450c331fa796b3eab6f1e15c5ecf8bf2b8bee9706cd5452fef"},
 ]
 coveralls = [
-    {file = "coveralls-1.11.1-py2.py3-none-any.whl", hash = "sha256:4b6bfc2a2a77b890f556bc631e35ba1ac21193c356393b66c84465c06218e135"},
-    {file = "coveralls-1.11.1.tar.gz", hash = "sha256:67188c7ec630c5f708c31552f2bcdac4580e172219897c4136504f14b823132f"},
+    {file = "coveralls-2.0.0-py2.py3-none-any.whl", hash = "sha256:41bd57b60321dfd5b56e990ab3f7ed876090691c21a9e3b005e1f6e42e6ba4b9"},
+    {file = "coveralls-2.0.0.tar.gz", hash = "sha256:d213f5edd49053d03f0db316ccabfe17725f2758147afc9a37eaca9d8e8602b5"},
 ]
 decorator = [
     {file = "decorator-4.4.2-py2.py3-none-any.whl", hash = "sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760"},
@@ -1177,16 +1176,16 @@ pyreadline = [
     {file = "pyreadline-2.1.zip", hash = "sha256:4530592fc2e85b25b1a9f79664433da09237c1a270e4d78ea5aa3a2c7229e2d1"},
 ]
 pytest = [
-    {file = "pytest-5.3.5-py3-none-any.whl", hash = "sha256:ff615c761e25eb25df19edddc0b970302d2a9091fbce0e7213298d85fb61fef6"},
-    {file = "pytest-5.3.5.tar.gz", hash = "sha256:0d5fe9189a148acc3c3eb2ac8e1ac0742cb7618c084f3d228baaec0c254b318d"},
+    {file = "pytest-5.4.1-py3-none-any.whl", hash = "sha256:0e5b30f5cb04e887b91b1ee519fa3d89049595f428c1db76e73bd7f17b09b172"},
+    {file = "pytest-5.4.1.tar.gz", hash = "sha256:84dde37075b8805f3d1f392cc47e38a0e59518fb46a431cfdaf7cf1ce805f970"},
 ]
 pytest-cov = [
     {file = "pytest-cov-2.8.1.tar.gz", hash = "sha256:cc6742d8bac45070217169f5f72ceee1e0e55b0221f54bcf24845972d3a47f2b"},
     {file = "pytest_cov-2.8.1-py2.py3-none-any.whl", hash = "sha256:cdbdef4f870408ebdbfeb44e63e07eb18bb4619fae852f6e760645fa36172626"},
 ]
 pytest-sanic = [
-    {file = "pytest-sanic-1.6.0.tar.gz", hash = "sha256:c7689bfb039c306b2f0b78c772b77c0cac516d85a4e3ef6bcb47ac23f092cd76"},
-    {file = "pytest_sanic-1.6.0-py3-none-any.whl", hash = "sha256:000371ff8af4681a7639725b23ea3d7fdd119185a251f7df3ae13e92185d7eb2"},
+    {file = "pytest-sanic-1.6.1.tar.gz", hash = "sha256:99e02c28cfa18a0a9af0cd151dddf0eca373279b9bac808733746f7ed7030ecc"},
+    {file = "pytest_sanic-1.6.1-py3-none-any.whl", hash = "sha256:f258c7e34818d316ff75882f865a8b08714c732461fad2d54fbe7bc7c266e6c7"},
 ]
 pytype = [
     {file = "pytype-2020.2.6.tar.gz", hash = "sha256:53803f0f1fadf4923efc88a0bd0cfa4c242d2fa3f04421b6f8ab4d658ffd2b90"},
@@ -1205,8 +1204,8 @@ pyyaml = [
     {file = "PyYAML-5.3.tar.gz", hash = "sha256:e9f45bd5b92c7974e59bcd2dcc8631a6b6cc380a904725fce7bc08872e691615"},
 ]
 questionary = [
-    {file = "questionary-1.5.1-py3-none-any.whl", hash = "sha256:5314bfb746321997a9dc457e5e0a533e577a661347f3a89c63277c6746e9a8b9"},
-    {file = "questionary-1.5.1.tar.gz", hash = "sha256:f199d4a780183679725f10a209b68be27f07cfd2852d6d7ea9e4a31fb45fb0c0"},
+    {file = "questionary-1.5.2-py3-none-any.whl", hash = "sha256:6998a1fe0639daec0da44e0a973f387e7c778bdc418d76ecfa45a7b3a0997049"},
+    {file = "questionary-1.5.2.tar.gz", hash = "sha256:f6e41e36b6c86fe0c3ff12a30c6c6a4e80129efba5ad0a115d71fd5df119c726"},
 ]
 regex = [
     {file = "regex-2020.2.20-cp27-cp27m-win32.whl", hash = "sha256:99272d6b6a68c7ae4391908fc15f6b8c9a6c345a46b632d7fdb7ef6c883a2bbb"},
