@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea on how to improve the Rasa SDK
 title: ''
-labels: enhancement
+labels: type:enhancement :sparkles:,area:rasa-sdk
 assignees: ''
 
 ---
