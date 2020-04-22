@@ -42,7 +42,7 @@ def test_server_webhook_custom_action_returns_200():
     request, response = app.test_client.post("/webhook", data=json.dumps(data))
     events = response.json.get("events")
 
-    assert events == [SlotSet("test", "test")]
+    assert events == [SlotSet("test", "bar")]
     assert response.status == 200
 
 

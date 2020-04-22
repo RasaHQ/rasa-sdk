@@ -49,3 +49,8 @@ def add_endpoint_arguments(parser):
         help="If your ssl-keyfile is protected by a password, you can specify it "
         "using this paramer.",
     )
+    parser.add_argument(
+        "--auto-reload",
+        help="Enable auto-reloading of modules containing Action subclasses.",
+        action="store_true",
+    )
