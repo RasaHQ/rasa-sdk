@@ -1,6 +1,6 @@
 import pytest
 import asyncio
-from typing import Type
+from typing import Type, Text, Dict, Any, List, Optional
 
 from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.events import SlotSet, Form
@@ -114,10 +114,125 @@ def test_extract_requested_slot_from_entity_with_intent():
     assert slot_values == {}
 
 
-def test_extract_requested_slot_from_entity_with_not_intent():
-    """Test extraction of a slot value from entity with the different name
-        and certain intent
-    """
+@pytest.mark.parametrize(
+    "mapping_not_intent, mapping_intent, mapping_role, mapping_group, entities, intent, expected_slot_values",
+    [
+        (
+            "some_intent",
+            None,
+            None,
+            None,
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            {},
+        ),
+        (
+            None,
+            "some_intent",
+            None,
+            None,
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            {"some_slot": "some_value"},
+        ),
+        (
+            "some_intent",
+            None,
+            None,
+            None,
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_other_intent",
+            {"some_slot": "some_value"},
+        ),
+        (
+            None,
+            None,
+            "some_role",
+            None,
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            {},
+        ),
+        (
+            None,
+            None,
+            "some_role",
+            None,
+            [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
+            "some_intent",
+            {"some_slot": "some_value"},
+        ),
+        (
+            None,
+            None,
+            None,
+            "some_group",
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            {},
+        ),
+        (
+            None,
+            None,
+            None,
+            "some_group",
+            [{"entity": "some_entity", "value": "some_value", "group": "some_group"}],
+            "some_intent",
+            {"some_slot": "some_value"},
+        ),
+        (
+            None,
+            None,
+            "some_role",
+            "some_group",
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "group": "some_group",
+                    "role": "some_role",
+                }
+            ],
+            "some_intent",
+            {"some_slot": "some_value"},
+        ),
+        (
+            None,
+            None,
+            "some_role",
+            "some_group",
+            [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
+            "some_intent",
+            {},
+        ),
+        (
+            None,
+            None,
+            None,
+            None,
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "group": "some_group",
+                    "role": "some_role",
+                }
+            ],
+            "some_intent",
+            {"some_slot": "some_value"},
+        ),
+    ],
+)
+def test_extract_requested_slot_from_entity(
+    mapping_not_intent: Optional[Text],
+    mapping_intent: Optional[Text],
+    mapping_role: Optional[Text],
+    mapping_group: Optional[Text],
+    entities: List[Dict[Text, Any]],
+    intent: Text,
+    expected_slot_values: Dict[Text, Text],
+):
+    """Test extraction of a slot value from entity with the different restrictions."""
 
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
@@ -127,7 +242,11 @@ def test_extract_requested_slot_from_entity_with_not_intent():
         def slot_mappings(self):
             return {
                 "some_slot": self.from_entity(
-                    entity="some_entity", not_intent="some_intent"
+                    entity="some_entity",
+                    role=mapping_role,
+                    group=mapping_group,
+                    intent=mapping_intent,
+                    not_intent=mapping_not_intent,
                 )
             }
 
@@ -136,10 +255,7 @@ def test_extract_requested_slot_from_entity_with_not_intent():
     tracker = Tracker(
         "default",
         {"requested_slot": "some_slot"},
-        {
-            "intent": {"name": "some_intent", "confidence": 1.0},
-            "entities": [{"entity": "some_entity", "value": "some_value"}],
-        },
+        {"intent": {"name": intent, "confidence": 1.0}, "entities": entities},
         [],
         False,
         None,
@@ -148,26 +264,7 @@ def test_extract_requested_slot_from_entity_with_not_intent():
     )
 
     slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
-    # check that the value was extracted for correct intent
-    assert slot_values == {}
-
-    tracker = Tracker(
-        "default",
-        {"requested_slot": "some_slot"},
-        {
-            "intent": {"name": "some_other_intent", "confidence": 1.0},
-            "entities": [{"entity": "some_entity", "value": "some_value"}],
-        },
-        [],
-        False,
-        None,
-        {},
-        "action_listen",
-    )
-
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
-    # check that the value was not extracted for incorrect intent
-    assert slot_values == {"some_slot": "some_value"}
+    assert slot_values == expected_slot_values
 
 
 def test_extract_requested_slot_from_intent():
@@ -586,6 +683,138 @@ def test_extract_other_slots_with_intent():
     slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
     # check that the value was extracted only for non requested slot
     assert slot_values == {"some_other_slot": "some_other_value"}
+
+
+@pytest.mark.parametrize(
+    "mapping_entity, mapping_role, mapping_group, entities, intent, expected_slot_values",
+    [
+        (
+            "entity_type",
+            "some_role",
+            None,
+            [
+                {
+                    "entity": "entity_type",
+                    "value": "some_value",
+                    "role": "some_other_role",
+                }
+            ],
+            "some_intent",
+            {},
+        ),
+        (
+            "entity_type",
+            "some_role",
+            None,
+            [{"entity": "entity_type", "value": "some_value", "role": "some_role"}],
+            "some_intent",
+            {"some_other_slot": "some_value"},
+        ),
+        (
+            "entity_type",
+            None,
+            "some_group",
+            [
+                {
+                    "entity": "entity_type",
+                    "value": "some_value",
+                    "group": "some_other_group",
+                }
+            ],
+            "some_intent",
+            {},
+        ),
+        (
+            "entity_type",
+            None,
+            "some_group",
+            [{"entity": "entity_type", "value": "some_value", "group": "some_group"}],
+            "some_intent",
+            {"some_other_slot": "some_value"},
+        ),
+        (
+            "entity_type",
+            "some_role",
+            "some_group",
+            [
+                {
+                    "entity": "entity_type",
+                    "value": "some_value",
+                    "role": "some_role",
+                    "group": "some_group",
+                }
+            ],
+            "some_intent",
+            {"some_other_slot": "some_value"},
+        ),
+        (
+            "entity_type",
+            None,
+            None,
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            {},
+        ),
+        (
+            "some_entity",
+            None,
+            None,
+            [{"entity": "entity_type", "value": "some_value"}],
+            "some_intent",
+            {},
+        ),
+        (
+            "entity_type",
+            None,
+            None,
+            [{"entity": "entity_type", "value": "some_value"}],
+            "some_intent",
+            {"some_other_slot": "some_value"},
+        ),
+    ],
+)
+def test_extract_other_slots_with_entity(
+    mapping_entity: Text,
+    mapping_role: Optional[Text],
+    mapping_group: Optional[Text],
+    entities: List[Dict[Text, Any]],
+    intent: Text,
+    expected_slot_values: Dict[Text, Text],
+):
+    """Test extraction of other not requested slots values from entities."""
+
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        def slot_mappings(self):
+            return {
+                "some_other_slot": self.from_entity(
+                    entity=mapping_entity, role=mapping_role, group=mapping_group
+                )
+            }
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {"requested_slot": "some_slot"},
+        {"intent": {"name": intent, "confidence": 1.0}, "entities": entities},
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    # check that the value was extracted for non requested slot
+    assert slot_values == expected_slot_values
 
 
 async def test_validate():

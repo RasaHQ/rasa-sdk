@@ -1,0 +1,5 @@
+Add support for entities with role and group labels.
+
+If you use ``from_entity`` in your custom slot mapping, you can now also specify a role and group label.
+If you set a role or group label, the slot is only filled if the entity has the specific role or group label set.
+If you don't specify a role or group label, the function behaves as before.
