@@ -192,7 +192,16 @@ class FormAction(Action):
     def entity_is_desired(
         self, requested_slot_mapping: Dict[Text, Any], slot: Text, tracker: "Tracker"
     ) -> bool:
-        """Check whether slot should be filled by an entity in the input or not."""
+        """Check whether slot should be filled by an entity in the input or not.
+
+        Args:
+            requested_slot_mapping: Slot mapping.
+            slot: The slot to be filled.
+            tracker: The tracker.
+
+        Returns:
+            True, if slot should be filled, false otherwise.
+        """
 
         # slot name is equal to the entity type
         slot_equals_entity = slot == requested_slot_mapping.get("entity")
