@@ -207,7 +207,7 @@ class FormAction(Action):
         )
         slot_fulfils_entity_mapping = matching_values is not None
 
-        return slot_equal_entity or slot_fulfils_entity_mapping
+        return slot_equals_entity or slot_fulfils_entity_mapping
 
     @staticmethod
     def get_entity_value(
