@@ -195,7 +195,7 @@ class FormAction(Action):
         """Check whether slot should be filled by an entity in the input or not."""
 
         # slot name is equal to the entity type
-        slot_equal_entity = slot == requested_slot_mapping.get("entity")
+        slot_equals_entity = slot == requested_slot_mapping.get("entity")
 
         # use the custom slot mapping 'from_entity' defined by the user to check
         # whether we can fill a slot with an entity
