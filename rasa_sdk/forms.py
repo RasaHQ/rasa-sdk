@@ -317,8 +317,8 @@ class FormAction(Action):
                     value = self.get_entity_value(
                         requested_slot_mapping.get("entity"),
                         tracker,
-                        role=requested_slot_mapping.get("role"),
-                        group=requested_slot_mapping.get("group"),
+                        requested_slot_mapping.get("role"),
+                        requested_slot_mapping.get("group"),
                     )
                 elif mapping_type == "from_intent":
                     value = requested_slot_mapping.get("value")
