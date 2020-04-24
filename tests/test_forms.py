@@ -223,7 +223,7 @@ def test_extract_requested_slot_from_entity_with_intent():
         ),
     ],
 )
-def test_extract_requested_slot_from_entity_with_not_intent(
+def test_extract_requested_slot_from_entity(
     mapping_not_intent: Optional[Text],
     mapping_intent: Optional[Text],
     mapping_role: Optional[Text],
