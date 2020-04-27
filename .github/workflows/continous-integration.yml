@@ -8,6 +8,9 @@ on:
     - '*'
   pull_request:
 
+env:
+  IS_TAG_BUILD: ${{ startsWith(github.event.ref, 'refs/tags') }}
+
 # SECRETS
 # - PYPI_TOKEN: publishing token for amn41 account, needs to be maintainer of
 #               RasaHQ/rasa-sdk on pypi (account credentials in 1password)
@@ -134,3 +137,15 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
+
+    - name: Publish Release Notes 🗞
+      if: env.IS_TAG_BUILD
+      env:
+        GITHUB_TAG: ${{ github.ref }}
+        GITHUB_REPO_SLUG: ${{ github.repository }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install pandoc
+        pip install -U github3.py pypandoc
+        python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py
