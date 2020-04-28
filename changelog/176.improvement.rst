@@ -1,1 +1,0 @@
-The Rasa SDK image now uses Python 3.7 instead of Python 3.6.
