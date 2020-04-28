@@ -1,2 +1,0 @@
-Updated ``pyyaml`` dependency to ``5.3.1`` to fix
-`CVE-2020-1747 <https://security-tracker.debian.org/tracker/CVE-2020-1747>`_

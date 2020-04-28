@@ -13,6 +13,31 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. towncrier release notes start
 
+[1.10.0] - 2020-04-28
+^^^^^^^^^^^^^^^^^^^^^
+
+Features
+--------
+- `#164 <https://github.com/rasahq/rasa/issues/164>`_: Added new ``--auto-reload`` CLI argument. When specified, modules containing ``Action``
+  subclasses will be automatically reloaded if they have been modified since the last HTTP
+  request. By using this, one can avoid having to re-start the actions server when
+  developing new actions.
+- `#3765 <https://github.com/rasahq/rasa/issues/3765>`_: Add support for entities with role and group labels.
+
+  If you use ``from_entity`` in your custom slot mapping, you can now also specify a role and group label.
+  If you set a role or group label, the slot is only filled if the entity has the specific role or group label set.
+  If you don't specify a role or group label, the function behaves as before.
+
+Improvements
+------------
+- `#176 <https://github.com/rasahq/rasa/issues/176>`_: The Rasa SDK image now uses Python 3.7 instead of Python 3.6.
+
+Bugfixes
+--------
+- `#176 <https://github.com/rasahq/rasa/issues/176>`_: Updated ``pyyaml`` dependency to ``5.3.1`` to fix
+  `CVE-2020-1747 <https://security-tracker.debian.org/tracker/CVE-2020-1747>`_
+
+
 [1.9.0] - 2020-03-24
 ^^^^^^^^^^^^^^^^^^^^
 
