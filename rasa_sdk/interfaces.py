@@ -1,7 +1,8 @@
 import copy
 import logging
-import typing
 from typing import Any, Dict, Iterator, List, Optional, Text
+
+from rasa_sdk.executor import CollectingDispatcher
 
 logger = logging.getLogger(__name__)
 
@@ -230,14 +231,17 @@ class Action:
         raise NotImplementedError("An action must implement a name")
 
     async def run(
-        self, dispatcher, tracker: Tracker, domain: Dict[Text, Any]
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
     ) -> List[Dict[Text, Any]]:
         """Execute the side effects of this action.
 
         Args:
             dispatcher: the dispatcher which is used to
                 send messages back to the user. Use
-                ``dipatcher.utter_message()`` or any other
+                ``dispatcher.utter_message()`` or any other
                 ``rasa_sdk.executor.CollectingDispatcher``
                 method.
             tracker: the state tracker for the current
