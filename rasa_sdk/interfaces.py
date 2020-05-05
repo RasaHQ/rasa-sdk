@@ -2,8 +2,6 @@ import copy
 import logging
 from typing import Any, Dict, Iterator, List, Optional, Text
 
-from rasa_sdk.executor import CollectingDispatcher
-
 logger = logging.getLogger(__name__)
 
 ACTION_LISTEN_NAME = "action_listen"
@@ -232,7 +230,7 @@ class Action:
 
     async def run(
         self,
-        dispatcher: CollectingDispatcher,
+        dispatcher,
         tracker: Tracker,
         domain: Dict[Text, Any],
     ) -> List[Dict[Text, Any]]:
