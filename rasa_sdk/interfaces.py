@@ -241,7 +241,7 @@ class Action:
         Args:
             dispatcher: the dispatcher which is used to
                 send messages back to the user. Use
-                ``dispatcher.utter_message()`` for sending messages
+                ``dispatcher.utter_message()`` for sending messages.
             tracker: the state tracker for the current
                 user. You can access slot values using
                 ``tracker.get_slot(slot_name)``, the most recent user message
