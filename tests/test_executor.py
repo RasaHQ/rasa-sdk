@@ -3,6 +3,8 @@ import shutil
 import random
 import string
 import time
+
+from rasa_sdk import Action
 from typing import Text, Optional, Generator
 
 import pytest
@@ -197,3 +199,24 @@ async def test_reload_module(
         "image": None,
         "attachment": None,
     }
+
+
+class SubclassTestActionA(Action):
+    def name(self):
+        return "subclass_test_action_a"
+
+
+class SubclassTestActionB(SubclassTestActionA):
+    def name(self):
+        return "subclass_test_action_b"
+
+
+def test_load_subclasses(executor: ActionExecutor):
+    executor.register_action(SubclassTestActionB)
+    assert list(executor.actions) == ["subclass_test_action_b"]
+
+    executor.register_action(SubclassTestActionA)
+    assert sorted(list(executor.actions)) == [
+        "subclass_test_action_a",
+        "subclass_test_action_b",
+    ]

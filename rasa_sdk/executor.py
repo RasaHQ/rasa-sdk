@@ -3,7 +3,7 @@ import inspect
 import logging
 import pkgutil
 import warnings
-from typing import Text, List, Dict, Any, Type, Union, Callable, Optional
+from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, Set
 from collections import namedtuple
 import typing
 import types
@@ -146,9 +146,10 @@ TimestampModule = namedtuple("TimestampModule", ["timestamp", "module"])
 
 
 class ActionExecutor:
-    def __init__(self):
+    def __init__(self) -> None:
         self.actions = {}
         self._modules: Dict[Text, TimestampModule] = {}
+        self._loaded: Set[Type] = set()
 
     def register_action(self, action: Union[Type["Action"], "Action"]) -> None:
         if inspect.isclass(action):
@@ -156,15 +157,12 @@ class ActionExecutor:
                 logger.warning(f"Skipping built in Action {action}.")
                 return
             else:
-                if getattr(action, "_sdk_loaded", False):
-                    # This Action subclass has already been loaded in the past;
-                    # do not try to load it again as either 1) it is already
-                    # loaded or 2) it has been replaced by a newer version
-                    # already.
+                # Check if this class has already been loaded in the past.
+                if action in self._loaded:
                     return
 
                 # Mark the class as "loaded"
-                action._sdk_loaded = True
+                self._loaded.add(action)
                 action = action()
 
         if isinstance(action, Action):
