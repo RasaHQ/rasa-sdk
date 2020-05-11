@@ -1,0 +1,1 @@
+Fix ``ActionExecutor`` sometimes not loading user-defined actions that inherit from other user-defined ones.
