@@ -146,7 +146,7 @@ TimestampModule = namedtuple("TimestampModule", ["timestamp", "module"])
 
 
 class ActionExecutor:
-    def __init__(self):
+    def __init__(self) -> None:
         self.actions = {}
         self._modules: Dict[Text, TimestampModule] = {}
         self._loaded: Set[Type] = set()
