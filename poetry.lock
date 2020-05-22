@@ -475,6 +475,17 @@ version = "0.8.0"
 
 [[package]]
 category = "dev"
+description = "Utilities to deal with pep440 versioning"
+name = "pep440-version-utils"
+optional = false
+python-versions = ">=3.6,<4.0"
+version = "0.3.0"
+
+[package.dependencies]
+packaging = ">=20.3,<21.0"
+
+[[package]]
+category = "dev"
 description = "plugin and hook calling mechanisms for python"
 name = "pluggy"
 optional = false
@@ -616,7 +627,7 @@ category = "dev"
 description = "YAML parser and emitter for Python"
 name = "pyyaml"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = "*"
 version = "5.3.1"
 
 [[package]]
@@ -715,14 +726,6 @@ version = "0.9.2"
 
 [package.dependencies]
 sanic = ">=18.12.0"
-
-[[package]]
-category = "dev"
-description = "A library implementing the 'SemVer' scheme."
-name = "semantic-version"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "2.8.4"
 
 [[package]]
 category = "dev"
@@ -857,7 +860,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "33e39927b9775160be47f9b36d310d3400f4c356e02a4b1b75877bf0c010fa6c"
+content-hash = "199598e46901aba5935548cecb17e5e2009fa950de76da0163500c4fd1e50d5b"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -1147,6 +1150,10 @@ pathspec = [
     {file = "pathspec-0.8.0-py2.py3-none-any.whl", hash = "sha256:7d91249d21749788d07a2d0f94147accd8f845507400749ea19c1ec9054a12b0"},
     {file = "pathspec-0.8.0.tar.gz", hash = "sha256:da45173eb3a6f2a5a487efba21f050af2b41948be6ab52b6a1e3ff22bb8b7061"},
 ]
+pep440-version-utils = [
+    {file = "pep440-version-utils-0.3.0.tar.gz", hash = "sha256:ceb8c8da63b54cc555946d91829f72fe323f8d635b22fa54ef0a9800c37f50df"},
+    {file = "pep440_version_utils-0.3.0-py3-none-any.whl", hash = "sha256:73780b2c31adad5ca35c89eb008f51c2a47aee0318debe31391b673b90577e1b"},
+]
 pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},
     {file = "pluggy-0.13.1.tar.gz", hash = "sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0"},
@@ -1250,10 +1257,6 @@ sanic-cors = [
 sanic-plugins-framework = [
     {file = "Sanic-Plugins-Framework-0.9.2.tar.gz", hash = "sha256:e63439f238f9e070649ee5c174d952b2fbc7e845259a3839e109b4bb2fbbb163"},
     {file = "Sanic_Plugins_Framework-0.9.2-py2.py3-none-any.whl", hash = "sha256:2949374e414a497a3b07b09800d3d0b3cdf24f3a1d3f08591488759099cb7f44"},
-]
-semantic-version = [
-    {file = "semantic_version-2.8.4-py2.py3-none-any.whl", hash = "sha256:4eedff095ecdd7790a9e6d7130d49250209e0c7bf6741423c4a4017d9bac4c04"},
-    {file = "semantic_version-2.8.4.tar.gz", hash = "sha256:352459f640f3db86551d8054d1288608b29a96e880c7746f0a59c92879d412a3"},
 ]
 six = [
     {file = "six-1.14.0-py2.py3-none-any.whl", hash = "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"},
