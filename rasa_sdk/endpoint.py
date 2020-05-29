@@ -138,6 +138,7 @@ def run(
     )
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
 
+    logger.info(f"Action endpoint is up and running on port {port}.")
     app.run("0.0.0.0", port, ssl=ssl_context, workers=utils.number_of_sanic_workers())
 
 
