@@ -68,7 +68,7 @@ sanic-cors = "^0.10.0b1"
 requests = "^2.0"
 
 [tool.poetry.dev-dependencies]
-pytest-cov = "^2.8.1"
+pytest-cov = "^2.9.0"
 coveralls = "^2.0.0"
 pytest = "^5.4.1"
 black = "^19.10b0"
