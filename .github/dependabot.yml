@@ -1,0 +1,14 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: monthly
+    time: '13:00'
+  pull-request-branch-name:
+    separator: "-"
+  open-pull-requests-limit: 10
+  reviewers:
+  - alwx
+  labels:
+  - type:dependencies
