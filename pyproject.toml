@@ -70,7 +70,7 @@ requests = "^2.0"
 [tool.poetry.dev-dependencies]
 pytest-cov = "^2.8.1"
 coveralls = "^2.0.0"
-pytest = "^5.4.1"
+pytest = "^5.4.3"
 black = "^19.10b0"
 flake8 = "^3.7.9"
 pytype = "^2020.1.24"
