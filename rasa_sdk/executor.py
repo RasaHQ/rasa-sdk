@@ -5,7 +5,6 @@ import pkgutil
 import warnings
 from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, Set
 from collections import namedtuple
-import typing
 import types
 import sys
 import os
