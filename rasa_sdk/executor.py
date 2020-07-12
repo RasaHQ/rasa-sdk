@@ -261,14 +261,27 @@ class ActionExecutor:
         actions = utils.all_subclasses(Action)
 
         for action in actions:
+            logger.debug(f"checking action {action.__module__}")
+
             if (
-                not action.__module__.startswith("rasa_core.")
-                and not action.__module__.startswith("rasa.")
-                and not action.__module__.startswith("rasa_sdk.")
-                and not action.__module__.startswith("rasa_core_sdk.")
-                and not inspect.isabstract(action)
+                action.__module__.startswith("rasa_core.")
+                or action.__module__.startswith("rasa.")
+                or action.__module__.startswith("rasa_sdk.")
+                or action.__module__.startswith("rasa_core_sdk.")
             ):
-                self.register_action(action)
+                logger.debug(f"skipping action {action.__module__}")
+                continue
+
+            try:
+                logger.debug(inspect.isabstract(action))
+                logger.debug(inspect.isabstract(action()))
+                if not (inspect.isabstract(action) and inspect.isabstract(action())):
+                    logger.debug(f'registering action {action.__module__}')
+                    self.register_action(action)
+            except TypeError as e:
+                # it errors because of abstract class being instantiated
+                logger.debug(f"skipping {action.__module__} since it is abstract")
+                continue
 
     def _find_modules_to_reload(self) -> Dict[Text, TimestampModule]:
         """Finds all Python modules that should be reloaded by checking their
