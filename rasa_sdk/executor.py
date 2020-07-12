@@ -273,15 +273,13 @@ class ActionExecutor:
                 continue
 
             try:
-                logger.debug(inspect.isabstract(action))
-                logger.debug(inspect.isabstract(action()))
                 if not (inspect.isabstract(action) and inspect.isabstract(action())):
                     logger.debug(f'registering action {action.__module__}')
                     self.register_action(action)
             except TypeError as e:
                 # it errors because of abstract class being instantiated
+                logger.error(e, exc_info=True)
                 logger.debug(f"skipping {action.__module__} since it is abstract")
-                continue
 
     def _find_modules_to_reload(self) -> Dict[Text, TimestampModule]:
         """Finds all Python modules that should be reloaded by checking their
