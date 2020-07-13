@@ -208,13 +208,18 @@ class FormAction(Action):
 
         # use the custom slot mapping 'from_entity' defined by the user to check
         # whether we can fill a slot with an entity
-        matching_values = self.get_entity_value(
-            requested_slot_mapping.get("entity"),
-            tracker,
-            requested_slot_mapping.get("role"),
-            requested_slot_mapping.get("group"),
-        )
-        slot_fulfils_entity_mapping = matching_values is not None
+        slot_fulfils_entity_mapping = False
+        if (
+            requested_slot_mapping.get("role") is not None
+            or requested_slot_mapping.get("group") is not None
+        ):
+            matching_values = self.get_entity_value(
+                requested_slot_mapping.get("entity"),
+                tracker,
+                requested_slot_mapping.get("role"),
+                requested_slot_mapping.get("group"),
+            )
+            slot_fulfils_entity_mapping = matching_values is not None
 
         return slot_equals_entity or slot_fulfils_entity_mapping
 
