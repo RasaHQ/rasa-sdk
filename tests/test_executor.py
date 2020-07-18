@@ -221,6 +221,7 @@ def test_load_subclasses(executor: ActionExecutor):
         "subclass_test_action_b",
     ]
 
+
 def test_load_abstract_classes(executor: ActionExecutor, package_path: Text):
     ABSTRACT_ACTION_TEST_TEMPLATE = """
 from abc import ABC, abstractmethod
