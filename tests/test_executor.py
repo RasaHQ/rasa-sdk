@@ -220,3 +220,37 @@ def test_load_subclasses(executor: ActionExecutor):
         "subclass_test_action_a",
         "subclass_test_action_b",
     ]
+
+def test_load_abstract_classes(executor: ActionExecutor, package_path: Text):
+    ABSTRACT_ACTION_TEST_TEMPLATE = """
+from abc import ABC, abstractmethod
+
+from rasa_sdk import Action
+
+class AbstractTestAction(ABC, Action):
+    @abstractmethod
+    def name(self):
+        return "abstract_test_action"
+
+    @abstractmethod
+    async def run(self, dispatcher, tracker, domain):
+        dispatcher.utter_message("abstract test action")
+        return []
+
+class TestConcreteAction(AbstractTestAction):
+    def name(self):
+        return "concrete_test_action"
+
+    async def run(self, dispatcher, tracker, domain):
+        dispatcher.utter_message("concrete test action")
+        return []
+    """
+
+    # set up the file
+    with open(os.path.join(package_path, "__init__.py"), "w") as f:
+        f.write(ABSTRACT_ACTION_TEST_TEMPLATE)
+
+    executor.register_package(package_path.replace("/", "."))
+    # abstract_test_action shouldn't exist in this executor actions list
+    assert "abstract_test_action" not in executor.actions
+    assert "concrete_test_action" in executor.actions
