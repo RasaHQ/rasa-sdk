@@ -190,33 +190,39 @@ class FormAction(Action):
         return intent_not_blacklisted or intent in mapping_intents
 
     def entity_is_desired(
-        self, requested_slot_mapping: Dict[Text, Any], slot: Text, tracker: "Tracker"
+        self, other_slot_mapping: Dict[Text, Any], other_slot: Text, tracker: "Tracker"
     ) -> bool:
-        """Check whether slot should be filled by an entity in the input or not.
+        """Check whether the other slot should be filled by an entity in the input or
+        not.
 
         Args:
-            requested_slot_mapping: Slot mapping.
-            slot: The slot to be filled.
+            other_slot_mapping: Slot mapping.
+            other_slot: The other slot to be filled.
             tracker: The tracker.
 
         Returns:
-            True, if slot should be filled, false otherwise.
+            True, if other slot should be filled, false otherwise.
         """
 
         # slot name is equal to the entity type
-        slot_equals_entity = slot == requested_slot_mapping.get("entity")
+        other_slot_equals_entity = other_slot == other_slot_mapping.get("entity")
 
         # use the custom slot mapping 'from_entity' defined by the user to check
         # whether we can fill a slot with an entity
-        matching_values = self.get_entity_value(
-            requested_slot_mapping.get("entity"),
-            tracker,
-            requested_slot_mapping.get("role"),
-            requested_slot_mapping.get("group"),
-        )
-        slot_fulfils_entity_mapping = matching_values is not None
+        other_slot_fulfils_entity_mapping = False
+        if (
+            other_slot_mapping.get("role") is not None
+            or other_slot_mapping.get("group") is not None
+        ):
+            matching_values = self.get_entity_value(
+                other_slot_mapping.get("entity"),
+                tracker,
+                other_slot_mapping.get("role"),
+                other_slot_mapping.get("group"),
+            )
+            other_slot_fulfils_entity_mapping = matching_values is not None
 
-        return slot_equals_entity or slot_fulfils_entity_mapping
+        return other_slot_equals_entity or other_slot_fulfils_entity_mapping
 
     @staticmethod
     def get_entity_value(

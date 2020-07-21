@@ -1,0 +1,1 @@
+Only fill other slots if slot mapping contains a role or group restriction.
