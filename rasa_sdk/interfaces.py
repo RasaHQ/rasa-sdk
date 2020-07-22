@@ -33,7 +33,7 @@ class Tracker:
         events: List[Dict[Text, Any]],
         paused: bool,
         followup_action: Optional[Text],
-        active_form: Optional[Text],
+        active_form: Optional[Dict],
         latest_action_name: Optional[Text],
     ) -> None:
         """Initialize the tracker."""

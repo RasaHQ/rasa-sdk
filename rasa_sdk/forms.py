@@ -549,9 +549,12 @@ class FormAction(Action):
             - the form is called after `action_listen`
             - form validation was not cancelled
         """
-        if tracker.latest_action_name == "action_listen" and tracker.active_form.get(
-            "validate", True
-        ):
+        # no active_form means that it is called during activation
+        need_validation = not tracker.active_form or (
+            tracker.latest_action_name == "action_listen"
+            and tracker.active_form.get("validate", True)
+        )
+        if need_validation:
             logger.debug(f"Validating user input '{tracker.latest_message}'")
             if utils.is_coroutine_action(self.validate):
                 return await self.validate(dispatcher, tracker, domain)

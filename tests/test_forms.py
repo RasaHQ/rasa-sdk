@@ -5,7 +5,7 @@ from typing import Type, Text, Dict, Any, List, Optional
 from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.events import SlotSet, Form
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.forms import FormAction
+from rasa_sdk.forms import FormAction, REQUESTED_SLOT
 
 
 def test_extract_requested_slot_default():
@@ -15,7 +15,7 @@ def test_extract_requested_slot_default():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"entities": [{"entity": "some_slot", "value": "some_value"}]},
         [],
         False,
@@ -45,7 +45,7 @@ def test_extract_requested_slot_from_entity_no_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"entities": [{"entity": "some_entity", "value": "some_value"}]},
         [],
         False,
@@ -79,7 +79,7 @@ def test_extract_requested_slot_from_entity_with_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "intent": {"name": "some_intent", "confidence": 1.0},
             "entities": [{"entity": "some_entity", "value": "some_value"}],
@@ -97,7 +97,7 @@ def test_extract_requested_slot_from_entity_with_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "intent": {"name": "some_other_intent", "confidence": 1.0},
             "entities": [{"entity": "some_entity", "value": "some_value"}],
@@ -254,7 +254,7 @@ def test_extract_requested_slot_from_entity(
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"intent": {"name": intent, "confidence": 1.0}, "entities": entities},
         [],
         False,
@@ -285,7 +285,7 @@ def test_extract_requested_slot_from_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"intent": {"name": "some_intent", "confidence": 1.0}},
         [],
         False,
@@ -300,7 +300,7 @@ def test_extract_requested_slot_from_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"intent": {"name": "some_other_intent", "confidence": 1.0}},
         [],
         False,
@@ -334,7 +334,7 @@ def test_extract_requested_slot_from_not_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"intent": {"name": "some_intent", "confidence": 1.0}},
         [],
         False,
@@ -349,7 +349,7 @@ def test_extract_requested_slot_from_not_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"intent": {"name": "some_other_intent", "confidence": 1.0}},
         [],
         False,
@@ -379,7 +379,7 @@ def test_extract_requested_slot_from_text_no_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"text": "some_text"},
         [],
         False,
@@ -408,7 +408,7 @@ def test_extract_requested_slot_from_text_with_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"text": "some_text", "intent": {"name": "some_intent", "confidence": 1.0}},
         [],
         False,
@@ -423,7 +423,7 @@ def test_extract_requested_slot_from_text_with_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "text": "some_text",
             "intent": {"name": "some_other_intent", "confidence": 1.0},
@@ -456,7 +456,7 @@ def test_extract_requested_slot_from_text_with_not_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"text": "some_text", "intent": {"name": "some_intent", "confidence": 1.0}},
         [],
         False,
@@ -471,7 +471,7 @@ def test_extract_requested_slot_from_text_with_not_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "text": "some_text",
             "intent": {"name": "some_other_intent", "confidence": 1.0},
@@ -575,7 +575,7 @@ def test_extract_other_slots_no_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"entities": [{"entity": "some_slot", "value": "some_value"}]},
         [],
         False,
@@ -590,7 +590,7 @@ def test_extract_other_slots_no_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"entities": [{"entity": "some_other_slot", "value": "some_other_value"}]},
         [],
         False,
@@ -605,7 +605,7 @@ def test_extract_other_slots_no_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "entities": [
                 {"entity": "some_slot", "value": "some_value"},
@@ -650,7 +650,7 @@ def test_extract_other_slots_with_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "intent": {"name": "some_other_intent", "confidence": 1.0},
             "entities": [{"entity": "some_other_slot", "value": "some_other_value"}],
@@ -668,7 +668,7 @@ def test_extract_other_slots_with_intent():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "intent": {"name": "some_intent", "confidence": 1.0},
             "entities": [{"entity": "some_other_slot", "value": "some_other_value"}],
@@ -803,7 +803,7 @@ def test_extract_other_slots_with_entity(
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"intent": {"name": intent, "confidence": 1.0}, "entities": entities},
         [],
         False,
@@ -831,7 +831,7 @@ async def test_validate():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "entities": [
                 {"entity": "some_slot", "value": "some_value"},
@@ -857,7 +857,7 @@ async def test_validate():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"entities": [{"entity": "some_other_slot", "value": "some_other_value"}]},
         [],
         False,
@@ -872,7 +872,7 @@ async def test_validate():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"entities": []},
         [],
         False,
@@ -911,7 +911,7 @@ async def test_set_slot_within_helper():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {"entities": [{"entity": "some_slot", "value": "some_value"}]},
         [],
         False,
@@ -950,7 +950,7 @@ async def test_validate_extracted_no_requested():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": None},
+        {REQUESTED_SLOT: None},
         {"entities": [{"entity": "some_slot", "value": "some_value"}]},
         [],
         False,
@@ -1084,7 +1084,7 @@ async def test_validate_trigger_slots():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_other_slot"},
+        {REQUESTED_SLOT: "some_other_slot"},
         {
             "intent": {"name": "some_other_intent", "confidence": 1.0},
             "entities": [{"entity": "some_other_slot", "value": "some_other_value"}],
@@ -1177,7 +1177,7 @@ async def test_validate_if_required():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "entities": [
                 {"entity": "some_slot", "value": "some_value"},
@@ -1203,7 +1203,7 @@ async def test_validate_if_required():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "entities": [
                 {"entity": "some_slot", "value": "some_value"},
@@ -1223,7 +1223,7 @@ async def test_validate_if_required():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_slot"},
+        {REQUESTED_SLOT: "some_slot"},
         {
             "entities": [
                 {"entity": "some_slot", "value": "some_value"},
@@ -1242,6 +1242,76 @@ async def test_validate_if_required():
     # check that validation was skipped
     # because previous action is not action_listen
     assert events == []
+
+
+async def test_validate_on_activation():
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        async def submit(self, _dispatcher, _tracker, _domain):
+            return []
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {},
+        {"entities": [{"entity": "some_other_slot", "value": "some_other_value"}]},
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    # check that the form was activated and validation was performed
+    assert events == [
+        Form("some_form"),
+        SlotSet("some_other_slot", "some_other_value"),
+        SlotSet(REQUESTED_SLOT, "some_slot"),
+    ]
+
+
+async def test_validate_on_activation_with_other_action_after_user_utterance():
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        async def submit(self, _dispatcher, _tracker, _domain):
+            return []
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {},
+        {"entities": [{"entity": "some_other_slot", "value": "some_other_value"}]},
+        [],
+        False,
+        None,
+        {},
+        "some_action",
+    )
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    # check that the form was activated and validation was performed
+    assert events == [
+        Form("some_form"),
+        SlotSet("some_other_slot", "some_other_value"),
+        SlotSet(REQUESTED_SLOT, "some_slot"),
+    ]
 
 
 async def test_deprecated_helper_style():
@@ -1264,7 +1334,7 @@ async def test_deprecated_helper_style():
 
     tracker = Tracker(
         "default",
-        {"requested_slot": "some_value"},
+        {REQUESTED_SLOT: "some_value"},
         {"entities": [{"entity": "some_slot", "value": "some_value"}]},
         [],
         False,
@@ -1319,8 +1389,8 @@ async def test_early_deactivation(form_class: Type[FormAction]):
     events = await form.run(dispatcher=None, tracker=tracker, domain=None)
 
     # check that form was deactivated before requesting next slot
-    assert events == [Form(None), SlotSet("requested_slot", None)]
-    assert SlotSet("requested_slot", "some_other_slot") not in events
+    assert events == [Form(None), SlotSet(REQUESTED_SLOT, None)]
+    assert SlotSet(REQUESTED_SLOT, "some_other_slot") not in events
 
 
 class FormSyncSubmit(FormAction):
