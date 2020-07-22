@@ -1,0 +1,1 @@
+Validate user input on activation even if there is an action in between.
