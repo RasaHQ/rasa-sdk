@@ -1244,6 +1244,76 @@ async def test_validate_if_required():
     assert events == []
 
 
+async def test_validate_on_activation():
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        async def submit(self, _dispatcher, _tracker, _domain):
+            return []
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {},
+        {"entities": [{"entity": "some_other_slot", "value": "some_other_value"},]},
+        [],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    # check that the form was activated and validation was performed
+    assert events == [
+        Form("some_form"),
+        SlotSet("some_other_slot", "some_other_value"),
+        SlotSet("requested_slot", "some_slot"),
+    ]
+
+
+async def test_validate_on_activation_with_other_action_after_user_utterance():
+    # noinspection PyAbstractClass
+    class CustomFormAction(FormAction):
+        def name(self):
+            return "some_form"
+
+        @staticmethod
+        def required_slots(_tracker):
+            return ["some_slot", "some_other_slot"]
+
+        async def submit(self, _dispatcher, _tracker, _domain):
+            return []
+
+    form = CustomFormAction()
+
+    tracker = Tracker(
+        "default",
+        {},
+        {"entities": [{"entity": "some_other_slot", "value": "some_other_value"},]},
+        [],
+        False,
+        None,
+        {},
+        "some_action",
+    )
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    # check that the form was activated and validation was performed
+    assert events == [
+        Form("some_form"),
+        SlotSet("some_other_slot", "some_other_value"),
+        SlotSet("requested_slot", "some_slot"),
+    ]
+
+
 async def test_deprecated_helper_style():
     # noinspection PyAbstractClass
     # This method tests the old style of returning values instead of {'slot':'value'}
