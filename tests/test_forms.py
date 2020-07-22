@@ -1262,7 +1262,7 @@ async def test_validate_on_activation():
     tracker = Tracker(
         "default",
         {},
-        {"entities": [{"entity": "some_other_slot", "value": "some_other_value"},]},
+        {"entities": [{"entity": "some_other_slot", "value": "some_other_value"}]},
         [],
         False,
         None,
@@ -1297,7 +1297,7 @@ async def test_validate_on_activation_with_other_action_after_user_utterance():
     tracker = Tracker(
         "default",
         {},
-        {"entities": [{"entity": "some_other_slot", "value": "some_other_value"},]},
+        {"entities": [{"entity": "some_other_slot", "value": "some_other_value"}]},
         [],
         False,
         None,
