@@ -419,6 +419,15 @@ class FormAction(Action):
         logger.debug(f"Validating extracted slots: {slot_values}")
         return await self.validate_slots(slot_values, dispatcher, tracker, domain)
 
+    def ask_for_slot(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: Dict[Text, Any],
+        slot : Text,
+    ):
+        dispatcher.utter_message(template=f"utter_ask_{slot}", **tracker.slots)
+
     # noinspection PyUnusedLocal
     def request_next_slot(
         self,
@@ -432,7 +441,7 @@ class FormAction(Action):
         for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
                 logger.debug(f"Request next slot '{slot}'")
-                dispatcher.utter_message(template=f"utter_ask_{slot}", **tracker.slots)
+                self.ask_for_slot(dispatcher, tracker, domain, slot)
                 return [SlotSet(REQUESTED_SLOT, slot)]
 
         # no more required slots to fill
