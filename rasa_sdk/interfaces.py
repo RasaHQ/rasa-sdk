@@ -22,7 +22,7 @@ class Tracker:
             state.get("events"),
             state.get("paused"),
             state.get("followup_action"),
-            state.get("active_loop", {}),
+            state.get("active_loop", state.get("active_form", {})),
             state.get("latest_action_name"),
         )
 
