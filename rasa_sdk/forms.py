@@ -3,7 +3,7 @@ import typing
 from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
 from rasa_sdk import utils
-from rasa_sdk.events import SlotSet, Form, EventType
+from rasa_sdk.events import SlotSet, EventType, ActiveLoop
 from rasa_sdk.interfaces import Action, ActionExecutionRejection
 
 logger = logging.getLogger(__name__)
@@ -443,7 +443,7 @@ class FormAction(Action):
             and reset the requested slot"""
 
         logger.debug(f"Deactivating the form '{self.name()}'")
-        return [Form(None), SlotSet(REQUESTED_SLOT, None)]
+        return [ActiveLoop(None), SlotSet(REQUESTED_SLOT, None)]
 
     async def submit(
         self,
@@ -516,7 +516,7 @@ class FormAction(Action):
             return []
         else:
             logger.debug(f"Activated the form '{self.name()}'")
-            events = [Form(self.name())]
+            events = [ActiveLoop(self.name())]
 
             # collect values of required slots filled before activation
             prefilled_slots = {}
@@ -592,7 +592,7 @@ class FormAction(Action):
         # validate user input
         events.extend(await self._validate_if_required(dispatcher, tracker, domain))
         # check that the form wasn't deactivated in validation
-        if Form(None) not in events:
+        if ActiveLoop(None) not in events:
 
             # create temp tracker with populated slots from `validate` method
             temp_tracker = tracker.copy()

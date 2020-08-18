@@ -3,7 +3,7 @@ import asyncio
 from typing import Type, Text, Dict, Any, List, Optional
 
 from rasa_sdk import Tracker, ActionExecutionRejection
-from rasa_sdk.events import SlotSet, Form
+from rasa_sdk.events import SlotSet, ActiveLoop
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.forms import FormAction, REQUESTED_SLOT
 
@@ -1002,7 +1002,7 @@ async def test_validate_prefilled_slots():
     )
     # check that the form was activated and prefilled slots were validated
     assert events == [
-        Form("some_form"),
+        ActiveLoop("some_form"),
         SlotSet("some_slot", "validated_value"),
         SlotSet("some_other_slot", "some_other_value"),
     ]
@@ -1013,7 +1013,7 @@ async def test_validate_prefilled_slots():
 
     # check that entities picked up in input overwrite prefilled slots
     assert events == [
-        Form("some_form"),
+        ActiveLoop("some_form"),
         SlotSet("some_slot", "validated_value"),
         SlotSet("some_other_slot", "some_other_value"),
         SlotSet("some_slot", None),
@@ -1143,7 +1143,7 @@ async def test_activate_if_required():
         dispatcher=None, tracker=tracker, domain=None
     )
     # check that the form was activated
-    assert events == [Form("some_form")]
+    assert events == [ActiveLoop("some_form")]
 
     tracker = Tracker(
         "default",
@@ -1273,7 +1273,7 @@ async def test_validate_on_activation():
     events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
     # check that the form was activated and validation was performed
     assert events == [
-        Form("some_form"),
+        ActiveLoop("some_form"),
         SlotSet("some_other_slot", "some_other_value"),
         SlotSet(REQUESTED_SLOT, "some_slot"),
     ]
@@ -1308,7 +1308,7 @@ async def test_validate_on_activation_with_other_action_after_user_utterance():
     events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
     # check that the form was activated and validation was performed
     assert events == [
-        Form("some_form"),
+        ActiveLoop("some_form"),
         SlotSet("some_other_slot", "some_other_value"),
         SlotSet(REQUESTED_SLOT, "some_slot"),
     ]
@@ -1389,7 +1389,7 @@ async def test_early_deactivation(form_class: Type[FormAction]):
     events = await form.run(dispatcher=None, tracker=tracker, domain=None)
 
     # check that form was deactivated before requesting next slot
-    assert events == [Form(None), SlotSet(REQUESTED_SLOT, None)]
+    assert events == [ActiveLoop(None), SlotSet(REQUESTED_SLOT, None)]
     assert SlotSet(REQUESTED_SLOT, "some_other_slot") not in events
 
 
