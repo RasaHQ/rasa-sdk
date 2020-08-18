@@ -1,5 +1,6 @@
 import copy
 import logging
+import warnings
 from typing import Any, Dict, Iterator, List, Optional, Text
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ class Tracker:
             state.get("events"),
             state.get("paused"),
             state.get("followup_action"),
-            state.get("active_form", {}),
+            state.get("active_loop", {}),
             state.get("latest_action_name"),
         )
 
@@ -33,7 +34,7 @@ class Tracker:
         events: List[Dict[Text, Any]],
         paused: bool,
         followup_action: Optional[Text],
-        active_form: Optional[Dict],
+        active_loop: Dict[Text, Any],
         latest_action_name: Optional[Text],
     ) -> None:
         """Initialize the tracker."""
@@ -54,8 +55,16 @@ class Tracker:
         #                   "entities": UserUttered.entities,
         #                   "text": text}
         self.latest_message = latest_message if latest_message else {}
-        self.active_form = active_form
+        self.active_loop = active_loop
         self.latest_action_name = latest_action_name
+
+    @property
+    def active_form(self) -> Dict[Text, Any]:
+        warnings.warn(
+            "Use of `active_form` is deprecated. Please use `active_loop insteaad.",
+            DeprecationWarning,
+        )
+        return self.active_loop
 
     def current_state(self) -> Dict[Text, Any]:
         """Return the current tracker state as an object."""
@@ -73,7 +82,7 @@ class Tracker:
             "paused": self.is_paused(),
             "events": self.events,
             "latest_input_channel": self.get_latest_input_channel(),
-            "active_form": self.active_form,
+            "active_loop": self.active_loop,
             "latest_action_name": self.latest_action_name,
         }
 
@@ -165,7 +174,7 @@ class Tracker:
             copy.deepcopy(self.events),
             self._paused,
             self.followup_action,
-            self.active_form,
+            self.active_loop,
             self.latest_action_name,
         )
 

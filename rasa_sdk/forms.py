@@ -282,7 +282,7 @@ class FormAction(Action):
                     # check whether the slot should be
                     # filled from trigger intent mapping
                     should_fill_trigger_slot = (
-                        tracker.active_form.get("name") != self.name()
+                        tracker.active_loop.get("name") != self.name()
                         and other_slot_mapping["type"] == "from_trigger_intent"
                         and self.intent_is_desired(other_slot_mapping, tracker)
                     )
@@ -507,12 +507,12 @@ class FormAction(Action):
         as any `SlotSet` events from validation of pre-filled slots.
         """
 
-        if tracker.active_form.get("name") is not None:
-            logger.debug(f"The form '{tracker.active_form}' is active")
+        if tracker.active_loop.get("name") is not None:
+            logger.debug(f"The form '{tracker.active_loop}' is active")
         else:
             logger.debug("There is no active form")
 
-        if tracker.active_form.get("name") == self.name():
+        if tracker.active_loop.get("name") == self.name():
             return []
         else:
             logger.debug(f"Activated the form '{self.name()}'")
@@ -549,10 +549,10 @@ class FormAction(Action):
             - the form is called after `action_listen`
             - form validation was not cancelled
         """
-        # no active_form means that it is called during activation
-        need_validation = not tracker.active_form or (
+        # no active_loop means that it is called during activation
+        need_validation = not tracker.active_loop or (
             tracker.latest_action_name == "action_listen"
-            and tracker.active_form.get("validate", True)
+            and tracker.active_loop.get("validate", True)
         )
         if need_validation:
             logger.debug(f"Validating user input '{tracker.latest_message}'")
