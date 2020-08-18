@@ -183,11 +183,11 @@ class FormAction(Action):
         mapping_not_intents = requested_slot_mapping.get("not_intent", [])
         intent = tracker.latest_message.get("intent", {}).get("name")
 
-        intent_not_blacklisted = (
+        intent_not_excluded = (
             not mapping_intents and intent not in mapping_not_intents
         )
 
-        return intent_not_blacklisted or intent in mapping_intents
+        return intent_not_excluded or intent in mapping_intents
 
     def entity_is_desired(
         self, other_slot_mapping: Dict[Text, Any], other_slot: Text, tracker: "Tracker"
