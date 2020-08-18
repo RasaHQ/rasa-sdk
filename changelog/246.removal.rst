@@ -1,0 +1,3 @@
+Using the ``Form`` event is deprecated. Please use the new ``ActiveLoop`` event instead.
+Using the ``active_form`` property of the ``Tracker`` object is now deprecated. Please
+use the ``active_loop`` property instead.
