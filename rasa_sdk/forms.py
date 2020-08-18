@@ -1,5 +1,6 @@
 import logging
 import typing
+import warnings
 from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
 from rasa_sdk import utils
@@ -18,6 +19,16 @@ REQUESTED_SLOT = "requested_slot"
 
 
 class FormAction(Action):
+
+    def __init__(self):
+        warnings.warn(
+            "Using the `FormAction` class is deprecated as of Rasa Open "
+            "Source version 2.0. Please see the migration guide "
+            "for Rasa Open Source 2.0 for instructions how to migrate.",
+            FutureWarning,
+        )
+        super().__init__()
+
     def name(self) -> Text:
         """Unique identifier of the form"""
 
@@ -183,9 +194,7 @@ class FormAction(Action):
         mapping_not_intents = requested_slot_mapping.get("not_intent", [])
         intent = tracker.latest_message.get("intent", {}).get("name")
 
-        intent_not_excluded = (
-            not mapping_intents and intent not in mapping_not_intents
-        )
+        intent_not_excluded = not mapping_intents and intent not in mapping_not_intents
 
         return intent_not_excluded or intent in mapping_intents
 

@@ -1430,3 +1430,8 @@ async def test_submit(form_class: Type[FormAction]):
     events = await form.run(dispatcher=None, tracker=tracker, domain=None)
 
     assert events[0]["value"] == 42
+
+
+def test_form_deprecation():
+    with pytest.warns(FutureWarning):
+        FormAction()
