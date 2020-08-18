@@ -170,8 +170,15 @@ def AgentUttered(
 
 
 # noinspection PyPep8Naming
+def ActiveLoop(name: Optional[Text], timestamp: Optional[float] = None) -> EventType:
+    return {"event": "active_loop", "name": name, "timestamp": timestamp}
+
+
+# noinspection PyPep8Naming
 def Form(name: Optional[Text], timestamp: Optional[float] = None) -> EventType:
-    return {"event": "form", "name": name, "timestamp": timestamp}
+    warnings.warn("The `Form` event is deprecated. Please use the `ActiveLoop` event "
+                  "instead.", DeprecationWarning)
+    return ActiveLoop(name, timestamp)
 
 
 # noinspection PyPep8Naming

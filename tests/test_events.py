@@ -26,3 +26,15 @@ def test_reminder_cancelled_correctly(intent):
 def test_reminder_cancelled_with_action(intent):
     with pytest.warns(FutureWarning):
         events.ReminderCancelled(name="utter_something", intent_name=intent)
+
+
+def test_deprecation_warning_form_event():
+    form_name = "my form"
+    timestamp = 123
+    with pytest.warns(DeprecationWarning):
+        event = events.Form(form_name, timestamp=timestamp)
+        assert event == {
+            "name": form_name,
+            "event": "active_loop",
+            "timestamp": timestamp,
+        }

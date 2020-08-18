@@ -1,6 +1,29 @@
+from typing import Dict
+
 import pytest
 
 from rasa_sdk.interfaces import Tracker
+
+
+@pytest.mark.parametrize(
+    "active_loop",
+    [
+        {},
+        {"name": "some loop"},
+        {"name": "some loop", "validate": True},
+        {"name": "✏️", "rejected": False},
+        {
+            "name": "✏️",
+            "validate": True,
+            "trigger_message": {"intent": {}, "intent_ranking": []},
+        },
+    ],
+)
+def test_tracker_active_loop_parsing(active_loop: Dict):
+    state = {"events": [], "sender_id": "old", "active_loop": active_loop}
+    tracker = Tracker.from_dict(state)
+
+    assert tracker.active_loop == active_loop
 
 
 def test_deprecation_warning_active_form():
@@ -18,3 +41,11 @@ def test_parsing_of_trackers_with_old_active_form_field():
     tracker = Tracker.from_dict(state)
 
     assert tracker.active_loop == form
+
+
+def test_active_loop_in_tracker_state():
+    form = {"name": "my form"}
+    state = {"events": [], "sender_id": "old", "active_loop": form}
+    tracker = Tracker.from_dict(state)
+
+    assert tracker.current_state()["active_loop"] == form
