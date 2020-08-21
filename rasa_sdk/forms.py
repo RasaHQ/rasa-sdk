@@ -19,7 +19,6 @@ REQUESTED_SLOT = "requested_slot"
 
 
 class FormAction(Action):
-
     def __init__(self):
         warnings.warn(
             "Using the `FormAction` class is deprecated as of Rasa Open "

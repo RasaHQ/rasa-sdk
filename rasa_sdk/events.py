@@ -176,8 +176,10 @@ def ActiveLoop(name: Optional[Text], timestamp: Optional[float] = None) -> Event
 
 # noinspection PyPep8Naming
 def Form(name: Optional[Text], timestamp: Optional[float] = None) -> EventType:
-    warnings.warn("The `Form` event is deprecated. Please use the `ActiveLoop` event "
-                  "instead.", DeprecationWarning)
+    warnings.warn(
+        "The `Form` event is deprecated. Please use the `ActiveLoop` event " "instead.",
+        DeprecationWarning,
+    )
     return ActiveLoop(name, timestamp)
 
 
