@@ -20,7 +20,7 @@ license = "Apache-2.0"
 [tool.black]
 line-length = 88
 target-version = [ "py36", "py37",]
-exclude = "((.eggs | .git | .pytype | .pytest_cache | build | dist))"
+exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist))"
 
 [tool.towncrier]
 package = "rasa_sdk"
@@ -73,10 +73,10 @@ coveralls = "^2.0.0"
 pytest = "^5.4.1"
 black = "^19.10b0"
 flake8 = "^3.8.2"
-pytype = "^2020.1.24"
 pytest-sanic = "^1.6.1"
 questionary = "^1.5.2"
 towncrier = "^19.2.0"
 toml = "^0.10.0"
 pep440-version-utils = "^0.3.0"
 semantic_version = "^2.8.5"
+mypy = "^0.782"

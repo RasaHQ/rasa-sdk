@@ -27,7 +27,7 @@ clean:
 	rm -rf docs/_build
 
 types:
-	poetry run pytype --keep-going rasa_sdk
+	poetry run mypy rasa_sdk
 
 lint:
 	poetry run flake8 rasa_sdk tests
