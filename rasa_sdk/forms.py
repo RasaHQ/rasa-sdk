@@ -1,9 +1,10 @@
 import logging
 import typing
+import warnings
 from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
 from rasa_sdk import utils
-from rasa_sdk.events import SlotSet, Form, EventType
+from rasa_sdk.events import SlotSet, EventType, ActiveLoop
 from rasa_sdk.interfaces import Action, ActionExecutionRejection
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,15 @@ REQUESTED_SLOT = "requested_slot"
 
 
 class FormAction(Action):
+    def __init__(self):
+        warnings.warn(
+            "Using the `FormAction` class is deprecated as of Rasa Open "
+            "Source version 2.0. Please see the migration guide "
+            "for Rasa Open Source 2.0 for instructions how to migrate.",
+            FutureWarning,
+        )
+        super().__init__()
+
     def name(self) -> Text:
         """Unique identifier of the form"""
 
@@ -183,11 +193,9 @@ class FormAction(Action):
         mapping_not_intents = requested_slot_mapping.get("not_intent", [])
         intent = tracker.latest_message.get("intent", {}).get("name")
 
-        intent_not_blacklisted = (
-            not mapping_intents and intent not in mapping_not_intents
-        )
+        intent_not_excluded = not mapping_intents and intent not in mapping_not_intents
 
-        return intent_not_blacklisted or intent in mapping_intents
+        return intent_not_excluded or intent in mapping_intents
 
     def entity_is_desired(
         self, other_slot_mapping: Dict[Text, Any], other_slot: Text, tracker: "Tracker"
@@ -282,7 +290,7 @@ class FormAction(Action):
                     # check whether the slot should be
                     # filled from trigger intent mapping
                     should_fill_trigger_slot = (
-                        tracker.active_form.get("name") != self.name()
+                        tracker.active_loop.get("name") != self.name()
                         and other_slot_mapping["type"] == "from_trigger_intent"
                         and self.intent_is_desired(other_slot_mapping, tracker)
                     )
@@ -443,7 +451,7 @@ class FormAction(Action):
             and reset the requested slot"""
 
         logger.debug(f"Deactivating the form '{self.name()}'")
-        return [Form(None), SlotSet(REQUESTED_SLOT, None)]
+        return [ActiveLoop(None), SlotSet(REQUESTED_SLOT, None)]
 
     async def submit(
         self,
@@ -507,16 +515,16 @@ class FormAction(Action):
         as any `SlotSet` events from validation of pre-filled slots.
         """
 
-        if tracker.active_form.get("name") is not None:
-            logger.debug(f"The form '{tracker.active_form}' is active")
+        if tracker.active_loop.get("name") is not None:
+            logger.debug(f"The form '{tracker.active_loop}' is active")
         else:
             logger.debug("There is no active form")
 
-        if tracker.active_form.get("name") == self.name():
+        if tracker.active_loop.get("name") == self.name():
             return []
         else:
             logger.debug(f"Activated the form '{self.name()}'")
-            events = [Form(self.name())]
+            events = [ActiveLoop(self.name())]
 
             # collect values of required slots filled before activation
             prefilled_slots = {}
@@ -549,10 +557,10 @@ class FormAction(Action):
             - the form is called after `action_listen`
             - form validation was not cancelled
         """
-        # no active_form means that it is called during activation
-        need_validation = not tracker.active_form or (
+        # no active_loop means that it is called during activation
+        need_validation = not tracker.active_loop or (
             tracker.latest_action_name == "action_listen"
-            and tracker.active_form.get("validate", True)
+            and tracker.active_loop.get("validate", True)
         )
         if need_validation:
             logger.debug(f"Validating user input '{tracker.latest_message}'")
@@ -592,7 +600,7 @@ class FormAction(Action):
         # validate user input
         events.extend(await self._validate_if_required(dispatcher, tracker, domain))
         # check that the form wasn't deactivated in validation
-        if Form(None) not in events:
+        if ActiveLoop(None) not in events:
 
             # create temp tracker with populated slots from `validate` method
             temp_tracker = tracker.copy()
