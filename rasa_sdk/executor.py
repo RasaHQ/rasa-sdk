@@ -392,5 +392,6 @@ class ActionExecutor:
             validated_events = self.validate_events(events, action_name)
             logger.debug(f"Finished running '{action_name}'")
             return self._create_api_response(validated_events, dispatcher.messages)
-        else:
-            logger.warning("Received an action call without an action.")
+
+        logger.warning("Received an action call without an action.")
+        return None

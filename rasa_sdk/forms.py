@@ -230,7 +230,7 @@ class FormAction(Action):
         tracker: "Tracker",
         role: Optional[Text] = None,
         group: Optional[Text] = None,
-    ) -> Any:
+    ) -> Optional[Union[Text, List[Text]]]:
         """Extract entities for given name and optional role and group.
 
         Args:
@@ -243,14 +243,16 @@ class FormAction(Action):
             Value of entity.
         """
         # list is used to cover the case of list slot type
-        value = list(
+        values = list(
             tracker.get_latest_entity_values(name, entity_group=group, entity_role=role)
         )
-        if len(value) == 0:
-            value = None
-        elif len(value) == 1:
-            value = value[0]
-        return value
+        if not values:
+            return None
+
+        if len(values) == 1:
+            return values[0]
+
+        return values
 
     # noinspection PyUnusedLocal
     def extract_other_slots(

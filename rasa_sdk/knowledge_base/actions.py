@@ -45,7 +45,7 @@ class ActionQueryKnowledgeBase(Action):
         object_name: Text,
         attribute_name: Text,
         attribute_value: Text,
-    ) -> None:
+    ):
         """
         Utters a response that informs the user about the attribute value of the
         attribute of interest.
@@ -70,7 +70,7 @@ class ActionQueryKnowledgeBase(Action):
         dispatcher: CollectingDispatcher,
         object_type: Text,
         objects: List[Dict[Text, Any]],
-    ) -> None:
+    ):
         """
         Utters a response to the user that lists all found objects.
 
