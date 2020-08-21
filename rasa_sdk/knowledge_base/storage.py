@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import random
-from typing import Text, Callable, Dict, List, Any, Optional
+from typing import DefaultDict, Text, Callable, Dict, List, Any, Optional
 from collections import defaultdict
 
 from rasa_sdk import utils
@@ -28,8 +28,10 @@ class KnowledgeBase:
             "LAST": lambda l: l[-1],
         }
 
-        self.key_attribute = defaultdict(lambda: "id")
-        self.representation_function = defaultdict(lambda: lambda obj: obj["name"])
+        self.key_attribute: DefaultDict[Text, Text] = defaultdict(lambda: "id")
+        self.representation_function: DefaultDict[
+            Text, Callable[[Dict[Text, Text]], Text]
+        ] = defaultdict(lambda: lambda obj: obj["name"])
 
     async def get_attributes_of_object(self, object_type: Text) -> List[Text]:
         """
@@ -119,7 +121,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
             data_file: the path to the file containing the data
         """
         self.data_file = data_file
-        self.data = {}
+        self.data: Dict[Text, Any] = {}
         self.load()
         super().__init__()
 

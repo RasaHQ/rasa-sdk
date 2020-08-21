@@ -21,7 +21,7 @@ class CollectingDispatcher:
 
     def __init__(self) -> None:
 
-        self.messages = []
+        self.messages: List[Dict[Text, Any]] = []
 
     def utter_message(
         self,
@@ -146,9 +146,9 @@ TimestampModule = namedtuple("TimestampModule", ["timestamp", "module"])
 
 class ActionExecutor:
     def __init__(self) -> None:
-        self.actions = {}
+        self.actions: Dict[Text, Callable] = {}
         self._modules: Dict[Text, TimestampModule] = {}
-        self._loaded: Set[Type] = set()
+        self._loaded: Set[Type["Action"]] = set()
 
     def register_action(self, action: Union[Type["Action"], "Action"]) -> None:
         if inspect.isclass(action):

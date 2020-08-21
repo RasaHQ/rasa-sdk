@@ -96,6 +96,8 @@ def resolve_mention(
     if current_object_type == last_object_type:
         return last_object
 
+    return None
+
 
 def get_attribute_slots(
     tracker: "Tracker", object_attributes: List[Text]

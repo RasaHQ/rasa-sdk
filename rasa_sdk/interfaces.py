@@ -202,7 +202,7 @@ class Tracker:
                 if e["event"] == event_type:
                     break
 
-        applied_events = []
+        applied_events: List[Dict[Text, Any]] = []
         for event in self.events:
             if event.get("name") == "restart":
                 applied_events = []
