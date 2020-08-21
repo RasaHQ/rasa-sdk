@@ -1,6 +1,6 @@
 import logging
 import typing
-from typing import Dict, Text, Any, List, Union, Optional, Tuple
+from typing import Dict, Text, Any, List, Union, Optional, Tuple, cast
 
 from rasa_sdk import utils
 from rasa_sdk.events import SlotSet, Form, EventType
@@ -561,7 +561,9 @@ class FormAction(Action):
             if utils.is_coroutine_action(self.validate):
                 return await self.validate(dispatcher, tracker, domain)
             else:
-                return self.validate(dispatcher, tracker, domain)
+                return cast(
+                    List[Dict[Text, Any]], self.validate(dispatcher, tracker, domain)
+                )
         else:
             logger.debug("Skipping validation")
             return []

@@ -1,3 +1,5 @@
+from typing import Text, Callable, Dict, List, Any, Optional, cast
+
 from rasa_sdk import Action
 from rasa_sdk.events import SlotSet
 from rasa_sdk.knowledge_base.utils import (
@@ -11,7 +13,6 @@ from rasa_sdk.knowledge_base.utils import (
     get_object_name,
     get_attribute_slots,
 )
-from typing import Text, Callable, Dict, List, Any, Optional
 from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.interfaces import Tracker
@@ -91,8 +92,11 @@ class ActionQueryKnowledgeBase(Action):
                     object_type
                 )
             else:
-                repr_function = self.knowledge_base.get_representation_function_of_object(
-                    object_type
+                repr_function = cast(
+                    Callable,
+                    self.knowledge_base.get_representation_function_of_object(
+                        object_type
+                    ),
                 )
 
             for i, obj in enumerate(objects, 1):
@@ -163,8 +167,8 @@ class ActionQueryKnowledgeBase(Action):
                 object_type
             )
         else:
-            object_attributes = self.knowledge_base.get_attributes_of_object(
-                object_type
+            object_attributes = cast(
+                List[Text], self.knowledge_base.get_attributes_of_object(object_type)
             )
 
         # get all set attribute slots of the object type to be able to filter the
@@ -174,7 +178,10 @@ class ActionQueryKnowledgeBase(Action):
         if utils.is_coroutine_action(self.knowledge_base.get_objects):
             objects = await self.knowledge_base.get_objects(object_type, attributes)
         else:
-            objects = self.knowledge_base.get_objects(object_type, attributes)
+            objects = cast(
+                List[Dict[Text, Any]],
+                self.knowledge_base.get_objects(object_type, attributes),
+            )
 
         if utils.is_coroutine_action(self.utter_objects):
             await self.utter_objects(dispatcher, object_type, objects)  # type: ignore
@@ -189,7 +196,9 @@ class ActionQueryKnowledgeBase(Action):
                 object_type
             )
         else:
-            key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
+            key_attribute = cast(
+                Text, self.knowledge_base.get_key_attribute_of_object(object_type)
+            )
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
 
@@ -237,8 +246,9 @@ class ActionQueryKnowledgeBase(Action):
                 object_type, object_name  # type: ignore
             )
         else:
-            object_of_interest = self.knowledge_base.get_object(
-                object_type, object_name
+            object_of_interest = cast(
+                Dict[Text, Any],
+                self.knowledge_base.get_object(object_type, object_name),
             )
 
         if not object_of_interest or attribute not in object_of_interest:
@@ -253,8 +263,9 @@ class ActionQueryKnowledgeBase(Action):
                 object_type  # type: ignore
             )
         else:
-            repr_function = self.knowledge_base.get_representation_function_of_object(
-                object_type
+            repr_function = cast(
+                Callable,
+                self.knowledge_base.get_representation_function_of_object(object_type),
             )
         object_representation = repr_function(object_of_interest)
         if utils.is_coroutine_action(self.knowledge_base.get_key_attribute_of_object):
@@ -262,7 +273,9 @@ class ActionQueryKnowledgeBase(Action):
                 object_type
             )
         else:
-            key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
+            key_attribute = cast(
+                Text, self.knowledge_base.get_key_attribute_of_object(object_type)
+            )
         object_identifier = object_of_interest[key_attribute]
 
         if utils.is_coroutine_action(self.utter_attribute_value):

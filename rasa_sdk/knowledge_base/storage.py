@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import random
-from typing import DefaultDict, Text, Callable, Dict, List, Any, Optional
+from typing import DefaultDict, Text, Callable, Dict, List, Any, Optional, cast
 from collections import defaultdict
 
 from rasa_sdk import utils
@@ -209,7 +209,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         if utils.is_coroutine_action(self.get_key_attribute_of_object):
             key_attribute = await self.get_key_attribute_of_object(object_type)
         else:
-            key_attribute = self.get_key_attribute_of_object(object_type)
+            key_attribute = cast(Text, self.get_key_attribute_of_object(object_type))
 
         # filter the objects by its key attribute, for example, 'id'
         objects_of_interest = list(
@@ -228,7 +228,9 @@ class InMemoryKnowledgeBase(KnowledgeBase):
                     object_type
                 )
             else:
-                repr_function = self.get_representation_function_of_object(object_type)
+                repr_function = cast(
+                    Callable, self.get_representation_function_of_object(object_type)
+                )
 
             objects_of_interest = list(
                 filter(
