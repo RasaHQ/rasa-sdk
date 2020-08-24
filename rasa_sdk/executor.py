@@ -336,18 +336,21 @@ class ActionExecutor:
     @staticmethod
     def validate_events(events: List[Dict[Text, Any]], action_name: Text):
         validated = []
-        for e in events:
-            if isinstance(e, dict):
-                if not e.get("event"):
+        for event in events:
+            if isinstance(event, dict):
+                if not event.get("event"):
                     logger.error(
                         f"Your action '{action_name}' returned an action dict "
                         "without the `event` property. Please use "
                         "the helpers in `rasa_sdk.events`! Event will"
-                        f"be ignored! Event: {e}"
+                        f"be ignored!"
+                    )
+                    logger.debug(
+                        f"Contents of ignored event: '{event}'"
                     )
                 else:
-                    validated.append(e)
-            elif type(e).__module__ == "rasa.core.events":
+                    validated.append(event)
+            elif type(event).__module__ == "rasa.core.events":
                 logger.warning(
                     "Your action should not return Rasa actions within the "
                     "SDK. Instead of using events from "
@@ -356,11 +359,14 @@ class ActionExecutor:
                     "We will try to make this work, but this "
                     "might go wrong!"
                 )
-                validated.append(e.as_dict())
+                validated.append(event.as_dict())
             else:
                 logger.error(
                     f"Your action's '{action_name}' run method returned an invalid "
-                    f"event. Event will be ignored. Event: '{e}'."
+                    f"event. Event will be ignored."
+                )
+                logger.debug(
+                    f"Contents of ignored event: '{event}'"
                 )
                 # we won't append this to validated events -> will be ignored
         return validated

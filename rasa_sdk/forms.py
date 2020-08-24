@@ -422,7 +422,8 @@ class FormAction(Action):
                 # it will allow other policies to predict another action
                 raise ActionExecutionRejection(
                     self.name(),
-                    f"Failed to extract slot {slot_to_fill} with action {self.name()}",
+                    f"Failed to extract slot {slot_to_fill} with action {self.name()}."
+                    f"Allowing other policies to predict next action.",
                 )
         logger.debug(f"Validating extracted slots: {slot_values}")
         return await self.validate_slots(slot_values, dispatcher, tracker, domain)
