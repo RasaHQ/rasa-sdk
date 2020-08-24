@@ -3,7 +3,7 @@ import inspect
 import logging
 import pkgutil
 import warnings
-from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, Set
+from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, Set, cast
 from collections import namedtuple
 import types
 import sys
@@ -148,10 +148,11 @@ class ActionExecutor:
     def __init__(self) -> None:
         self.actions: Dict[Text, Callable] = {}
         self._modules: Dict[Text, TimestampModule] = {}
-        self._loaded: Set[Type["Action"]] = set()
+        self._loaded: Set[Type[Action]] = set()
 
-    def register_action(self, action: Union[Type["Action"], "Action"]) -> None:
+    def register_action(self, action: Union[Type[Action], Action]) -> None:
         if inspect.isclass(action):
+            action = cast(Type[Action], action)
             if action.__module__.startswith("rasa."):
                 logger.warning(f"Skipping built in Action {action}.")
                 return
@@ -207,7 +208,7 @@ class ActionExecutor:
         if not getattr(package, "__path__", None):
             return
 
-        for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
+        for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):  # type: ignore  # mypy issue #1422
             full_name = package.__name__ + "." + name
             self._import_module(full_name)
 
@@ -356,7 +357,7 @@ class ActionExecutor:
                     "We will try to make this work, but this "
                     "might go wrong!"
                 )
-                validated.append(e.as_dict())
+                validated.append(e.as_dict())  # type: ignore
             else:
                 logger.error(
                     f"Your action's '{action_name}' run method returned an invalid "

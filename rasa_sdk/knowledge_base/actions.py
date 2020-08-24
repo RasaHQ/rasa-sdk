@@ -92,6 +92,7 @@ class ActionQueryKnowledgeBase(Action):
                     object_type
                 )
             else:
+                # see https://github.com/python/mypy/issues/5206
                 repr_function = cast(
                     Callable,
                     self.knowledge_base.get_representation_function_of_object(
@@ -167,6 +168,7 @@ class ActionQueryKnowledgeBase(Action):
                 object_type
             )
         else:
+            # see https://github.com/python/mypy/issues/5206
             object_attributes = cast(
                 List[Text], self.knowledge_base.get_attributes_of_object(object_type)
             )
@@ -178,6 +180,7 @@ class ActionQueryKnowledgeBase(Action):
         if utils.is_coroutine_action(self.knowledge_base.get_objects):
             objects = await self.knowledge_base.get_objects(object_type, attributes)
         else:
+            # see https://github.com/python/mypy/issues/5206
             objects = cast(
                 List[Dict[Text, Any]],
                 self.knowledge_base.get_objects(object_type, attributes),
@@ -196,6 +199,7 @@ class ActionQueryKnowledgeBase(Action):
                 object_type
             )
         else:
+            # see https://github.com/python/mypy/issues/5206
             key_attribute = cast(
                 Text, self.knowledge_base.get_key_attribute_of_object(object_type)
             )
@@ -246,8 +250,9 @@ class ActionQueryKnowledgeBase(Action):
                 object_type, object_name  # type: ignore
             )
         else:
+            # see https://github.com/python/mypy/issues/5206
             object_of_interest = cast(
-                Dict[Text, Any],
+                Optional[Dict[Text, Any]],
                 self.knowledge_base.get_object(object_type, object_name),
             )
 
@@ -263,6 +268,7 @@ class ActionQueryKnowledgeBase(Action):
                 object_type  # type: ignore
             )
         else:
+            # see https://github.com/python/mypy/issues/5206
             repr_function = cast(
                 Callable,
                 self.knowledge_base.get_representation_function_of_object(object_type),
@@ -273,6 +279,7 @@ class ActionQueryKnowledgeBase(Action):
                 object_type
             )
         else:
+            # see https://github.com/python/mypy/issues/5206
             key_attribute = cast(
                 Text, self.knowledge_base.get_key_attribute_of_object(object_type)
             )

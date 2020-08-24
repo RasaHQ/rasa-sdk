@@ -569,6 +569,7 @@ class FormAction(Action):
             if utils.is_coroutine_action(self.validate):
                 return await self.validate(dispatcher, tracker, domain)
             else:
+                # see https://github.com/python/mypy/issues/5206
                 return cast(
                     List[Dict[Text, Any]], self.validate(dispatcher, tracker, domain)
                 )
@@ -624,7 +625,13 @@ class FormAction(Action):
                 if utils.is_coroutine_action(self.submit):
                     events.extend(await self.submit(dispatcher, temp_tracker, domain))
                 else:
-                    events.extend(self.submit(dispatcher, temp_tracker, domain))
+                    # see https://github.com/python/mypy/issues/5206
+                    events.extend(
+                        cast(
+                            List[EventType],
+                            self.submit(dispatcher, temp_tracker, domain),
+                        )
+                    )
                 # deactivate the form after submission
                 if utils.is_coroutine_action(self.deactivate):
                     events.extend(await self.deactivate())  # type: ignore

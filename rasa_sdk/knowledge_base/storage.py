@@ -97,7 +97,7 @@ class KnowledgeBase:
 
     async def get_object(
         self, object_type: Text, object_identifier: Text
-    ) -> Dict[Text, Any]:
+    ) -> Optional[Dict[Text, Any]]:
         """
         Returns the object of the given type that matches the given object identifier.
 
@@ -209,6 +209,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         if utils.is_coroutine_action(self.get_key_attribute_of_object):
             key_attribute = await self.get_key_attribute_of_object(object_type)
         else:
+            # see https://github.com/python/mypy/issues/5206
             key_attribute = cast(Text, self.get_key_attribute_of_object(object_type))
 
         # filter the objects by its key attribute, for example, 'id'
@@ -228,6 +229,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
                     object_type
                 )
             else:
+                # see https://github.com/python/mypy/issues/5206
                 repr_function = cast(
                     Callable, self.get_representation_function_of_object(object_type)
                 )
