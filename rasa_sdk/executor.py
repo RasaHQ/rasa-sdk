@@ -351,7 +351,7 @@ class ActionExecutor:
                 else:
                     validated.append(event)
             elif type(event).__module__ == "rasa.core.events":
-                logger.warning(
+                warnings.warn(
                     "Your action should not return Rasa actions within the "
                     "SDK. Instead of using events from "
                     "`rasa.core.events`, you should use the ones "

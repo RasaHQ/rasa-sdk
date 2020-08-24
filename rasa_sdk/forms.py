@@ -384,7 +384,7 @@ class FormAction(Action):
             else:
                 validation_output = validate_func(value, dispatcher, tracker, domain)
             if not isinstance(validation_output, dict):
-                logger.warning(
+                warnings.warn(
                     "Returning values in helper validation methods is deprecated. "
                     + f"Your `validate_{slot}()` method should return "
                     + "a dict of {'slot_name': value} instead."
