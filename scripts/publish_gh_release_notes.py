@@ -41,7 +41,7 @@ def parse_changelog(tag_name: Text) -> Text:
     p = Path(__file__).parent.parent / "CHANGELOG.mdx"
     changelog_lines = p.read_text(encoding="UTF-8").splitlines()
 
-    title_regex = re.compile(r"\[(\d+\.\d+\.\d+)(\S*)\]\s*-\s*\d{4}-\d{2}-\d{2}")
+    title_regex = re.compile(r"##\s*\[(\d+\.\d+\.\d+)(\S*)\]\s*-\s*\d{4}-\d{2}-\d{2}")
     consuming_version = False
     version_lines = []
     for line in changelog_lines:
@@ -61,12 +61,6 @@ def parse_changelog(tag_name: Text) -> Text:
     return "\n".join(version_lines[2:]).strip()
 
 
-def convert_rst_to_md(text):
-    return pypandoc.convert_text(
-        text, "md", format="rst", extra_args=["--wrap=preserve"]
-    )
-
-
 def main():
     tag_name = os.environ.get("GITHUB_TAG")
     if not tag_name:
@@ -83,8 +77,7 @@ def main():
         print("GITHUB_REPO_SLUG not set", file=sys.stderr)
         return 1
 
-    rst_body = parse_changelog(tag_name)
-    md_body = convert_rst_to_md(rst_body)
+    md_body = parse_changelog(tag_name)
 
     if not md_body:
         print("Failed to extract changelog entries for version from changelog.")

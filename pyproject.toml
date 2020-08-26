@@ -29,7 +29,7 @@ filename = "CHANGELOG.mdx"
 directory = "./changelog"
 underlines = "   "
 title_format = "## [{version}] - {project_date}"
-template = "./changelog/_template.jinja2"
+template = "./changelog/_template.md.jinja2"
 start_string = "<!-- TOWNCRIER -->\n"
 issue_format = "[#{issue}](https://github.com/rasahq/rasa/issues/{issue})"
 
