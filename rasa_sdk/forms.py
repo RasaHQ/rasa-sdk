@@ -424,7 +424,7 @@ class FormAction(Action):
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         if slot_to_fill:
             slot_values.update(
-                self.extract_requested_slot(dispatcher, slot_to_fill, tracker, domain)
+                self.extract_requested_slot(dispatcher, tracker, slot_to_fill, domain)
             )
 
             if not slot_values:
