@@ -1,5 +1,5 @@
 const remarkSources = require('remark-sources');
-// const remarkCollapse = require('remark-collapse'); TODO: probably won't need this
+const remarkCollapse = require('remark-collapse'); // TODO: probably won't need this one
 const { remarkProgramOutput } = require("./plugins/program_output");
 
 let versions = [];
@@ -15,8 +15,8 @@ module.exports = {
   title: 'Rasa SDK Documentation',
   tagline: 'Rasa SDK Documentation',
   // TODO: is it needed?
-  url: '???',
-  baseUrl: '/docs/rasa/rasa-sdk',  //TODO: seems fake
+  url: 'http://something.com',
+  baseUrl: '/docs/rasa/rasa-sdk/',  //TODO: seems fake
   onBrokenLinks: 'throw',
   favicon: 'img/favicon.ico',
   organizationName: 'RasaHQ',
@@ -80,7 +80,7 @@ module.exports = {
       remarkPlugins: [
         [ remarkCollapse, { test: '' }],
         remarkSources,
-        remarkProgramOutput
+        // remarkProgramOutput
       ],
     }],
     ['@docusaurus/plugin-sitemap', {
@@ -88,6 +88,5 @@ module.exports = {
       changefreq: 'weekly',
       priority: 0.5,
     }],
-    path.resolve(__dirname, './plugins/google-tagmanager'),
   ],
 };

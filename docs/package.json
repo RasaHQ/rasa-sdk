@@ -1,14 +1,16 @@
 {
-  "name": "rasa-sdk",
+  "name": "newdocs",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "docusaurus": "docusaurus",
-    "start": "docusaurus start",
+    "start": "yarn run pre-build && docusaurus start",
+    "pre-build": "echo 'Pre-build'",
+    "serve": "netlify dev -d build",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy",
-    "serve": "docusaurus serve"
+    "new-version": "docusaurus docs:version",
+    "clean": "find docs/sources -type f -not -name '.keep' -print0 | xargs -0  -I {} rm {}",
+    "ci": "yarn install --frozen-lockfile"
   },
   "dependencies": {
     "@docusaurus/core": "^2.0.0-alpha.61",
@@ -16,7 +18,9 @@
     "@mdx-js/react": "^1.5.8",
     "clsx": "^1.1.1",
     "react": "^16.8.4",
-    "react-dom": "^16.8.4"
+    "react-dom": "^16.8.4",
+    "remark-collapse": "^0.1.2",
+    "remark-sources": "^1.0.3"
   },
   "browserslist": {
     "production": [
@@ -29,5 +33,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "netlify-cli": "^2.59.0",
+    "toml": "^3.0.0"
   }
 }
