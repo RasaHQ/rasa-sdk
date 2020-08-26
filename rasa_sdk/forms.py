@@ -9,7 +9,7 @@ from rasa_sdk.interfaces import Action, ActionExecutionRejection
 
 logger = logging.getLogger(__name__)
 
-if typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:  # pragma: no cover
     from rasa_sdk import Tracker
     from rasa_sdk.executor import CollectingDispatcher
     from rasa_sdk.types import DomainDict

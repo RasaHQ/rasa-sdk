@@ -14,7 +14,7 @@ from rasa_sdk.interfaces import Tracker, ActionNotFoundException, Action
 
 from rasa_sdk import utils
 
-if typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:  # pragma: no cover
     from rasa_sdk.types import ActionCall
 
 logger = logging.getLogger(__name__)

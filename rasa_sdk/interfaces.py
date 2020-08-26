@@ -4,7 +4,7 @@ import typing
 import warnings
 from typing import Any, Dict, Iterator, List, Optional, Text
 
-if typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:  # pragma: no cover
     from rasa_sdk.types import DomainDict, TrackerState
 
 
