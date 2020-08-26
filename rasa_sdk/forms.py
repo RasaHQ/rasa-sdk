@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 if typing.TYPE_CHECKING:
     from rasa_sdk import Tracker
     from rasa_sdk.executor import CollectingDispatcher
+    from rasa_sdk.types import DomainDict
 
 # this slot is used to store information needed
 # to do the form handling
@@ -268,7 +269,7 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> Dict[Text, Any]:
         """Extract the values of the other slots
             if they are set by corresponding entities from the user input
@@ -323,7 +324,7 @@ class FormAction(Action):
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         slot_to_fill: Any,
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> Dict[Text, Any]:
         """Extract the value of requested slot from a user input
             else return None
@@ -375,7 +376,7 @@ class FormAction(Action):
         slot_dict: Dict[Text, Any],
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Validate slots using helper validation functions.
 
@@ -407,7 +408,7 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Extract and validate value of requested slot.
 
@@ -442,7 +443,7 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> Optional[List[EventType]]:
         """Request the next slot and utter template if needed,
             else return None"""
@@ -467,7 +468,7 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Define what the form has to do
             after all required slots are filled"""
@@ -516,7 +517,7 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Activate form if the form is called for the first time.
 
@@ -559,7 +560,7 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Return a list of events from `self.validate(...)`
             if validation is required:
@@ -595,7 +596,7 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Execute the side effects of this form.
 

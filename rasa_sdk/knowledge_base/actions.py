@@ -1,3 +1,4 @@
+import typing
 from typing import Text, Callable, Dict, List, Any, Optional, cast
 
 from rasa_sdk import Action
@@ -17,6 +18,9 @@ from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.interfaces import Tracker
 from rasa_sdk.knowledge_base.storage import KnowledgeBase
+
+if typing.TYPE_CHECKING:
+    from rasa_sdk.types import DomainDict
 
 
 class ActionQueryKnowledgeBase(Action):
@@ -108,10 +112,7 @@ class ActionQueryKnowledgeBase(Action):
             )
 
     async def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: Dict[Text, Any],
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
         """
         Executes this action. If the user ask a question about an attribute,

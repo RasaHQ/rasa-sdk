@@ -2,6 +2,7 @@ import importlib
 import inspect
 import logging
 import pkgutil
+import typing
 import warnings
 from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, Set, cast
 from collections import namedtuple
@@ -12,6 +13,9 @@ import os
 from rasa_sdk.interfaces import Tracker, ActionNotFoundException, Action
 
 from rasa_sdk import utils
+
+if typing.TYPE_CHECKING:
+    from rasa_sdk.types import ActionCall
 
 logger = logging.getLogger(__name__)
 
@@ -366,7 +370,7 @@ class ActionExecutor:
                 # we won't append this to validated events -> will be ignored
         return validated
 
-    async def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
+    async def run(self, action_call: "ActionCall") -> Optional[Dict[Text, Any]]:
         from rasa_sdk.interfaces import Tracker
 
         action_name = action_call.get("next_action")
@@ -376,7 +380,7 @@ class ActionExecutor:
             if not action:
                 raise ActionNotFoundException(action_name)
 
-            tracker_json = action_call.get("tracker")
+            tracker_json = action_call["tracker"]
             domain = action_call.get("domain", {})
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
