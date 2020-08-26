@@ -1,106 +1,93 @@
+const remarkSources = require('remark-sources');
+// const remarkCollapse = require('remark-collapse'); TODO: probably won't need this
+const { remarkProgramOutput } = require("./plugins/program_output");
+
+let versions = [];
+try {
+  versions = require('./versions.json');
+} catch (ex) {
+  // Nothing to do here, in dev mode, only
+  // one version of the doc is available
+}
+let legacyVersions = [];
+
 module.exports = {
-  title: 'My Site',
-  tagline: 'The tagline of my site',
-  url: 'https://your-docusaurus-test-site.com',
-  baseUrl: '/',
+  title: 'Rasa SDK Documentation',
+  tagline: 'Rasa SDK Documentation',
+  // TODO: is it needed?
+  url: '???',
+  baseUrl: '/docs/rasa/rasa-sdk',  //TODO: seems fake
   onBrokenLinks: 'throw',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'RasaHQ',
+  projectName: 'rasa-sdk',
   themeConfig: {
     navbar: {
-      title: 'My Site',
+      title: 'Rasa SDK',
       logo: {
-        alt: 'My Site Logo',
-        src: 'img/logo.svg',
+        alt: 'Rasa',
+        src: 'https://rasa.com/static/60e441f8eadef13bea0cc790c8cf188b/rasa-logo.svg',
       },
       items: [
         {
-          to: 'docs/',
-          activeBasePath: 'docs',
           label: 'Docs',
+          to: '/', // "fake" link
           position: 'left',
-        },
-        {to: 'blog', label: 'Blog', position: 'left'},
-        {
-          href: 'https://github.com/facebook/docusaurus',
-          label: 'GitHub',
-          position: 'right',
+          items: versions.length > 0 ? [
+            {
+              label: versions[0],
+              to: '/',
+              activeBaseRegex: versions[0],
+            },
+            ...versions.slice(1).map((version) => ({
+              label: version,
+              to: `${version}/`,
+              activeBaseRegex: version,
+            })),
+            ...legacyVersions,
+          ] : [
+            {
+              label: 'Latest',
+              to: '/',
+              activeBaseRegex: `/`,
+            },
+            ...legacyVersions,
+          ],
         },
       ],
     },
     footer: {
       style: 'dark',
-      links: [
-        {
-          title: 'Docs',
-          items: [
-            {
-              label: 'Style Guide',
-              to: 'docs/',
-            },
-            {
-              label: 'Second Doc',
-              to: 'docs/doc2/',
-            },
-          ],
-        },
-        {
-          title: 'Community',
-          items: [
-            {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-            },
-            {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
-            {
-              label: 'Twitter',
-              href: 'https://twitter.com/docusaurus',
-            },
-          ],
-        },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'Blog',
-              to: 'blog',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
-            },
-          ],
-        },
-      ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Rasa Technologies GmbH`,
+    },
+    gtm: {
+      containerID: 'GTM-PK448GB',
     },
   },
-  presets: [
-    [
-      '@docusaurus/preset-classic',
-      {
-        docs: {
-          // It is recommended to set document id as docs home page (`docs/` path).
-          homePageId: 'doc1',
-          sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
-          editUrl:
-            'https://github.com/facebook/docusaurus/edit/master/website/',
-        },
-        blog: {
-          showReadingTime: true,
-          // Please change this to your repo.
-          editUrl:
-            'https://github.com/facebook/docusaurus/edit/master/website/blog/',
-        },
-        theme: {
-          customCss: require.resolve('./src/css/custom.css'),
-        },
-      },
-    ],
+  themes: [
+    ['@docusaurus/theme-classic', {
+      customCss: require.resolve('./src/css/custom.css'),
+    }],
+  ],
+  plugins: [
+    ['@docusaurus/plugin-content-docs', {
+      // https://v2.docusaurus.io/docs/next/docs-introduction/#docs-only-mode
+      routeBasePath: '/',
+      // It is recommended to set document id as docs home page (`docs/` path).
+      homePageId: 'index',
+      sidebarPath: require.resolve('./sidebars.js'),
+      editUrl: 'https://github.com/rasahq/rasa-sdk/edit/master/docs/',
+      remarkPlugins: [
+        [ remarkCollapse, { test: '' }],
+        remarkSources,
+        remarkProgramOutput
+      ],
+    }],
+    ['@docusaurus/plugin-sitemap', {
+      cacheTime: 600 * 1000, // 600 sec - cache purge period
+      changefreq: 'weekly',
+      priority: 0.5,
+    }],
+    path.resolve(__dirname, './plugins/google-tagmanager'),
   ],
 };
