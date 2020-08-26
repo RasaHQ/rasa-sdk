@@ -1,6 +1,6 @@
 module.exports = {
   someSidebar: {
-    Docusaurus: ['index'],
-    Versioning: ['changelog'],
+    'Rasa SDK': ['index'],
+    'Versioning': ['changelog'],
   },
 };
