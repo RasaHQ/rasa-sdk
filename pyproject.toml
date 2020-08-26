@@ -25,11 +25,14 @@ exclude = "((.eggs | .git | .pytype | .pytest_cache | build | dist))"
 [tool.towncrier]
 package = "rasa_sdk"
 package_dir = "rasa_sdk"
-filename = "CHANGELOG.rst"
+filename = "CHANGELOG.mdx"
 directory = "./changelog"
-underlines = "^-_"
-title_format = "[{version}] - {project_date}"
+underlines = "   "
+title_format = "## [{version}] - {project_date}"
 template = "./changelog/_template.jinja2"
+start_string = "<!-- TOWNCRIER -->\n"
+issue_format = "[#{issue}](https://github.com/rasahq/rasa/issues/{issue})"
+
 [[tool.towncrier.type]]
 directory = "removal"
 name = "Deprecations and Removals"
