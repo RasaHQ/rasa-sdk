@@ -213,17 +213,18 @@ class FormAction(Action):
         """
 
         # slot name is equal to the entity type
-        other_slot_equals_entity = other_slot == other_slot_mapping.get("entity")
+        entity_type = other_slot_mapping.get("entity")
+        other_slot_equals_entity = other_slot == entity_type
 
         # use the custom slot mapping 'from_entity' defined by the user to check
         # whether we can fill a slot with an entity
         other_slot_fulfils_entity_mapping = False
-        if (
+        if entity_type is not None and (
             other_slot_mapping.get("role") is not None
             or other_slot_mapping.get("group") is not None
         ):
             matching_values = self.get_entity_value(
-                other_slot_mapping.get("entity"),
+                entity_type,
                 tracker,
                 other_slot_mapping.get("role"),
                 other_slot_mapping.get("group"),
@@ -321,12 +322,12 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
+        slot_to_fill: Any,
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
         """Extract the value of requested slot from a user input
             else return None
         """
-        slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         logger.debug(f"Trying to extract requested slot '{slot_to_fill}' ...")
 
         # get mapping for requested slot
@@ -339,11 +340,16 @@ class FormAction(Action):
                 mapping_type = requested_slot_mapping["type"]
 
                 if mapping_type == "from_entity":
-                    value = self.get_entity_value(
-                        requested_slot_mapping.get("entity"),
-                        tracker,
-                        requested_slot_mapping.get("role"),
-                        requested_slot_mapping.get("group"),
+                    entity_type = requested_slot_mapping.get("entity")
+                    value = (
+                        self.get_entity_value(
+                            entity_type,
+                            tracker,
+                            requested_slot_mapping.get("role"),
+                            requested_slot_mapping.get("group"),
+                        )
+                        if entity_type
+                        else None
                     )
                 elif mapping_type == "from_intent":
                     value = requested_slot_mapping.get("value")
@@ -416,7 +422,9 @@ class FormAction(Action):
         # extract requested slot
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         if slot_to_fill:
-            slot_values.update(self.extract_requested_slot(dispatcher, tracker, domain))
+            slot_values.update(
+                self.extract_requested_slot(dispatcher, slot_to_fill, tracker, domain)
+            )
 
             if not slot_values:
                 # reject to execute the form action

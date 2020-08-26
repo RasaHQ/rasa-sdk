@@ -141,15 +141,17 @@ class ActionQueryKnowledgeBase(Action):
             return []
 
         if not attribute or new_request:
-            return await self._query_objects(dispatcher, tracker)
+            return await self._query_objects(dispatcher, object_type, tracker)
         elif attribute:
-            return await self._query_attribute(dispatcher, tracker)
+            return await self._query_attribute(
+                dispatcher, object_type, attribute, tracker
+            )
 
         dispatcher.utter_message(template="utter_ask_rephrase")
         return []
 
     async def _query_objects(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker
+        self, dispatcher: CollectingDispatcher, object_type: Text, tracker: Tracker
     ) -> List[Dict]:
         """
         Queries the knowledge base for objects of the requested object type and
@@ -162,7 +164,6 @@ class ActionQueryKnowledgeBase(Action):
 
         Returns: list of slots
         """
-        object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
         if utils.is_coroutine_action(self.knowledge_base.get_attributes_of_object):
             object_attributes = await self.knowledge_base.get_attributes_of_object(
                 object_type
@@ -220,7 +221,11 @@ class ActionQueryKnowledgeBase(Action):
         return slots + reset_attribute_slots(tracker, object_attributes)
 
     async def _query_attribute(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker
+        self,
+        dispatcher: CollectingDispatcher,
+        object_type: Text,
+        attribute: Text,
+        tracker: Tracker,
     ) -> List[Dict]:
         """
         Queries the knowledge base for the value of the requested attribute of the
@@ -232,8 +237,6 @@ class ActionQueryKnowledgeBase(Action):
 
         Returns: list of slots
         """
-        object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
-        attribute = tracker.get_slot(SLOT_ATTRIBUTE)
 
         object_name = get_object_name(
             tracker,
