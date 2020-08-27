@@ -345,9 +345,7 @@ class ActionExecutor:
                         "the helpers in `rasa_sdk.events`! Event will"
                         f"be ignored!"
                     )
-                    logger.debug(
-                        f"Contents of ignored event: '{event}'"
-                    )
+                    logger.debug(f"Contents of ignored event: '{event}'")
                 else:
                     validated.append(event)
             elif type(event).__module__ == "rasa.core.events":
@@ -365,9 +363,7 @@ class ActionExecutor:
                     f"Your action's '{action_name}' run method returned an invalid "
                     f"event. Event will be ignored."
                 )
-                logger.debug(
-                    f"Contents of ignored event: '{event}'"
-                )
+                logger.debug(f"Contents of ignored event: '{event}'")
                 # we won't append this to validated events -> will be ignored
         return validated
 
