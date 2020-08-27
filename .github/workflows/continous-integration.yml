@@ -158,5 +158,5 @@ jobs:
         GITHUB_TAG=${GITHUB_TAG/refs\/tags\//}
         sudo apt-get update
         sudo apt-get -y install pandoc
-        pip install -U github3.py pypandoc
+        pip install -U github3.py
         python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py

@@ -23,8 +23,6 @@ from typing import Text
 
 # if this needs any more dependencies, they need to be installed on github deploy stage
 import github3
-import pypandoc
-
 
 def create_github_release(slug: Text, token: Text, tag_name: Text, body: Text):
     """Create a github release."""
