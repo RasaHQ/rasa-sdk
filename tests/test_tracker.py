@@ -1,5 +1,7 @@
+import pytest
+
 from rasa_sdk import Tracker
-from rasa_sdk.events import ActionExecuted, UserUttered, ActionReverted
+from rasa_sdk.events import ActionExecuted, UserUttered, ActionReverted, SlotSet
 from rasa_sdk.interfaces import ACTION_LISTEN_NAME
 from typing import List, Dict, Text, Any
 
@@ -70,3 +72,42 @@ def test_last_executed_has_not_name():
     tracker = get_tracker(events)
 
     assert tracker.last_executed_action_has("another") is False
+
+
+@pytest.mark.parametrize(
+    "events, expected_extracted_slots",
+    [
+        ([], {}),
+        ([ActionExecuted("my_form")], {}),
+        (
+            [ActionExecuted("my_form"), SlotSet("my_slot", "some_value")],
+            {"my_slot": "some_value"},
+        ),
+        (
+            [
+                ActionExecuted("my_form"),
+                SlotSet("my_slot", "some_value"),
+                SlotSet("some_other", "some_value2"),
+            ],
+            {"my_slot": "some_value", "some_other": "some_value2"},
+        ),
+        ([SlotSet("my_slot", "some_value"), ActionExecuted("my_form")], {},),
+    ],
+)
+def test_get_extracted_slots(
+    events: List[Dict[Text, Any]], expected_extracted_slots: Dict[Text, Any]
+):
+    tracker = get_tracker(events)
+    tracker.active_loop = {"name": "my form"}
+    assert tracker.form_slots_to_validate() == expected_extracted_slots
+
+
+def test_get_extracted_slots_with_no_active_loop():
+    events = [
+        ActionExecuted("my_form"),
+        SlotSet("my_slot", "some_value"),
+        SlotSet("some_other", "some_value2"),
+    ]
+    tracker = get_tracker(events)
+
+    assert tracker.form_slots_to_validate() == {}
