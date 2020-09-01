@@ -50,11 +50,11 @@ jobs:
       uses: actions/cache@v1
       with:
         path: docs/node_modules
-        key: ${{ runner.os }}-yarn-12.x-${{ hashFiles('docs/yarn.lock') }}
+        key: ${{ runner.os }}-yarn-12.x-${{ hashFiles('**/yarn.lock') }}
         restore-keys: ${{ runner.os }}-yarn-12.x
 
     - name: Install Dependencies 📦
-      run: make install install-docs
+      run: make install-dev install-docs
 
     - name: Lint Code 🎎
       run: make lint

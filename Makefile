@@ -16,6 +16,8 @@ help:
 
 install:
 	poetry install
+
+install-dev: install
 	yarn install
 
 install-docs:
