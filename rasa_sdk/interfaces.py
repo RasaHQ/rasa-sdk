@@ -244,7 +244,7 @@ class Tracker:
             A mapping of extracted slot candidates and their values.
         """
 
-        slots_to_validate = {}
+        slots_to_validate: Dict[Text, Any] = {}
 
         if not self.active_loop:
             return slots_to_validate
