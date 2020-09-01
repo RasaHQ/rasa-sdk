@@ -189,7 +189,7 @@ class ActionQueryKnowledgeBase(Action):
             )
 
         if utils.is_coroutine_action(self.utter_objects):
-            await self.utter_objects(dispatcher, object_type, objects)  # type: ignore
+            await self.utter_objects(dispatcher, object_type, objects)
         else:
             self.utter_objects(dispatcher, object_type, objects)
 
@@ -251,7 +251,7 @@ class ActionQueryKnowledgeBase(Action):
 
         if utils.is_coroutine_action(self.knowledge_base.get_object):
             object_of_interest = await self.knowledge_base.get_object(
-                object_type, object_name  # type: ignore
+                object_type, object_name
             )
         else:
             # see https://github.com/python/mypy/issues/5206
@@ -269,7 +269,7 @@ class ActionQueryKnowledgeBase(Action):
             self.knowledge_base.get_representation_function_of_object
         ):
             repr_function = await self.knowledge_base.get_representation_function_of_object(
-                object_type  # type: ignore
+                object_type
             )
         else:
             # see https://github.com/python/mypy/issues/5206
@@ -291,7 +291,7 @@ class ActionQueryKnowledgeBase(Action):
 
         if utils.is_coroutine_action(self.utter_attribute_value):
             await self.utter_attribute_value(
-                dispatcher, object_representation, attribute, value  # type: ignore
+                dispatcher, object_representation, attribute, value
             )
         else:
             self.utter_attribute_value(
