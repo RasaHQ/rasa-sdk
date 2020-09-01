@@ -46,14 +46,24 @@ jobs:
         key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
         restore-keys: ${{ runner.os }}-poetry-
 
+    - name: Load Yarn Cached Packages ⬇
+      uses: actions/cache@v1
+      with:
+        path: docs/node_modules
+        key: ${{ runner.os }}-yarn-12.x-${{ hashFiles('docs/yarn.lock') }}
+        restore-keys: ${{ runner.os }}-yarn-12.x
+
     - name: Install Dependencies 📦
-      run: make install
+      run: make install install-docs
 
     - name: Lint Code 🎎
       run: make lint
 
     - name: Check Types 📚
       run: make types
+
+    - name: Test Docs 🕸
+      run: make test-docs
 
   test:
     name: Run Tests
@@ -148,5 +158,5 @@ jobs:
         GITHUB_TAG=${GITHUB_TAG/refs\/tags\//}
         sudo apt-get update
         sudo apt-get -y install pandoc
-        pip install -U github3.py pypandoc
+        pip install -U github3.py
         python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py
