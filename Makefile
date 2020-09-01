@@ -16,6 +16,7 @@ help:
 
 install:
 	poetry install
+	yarn install
 
 install-docs:
 	cd docs/ && yarn install
@@ -31,7 +32,7 @@ clean:
 	rm -rf docs/.docusaurus
 
 types:
-	poetry run pytype --keep-going rasa_sdk
+	yarn typecheck
 
 lint:
 	poetry run flake8 rasa_sdk tests

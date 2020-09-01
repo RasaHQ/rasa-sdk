@@ -1,0 +1,12 @@
+{
+  "name": "rasa-sdk",
+  "private": true,
+  "description": "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants",
+  "repository": "git@github.com:RasaHQ/rasa-sdk.git",
+  "scripts": {
+    "typecheck": "pyright"
+  },
+  "devDependencies": {
+    "pyright": "^1.1.65"
+  }
+}
