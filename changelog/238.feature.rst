@@ -1,0 +1,32 @@
+Added the method ``form_slots_to_validate`` to ``Tracker``. This method is helpful
+when using a custom action to validate slots which were extracted by a Form as shown
+by the following example.
+
+.. code-block:: python
+
+    class ValidateSlots(Action):
+        def name(self) -> Text:
+            return "validate_your_form"
+
+        def run(
+            self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+        ) -> List[EventType]:
+            extracted_slots: Dict[Text, Any] = tracker.form_slots_to_validate()
+
+            validation_events = []
+
+            for slot_name, slot_value in extracted_slots:
+                # Check if slot is valid.
+                if is_valid(slot_value):
+                    validation_events.append(SlotSet(slot_name, slot_value))
+                else:
+                    # Return a `SlotSet` event with value `None` to indicate that this
+                    # slot still needs to be filled.
+                    validation_events.append(SlotSet(slot_name, None))
+
+            return validation_events
+
+        def is_valid(slot_value: Any) -> bool:
+            # Implementation of the validate function.
+
+ Please note that ``tracker.form_slots_to_validate`` only works with Rasa Open Source 2.

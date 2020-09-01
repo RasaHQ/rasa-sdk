@@ -393,7 +393,7 @@ class FormAction(Action):
             else:
                 validation_output = validate_func(value, dispatcher, tracker, domain)
             if not isinstance(validation_output, dict):
-                logger.warning(
+                warnings.warn(
                     "Returning values in helper validation methods is deprecated. "
                     + f"Your `validate_{slot}()` method should return "
                     + "a dict of {'slot_name': value} instead."
@@ -433,7 +433,8 @@ class FormAction(Action):
                 # it will allow other policies to predict another action
                 raise ActionExecutionRejection(
                     self.name(),
-                    f"Failed to extract slot {slot_to_fill} with action {self.name()}",
+                    f"Failed to extract slot {slot_to_fill} with action {self.name()}."
+                    f"Allowing other policies to predict next action.",
                 )
         logger.debug(f"Validating extracted slots: {slot_values}")
         return await self.validate_slots(slot_values, dispatcher, tracker, domain)

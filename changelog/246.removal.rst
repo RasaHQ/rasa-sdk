@@ -1,6 +1,0 @@
-Using the ``Form`` event is deprecated. Please use the new ``ActiveLoop`` event instead.
-Using the ``active_form`` property of the ``Tracker`` object is now deprecated. Please
-use the ``active_loop`` property instead.
-
-The usage of the ``FormAction`` is deprecated. Please see the migration guide
-for Rasa Open Source 2.0 for instructions how to migrate your `FormAction`s.

@@ -1,0 +1,45 @@
+{
+  "name": "rasa-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "yarn pre-build && docusaurus start",
+    "pre-build": "yarn copy-md-files && yarn variables && yarn program-outputs && yarn included-sources",
+    "serve": "netlify dev -d build",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "new-version": "docusaurus docs:version",
+    "variables": "node scripts/compile_variables.js",
+    "program-outputs": "node scripts/compile_program_outputs.js",
+    "copy-md-files": "node scripts/copy_md_files.js",
+    "included-sources": "node scripts/compile_included_sources.js",
+    "clean": "find docs/sources -type f -not -name '.keep' -print0 | xargs -0  -I {} rm {}",
+    "ci": "yarn install --frozen-lockfile"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^2.0.0-alpha.61",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.61",
+    "@mdx-js/react": "^1.5.8",
+    "clsx": "^1.1.1",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4",
+    "remark-collapse": "^0.1.2",
+    "remark-sources": "^1.0.3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "netlify-cli": "^2.59.0",
+    "toml": "^3.0.0"
+  }
+}

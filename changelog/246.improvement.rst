@@ -1,3 +1,0 @@
-Rasa Open Source 2.0 renamed the ``Form`` event to ``ActiveLoop``. The ``ActiveLoop``
-event was added to the SDK and support for the ``active_loop`` field in JSON payloads
-was added.
