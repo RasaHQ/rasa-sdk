@@ -21,8 +21,8 @@ module.exports = {
   title: 'Rasa SDK Documentation',
   tagline: 'Rasa SDK Documentation',
   // TODO: is it needed?
-  url: URL
-  baseUrl: BASE_URL
+  url: URL,
+  baseUrl: BASE_URL,
   onBrokenLinks: 'throw',
   favicon: 'img/favicon.ico',
   organizationName: 'RasaHQ',
