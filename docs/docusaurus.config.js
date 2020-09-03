@@ -11,12 +11,18 @@ try {
 }
 let legacyVersions = [];
 
+const URL = "https://rasa.com";
+// FIXME: remove "next/" when releasing + remove the "next/" in
+// https://github.com/RasaHQ/rasa-website/blob/master/netlify.toml
+const BASE_URL = "/docs/rasa-sdk/next/";
+
+
 module.exports = {
   title: 'Rasa SDK Documentation',
   tagline: 'Rasa SDK Documentation',
   // TODO: is it needed?
-  url: 'http://something.com',
-  baseUrl: '/docs/rasa/rasa-sdk/',  //TODO: seems fake
+  url: URL
+  baseUrl: BASE_URL
   onBrokenLinks: 'throw',
   favicon: 'img/favicon.ico',
   organizationName: 'RasaHQ',
