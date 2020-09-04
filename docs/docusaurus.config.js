@@ -11,17 +11,17 @@ try {
 let legacyVersions = [];
 
 module.exports = {
-  title: 'Rasa SDK Documentation',
-  tagline: 'Rasa SDK Documentation',
+  title: 'Rasa Action Server Documentation',
+  tagline: 'Rasa Action Server Documentation',
   url: 'https://rasa.com',
   // FIXME: remove "next/" when releasing
-  baseUrl: '/docs/rasa-sdk/next/',
+  baseUrl: '/docs/action-server/',
   favicon: 'img/favicon.ico',
   organizationName: 'RasaHQ',
   projectName: 'rasa-sdk',
   themeConfig: {
     navbar: {
-      title: 'Rasa SDK',
+      title: 'Action Server',
       logo: {
         alt: 'Rasa',
         src: 'https://rasa.com/static/60e441f8eadef13bea0cc790c8cf188b/rasa-logo.svg',
