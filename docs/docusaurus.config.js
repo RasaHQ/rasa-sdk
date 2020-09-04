@@ -1,5 +1,5 @@
-const remarkSources = require('remark-sources');
-const { remarkProgramOutput } = require("./plugins/program_output");
+//const remarkSources = require('remark-sources');
+//const { remarkProgramOutput } = require("./plugins/program_output");
 
 let versions = [];
 try {
@@ -14,7 +14,6 @@ module.exports = {
   title: 'Rasa Action Server Documentation',
   tagline: 'Rasa Action Server Documentation',
   url: 'https://rasa.com',
-  // FIXME: remove "next/" when releasing
   baseUrl: '/docs/action-server/',
   favicon: 'img/favicon.ico',
   organizationName: 'RasaHQ',
@@ -74,11 +73,11 @@ module.exports = {
       // It is recommended to set document id as docs home page (`docs/` path).
       homePageId: 'index',
       sidebarPath: require.resolve('./sidebars.js'),
-      editUrl: 'https://github.com/rasahq/rasa-sdk/edit/master/docs/',
-      remarkPlugins: [
-        remarkSources,
-        remarkProgramOutput
-      ],
+      editUrl: 'https://github.com/rasahq/rasa-sdk/edit/master/docs/'
+//      remarkPlugins: [
+//        remarkSources,
+//        remarkProgramOutput
+//      ],
     }],
     ['@docusaurus/plugin-sitemap', {
       cacheTime: 600 * 1000, // 600 sec - cache purge period
