@@ -1,4 +1,4 @@
-//const remarkSources = require('remark-sources');
+const remarkSources = require('remark-sources');
 //const { remarkProgramOutput } = require("./plugins/program_output");
 
 let versions = [];
@@ -73,11 +73,11 @@ module.exports = {
       // It is recommended to set document id as docs home page (`docs/` path).
       homePageId: 'index',
       sidebarPath: require.resolve('./sidebars.js'),
-      editUrl: 'https://github.com/rasahq/rasa-sdk/edit/master/docs/'
-//      remarkPlugins: [
-//        remarkSources,
-//        remarkProgramOutput
-//      ],
+      editUrl: 'https://github.com/rasahq/rasa-sdk/edit/master/docs/',
+      remarkPlugins: [
+        remarkSources,
+  //      remarkProgramOutput
+      ],
     }],
     ['@docusaurus/plugin-sitemap', {
       cacheTime: 600 * 1000, // 600 sec - cache purge period
