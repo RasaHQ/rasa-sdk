@@ -1,5 +1,4 @@
 const remarkSources = require('remark-sources');
-const remarkCollapse = require('remark-collapse'); // TODO: probably won't need this one
 const { remarkProgramOutput } = require("./plugins/program_output");
 
 let versions = [];
@@ -11,19 +10,12 @@ try {
 }
 let legacyVersions = [];
 
-const URL = "https://rasa.com";
-// FIXME: remove "next/" when releasing + remove the "next/" in
-// https://github.com/RasaHQ/rasa-website/blob/master/netlify.toml
-const BASE_URL = "/docs/rasa-sdk/next/";
-
-
 module.exports = {
   title: 'Rasa SDK Documentation',
   tagline: 'Rasa SDK Documentation',
-  // TODO: is it needed?
-  url: URL,
-  baseUrl: BASE_URL,
-  onBrokenLinks: 'throw',
+  url: 'https://rasa.com',
+  // FIXME: remove "next/" when releasing
+  baseUrl: '/docs/rasa-sdk/next/',
   favicon: 'img/favicon.ico',
   organizationName: 'RasaHQ',
   projectName: 'rasa-sdk',
@@ -84,7 +76,6 @@ module.exports = {
       sidebarPath: require.resolve('./sidebars.js'),
       editUrl: 'https://github.com/rasahq/rasa-sdk/edit/master/docs/',
       remarkPlugins: [
-        [ remarkCollapse, { test: '' }],
         remarkSources,
         remarkProgramOutput
       ],
