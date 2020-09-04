@@ -11,12 +11,11 @@ VARIABLES_JSON=docs/docs/variables.json
 SOURCES_FILES=docs/docs/sources/
 CHANGELOG=docs/docs/changelog.mdx
 
-# make it happen! 
-#[[ ! $GITHUB_REF =~ $PATTERN_FOR_NEW_VERSION ]] \
-#&& [[ ! $GITHUB_REF =~ $PATTERN_FOR_PATCH_VERSION ]] \
-#&& [[ $GITHUB_REF != $MASTER_REF ]] \
-#&& echo "Not on master or tagged version, skipping." \
-#&& exit 0
+[[ ! $GITHUB_REF =~ $PATTERN_FOR_NEW_VERSION ]] \
+&& [[ ! $GITHUB_REF =~ $PATTERN_FOR_PATCH_VERSION ]] \
+&& [[ $GITHUB_REF != $MASTER_REF ]] \
+&& echo "Not on master or tagged version, skipping." \
+&& exit 0
 
 NEW_VERSION=
 EXISTING_VERSION=

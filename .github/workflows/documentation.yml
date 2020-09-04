@@ -3,7 +3,7 @@ name: Publish Documentation
 on:
   push:
     branches:
-    - '**' # temporarily
+    - 'master'
     tags:
     - '**'
 
