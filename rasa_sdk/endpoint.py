@@ -101,7 +101,7 @@ def create_app(
         try:
             result = await executor.run(action_call)
         except ActionExecutionRejection as e:
-            logger.error(e)
+            logger.debug(e)
             body = {"error": e.message, "action_name": e.action_name}
             return response.json(body, status=400)
         except ActionNotFoundException as e:
