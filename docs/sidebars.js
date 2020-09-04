@@ -2,7 +2,7 @@ module.exports = {
   someSidebar: {
     'Intro': ['index'],
     'Rasa SDK': [
-          'running-the-server',
+          'running-action-server',
           {
           type: 'category',
           label: 'Writing Custom Actions',

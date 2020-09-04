@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "yarn pre-build && docusaurus start",
-    "pre-build": "yarn copy-md-files && yarn variables && yarn included-sources",
+    "pre-build": "yarn copy-md-files && yarn variables && yarn program-outputs && yarn included-sources",
     "serve": "netlify dev -d build",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",

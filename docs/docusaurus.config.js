@@ -1,5 +1,5 @@
 const remarkSources = require('remark-sources');
-//const { remarkProgramOutput } = require("./plugins/program_output");
+const { remarkProgramOutput } = require("./plugins/program_output");
 
 let versions = [];
 try {
@@ -76,7 +76,7 @@ module.exports = {
       editUrl: 'https://github.com/rasahq/rasa-sdk/edit/master/docs/',
       remarkPlugins: [
         remarkSources,
-  //      remarkProgramOutput
+        remarkProgramOutput
       ],
     }],
     ['@docusaurus/plugin-sitemap', {
