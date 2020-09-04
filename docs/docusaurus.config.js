@@ -86,7 +86,7 @@ module.exports = {
       remarkPlugins: [
         [ remarkCollapse, { test: '' }],
         remarkSources,
-        // remarkProgramOutput
+        remarkProgramOutput
       ],
     }],
     ['@docusaurus/plugin-sitemap', {
