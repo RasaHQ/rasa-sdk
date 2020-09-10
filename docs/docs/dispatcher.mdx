@@ -5,9 +5,6 @@ title: Dispatcher
 ---
 
 A dispatcher is an instance of the `CollectingDispatcher` class used to generate responses to send back to the user.
-A dispatcher is by default available in an action's `run()` method.
-
-
 
 ## `CollectingDispatcher()`
 
@@ -41,7 +38,7 @@ class ActionGreetUser(Action):
 The `utter_message` method can be used to return any type 
 of response to the user. 
 
-#### Parameters
+* **Parameters**
 
 The `utter_message` method takes the following optional arguments. 
 Passing no arguments will result in an empty message being returned to the user. 
@@ -133,4 +130,6 @@ Passing multiple arguments will result in a rich response (e.g. text and buttons
   dispatcher.utter_message(template = "utter_greet_name", name = "Aimee")
   ```
 
-#### Return type: `None`
+* **Return type**: 
+
+`None`
