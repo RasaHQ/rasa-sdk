@@ -1,7 +1,3 @@
-const remarkSources = require('remark-sources');
-const remarkCollapse = require('remark-collapse'); // TODO: probably won't need this one
-const { remarkProgramOutput } = require("./plugins/program_output");
-
 let versions = [];
 try {
   versions = require('./versions.json');
@@ -12,18 +8,16 @@ try {
 let legacyVersions = [];
 
 module.exports = {
-  title: 'Rasa SDK Documentation',
-  tagline: 'Rasa SDK Documentation',
-  // TODO: is it needed?
-  url: 'http://something.com',
-  baseUrl: '/docs/rasa/rasa-sdk/',  //TODO: seems fake
-  onBrokenLinks: 'throw',
+  title: 'Rasa Action Server Documentation',
+  tagline: 'Rasa Action Server Documentation',
+  url: 'https://rasa.com',
+  baseUrl: '/docs/action-server/',
   favicon: 'img/favicon.ico',
   organizationName: 'RasaHQ',
   projectName: 'rasa-sdk',
   themeConfig: {
     navbar: {
-      title: 'Rasa SDK',
+      title: 'Action Server',
       logo: {
         alt: 'Rasa',
         src: 'https://rasa.com/static/60e441f8eadef13bea0cc790c8cf188b/rasa-logo.svg',
@@ -76,12 +70,7 @@ module.exports = {
       // It is recommended to set document id as docs home page (`docs/` path).
       homePageId: 'index',
       sidebarPath: require.resolve('./sidebars.js'),
-      editUrl: 'https://github.com/rasahq/rasa-sdk/edit/master/docs/',
-      remarkPlugins: [
-        [ remarkCollapse, { test: '' }],
-        remarkSources,
-        // remarkProgramOutput
-      ],
+      editUrl: 'https://github.com/rasahq/rasa-sdk/edit/master/docs/'
     }],
     ['@docusaurus/plugin-sitemap', {
       cacheTime: 600 * 1000, // 600 sec - cache purge period
