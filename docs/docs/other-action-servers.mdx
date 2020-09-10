@@ -1,0 +1,18 @@
+---
+id: other-action-servers
+sidebar_label: Actions
+title: Actions
+---
+
+
+There is no requirement for the structure of a custom action itself, as long 
+as it is executed when the action server receives a request to run it
+by name, and returns a correctly formatted list of events. 
+
+
+You can implement seperate actions however you'd like but:
+
+- the endpoint needs to know the names of the actions somehow
+- the actions must be callable by name
+- it probably makes sense to use classes for this
+- input/output must match api spec

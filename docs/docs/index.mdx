@@ -4,8 +4,40 @@ sidebar_label: Introduction
 title: Rasa Action Server
 ---
 
-Your action server used to run a Custom Actions{link} for a Rasa Open Source Assistant.
-An action server is an HTTP API with an endpoint to call an action to run.
+A Rasa action server runs [custom actions](https://rasa.com/docs/rasa/next/custom-actions) for a Rasa Open Source
+conversational assistant. 
 
-You can write an action server in any language, but there is already a Python action server
-avaialble to use called Rasa SDK that h
+## How it works
+
+When your assistant predicts a custom action, the Rasa server sends 
+a `POST` request to the action server with a json payload including
+the name of the predicted action,
+the conversation ID, the contents of the tracker and the contents of the domain.
+
+When the action server finishes running a custom action, it returns a json payload
+of [responses](https://rasa.com/docs/rasa/next/responses) and [events](events.mdx). The Rasa server then returns
+the responses to the user and adds the events
+to the conversation tracker. 
+
+
+## SDKs for Custom Actions
+
+You can use an action server written in any language to run your custom actions, as long as it implements
+the [required APIs](api-spec.mdx).  
+
+### Rasa SDK (Python)
+
+Rasa SDK is a Python SDK for running custom actions. It implements
+the required APIs and offers methods for interacting with the conversation tracker.
+If you don't yet have an action server and don't need it
+to be in a language other than Python, using the Rasa SDK will be the easiest way
+to get started.
+
+### Other Action Servers
+
+If you have legacy code or existing business logic in another language,
+you may not want to use the Rasa SDK. In this case you can write
+your own action server in any language you want. The only requirement
+for the action server is that it provide an endpoint which accepts HTTP `POST` requests
+from the Rasa server and returns a list of [events](events.mdx). 
+See the [API spec](api-spec.mdx) for details about the required APIs.

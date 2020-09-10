@@ -16,7 +16,10 @@ module.exports = {
           },
           'rasa-sdk-changelog',
     ],
-    'Other Action Servers': ['events'],
+    'Other Action Servers': [
+      'other-action-servers',
+      'other-action-server-events'
+    ],
     'HTTP API': ['about-http-api','http-api-spec'],
   },
 };

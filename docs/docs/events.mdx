@@ -4,5 +4,18 @@ sidebar_label: Events
 title: Events
 ---
 
-```yaml (docs/sources/rasa_sdk/events.py)
+Custom actions can influence the course of a conversation by adding 
+events to the tracker. 
+Each custom action returns a list of events.
+Rasa Open Source takes the payload of events returned by a custom action server
+and turns them into "Rasa events" that are then applied to the conversation tracker.
+Besides the explicitly returned events, rasa-sdk also has a Dispatcher, which
+specifically sends bot responses. The dispatcher basically auto-adds events;
+they don't have to be explicitly returned.
+
+
+
+
+
+```python (docs/sources/rasa_sdk/events.py)
 ```

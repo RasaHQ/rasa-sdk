@@ -1,0 +1,14 @@
+---
+id: other-action-server-events
+sidebar_label: Events
+title: Events
+---
+
+Conversations in Rasa are represented as a sequence of events.
+Custom actions can influence the course of a conversation by adding 
+events to the tracker. It is expected that a custom action
+return a list of events, which are defined by their payload.
+Rasa Open Source takes the payload of events returned by an action server
+and turns them into "Rasa events" that are then applied to the conversation tracker.
+
+
