@@ -4,11 +4,229 @@ sidebar_label: Events
 title: Events
 ---
 
-Conversations in Rasa are represented as a sequence of events.
-Custom actions can influence the course of a conversation by adding 
-events to the tracker. It is expected that a custom action
-return a list of events, which are defined by their payload.
-Rasa Open Source takes the payload of events returned by an action server
-and turns them into "Rasa events" that are then applied to the conversation tracker.
 
 
+Conversations in Rasa are represented as a sequence of events. Some events are tracked automatically by the Rasa server,
+such as a user sending a message,
+while others can only be tracked if they are returned by a custom action. 
+Custom actions can influence the course of a conversation by returning events as part of their [output](other-action-servers.mdx#events).
+
+## Event Types
+
+### Set a Slot
+
+Sets a slot on the tracker. It can set a slot to a value, 
+or reset a slot by setting its value to `null`. 
+A `slot` event is added automatically by the Rasa server 
+when a slot is filled by an entity of the same name. A custom action is needed
+to set any slot not auto-filled by an entity. 
+
+
+**JSON**:
+
+```json
+{
+    "event": "slot",
+    "name": "departure_airport", 
+    "value": "BER"
+}
+```
+
+
+**Parameters**:
+
+* `name`: Name of the slot to set
+* `value`: Value to set the slot to. The datatype must match the [type](https://rasa.com/docs/rasa/next/domain#slot-types)
+   of the slot
+
+**Rasa Open Source Class**: `rasa.core.events.SlotSet`
+
+
+
+### Restart a Conversation
+
+Resets the tracker. After a `restart` event, there will be no conversation history and no record of the restart.
+
+**JSON**:
+
+```json
+{
+    "event": "restart"
+}
+```
+
+
+**Rasa Open Source Class**: `rasa.core.events.Restarted`
+
+### Reset All Slots
+
+Resets all slots on the tracker to `null`.
+
+**JSON**:
+
+```json
+{
+    "event": "reset_slots"
+}
+```
+
+**Rasa Open Source Class**: `rasa.core.events.AllSlotsReset`
+
+
+### Schedule a Reminder
+
+Schedules an intent to be triggered at a certain time in the future. 
+
+**JSON**:
+
+```json
+{
+  "event": "reminder",
+  "intent": "my_intent",
+  "entities": {"entity1": "value1", "entity2": "value2"},
+  "date_time": "2018-09-03T11:41:10.128172",
+  "name": "my_reminder",
+  "kill_on_user_msg": true,
+}
+```
+
+**Parameters**:
+
+* `intent`: "my_intent",
+  `entities`: {"entity1": "value1", "entity2": "value2"},
+  `date_time`: "2018-09-03T11:41:10.128172",
+  `name`: "my_reminder",
+  `kill_on_user_msg`: true,
+
+**Rasa Open Source Class**: `rasa.core.events.`
+
+
+### 
+
+
+
+**JSON**:
+
+```json
+{
+
+}
+```
+
+**Parameters**:
+
+
+**Rasa Open Source Class**: `rasa.core.events.`
+
+### 
+
+
+
+**JSON**:
+
+```json
+{
+
+}
+```
+
+**Parameters**:
+
+
+**Rasa Open Source Class**: `rasa.core.events.`
+### 
+
+
+
+**JSON**:
+
+```json
+{
+
+}
+```
+
+**Parameters**:
+
+
+**Rasa Open Source Class**: `rasa.core.events.`
+### 
+
+
+
+**JSON**:
+
+```json
+{
+
+}
+```
+
+**Parameters**:
+
+
+**Rasa Open Source Class**: `rasa.core.events.`
+### 
+
+
+
+**JSON**:
+
+```json
+{
+
+}
+```
+
+**Parameters**:
+
+
+**Rasa Open Source Class**: `rasa.core.events.`
+### 
+
+
+
+**JSON**:
+
+```json
+{
+
+}
+```
+
+**Parameters**:
+
+
+**Rasa Open Source Class**: `rasa.core.events.`
+### 
+
+
+
+**JSON**:
+
+```json
+{
+
+}
+```
+
+**Parameters**:
+
+
+**Rasa Open Source Class**: `rasa.core.events.`
+### 
+
+
+
+**JSON**:
+
+```json
+{
+
+}
+```
+
+**Parameters**:
+
+
+**Rasa Open Source Class**: `rasa.core.events.`

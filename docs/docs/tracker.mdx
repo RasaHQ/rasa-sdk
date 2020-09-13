@@ -7,10 +7,13 @@ title: Tracker
 
 ## Tracker
 
-The `Tracker` class represents a Rasa conversation tracker.
+The `Tracker` class represents a Rasa conversation tracker. 
 It lets you access your bot's memory in your custom
 actions. You can get information about past events and the current state of the
 conversation through `Tracker` attributes and methods.
+
+
+### Attributes
 
 The following are available as attributes of a `Tracker` object:
 
@@ -28,7 +31,7 @@ The following are available as attributes of a `Tracker` object:
 
 * `latest_action_name` - The name of the last action the bot executed.
 
-### Tracker Methods
+### Methods
 
 The available methods from the `Tracker` are:
 
@@ -36,7 +39,7 @@ The available methods from the `Tracker` are:
 
 Return the current tracker state as an object.
 
-* **Return type**
+  * **Return type**
 
   `Dict`[`str`, `Any`]
 
@@ -45,7 +48,7 @@ Return the current tracker state as an object.
 
 State whether the tracker is currently paused.
 
-* **Return type**
+  * **Return type**
 
   `bool`
 
@@ -63,23 +66,23 @@ next(tracker.get_latest_entity_values(“my_entity_name”), None)
 If no entity is found, then `None` is the default result.
 
 
-* **Parameters**
+  * **Parameters**
 
-  * `entity_type` – the entity type of interest
+    * `entity_type` – the entity type of interest
 
-  * `entity_role` – optional entity role of interest
+    * `entity_role` – optional entity role of interest
 
-  * `entity_group` – optional entity group of interest
+    * `entity_group` – optional entity group of interest
 
 
 
-* **Returns**
+  * **Returns**
 
   List of entity values.
 
 
 
-* **Return type**
+  * **Return type**
 
   `Iterator`[`str`]
 
@@ -90,7 +93,7 @@ If no entity is found, then `None` is the default result.
 Get the name of the input_channel of the latest UserUttered event
 
 
-* **Return type**
+  * **Return type**
 
   `Optional`[`str`]
 
@@ -101,7 +104,7 @@ Get the name of the input_channel of the latest UserUttered event
 Return a list of events after the most recent restart.
 
 
-* **Return type**
+  * **Return type**
 
   `List`[`dict`]
 
@@ -109,12 +112,13 @@ Return a list of events after the most recent restart.
 
 #### `Tracker.get_slot`
 
-Retrieves the value of a slot.
+  Retrieves the value of a slot.
 
-* **Parameters**
+  * **Parameters**
 
-  * `key` – the name of the slot of which to retrieve the value
+    * `key` – the name of the slot of which to retrieve the value
 
-* **Return type**
+
+  * **Return type**
 
   `Optional`[`Any`]

@@ -81,10 +81,15 @@ paths:
 components:
   schemas:
     Response:
-      oneOf:
+      allOf:
         - $ref: '#/components/schemas/TextResponse'
-        - $ref: '#/components/schemas/TemplateResponse'
         - $ref: '#/components/schemas/ButtonResponse'
+        - $ref: '#/components/schemas/ElementResponse'
+        - $ref: '#/components/schemas/CustomResponse'
+        - $ref: '#/components/schemas/ImageResponse'
+        - $ref: '#/components/schemas/AttachmentResponse'
+        - $ref: '#/components/schemas/TemplateResponse'
+
     TextResponse:
       description: Text which the bot should utter.
       type: object
@@ -105,16 +110,37 @@ components:
         type: string
       required: ["template"]
     ButtonResponse:
-      description: Text with buttons which should be sent to the user.
+      description: Buttons which should be sent to the user.
       type: object
       properties:
-        text:
-          type: string
-          description: Message
         buttons:
           type: array
           items:
             $ref: '#/components/schemas/Button'
+    ElementResponse:
+      description: Custom elements which should be sent to the user.
+      type: object
+      properties:
+        elements:
+          type: array
+    CustomResponse:
+      description: Custom elements which should be sent to the user.
+      type: object
+      properties:
+        custom:
+          type: object
+    ImageResponse:
+      description: Image URL to send to the user
+      type: object
+      properties:
+        image:
+          type: string
+    AttachmentResponse:
+      description: Attachment URL to send to the user
+      type: object
+      properties:
+        attachment:
+          type: string
     Button:
       description: >-
         A button which can be clicked by the user in the conversation.
