@@ -5,18 +5,17 @@ title: Events
 ---
 
 Internally, Rasa conversations are represented as 
-a list of [events](other-action-server-events.mdx). Custom actions
-can influence a conversation by returning events. Rasa SDK provides classes 
-for each event, and takes care of turning them into properly formatted 
+a list of [events](events.mdx). Rasa SDK provides classes 
+for each event, and takes care of turning instances of event classes into properly formatted 
 event payloads.
 
 This page is about the event classes in `rasa_sdk`.
-The side effects of events and their underlying `rasa`
-class are identical regardless of whether you use `rasa_sdk` or another action
+The side effects of events and their underlying 
+payloads are identical regardless of whether you use `rasa_sdk` or another action
 server.
-For details about the side effects of an event and its underlying
-JSON payloads
-see the general [action server documentation for events](other-action-server-events.mdx)
+For details about the side effects of an event, its underlying
+ payload and the class in Rasa Open Source it is translated to
+see the [documentation for events for all action servers](events.mdx)
 (also linked to in each section).
 
 
@@ -24,292 +23,334 @@ see the general [action server documentation for events](other-action-server-eve
 
 ### `rasa_sdk.events.SlotSet`
 
-**Underlying event**: [`slot`](other-action-server-events.mdx#slot)
+```python-runnable
+rasa_sdk.events.SlotSet(
+    key: Text, 
+    value: Any = None, 
+    timestamp: Optional[float] = None
+)
+```
+
+**Underlying event**: [`slot`](events.mdx#slot)
 
 **Parameters**:
 
-* `name`: Name of the slot to set
+* `key`: Name of the slot to set
 * `value`: Value to set the slot to. The datatype must match the [type](https://rasa.com/docs/rasa/next/domain#slot-types)
    of the slot
+* `timestamp`: Optional timestamp of the event
 
-**Rasa Open Source Class**: `rasa.core.events.SlotSet`
+**Example**
+
+```python-runnable
+evt = SlotSet(key = "name", value = "Mary")
+```
 
 
 ### `rasa_sdk.events.AllSlotsReset`
 
-**Underlying event**: [`reset_slots`](other-action-server-events.mdx#reset_slots)
+```python
+rasa_sdk.events.AllSlotsReset(timestamp: Optional[float] = None)
+```
 
-**Rasa Open Source Class**: `rasa.core.events.AllSlotsReset`
+**Underlying event**: [`reset_slots`](events.mdx#reset_slots)
+
+**Parameters**:
+
+* `timestamp`: Optional timestamp of the event
+
+**Example**:
+
+```python-runnable
+evt = AllSlotsReset()
+```
 
 
-### `reminder`
+### `rasa_sdk.events.ReminderScheduled`
 
-**Underlying event**: [`slot`](other-action-server-events.mdx#slot)
+```python
+ReminderScheduled(
+    intent_name: Text,
+    trigger_date_time: datetime.datetime,
+    entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
+    name: Optional[Text] = None,
+    kill_on_user_message: bool = True,
+    timestamp: Optional[float] = None,
+)
+```
+
+**Underlying event**: [`reminder`](events.mdx#reminder)
 
 
 **Parameters**:
 
-* `intent`: Intent which the reminder will  trigger 
+* `intent_name`: Intent which the reminder will  trigger 
+* `trigger_date_time`: Datetime at which the execution of the action should be triggered. 
 * `entities`: Entities to send with the intent
-* `date_time`: Date at which the execution of the action should be triggered. This should either be in UTC or include a timezone.
 * `name`: ID of the reminder. If there are multiple reminders with the same id only the last will be run.
-* `kill_on_user_msg`: Whether a user message before the trigger time will abort the reminder
+* `kill_on_user_message`: Whether a user message before the trigger time will abort the reminder
+* `timestamp`: Optional timestamp of the event
 
-**Rasa Open Source Class**: `rasa.core.events.ReminderScheduled`
 
+**Example**:
 
-### `cancel_reminder`
+```python-runnable
+from datetime import datetime
 
-Cancels a scheduled reminder or reminders. 
-All reminders which match the supplied parameters will be cancelled.
-
-**Automatic Tracking**: Never
-
-**JSON**:
-
-```json
-{
-  "event": "cancel_reminder",
-  "name": "my_reminder",
-  "intent": "my_intent",
-  "entities": [
-        {"entity": "entity1", "value": "value1"},
-        {"entity": "entity2", "value": "value2"},
-    ],
-  "date_time": "2018-09-03T11:41:10.128172",
-}
+evt = ReminderScheduled(
+    intent_name = "EXTERNAL_dry_plant",
+    trigger_date_time = datetime(2020, 9, 15, 0, 36, 0, 851609),
+    entities = [{"name": "plant","value":"orchid"}], 
+    name = "remind_water_plants",
+)
 ```
+
+
+### `rasa_sdk.events.ReminderCancelled`
+
+```python
+ReminderCancelled(
+    name: Optional[Text] = None,
+    intent_name: Optional[Text] = None,
+    entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
+    timestamp: Optional[float] = None,
+) 
+```
+
+**Underlying event**: [`cancel_reminder`](events.mdx#cancel_reminder)
 
 **Parameters**:
 
-
-* `intent`: Intent which the reminder will  trigger 
-* `entities`: Entities to send with the intent
-* `date_time`: Date at which the execution of the action should be triggered. This should either be in UTC or include a timezone.
 * `name`: ID of the reminder.
+* `intent_name`: Intent which the reminder triggers 
+* `entities`: Entities sent with the intent
+* `timestamp`: Optional timestamp of the event
 
+**Example**:
 
-**Rasa Open Source Class**: `rasa.core.events.ReminderCancelled`
-
-### `pause`
-
-Stops the bot from responding to user messages. The conversation will remain paused and no actions will be predicted until  the conversation is explicitly [resumed](#resume-a-conversation).
-
-**Automatic Tracking**: Never
-
-**JSON**:
-
-```json
-{
-    "event": "pause"
-}
-```
-
-**Rasa Open Source Class**: `rasa.core.events.ConversationPaused`
-
-### `resume`
-
-Resume a previously paused conversation. Once this event is added to the tracker the bot will start predicting actions again. It will not predict actions for user messages received while the conversation was paused.
-
-**Automatic Tracking**: Never
-
-**JSON**:
-
-```json
-{
-    "event": "resume"
-}
+```python-runnable
+evt = ReminderCancelled(name = "remind_water_plants") 
 ```
 
 
-**Rasa Open Source Class**: `rasa.core.events.ConversationResumed`
 
-### `followup`
+### `rasa_sdk.events.ConversationPaused`
 
-Force a follow up action, bypassing action prediction. 
-
-**Automatic Tracking**: Never
-
-**JSON**:
-
-```json
-{
-    "event": "followup",
-    "name": "my_action"
-}
+```python
+ConversationPaused(timestamp: Optional[float] = None)
 ```
+**Underlying event**: [`pause`](events.mdx#slot)
+
+**Parameters**:
+
+* `timestamp`: Optional timestamp of the event
+
+**Example**:
+
+```python-runnable
+evt = ConversationPaused()
+```
+
+
+
+### `rasa_sdk.events.ConversationResumed`
+
+```python
+ConversationResumed(timestamp: Optional[float] = None)
+```
+
+**Underlying event**: [`resume`](events.mdx#resume)
+
+**Parameters**:
+
+* `timestamp`: Optional timestamp of the event
+
+**Example**:
+
+```python-runnable
+evt = ConversationResumed()
+```
+
+
+
+### `rasa_sdk.events.FollowupAction`
+
+```python
+FollowupAction(
+    name: Text, 
+    timestamp: Optional[float] = None
+)
+```
+
+**Underlying event**: [`followup`](events.mdx#followup)
 
 **Parameters**:
 
 * `name`: The name of the follow up action that will be executed.
+* `timestamp`: Optional timestamp of the event
 
+**Example**:
 
-**Rasa Open Source Class**: `rasa.core.events.FollowupAction`
-
-### `rewind`
-
-Reverts all side effects of the last user message and removes the last `user` event from the tracker. 
-
-**Automatic Tracking**: 
-
-**JSON**:
-
-```json
-{
-    "event": "rewind"
-}
-```
-
-**Rasa Open Source Class**: `rasa.core.events.UserUtteranceReverted`
-
-
-### `undo`
-
-Undoes all side effects of the last bot action and removes the last bot action from the tracker. 
-
-**Automatic Tracking**: 
-
-**JSON**:
-
-```json
-{
-    "event": "undo"
-}
-```
-
-**Rasa Open Source Class**: `rasa.core.events.ActionReverted`
-
-
-
-### `restart`
-
-Resets the tracker. After a `restart` event, there will be no conversation history and no record of the restart.
-
-**Automatic Tracking**: 
-
-* When the `/restart` default intent is triggered.
-
-
-**JSON**:
-
-```json
-{
-    "event": "restart"
-}
+```python-runnable
+evt = FollowupAction(name = "action_say_goodbye")
 ```
 
 
-**Rasa Open Source Class**: `rasa.core.events.Restarted`
 
+### `rasa_sdk.events.UserUtteranceReverted`
 
-### `session_started`
+```python
+UserUtteranceReverted(timestamp: Optional[float] = None)
+```
+**Underlying event**: [`rewind`](events.mdx#rewind)
 
-Starts a new conversation by resetting the tracker and running the default action `ActionSessionStart`. This action will by default carry over existing `SlotSet` events to a new conversation session. You can configure this behaviour in your domain file under `session_config`.
+**Parameters**:
 
-**Automatic Tracking**: 
+* `timestamp`: Optional timestamp of the event
 
-* Whenever a user starts a conversation with the bot for the first time.
-* Whenever a session expires (after `session_expiration_time` specified in the domain), and the user resumes their conversation
+**Example**:
 
-Restarting a conversation with [`restart`](#restart-a-conversation) event **does not** automatically cause a `session_started` event. 
-
-**JSON**:
-
-```json
-{
-    "event": "session_started"
-}
+```python-runnable
+evt = UserUtteranceReverted()
 ```
 
-**Rasa Open Source Class**: `rasa.core.events.SessionStarted`
 
 
-### `user`
+### `rasa_sdk.events.ActionReverted`
 
-The user sent a message to the bot. 
-
-**Automatic Tracking**: 
-
-* When the user sends a message to the bot.
-
-This event is not usually returned by a custom action.
-
-**JSON**:
-
-```json
-{
-    "event": "user",
-    "text": "Hey",
-    "parse_data": {
-        "intent": {
-            "name": "greet",
-            "confidence": 0.9
-        },
-        "entities": []
-    },
-    "metadata": {},
-}
+```python
+ActionReverted(timestamp: Optional[float] = None)
 ```
+
+**Underlying event**: [`undo`](events.mdx#undo)
+
+**Parameters**:
+
+* `timestamp`: Optional timestamp of the event
+
+**Example**:
+
+```python-runnable
+evt = ActionReverted()
+```
+
+
+
+### `rasa_sdk.events.Restarted`
+
+```python
+Restarted(timestamp: Optional[float] = None) 
+```
+
+**Underlying event**: [`restart`](events.mdx#restart)
+
+**Parameters**:
+
+* `timestamp`: Optional timestamp of the event
+
+**Example**:
+
+```python-runnable
+evt = Restarted()
+```
+
+
+
+### `rasa_sdk.events.SessionStarted`
+
+```python
+SessionStarted(timestamp: Optional[float] = None)
+```
+
+**Underlying event**: [`session_started`](events.mdx#session_started)
+
+**Parameters**:
+
+* `timestamp`: Optional timestamp of the event
+
+**Example**:
+
+```python-runnable
+evt = SessionStarted()
+```
+
+
+
+### `rasa_sdk.events.UserUttered`
+
+```python
+UserUttered(
+    text: Optional[Text],
+    parse_data: Optional[Dict[Text, Any]] = None,
+    timestamp: Optional[float] = None,
+    input_channel: Optional[Text] = None,
+)
+```
+
+**Underlying event**: [`user`](events.mdx#user)
 
 **Parameters**:
 
 * `text`: Text of the user message
 * `parse_data`: Parsed data of user message. This is ordinarily filled by NLU.
-* `metadata`: Arbitrary metadata that comes with the user message
+* `input_channel`: The channel on which the message was received
+* `timestamp`: Optional timestamp of the event
 
-**Rasa Open Source Class**: `rasa.core.events.UserUttered`
+**Example**:
 
-### `bot`
-
-The bot sent a message to the user.
-
-
-**Automatic Tracking**: 
-
-* Whenever `responses` are returned by a custom action
-* Whenever responses are sent to the user directly without being returned by a custom action (e.g. `utter_` actions)
-
-This event is not usually returned explicitly by a custom action; `responses` would be returned instead.
-
-**JSON**:
-
-```json
-{
-    "event": "bot",
-    "text": "Hey there!",
-    "data": {}
-}
+```python-runnable
+evt = UserUttered(text = "Hallo bot")
 ```
+
+
+### `rasa_sdk.events.BotUttered`
+
+```python
+BotUttered(
+    text: Optional[Text] = None,
+    data: Optional[Dict[Text, Any]] = None,
+    metadata: Optional[Dict[Text, Any]] = None,
+    timestamp: Optional[float] = None,
+)
+```
+
+**Underlying event**: [`bot`](events.mdx#bot)
 
 **Parameters**:
 
 * `text`: The text the bot sends to the user
 * `data`: Any non-text elements of the bot response. The structure of `data` matches that of `responses` given in the [API spec](api-spec.mdx).
+* `metadata`: Arbitrary key-value metadata
+* `timestamp`: Optional timestamp of the event
 
-**Rasa Open Source Class**: `rasa.core.events.BotUttered`
+**Example**:
 
-
-### `action`
-
-Logs an action called by the bot. Only the action itself is logged; the events that the action creates are logged separately when they are applied. 
-
-**Automatic Tracking**: 
-
-* Any action (including custom actions and responses) that is called, even if the action does not execute succesfully.
-
-This event is not usually returned explicitly by a custom action. 
-
-**JSON**:
-```json
-{
-    "event": "action",
-    "name": "my_action"
-}
+```python-runnable
+evt = BotUttered(text = "Hallo user")
 ```
+
+
+### `rasa_sdk.events.ActionExecuted`
+
+```python
+ActionExecuted(
+    action_name,
+    policy=None,
+    confidence: Optional[float] = None,
+    timestamp: Optional[float] = None,
+)
+```
+**Underlying event**: [`action`](events.mdx#action)
+
 **Parameters**:
 
-* `name`: Name of the action that was called
+* `action_name`: Name of the action that was called
+* `policy`: The policy used to predict the action
+* `confidence`: The confidence with which the action was predicted
+* `timestamp`: Optional timestamp of the event
 
-**Rasa Open Source Class**: `rasa.core.events.ActionExecuted`
+**Example**:
 
-
+```python-runnable
+evt = ActionExecuted("action_greet_user")
+```

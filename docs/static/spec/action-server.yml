@@ -1,20 +1,19 @@
 openapi: "3.0.2"
 info:
-  title: "Rasa SDK - Action Server Endpoint"
-  version: "0.0.0"
+  title: "Rasa Custom Action Server Required Endpoint"
   description: >-
     API of the action server which is used by Rasa
     to execute custom actions.
 servers:
-  - url: "http://localhost:5055/webhook"
+  - url: "/webhook"
     description: "Local development action server"
 paths:
   /:
     post:
-      summary: Core request to execute a custom action
+      summary: Request to execute a custom action
       description: >-
-        Rasa Core sends a request to the action server to execute a
-        certain custom action. As a response to the action call from Core,
+        Rasa dialogue management sends a request to the action server to execute a
+        certain custom action. As a response to the action call from Rasa,
         you can modify the tracker, e.g. by setting slots and send responses
         back to the user.
       operationId: call_action

@@ -5,18 +5,33 @@ title: Actions
 ---
 
 
-The `Action` class is the base class for any custom action. 
-It has two methods
-that must both to be overwritten, `name` and `run`. The
+The `Action` class is the base class for any custom action. To 
+define a custom action, create a subclass of the `Action` class
+and overwrite the two required methods, `name` and `run`. The
 action server will call an action according to the return value 
-of its `name` method when it receives a request to run an action from Rasa.
+of its `name` method when it receives a request to run an action.
 
+A skeleton custom action looks like this:
+
+```python-runnable
+class MyCustomAction(Action):
+
+    def name(self) -> Text:
+
+        return "action_name"
+
+    async def run(
+        self, dispatcher, tracker: Tracker, domain: Dict[Text, Any],
+    ) -> List[Dict[Text, Any]]:
+
+        return []
+```
 
 ## Methods
 
 ### Action.name
 
-The name returned by this method should be included in your bot's domain
+Defines the action's name. The name returned by this method is the one used in your bot's domain.
 
 * **Returns**:
 
@@ -28,24 +43,27 @@ The name returned by this method should be included in your bot's domain
 
 ### Action.run
 
-``async Action.run(dispatcher, tracker, domain):``
+```python-runnable
+async Action.run(dispatcher, tracker, domain)
+```
 
 The `run` method executes the side effects of the action. 
 
 
+
 #### **Parameters**
 
-  * **dispatcher** – the [dispatcher](dispatcher.mdx) which is used to
+  * **dispatcher** – the dispatcher which is used to
     send messages back to the user. Use
     `dispatcher.utter_message()` or any other
     `rasa_sdk.executor.CollectingDispatcher`
-    method.
+    method. See the [documentation for the dispatcher](dispatcher.mdx)
 
-  * **tracker** – the state [tracker](tracker.mdx) for the current
+  * **tracker** – the state tracker for the current
     user. You can access slot values using
     `tracker.get_slot(slot_name)`, the most recent user message
     is `tracker.latest_message.text` and any other
-    `rasa_sdk.Tracker` property.
+    `rasa_sdk.Tracker` property. See the [documentation for the tracker](tracker.mdx).
 
   * **domain** – the bot's domain
 
@@ -53,8 +71,7 @@ The `run` method executes the side effects of the action.
 
 #### **Returns**
 
-  A list of `rasa_sdk.events.Event` instances. These events are returned 
-  to the Rasa server as the value of the `events` key.
+  A list of `rasa_sdk.events.Event` instances. See the [documentation for events](sdk-events.mdx).
 
 #### **Return type**
 
