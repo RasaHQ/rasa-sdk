@@ -4,25 +4,26 @@ sidebar_label: Running the Server
 title: Running the Action Server
 ---
 
-Because `rasa` is not a dependency of `rasa-sdk`, you can run the action
-server without installing `rasa`. There are two ways to run the action server
-depending on how you have it installed:
+There are two ways to run the action server, depending on whether you 
+are using an environment with 
+`rasa` installed or not:
 
-If you have `rasa` installed, run this command to start your action server:
+If `rasa` is installed, you can run the action server using a `rasa` command:
 
 ```bash
 rasa run actions
 ```
 
-Otherwise, if you do not have `rasa` installed, run this command:
+If `rasa` is not installed, you can run the action server directly as a python module:
 
 ```bash
 python -m rasa_sdk --actions actions
 ```
 
-The file that contains your custom actions should be called `actions.py`.
-Alternatively, you can use a package directory called `actions` or else
-manually specify an actions module or package with the `--actions` flag.
+Using the command above, `rasa_sdk` will expect to find your actions 
+in a file called `actions.py`
+or in a package directory called `actions`. 
+You canspecify the actions module or package with the `--actions` flag.
 
 The full list of options for running the action server with either command is:
 

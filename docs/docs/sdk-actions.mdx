@@ -1,0 +1,92 @@
+---
+id: sdk-actions
+sidebar_label: Actions
+title: Actions
+---
+
+
+The `Action` class is the base class for any custom action. 
+It has two methods
+that must both to be overwritten, `name` and `run`. The
+action server will call an action according to the return value 
+of its `name` method when it receives a request to run an action from Rasa.
+
+
+## Methods
+
+### Action.name
+
+The name returned by this method should be included in your bot's domain
+
+* **Returns**:
+
+  Name of action
+
+* **Return type**: 
+
+  `str`
+
+### Action.run
+
+``async Action.run(dispatcher, tracker, domain):``
+
+The `run` method executes the side effects of the action. 
+
+
+#### **Parameters**
+
+  * **dispatcher** – the [dispatcher](dispatcher.mdx) which is used to
+    send messages back to the user. Use
+    `dispatcher.utter_message()` or any other
+    `rasa_sdk.executor.CollectingDispatcher`
+    method.
+
+  * **tracker** – the state [tracker](tracker.mdx) for the current
+    user. You can access slot values using
+    `tracker.get_slot(slot_name)`, the most recent user message
+    is `tracker.latest_message.text` and any other
+    `rasa_sdk.Tracker` property.
+
+  * **domain** – the bot's domain
+
+
+
+#### **Returns**
+
+  A list of `rasa_sdk.events.Event` instances. These events are returned 
+  to the Rasa server as the value of the `events` key.
+
+#### **Return type**
+
+  `List`[`Dict`[`str`, `Any`]]
+
+
+## Example
+
+In a restaurant bot, if the user says “show me a Mexican restaurant”,
+your bot could execute the action `ActionCheckRestaurants`,
+which might look like this:
+
+```python
+from rasa_sdk import Action
+from rasa_sdk.events import SlotSet
+
+class ActionCheckRestaurants(Action):
+   def name(self) -> Text:
+      return "action_check_restaurants"
+
+   def run(self,
+           dispatcher: CollectingDispatcher,
+           tracker: Tracker,
+           domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+      cuisine = tracker.get_slot('cuisine')
+      q = "select * from restaurants where cuisine='{0}' limit 1".format(cuisine)
+      result = db.query(q)
+
+      return [SlotSet("matches", result if result is not None else [])]
+```
+
+This action queries a database to find restaurants matching
+the requested cuisine, and uses the list of restaurants found 
+to set the value of the `matches` slot. 

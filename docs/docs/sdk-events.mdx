@@ -1,42 +1,30 @@
 ---
-id: events
+id: sdk-events
 sidebar_label: Events
 title: Events
 ---
 
+Internally, Rasa conversations are represented as 
+a list of [events](other-action-server-events.mdx). Custom actions
+can influence a conversation by returning events. Rasa SDK provides classes 
+for each event, and takes care of turning them into properly formatted 
+event payloads.
+
+This page is about the event classes in `rasa_sdk`.
+The side effects of events and their underlying `rasa`
+class are identical regardless of whether you use `rasa_sdk` or another action
+server.
+For details about the side effects of an event and its underlying
+JSON payloads
+see the general [action server documentation for events](other-action-server-events.mdx)
+(also linked to in each section).
 
 
-Conversations in Rasa are represented as a sequence of events.  
-Custom actions can influence the course of a conversation by returning events as part of their [output](other-action-servers.mdx#events). Not all events are typically returned by custom actions since 
-they are tracked automatically by Rasa (e.g. user messages).
-Others events can only be tracked if they are returned by a custom action. 
+## Event Classes
 
-## Event Types
+### `rasa_sdk.events.SlotSet`
 
-
-### `slot`
-
-Sets a slot on the tracker. It can set a slot to a value, 
-or reset a slot by setting its value to `null`. 
-
-**Automatic Tracking**:
-
-* When a slot is filled by an entity of the same name. 
-
-A custom action is needed
-to set any slot not auto-filled by an entity. 
-
-
-**JSON**:
-
-```json
-{
-    "event": "slot",
-    "name": "departure_airport", 
-    "value": "BER"
-}
-```
-
+**Underlying event**: [`slot`](other-action-server-events.mdx#slot)
 
 **Parameters**:
 
@@ -47,41 +35,17 @@ to set any slot not auto-filled by an entity.
 **Rasa Open Source Class**: `rasa.core.events.SlotSet`
 
 
-### `reset_slots`
+### `rasa_sdk.events.AllSlotsReset`
 
-Resets all slots on the tracker to `null`. 
-
-**Automatic Tracking**: Never
-
-**JSON**:
-
-```json
-{
-    "event": "reset_slots"
-}
-```
+**Underlying event**: [`reset_slots`](other-action-server-events.mdx#reset_slots)
 
 **Rasa Open Source Class**: `rasa.core.events.AllSlotsReset`
 
 
 ### `reminder`
 
-Schedules an intent to be triggered at a certain time in the future. 
+**Underlying event**: [`slot`](other-action-server-events.mdx#slot)
 
-**Automatic Tracking**: Never
-
-**JSON**:
-
-```json
-{
-  "event": "reminder",
-  "intent": "my_intent",
-  "entities": {"entity1": "value1", "entity2": "value2"},
-  "date_time": "2018-09-03T11:41:10.128172",
-  "name": "my_reminder",
-  "kill_on_user_msg": true,
-}
-```
 
 **Parameters**:
 
@@ -347,4 +311,5 @@ This event is not usually returned explicitly by a custom action.
 * `name`: Name of the action that was called
 
 **Rasa Open Source Class**: `rasa.core.events.ActionExecuted`
+
 

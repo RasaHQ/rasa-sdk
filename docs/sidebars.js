@@ -1,6 +1,10 @@
 module.exports = {
   someSidebar: {
     'Intro': ['index'],
+    'All Action Servers': [
+      'actions',
+      'events'
+    ],
     'Rasa SDK': [
           'running-action-server',
           {
@@ -8,17 +12,13 @@ module.exports = {
           label: 'Writing Custom Actions',
           collapsed: true,
           items: [
-              'actions',
-              'tracker',
-              'dispatcher',
-              'events',
+              'sdk-actions',
+              'sdk-tracker',
+              'sdk-dispatcher',
+              'sdk-events',
           ],
           },
           'rasa-sdk-changelog',
-    ],
-    'Other Action Servers': [
-      'other-action-servers',
-      'other-action-server-events'
     ],
     'HTTP API': ['about-http-api','http-api-spec'],
   },
