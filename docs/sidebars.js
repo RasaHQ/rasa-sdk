@@ -15,7 +15,15 @@ module.exports = {
               'sdk-actions',
               'sdk-tracker',
               'sdk-dispatcher',
-              'sdk-events',
+            'sdk-events',
+            {
+              type: 'category',
+              label: 'Special Action Types',
+              collapsed: true,
+              items: [
+                'knowledge-bases'
+              ]
+              }
           ],
           },
           'rasa-sdk-changelog',
