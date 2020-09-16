@@ -130,7 +130,7 @@ In this section:
 * we will annotate `mention` entities so that our model detects indirect mentions of objects like “the
   first one”
 
-* we will use [synonyms](./training-data-format.mdx#entity-synonyms) extensively
+* we will use [synonyms](https://rasa.com/docs/rasa/training-data-format.mdx#entity-synonyms) extensively
 
 For the bot to understand that the user wants to retrieve information from the knowledge base, you need to define
 a new intent. We will call it `query_knowledge_base`.
@@ -147,7 +147,7 @@ nlu:
     - list some [restaurants]{"entity": "object_type", "value": "restaurant"}
     - can you name some [restaurants]{"entity": "object_type", "value": "restaurant"} please?
     - can you show me some [restaurants]{"entity": "object_type", "value": "restaurant"} options
-    - list [German](cuisine) [restaurants]{"entity": "object_type", "value": "restaurant"}
+    - list [German](cuisine) [restaurants]{"entity": "sobject_type", "value": "restaurant"}
     - do you have any [mexican](cuisine) [restaurants]{"entity": "object_type", "value": "restaurant"}?
     - do you know the [price range]{"entity": "attribute", "value": "price-range"} of [that one](mention)?
     - what [cuisine](attribute) is [it](mention)?
@@ -166,7 +166,7 @@ In addition to adding a variety of training examples for each query type,
 you need to specify and annotate the following entities in your training examples:
 
 * `object_type`: Whenever a training example references a specific object type from your knowledge base, the object type should
-  be marked as an entity. Use [synonyms](./training-data-format.mdx#entity-synonyms) to map e.g. `restaurants` to `restaurant`, the correct
+  be marked as an entity. Use [synonyms](https://rasa.com/docs/rasa/training-data-format.mdx#entity-synonyms) to map e.g. `restaurants` to `restaurant`, the correct
   object type listed as a key in the knowledge base.
 
 * `mention`: If the user refers to an object via “the first one”, “that one”, or “it”, you should mark those terms
