@@ -1,0 +1,153 @@
+openapi: "3.0.2"
+info:
+  title: "Rasa Custom Action Server Required Endpoint"
+  description: >-
+    API of the action server which is used by Rasa
+    to execute custom actions.
+servers:
+  - url: "/webhook"
+    description: "Local development action server"
+paths:
+  /:
+    post:
+      summary: Request to execute a custom action
+      description: >-
+        Rasa dialogue management sends a request to the action server to execute a
+        certain custom action. As a response to the action call from Rasa,
+        you can modify the tracker, e.g. by setting slots and send responses
+        back to the user.
+      operationId: call_action
+      requestBody:
+        description: >-
+          Describes the action to be called and provides information on the
+          current state of the conversation.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                next_action:
+                  description: The name of the action which should be executed.
+                  type: string
+                sender_id:
+                  description: >-
+                    Unique id of the user who is having the
+                    current conversation.
+                  type: string
+                tracker:
+                  $ref: "./rasa.yml#/components/schemas/Tracker"
+                domain:
+                  $ref: "./rasa.yml#/components/schemas/Domain"
+      responses:
+        200:
+          description: Action was executed succesfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    description: Events returned by the action.
+                    type: array
+                    items:
+                      $ref: "./rasa.yml#/components/schemas/Event"
+                  responses:
+                    description: >-
+                      List of responses which should be sent to the user
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Response"
+        400:
+          description: >-
+            Action execution was rejected. This is the same as returning
+            an `ActionExecutionRejected` event.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_name:
+                    type: string
+                    description: >-
+                      Name of the action which rejected its execution.
+                  error:
+                    type: string
+                    description: The error message.
+        500:
+          description: >-
+            The action server encountered an exception while running the action.
+components:
+  schemas:
+    Response:
+      allOf:
+        - $ref: '#/components/schemas/TextResponse'
+        - $ref: '#/components/schemas/ButtonResponse'
+        - $ref: '#/components/schemas/ElementResponse'
+        - $ref: '#/components/schemas/CustomResponse'
+        - $ref: '#/components/schemas/ImageResponse'
+        - $ref: '#/components/schemas/AttachmentResponse'
+        - $ref: '#/components/schemas/TemplateResponse'
+
+    TextResponse:
+      description: Text which the bot should utter.
+      type: object
+      properties:
+        text:
+          description: The text which should be uttered.
+          type: string
+      required: ["text"]
+    TemplateResponse:
+      description: Response template the bot should utter.
+      type: object
+      properties:
+        template:
+          description: Name of the template
+          type: string
+      additionalProperties:
+        description: Keyword argument to fill the template
+        type: string
+      required: ["template"]
+    ButtonResponse:
+      description: Buttons which should be sent to the user.
+      type: object
+      properties:
+        buttons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Button'
+    ElementResponse:
+      description: Custom elements which should be sent to the user.
+      type: object
+      properties:
+        elements:
+          type: array
+    CustomResponse:
+      description: Custom elements which should be sent to the user.
+      type: object
+      properties:
+        custom:
+          type: object
+    ImageResponse:
+      description: Image URL to send to the user
+      type: object
+      properties:
+        image:
+          type: string
+    AttachmentResponse:
+      description: Attachment URL to send to the user
+      type: object
+      properties:
+        attachment:
+          type: string
+    Button:
+      description: >-
+        A button which can be clicked by the user in the conversation.
+      type: object
+      properties:
+        title:
+          type: string
+          description: The text on the button
+        payload:
+          type: string
+          description: Payload which is sent if the button is pressed.
