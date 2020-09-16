@@ -91,7 +91,7 @@ def test_last_executed_has_not_name():
             ],
             {"my_slot": "some_value", "some_other": "some_value2"},
         ),
-        ([SlotSet("my_slot", "some_value"), ActionExecuted("my_form")], {},),
+        ([SlotSet("my_slot", "some_value"), ActionExecuted("my_form")], {}),
     ],
 )
 def test_get_extracted_slots(

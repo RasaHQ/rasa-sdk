@@ -268,8 +268,8 @@ class FormAction(Action):
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
         """Extract the values of the other slots
-            if they are set by corresponding entities from the user input
-            else return None
+        if they are set by corresponding entities from the user input
+        else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
@@ -322,7 +322,7 @@ class FormAction(Action):
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
         """Extract the value of requested slot from a user input
-            else return None
+        else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         logger.debug(f"Trying to extract requested slot '{slot_to_fill}' ...")
@@ -436,7 +436,7 @@ class FormAction(Action):
         domain: Dict[Text, Any],
     ) -> Optional[List[EventType]]:
         """Request the next slot and utter template if needed,
-            else return None"""
+        else return None"""
 
         for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
@@ -449,7 +449,7 @@ class FormAction(Action):
 
     def deactivate(self) -> List[EventType]:
         """Return `Form` event with `None` as name to deactivate the form
-            and reset the requested slot"""
+        and reset the requested slot"""
 
         logger.debug(f"Deactivating the form '{self.name()}'")
         return [ActiveLoop(None), SlotSet(REQUESTED_SLOT, None)]
@@ -461,7 +461,7 @@ class FormAction(Action):
         domain: Dict[Text, Any],
     ) -> List[EventType]:
         """Define what the form has to do
-            after all required slots are filled"""
+        after all required slots are filled"""
 
         raise NotImplementedError("A form must implement a submit method")
 
@@ -469,7 +469,7 @@ class FormAction(Action):
     @staticmethod
     def _to_list(x: Optional[Any]) -> List[Any]:
         """Convert object to a list if it is not a list,
-            None converted to empty list
+        None converted to empty list
         """
         if x is None:
             x = []
@@ -553,10 +553,10 @@ class FormAction(Action):
         domain: Dict[Text, Any],
     ) -> List[EventType]:
         """Return a list of events from `self.validate(...)`
-            if validation is required:
-            - the form is active
-            - the form is called after `action_listen`
-            - form validation was not cancelled
+        if validation is required:
+        - the form is active
+        - the form is called after `action_listen`
+        - form validation was not cancelled
         """
         # no active_loop means that it is called during activation
         need_validation = not tracker.active_loop or (

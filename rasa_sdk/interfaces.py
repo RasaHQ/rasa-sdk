@@ -204,7 +204,7 @@ class Tracker:
 
         def undo_till_previous(event_type: Text, done_events: List[Dict[Text, Any]]):
             """Removes events from `done_events` until the first
-                occurrence `event_type` is found which is also removed."""
+            occurrence `event_type` is found which is also removed."""
             # list gets modified - hence we need to copy events!
             for e in reversed(done_events[:]):
                 del done_events[-1]
@@ -266,7 +266,7 @@ class Action:
         raise NotImplementedError("An action must implement a name")
 
     async def run(
-        self, dispatcher, tracker: Tracker, domain: Dict[Text, Any],
+        self, dispatcher, tracker: Tracker, domain: Dict[Text, Any]
     ) -> List[Dict[Text, Any]]:
         """Execute the side effects of this action.
 
@@ -293,7 +293,7 @@ class Action:
 
 class ActionExecutionRejection(Exception):
     """Raising this exception will allow other policies
-        to predict another action"""
+    to predict another action"""
 
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         self.action_name = action_name

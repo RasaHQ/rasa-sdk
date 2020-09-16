@@ -254,8 +254,7 @@ class ActionExecutor:
         self._register_all_actions()
 
     def _register_all_actions(self) -> None:
-        """Scan for all user subclasses of `Action`, and register them.
-        """
+        """Scan for all user subclasses of `Action`, and register them."""
         import inspect
 
         actions = utils.all_subclasses(Action)

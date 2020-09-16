@@ -87,12 +87,16 @@ class ActionQueryKnowledgeBase(Action):
             if utils.is_coroutine_action(
                 self.knowledge_base.get_representation_function_of_object
             ):
-                repr_function = await self.knowledge_base.get_representation_function_of_object(
-                    object_type
+                repr_function = (
+                    await self.knowledge_base.get_representation_function_of_object(
+                        object_type
+                    )
                 )
             else:
-                repr_function = self.knowledge_base.get_representation_function_of_object(
-                    object_type
+                repr_function = (
+                    self.knowledge_base.get_representation_function_of_object(
+                        object_type
+                    )
                 )
 
             for i, obj in enumerate(objects, 1):

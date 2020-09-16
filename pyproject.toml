@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "rasa-sdk"
-version = "2.0.0a4"
+version = "2.0.0a5"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
 authors = [ "Rasa Technologies GmbH <hi@rasa.com>",]
 maintainers = [ "Tom Bocklisch <tom@rasa.com>",]
@@ -65,15 +65,15 @@ showcontent = false
 [tool.poetry.dependencies]
 python = "^3.6"
 coloredlogs = ">=10,<15"
-sanic = "^19.12.2"
-sanic-cors = "^0.10.0b1"
+sanic = ">=19.12.2,<21.0.0"
+sanic-cors = "^0.10.0"
 requests = "^2.0"
 
 [tool.poetry.dev-dependencies]
-pytest-cov = "^2.8.1"
-coveralls = "^2.0.0"
+pytest-cov = "^2.10.1"
+coveralls = "^2.1.2"
 pytest = "^5.4.1"
-black = "^19.10b0"
+black = "^20.8b1"
 flake8 = "^3.8.2"
 pytype = "^2020.1.24"
 pytest-sanic = "^1.6.1"
