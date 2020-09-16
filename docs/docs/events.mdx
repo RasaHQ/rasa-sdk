@@ -6,8 +6,10 @@ title: Events
 
 
 
-Conversations in Rasa are represented as a sequence of events.  
-Custom actions can influence the course of a conversation by returning events as part of their [output](other-action-servers.mdx#events). Not all events are typically returned by custom actions since 
+Conversations in Rasa are represented as a sequence of events. Custom actions can 
+influence the course of a conversation by returning events in the response to the action server request.
+
+Not all events are typically returned by custom actions since 
 they are tracked automatically by Rasa (e.g. user messages).
 Others events can only be tracked if they are returned by a custom action. 
 

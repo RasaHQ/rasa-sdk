@@ -4,24 +4,19 @@ sidebar_label: Actions
 title: Actions
 ---
 
-From Rasa's perspective, 
-the effects of an action are whatever the action
-server returns when an action call is made. 
-It is up to the action server to call the correct 
-code according to the action name that Rasa provides.
-This leads naturally to seeing actions as discrete objects
-or classes, but you can implement actions however you would like.
-
+When a Rasa Open Source assistant calls a custom action, it sends a request to the action server. 
+Rasa Open Source only knows about whatever events and responses come back in the request response;
+it's up to the action server to call the correct code based on the action name that Rasa Open Source provides.
 
 To better understand what happens when Rasa calls a custom action, consider 
 the following example:
 
 You have deployed a weather bot to both Facebook and Slack. The user
 can ask for the weather with the intent `ask_weather`. There is a slot `location`
-which will be filled if the user has specified a location
+which will be filled if the user has specified a location.
 The action `action_tell_weather` will use an API to get the weather forecast ,
 using a default location if the user doesn't specify one. 
-The action will set the slot, `temperature` to the maximum temperature of the weather forecast.
+The action will set the `temperature` to the maximum temperature of the weather forecast.
 The message returned will differ according to the channel they are using. 
 
 ## Custom Action Input

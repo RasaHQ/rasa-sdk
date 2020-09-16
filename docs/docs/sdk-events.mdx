@@ -18,12 +18,16 @@ For details about the side effects of an event, its underlying
 see the [documentation for events for all action servers](events.mdx)
 (also linked to in each section).
 
+:::tip Importing events
+All events written in a Rasa SDK action server need to be imported from `rasa_sdk.events`.
+:::
+
 
 ## Event Classes
 
-### `rasa_sdk.events.SlotSet`
+### SlotSet
 
-```python-runnable
+```python
 rasa_sdk.events.SlotSet(
     key: Text, 
     value: Any = None, 
@@ -42,12 +46,12 @@ rasa_sdk.events.SlotSet(
 
 **Example**
 
-```python-runnable
+```python
 evt = SlotSet(key = "name", value = "Mary")
 ```
 
 
-### `rasa_sdk.events.AllSlotsReset`
+### AllSlotsReset
 
 ```python
 rasa_sdk.events.AllSlotsReset(timestamp: Optional[float] = None)
@@ -61,15 +65,15 @@ rasa_sdk.events.AllSlotsReset(timestamp: Optional[float] = None)
 
 **Example**:
 
-```python-runnable
+```python
 evt = AllSlotsReset()
 ```
 
 
-### `rasa_sdk.events.ReminderScheduled`
+### ReminderScheduled
 
 ```python
-ReminderScheduled(
+rasa_sdk.events.ReminderScheduled(
     intent_name: Text,
     trigger_date_time: datetime.datetime,
     entities: Optional[Union[List[Dict[Text, Any]], Dict[Text, Text]]] = None,
@@ -94,7 +98,7 @@ ReminderScheduled(
 
 **Example**:
 
-```python-runnable
+```python
 from datetime import datetime
 
 evt = ReminderScheduled(
@@ -106,7 +110,7 @@ evt = ReminderScheduled(
 ```
 
 
-### `rasa_sdk.events.ReminderCancelled`
+### ReminderCancelled
 
 ```python
 ReminderCancelled(
@@ -128,13 +132,13 @@ ReminderCancelled(
 
 **Example**:
 
-```python-runnable
+```python
 evt = ReminderCancelled(name = "remind_water_plants") 
 ```
 
 
 
-### `rasa_sdk.events.ConversationPaused`
+### ConversationPaused
 
 ```python
 ConversationPaused(timestamp: Optional[float] = None)
@@ -147,13 +151,13 @@ ConversationPaused(timestamp: Optional[float] = None)
 
 **Example**:
 
-```python-runnable
+```python
 evt = ConversationPaused()
 ```
 
 
 
-### `rasa_sdk.events.ConversationResumed`
+### ConversationResumed
 
 ```python
 ConversationResumed(timestamp: Optional[float] = None)
@@ -167,13 +171,13 @@ ConversationResumed(timestamp: Optional[float] = None)
 
 **Example**:
 
-```python-runnable
+```python
 evt = ConversationResumed()
 ```
 
 
 
-### `rasa_sdk.events.FollowupAction`
+### FollowupAction
 
 ```python
 FollowupAction(
@@ -191,13 +195,13 @@ FollowupAction(
 
 **Example**:
 
-```python-runnable
+```python
 evt = FollowupAction(name = "action_say_goodbye")
 ```
 
 
 
-### `rasa_sdk.events.UserUtteranceReverted`
+### UserUtteranceReverted
 
 ```python
 UserUtteranceReverted(timestamp: Optional[float] = None)
@@ -210,13 +214,13 @@ UserUtteranceReverted(timestamp: Optional[float] = None)
 
 **Example**:
 
-```python-runnable
+```python
 evt = UserUtteranceReverted()
 ```
 
 
 
-### `rasa_sdk.events.ActionReverted`
+### ActionReverted
 
 ```python
 ActionReverted(timestamp: Optional[float] = None)
@@ -230,13 +234,13 @@ ActionReverted(timestamp: Optional[float] = None)
 
 **Example**:
 
-```python-runnable
+```python
 evt = ActionReverted()
 ```
 
 
 
-### `rasa_sdk.events.Restarted`
+### Restarted
 
 ```python
 Restarted(timestamp: Optional[float] = None) 
@@ -250,13 +254,13 @@ Restarted(timestamp: Optional[float] = None)
 
 **Example**:
 
-```python-runnable
+```python
 evt = Restarted()
 ```
 
 
 
-### `rasa_sdk.events.SessionStarted`
+### SessionStarted
 
 ```python
 SessionStarted(timestamp: Optional[float] = None)
@@ -270,13 +274,13 @@ SessionStarted(timestamp: Optional[float] = None)
 
 **Example**:
 
-```python-runnable
+```python
 evt = SessionStarted()
 ```
 
 
 
-### `rasa_sdk.events.UserUttered`
+### UserUttered
 
 ```python
 UserUttered(
@@ -298,12 +302,12 @@ UserUttered(
 
 **Example**:
 
-```python-runnable
+```python
 evt = UserUttered(text = "Hallo bot")
 ```
 
 
-### `rasa_sdk.events.BotUttered`
+### BotUttered
 
 ```python
 BotUttered(
@@ -325,12 +329,12 @@ BotUttered(
 
 **Example**:
 
-```python-runnable
+```python
 evt = BotUttered(text = "Hallo user")
 ```
 
 
-### `rasa_sdk.events.ActionExecuted`
+### ActionExecuted
 
 ```python
 ActionExecuted(
@@ -351,6 +355,6 @@ ActionExecuted(
 
 **Example**:
 
-```python-runnable
+```python
 evt = ActionExecuted("action_greet_user")
 ```

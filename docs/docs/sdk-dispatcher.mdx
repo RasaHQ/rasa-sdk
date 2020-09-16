@@ -6,7 +6,7 @@ title: Dispatcher
 
 A dispatcher is an instance of the `CollectingDispatcher` class used to generate responses to send back to the user.
 
-## `CollectingDispatcher`
+## CollectingDispatcher
 
 `CollectingDispatcher` has one method, `utter_message`, and one attribute, `messages`.
 It is used in an action's `run` method to add responses to the payload returned to the Rasa server. 
@@ -33,7 +33,7 @@ class ActionGreetUser(Action):
 ```
 
 
-### `CollectingDispatcher.utter_message`
+### CollectingDispatcher.utter_message
 
 The `utter_message` method can be used to return any type 
 of response to the user. 
@@ -46,20 +46,20 @@ Passing multiple arguments will result in a rich response (e.g. text and buttons
 
   - `text`: The text to return to the user.
 
-  ```python-runnable
+  ```python
   dispatcher.utter_message(text = "Hey there")
   ```
  
   - `image`: An image URL or file path that will be used to display an image to the user.
 
-  ```python-runnable
+  ```python
   dispatcher.utter_message(image = "https://i.imgur.com/nGF1K8f.jpg")
   ```
 
   - `json_message`: A custom json payload as a dictionary. It can be used to send [channel specific responses](d).
                   The following example would return a date picker in Slack:
 
-  ```python-runnable
+  ```python
   date_picker = {
     "blocks":[
       {
@@ -87,13 +87,13 @@ Passing multiple arguments will result in a rich response (e.g. text and buttons
   - `template`: The name of a response template to return to the user. This response template should
               be specified in your assistants [domain](D).
 
-  ```python-runnable
+  ```python
   dispatcher.utter_message(template = "utter_greet")
   ```
 
   - `attachment`: A URL or file path of an attachment to return to the user.
 
-  ```python-runnable
+  ```python
   dispatcher.utter_message(attachment = "")
   ```
 
@@ -126,7 +126,7 @@ Passing multiple arguments will result in a rich response (e.g. text and buttons
 
   You could specify the name with:
 
-  ```python-runnable
+  ```python
   dispatcher.utter_message(template = "utter_greet_name", name = "Aimee")
   ```
 

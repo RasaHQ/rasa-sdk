@@ -13,7 +13,7 @@ of its `name` method when it receives a request to run an action.
 
 A skeleton custom action looks like this:
 
-```python-runnable
+```python
 class MyCustomAction(Action):
 
     def name(self) -> Text:
@@ -43,7 +43,7 @@ Defines the action's name. The name returned by this method is the one used in y
 
 ### Action.run
 
-```python-runnable
+```python
 async Action.run(dispatcher, tracker, domain)
 ```
 
