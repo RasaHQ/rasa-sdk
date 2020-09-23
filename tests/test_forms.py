@@ -9,8 +9,7 @@ from rasa_sdk.forms import FormAction, REQUESTED_SLOT
 
 
 def test_extract_requested_slot_default():
-    """Test default extraction of a slot value from entity with the same name
-    """
+    """Test default extraction of a slot value from entity with the same name"""
     form = FormAction()
 
     tracker = Tracker(
@@ -32,7 +31,7 @@ def test_extract_requested_slot_default():
 
 def test_extract_requested_slot_from_entity_no_intent():
     """Test extraction of a slot value from entity with the different name
-        and any intent
+    and any intent
     """
 
     # noinspection PyAbstractClass
@@ -64,7 +63,7 @@ def test_extract_requested_slot_from_entity_no_intent():
 
 def test_extract_requested_slot_from_entity_with_intent():
     """Test extraction of a slot value from entity with the different name
-        and certain intent
+    and certain intent
     """
 
     # noinspection PyAbstractClass
@@ -278,8 +277,7 @@ def test_extract_requested_slot_from_entity(
 
 
 def test_extract_requested_slot_from_intent():
-    """Test extraction of a slot value from certain intent
-    """
+    """Test extraction of a slot value from certain intent"""
 
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
@@ -329,8 +327,7 @@ def test_extract_requested_slot_from_intent():
 
 
 def test_extract_requested_slot_from_not_intent():
-    """Test extraction of a slot value from certain intent
-    """
+    """Test extraction of a slot value from certain intent"""
 
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
@@ -382,8 +379,7 @@ def test_extract_requested_slot_from_not_intent():
 
 
 def test_extract_requested_slot_from_text_no_intent():
-    """Test extraction of a slot value from text with any intent
-    """
+    """Test extraction of a slot value from text with any intent"""
 
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
@@ -413,8 +409,7 @@ def test_extract_requested_slot_from_text_no_intent():
 
 
 def test_extract_requested_slot_from_text_with_intent():
-    """Test extraction of a slot value from text with certain intent
-    """
+    """Test extraction of a slot value from text with certain intent"""
 
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
@@ -465,8 +460,7 @@ def test_extract_requested_slot_from_text_with_intent():
 
 
 def test_extract_requested_slot_from_text_with_not_intent():
-    """Test extraction of a slot value from text with certain intent
-    """
+    """Test extraction of a slot value from text with certain intent"""
 
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
@@ -517,8 +511,7 @@ def test_extract_requested_slot_from_text_with_not_intent():
 
 
 def test_extract_trigger_slots():
-    """Test extraction of a slot value from trigger intent
-    """
+    """Test extraction of a slot value from trigger intent"""
 
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):
@@ -587,7 +580,7 @@ def test_extract_trigger_slots():
 
 def test_extract_other_slots_no_intent():
     """Test extraction of other not requested slots values
-        from entities with the same names
+    from entities with the same names
     """
 
     # noinspection PyAbstractClass
@@ -655,7 +648,7 @@ def test_extract_other_slots_no_intent():
 
 def test_extract_other_slots_with_intent():
     """Test extraction of other not requested slots values
-        from entities with the same names
+    from entities with the same names
     """
 
     # noinspection PyAbstractClass
@@ -1049,8 +1042,7 @@ async def test_validate_prefilled_slots():
 
 
 async def test_validate_trigger_slots():
-    """Test validation results of from_trigger_intent slot mappings
-    """
+    """Test validation results of from_trigger_intent slot mappings"""
 
     # noinspection PyAbstractClass
     class CustomFormAction(FormAction):

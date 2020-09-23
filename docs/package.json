@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "yarn pre-build && docusaurus start",
-    "pre-build": "yarn copy-md-files && yarn variables && yarn program-outputs && yarn included-sources",
+    "pre-build": "yarn copy-md-files && yarn variables && yarn included-sources && yarn program-outputs",
     "serve": "netlify dev -d build",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
@@ -18,13 +18,20 @@
   },
   "dependencies": {
     "@docusaurus/core": "^2.0.0-alpha.61",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.61",
+    "@docusaurus/plugin-client-redirects": "^2.0.0-alpha.61",
+    "@docusaurus/plugin-content-docs": "^2.0.0-alpha.61",
+    "@docusaurus/plugin-sitemap": "^2.0.0-alpha.61",
+    "@docusaurus/theme-classic": "^2.0.0-alpha.61",
     "@mdx-js/react": "^1.5.8",
-    "clsx": "^1.1.1",
+    "core-js": "^3.6.5",
+    "mobx": "^4.3.1",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
-    "remark-collapse": "^0.1.2",
-    "remark-sources": "^1.0.3"
+    "react-promise": "^3.0.2",
+    "redoc": "^2.0.0-rc.31",
+    "remark": "^12.0.0",
+    "remark-sources": "^1.0.3",
+    "styled-components": "^4.2.0"
   },
   "browserslist": {
     "production": [

@@ -37,4 +37,4 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /app
 EXPOSE 5055
 ENTRYPOINT ["./entrypoint.sh"]
-CMD ["start", "--actions", "actions.actions"]
+CMD ["start", "--actions", "actions"]
