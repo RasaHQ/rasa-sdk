@@ -13,6 +13,15 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. towncrier release notes start
 
+[1.10.3] - 2020-09-23
+^^^^^^^^^^^^^^^^^^^^^
+
+Bugfixes
+--------
+
+- Only fill other slots if slot mapping contains a role or group restriction and the entity type matches.
+
+
 [1.10.2] - 2020-06-25
 ^^^^^^^^^^^^^^^^^^^^^
 
