@@ -190,8 +190,11 @@ class FormAction(Action):
         return intent_not_blacklisted or intent in mapping_intents
 
     def entity_is_desired(
-        self, other_slot_mapping: Dict[Text, Any], other_slot: Text,
-        entity_type_of_slot_to_fill: Optional[Text], tracker: "Tracker"
+        self,
+        other_slot_mapping: Dict[Text, Any],
+        other_slot: Text,
+        entity_type_of_slot_to_fill: Optional[Text],
+        tracker: "Tracker",
     ) -> bool:
         """Check whether the other slot should be filled by an entity in the input or
         not.
@@ -260,8 +263,8 @@ class FormAction(Action):
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
         """Extract the values of the other slots
-            if they are set by corresponding entities from the user input
-            else return None
+        if they are set by corresponding entities from the user input
+        else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
@@ -281,7 +284,12 @@ class FormAction(Action):
                     should_fill_entity_slot = (
                         other_slot_mapping["type"] == "from_entity"
                         and self.intent_is_desired(other_slot_mapping, tracker)
-                        and self.entity_is_desired(other_slot_mapping, slot, entity_type_of_slot_to_fill, tracker)
+                        and self.entity_is_desired(
+                            other_slot_mapping,
+                            slot,
+                            entity_type_of_slot_to_fill,
+                            tracker,
+                        )
                     )
                     # check whether the slot should be
                     # filled from trigger intent mapping
@@ -318,7 +326,7 @@ class FormAction(Action):
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
         """Extract the value of requested slot from a user input
-            else return None
+        else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         logger.debug(f"Trying to extract requested slot '{slot_to_fill}' ...")
@@ -431,7 +439,7 @@ class FormAction(Action):
         domain: Dict[Text, Any],
     ) -> Optional[List[EventType]]:
         """Request the next slot and utter template if needed,
-            else return None"""
+        else return None"""
 
         for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
@@ -444,7 +452,7 @@ class FormAction(Action):
 
     def deactivate(self) -> List[EventType]:
         """Return `Form` event with `None` as name to deactivate the form
-            and reset the requested slot"""
+        and reset the requested slot"""
 
         logger.debug(f"Deactivating the form '{self.name()}'")
         return [Form(None), SlotSet(REQUESTED_SLOT, None)]
@@ -456,7 +464,7 @@ class FormAction(Action):
         domain: Dict[Text, Any],
     ) -> List[EventType]:
         """Define what the form has to do
-            after all required slots are filled"""
+        after all required slots are filled"""
 
         raise NotImplementedError("A form must implement a submit method")
 
@@ -464,7 +472,7 @@ class FormAction(Action):
     @staticmethod
     def _to_list(x: Optional[Any]) -> List[Any]:
         """Convert object to a list if it is not a list,
-            None converted to empty list
+        None converted to empty list
         """
         if x is None:
             x = []
@@ -548,10 +556,10 @@ class FormAction(Action):
         domain: Dict[Text, Any],
     ) -> List[EventType]:
         """Return a list of events from `self.validate(...)`
-            if validation is required:
-            - the form is active
-            - the form is called after `action_listen`
-            - form validation was not cancelled
+        if validation is required:
+        - the form is active
+        - the form is called after `action_listen`
+        - form validation was not cancelled
         """
         if tracker.latest_action_name == "action_listen" and tracker.active_form.get(
             "validate", True
@@ -626,15 +634,14 @@ class FormAction(Action):
         return f"FormAction('{self.name()}')"
 
     def _get_entity_type_of_slot_to_fill(
-        self, slot_to_fill: Text, domain: "Domain"
+        self,
+        slot_to_fill: Text,
     ) -> Optional[Text]:
         if not slot_to_fill:
             return None
 
         mappings = self.get_mappings_for_slot(slot_to_fill)
-        mappings = [
-            m for m in mappings if m.get("type") == "from_entity"
-        ]
+        mappings = [m for m in mappings if m.get("type") == "from_entity"]
 
         if not mappings:
             return None
