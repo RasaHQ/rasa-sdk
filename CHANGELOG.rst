@@ -13,6 +13,11 @@ This project adheres to `Semantic Versioning`_ starting with version 0.11.0.
 
 .. towncrier release notes start
 
+[1.10.3] - 2020-09-23
+^^^^^^^^^^^^^^^^^^^^^
+ No significant changes.
+
+
 [1.10.2] - 2020-06-25
 ^^^^^^^^^^^^^^^^^^^^^
 
