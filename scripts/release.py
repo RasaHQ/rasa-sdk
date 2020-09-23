@@ -161,7 +161,8 @@ def ask_version() -> Text:
                 str(current_version.next_release_candidate("major")),
             ]
         version = questionary.select(
-            f"Which {version} do you want to release?", choices=choices,
+            f"Which {version} do you want to release?",
+            choices=choices,
         ).ask()
 
     if version:
