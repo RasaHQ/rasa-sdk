@@ -190,13 +190,15 @@ class FormAction(Action):
         return intent_not_blacklisted or intent in mapping_intents
 
     def entity_is_desired(
-        self, other_slot_mapping: Dict[Text, Any], other_slot: Text, tracker: "Tracker"
+        self, other_slot_mapping: Dict[Text, Any], other_slot: Text,
+        entity_type_of_slot_to_fill: Optional[Text], tracker: "Tracker"
     ) -> bool:
         """Check whether the other slot should be filled by an entity in the input or
         not.
         Args:
             other_slot_mapping: Slot mapping.
             other_slot: The other slot to be filled.
+            entity_type_of_slot_to_fill: Entity type of slot to fill.
             tracker: The tracker.
         Returns:
             True, if other slot should be filled, false otherwise.
@@ -211,7 +213,7 @@ class FormAction(Action):
         if (
             other_slot_mapping.get("role") is not None
             or other_slot_mapping.get("group") is not None
-        ):
+        ) and entity_type_of_slot_to_fill == other_slot_mapping.get("entity"):
             matching_values = self.get_entity_value(
                 other_slot_mapping.get("entity"),
                 tracker,
@@ -263,6 +265,10 @@ class FormAction(Action):
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
 
+        entity_type_of_slot_to_fill = self._get_entity_type_of_slot_to_fill(
+            slot_to_fill, domain
+        )
+
         slot_values = {}
         for slot in self.required_slots(tracker):
             # look for other slots
@@ -275,7 +281,7 @@ class FormAction(Action):
                     should_fill_entity_slot = (
                         other_slot_mapping["type"] == "from_entity"
                         and self.intent_is_desired(other_slot_mapping, tracker)
-                        and self.entity_is_desired(other_slot_mapping, slot, tracker)
+                        and self.entity_is_desired(other_slot_mapping, slot, entity_type_of_slot_to_fill, tracker)
                     )
                     # check whether the slot should be
                     # filled from trigger intent mapping
@@ -618,3 +624,25 @@ class FormAction(Action):
 
     def __str__(self) -> Text:
         return f"FormAction('{self.name()}')"
+
+    def _get_entity_type_of_slot_to_fill(
+        self, slot_to_fill: Text, domain: "Domain"
+    ) -> Optional[Text]:
+        if not slot_to_fill:
+            return None
+
+        mappings = self.get_mappings_for_slot(slot_to_fill)
+        mappings = [
+            m for m in mappings if m.get("type") == "from_entity"
+        ]
+
+        if not mappings:
+            return None
+
+        entity_type = mappings[0].get("entity")
+
+        for i in range(1, len(mappings)):
+            if entity_type != mappings[i].get("entity"):
+                return None
+
+        return entity_type
