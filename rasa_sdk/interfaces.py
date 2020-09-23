@@ -241,9 +241,6 @@ class Tracker:
 
         slots_to_validate = {}
 
-        if not self.active_loop:
-            return slots_to_validate
-
         for event in reversed(self.events):
             # The `FormAction` in Rasa Open Source will append all slot candidates
             # at the end of the tracker events.
