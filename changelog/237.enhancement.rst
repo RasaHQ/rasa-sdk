@@ -1,2 +1,2 @@
-Only fill other slots if slot mapping contains a role or group restriction.
-
+Only fill other slots if slot mapping contains a role or group restriction and
+the entity type matches.
