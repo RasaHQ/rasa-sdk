@@ -769,7 +769,7 @@ def test_extract_other_slots_with_intent():
             None,
             [{"entity": "entity_type", "value": "some_value"}],
             "some_intent",
-            {"some_other_slot": "some_value"},
+            {},
         ),
     ],
 )
