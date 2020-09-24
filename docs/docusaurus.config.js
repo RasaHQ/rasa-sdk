@@ -43,6 +43,7 @@ module.exports = {
     algolia: {
       // this is configured via DocSearch here:
       // https://github.com/algolia/docsearch-configs/blob/master/configs/rasa.json
+      disabled: true,
       apiKey: '25626fae796133dc1e734c6bcaaeac3c', // FIXME: replace with values from our own index
       indexName: 'rasa',
       inputSelector: '.search-bar',
