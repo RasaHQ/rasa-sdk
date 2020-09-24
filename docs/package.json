@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "yarn pre-build && docusaurus start",
+    "start": "yarn pre-build && yarn develop",
+    "develop": "docusaurus start --port 3002",
     "pre-build": "yarn copy-md-files && yarn variables && yarn included-sources && yarn program-outputs",
     "serve": "netlify dev -d build",
     "build": "docusaurus build",
