@@ -23,7 +23,9 @@ def test_extract_requested_slot_default():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     assert slot_values == {"some_slot": "some_value"}
 
 
@@ -53,7 +55,9 @@ def test_extract_requested_slot_from_entity_no_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     assert slot_values == {"some_slot": "some_value"}
 
 
@@ -90,7 +94,9 @@ def test_extract_requested_slot_from_entity_with_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     # check that the value was extracted for correct intent
     assert slot_values == {"some_slot": "some_value"}
 
@@ -108,7 +114,9 @@ def test_extract_requested_slot_from_entity_with_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     # check that the value was not extracted for incorrect intent
     assert slot_values == {}
 
@@ -262,7 +270,9 @@ def test_extract_requested_slot_from_entity(
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     assert slot_values == expected_slot_values
 
 
@@ -292,7 +302,9 @@ def test_extract_requested_slot_from_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     # check that the value was extracted for correct intent
     assert slot_values == {"some_slot": "some_value"}
 
@@ -307,7 +319,9 @@ def test_extract_requested_slot_from_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     # check that the value was not extracted for incorrect intent
     assert slot_values == {}
 
@@ -340,7 +354,9 @@ def test_extract_requested_slot_from_not_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     # check that the value was extracted for correct intent
     assert slot_values == {}
 
@@ -355,7 +371,9 @@ def test_extract_requested_slot_from_not_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     # check that the value was not extracted for incorrect intent
     assert slot_values == {"some_slot": "some_value"}
 
@@ -384,7 +402,9 @@ def test_extract_requested_slot_from_text_no_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     assert slot_values == {"some_slot": "some_text"}
 
 
@@ -412,7 +432,9 @@ def test_extract_requested_slot_from_text_with_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     # check that the value was extracted for correct intent
     assert slot_values == {"some_slot": "some_text"}
 
@@ -430,7 +452,9 @@ def test_extract_requested_slot_from_text_with_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     # check that the value was not extracted for incorrect intent
     assert slot_values == {}
 
@@ -459,7 +483,9 @@ def test_extract_requested_slot_from_text_with_not_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     # check that the value was extracted for correct intent
     assert slot_values == {}
 
@@ -477,7 +503,9 @@ def test_extract_requested_slot_from_text_with_not_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_requested_slot(CollectingDispatcher(), tracker, {})
+    slot_values = form.extract_requested_slot(
+        CollectingDispatcher(), tracker, "some_slot", {}
+    )
     # check that the value was not extracted for incorrect intent
     assert slot_values == {"some_slot": "some_text"}
 

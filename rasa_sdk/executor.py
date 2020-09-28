@@ -2,8 +2,9 @@ import importlib
 import inspect
 import logging
 import pkgutil
+import typing
 import warnings
-from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, Set
+from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, Set, cast
 from collections import namedtuple
 import types
 import sys
@@ -13,6 +14,9 @@ from rasa_sdk.interfaces import Tracker, ActionNotFoundException, Action
 
 from rasa_sdk import utils
 
+if typing.TYPE_CHECKING:  # pragma: no cover
+    from rasa_sdk.types import ActionCall
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +25,7 @@ class CollectingDispatcher:
 
     def __init__(self) -> None:
 
-        self.messages = []
+        self.messages: List[Dict[Text, Any]] = []
 
     def utter_message(
         self,
@@ -146,12 +150,13 @@ TimestampModule = namedtuple("TimestampModule", ["timestamp", "module"])
 
 class ActionExecutor:
     def __init__(self) -> None:
-        self.actions = {}
+        self.actions: Dict[Text, Callable] = {}
         self._modules: Dict[Text, TimestampModule] = {}
-        self._loaded: Set[Type] = set()
+        self._loaded: Set[Type[Action]] = set()
 
-    def register_action(self, action: Union[Type["Action"], "Action"]) -> None:
+    def register_action(self, action: Union[Type[Action], Action]) -> None:
         if inspect.isclass(action):
+            action = cast(Type[Action], action)
             if action.__module__.startswith("rasa."):
                 logger.warning(f"Skipping built in Action {action}.")
                 return
@@ -207,7 +212,7 @@ class ActionExecutor:
         if not getattr(package, "__path__", None):
             return
 
-        for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
+        for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):  # type: ignore  # mypy issue #1422
             full_name = package.__name__ + "." + name
             self._import_module(full_name)
 
@@ -356,7 +361,7 @@ class ActionExecutor:
                     "We will try to make this work, but this "
                     "might go wrong!"
                 )
-                validated.append(event.as_dict())
+                validated.append(event.as_dict())  # type: ignore
             else:
                 logger.error(
                     f"Your action's '{action_name}' run method returned an invalid "
@@ -366,7 +371,7 @@ class ActionExecutor:
                 # we won't append this to validated events -> will be ignored
         return validated
 
-    async def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
+    async def run(self, action_call: "ActionCall") -> Optional[Dict[Text, Any]]:
         from rasa_sdk.interfaces import Tracker
 
         action_name = action_call.get("next_action")
@@ -376,7 +381,7 @@ class ActionExecutor:
             if not action:
                 raise ActionNotFoundException(action_name)
 
-            tracker_json = action_call.get("tracker")
+            tracker_json = action_call["tracker"]
             domain = action_call.get("domain", {})
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
@@ -393,5 +398,6 @@ class ActionExecutor:
             validated_events = self.validate_events(events, action_name)
             logger.debug(f"Finished running '{action_name}'")
             return self._create_api_response(validated_events, dispatcher.messages)
-        else:
-            logger.warning("Received an action call without an action.")
+
+        logger.warning("Received an action call without an action.")
+        return None
