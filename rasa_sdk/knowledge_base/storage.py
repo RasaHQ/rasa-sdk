@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import random
-from typing import Text, Callable, Dict, List, Any, Optional
+from typing import DefaultDict, Text, Callable, Dict, List, Any, Optional, cast
 from collections import defaultdict
 
 from rasa_sdk import utils
@@ -28,8 +28,10 @@ class KnowledgeBase:
             "LAST": lambda l: l[-1],
         }
 
-        self.key_attribute = defaultdict(lambda: "id")
-        self.representation_function = defaultdict(lambda: lambda obj: obj["name"])
+        self.key_attribute: DefaultDict[Text, Text] = defaultdict(lambda: "id")
+        self.representation_function: DefaultDict[
+            Text, Callable[[Dict[Text, Text]], Text]
+        ] = defaultdict(lambda: lambda obj: obj["name"])
 
     async def get_attributes_of_object(self, object_type: Text) -> List[Text]:
         """
@@ -95,7 +97,7 @@ class KnowledgeBase:
 
     async def get_object(
         self, object_type: Text, object_identifier: Text
-    ) -> Dict[Text, Any]:
+    ) -> Optional[Dict[Text, Any]]:
         """
         Returns the object of the given type that matches the given object identifier.
 
@@ -119,7 +121,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
             data_file: the path to the file containing the data
         """
         self.data_file = data_file
-        self.data = {}
+        self.data: Dict[Text, Any] = {}
         self.load()
         super().__init__()
 
@@ -207,7 +209,8 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         if utils.is_coroutine_action(self.get_key_attribute_of_object):
             key_attribute = await self.get_key_attribute_of_object(object_type)
         else:
-            key_attribute = self.get_key_attribute_of_object(object_type)
+            # see https://github.com/python/mypy/issues/5206
+            key_attribute = cast(Text, self.get_key_attribute_of_object(object_type))
 
         # filter the objects by its key attribute, for example, 'id'
         objects_of_interest = list(
@@ -226,7 +229,10 @@ class InMemoryKnowledgeBase(KnowledgeBase):
                     object_type
                 )
             else:
-                repr_function = self.get_representation_function_of_object(object_type)
+                # see https://github.com/python/mypy/issues/5206
+                repr_function = cast(
+                    Callable, self.get_representation_function_of_object(object_type)
+                )
 
             objects_of_interest = list(
                 filter(

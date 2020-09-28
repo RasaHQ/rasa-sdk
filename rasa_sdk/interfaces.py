@@ -1,7 +1,12 @@
 import copy
 import logging
+import typing
 import warnings
 from typing import Any, Dict, Iterator, List, Optional, Text
+
+if typing.TYPE_CHECKING:  # pragma: no cover
+    from rasa_sdk.types import DomainDict, TrackerState
+
 
 logger = logging.getLogger(__name__)
 
@@ -12,15 +17,15 @@ class Tracker:
     """Maintains the state of a conversation."""
 
     @classmethod
-    def from_dict(cls, state: Dict[Text, Any]) -> "Tracker":
+    def from_dict(cls, state: "TrackerState") -> "Tracker":
         """Create a tracker from dump."""
 
         return Tracker(
-            state.get("sender_id"),
+            state["sender_id"],
             state.get("slots", {}),
             state.get("latest_message", {}),
-            state.get("events"),
-            state.get("paused"),
+            state.get("events", []),
+            state.get("paused", False),
             state.get("followup_action"),
             state.get("active_loop", state.get("active_form", {})),
             state.get("latest_action_name"),
@@ -211,7 +216,7 @@ class Tracker:
                 if e["event"] == event_type:
                     break
 
-        applied_events = []
+        applied_events: List[Dict[Text, Any]] = []
         for event in self.events:
             if event.get("name") == "restart":
                 applied_events = []
@@ -239,7 +244,7 @@ class Tracker:
             A mapping of extracted slot candidates and their values.
         """
 
-        slots_to_validate = {}
+        slots_to_validate: Dict[Text, Any] = {}
 
         if not self.active_loop:
             return slots_to_validate
@@ -266,7 +271,10 @@ class Action:
         raise NotImplementedError("An action must implement a name")
 
     async def run(
-        self, dispatcher, tracker: Tracker, domain: Dict[Text, Any]
+        self,
+        dispatcher,
+        tracker: Tracker,
+        domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
         """Execute the side effects of this action.
 
