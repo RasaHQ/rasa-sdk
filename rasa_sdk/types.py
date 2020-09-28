@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Text, Union
+from typing import Any, Dict, List, Optional, Text
 
 from typing_extensions import TypedDict
 
@@ -33,12 +33,12 @@ class DomainDict(TypedDict):
     A dictionary representation of the domain.
     """
 
-    intents: List[Union[Text, Dict[Text, Any]]]
+    intents: List[Dict[Text, Any]]
     entities: List[Text]
     slots: Dict[Any, Dict[Text, Any]]
     responses: Dict[Text, List[Dict[Text, Any]]]
     actions: List[Text]
-    forms: List[Union[Text, Dict]]
+    forms: Dict[Text, Any]
 
 
 class ActionCall(TypedDict):
