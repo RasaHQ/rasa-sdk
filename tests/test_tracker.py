@@ -57,7 +57,12 @@ def test_get_last_event_for_with_exclude():
 
 
 def test_applied_events_after_restart():
-    events = [ActionExecuted("one"), user_uttered("two", 1), Restarted(), ActionExecuted("three")]
+    events = [
+        ActionExecuted("one"),
+        user_uttered("two", 1),
+        Restarted(),
+        ActionExecuted("three"),
+    ]
 
     tracker = get_tracker(events)
 
