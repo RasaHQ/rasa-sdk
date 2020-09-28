@@ -671,7 +671,7 @@ class FormAction(Action):
 
     def _get_entity_type_of_slot_to_fill(
         self,
-        slot_to_fill: Text,
+        slot_to_fill: Optional[Text],
     ) -> Optional[Text]:
         if not slot_to_fill:
             return None
