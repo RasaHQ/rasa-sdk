@@ -218,11 +218,12 @@ class Tracker:
 
         applied_events: List[Dict[Text, Any]] = []
         for event in self.events:
-            if event.get("name") == "restart":
+            event_type = event.get("event")
+            if event_type == "restart":
                 applied_events = []
-            elif event.get("name") == "undo":
+            elif event_type == "undo":
                 undo_till_previous("action", applied_events)
-            elif event.get("name") == "rewind":
+            elif event_type == "rewind":
                 # Seeing a user uttered event automatically implies there was
                 # a listen event right before it, so we'll first rewind the
                 # user utterance, then get the action right before it (also removes
