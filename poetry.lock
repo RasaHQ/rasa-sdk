@@ -581,12 +581,12 @@ description = "a pytest plugin for Sanic"
 name = "pytest-sanic"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.6.1"
+version = "1.6.2"
 
 [package.dependencies]
 aiohttp = ">=3.6.2,<4.0.0"
 async_generator = ">=1.10,<2.0"
-pytest = ">=5.2,<6.0"
+pytest = ">=5.2"
 
 [[package]]
 category = "dev"
@@ -829,7 +829,8 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "3e6e9acbcca55dc5e0e8984621c67a8d11a37cc54cadfdc6aff810327405e3c0"
+content-hash = "816b92fdd7fc700d8d1fba47156bc4fd7dbccfab9e865abc60917e92db222547"
+lock-version = "1.0"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -872,7 +873,6 @@ attrs = [
     {file = "attrs-20.1.0.tar.gz", hash = "sha256:0ef97238856430dcf9228e07f316aefc17e8939fc8507e18c6501b761ef1a42a"},
 ]
 black = [
-    {file = "black-20.8b1-py3-none-any.whl", hash = "sha256:70b62ef1527c950db59062cda342ea224d772abdf6adc58b86a45421bab20a6b"},
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},
 ]
 certifi = [
@@ -1156,8 +1156,8 @@ pytest-cov = [
     {file = "pytest_cov-2.10.1-py2.py3-none-any.whl", hash = "sha256:45ec2d5182f89a81fc3eb29e3d1ed3113b9e9a873bcddb2a71faaab066110191"},
 ]
 pytest-sanic = [
-    {file = "pytest-sanic-1.6.1.tar.gz", hash = "sha256:99e02c28cfa18a0a9af0cd151dddf0eca373279b9bac808733746f7ed7030ecc"},
-    {file = "pytest_sanic-1.6.1-py3-none-any.whl", hash = "sha256:f258c7e34818d316ff75882f865a8b08714c732461fad2d54fbe7bc7c266e6c7"},
+    {file = "pytest-sanic-1.6.2.tar.gz", hash = "sha256:6428ed8cc2e6cfa05b92689a8589149aacdc1f0640fcf9673211aa733e6a5209"},
+    {file = "pytest_sanic-1.6.2-py3-none-any.whl", hash = "sha256:982fa2ca879130fda9066b6051c7d232bf433dcc1bbac324e17ee49a8f7a92b1"},
 ]
 questionary = [
     {file = "questionary-1.5.2-py3-none-any.whl", hash = "sha256:6998a1fe0639daec0da44e0a973f387e7c778bdc418d76ecfa45a7b3a0997049"},
