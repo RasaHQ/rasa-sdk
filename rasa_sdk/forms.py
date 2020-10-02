@@ -708,7 +708,7 @@ class FormValidationAction(Action):
                 dispatcher: "CollectingDispatcher",
                 tracker: "Tracker",
                 domain: "DomainDict",
-            )
+            ) -> bool:
                 return slot_value == "correct_value"
     ```
     """
