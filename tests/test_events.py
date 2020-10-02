@@ -38,3 +38,15 @@ def test_deprecation_warning_form_event():
             "event": "active_loop",
             "timestamp": timestamp,
         }
+
+
+@pytest.mark.parametrize("validate", [True, False])
+def test_deprecated_form_validation_event(validate: bool):
+    timestamp = 123
+    with pytest.warns(DeprecationWarning):
+        event = events.FormValidation(validate, timestamp=timestamp)
+        assert event == {
+            "is_interrupted": not validate,
+            "event": "loop_interrupted",
+            "timestamp": timestamp,
+        }
