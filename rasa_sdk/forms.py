@@ -672,8 +672,7 @@ class FormAction(Action):
         return f"FormAction('{self.name()}')"
 
     def _get_entity_type_of_slot_to_fill(
-        self,
-        slot_to_fill: Optional[Text],
+        self, slot_to_fill: Optional[Text],
     ) -> Optional[Text]:
         if not slot_to_fill:
             return None
@@ -694,29 +693,23 @@ class FormAction(Action):
 
 
 class FormSlotsValidatorAction(Action):
+    """An action that validates if every extracted slot is valid."""
+
     def name(self) -> Text:
         """Unique identifier of this action."""
 
         raise NotImplementedError("An action must implement a name")
 
-    def run(
-        self, dispatcher, tracker: Tracker, domain: Dict
-    ) -> List[EventType]:
+    async def run(self, dispatcher, tracker: "Tracker", domain: Dict) -> List[EventType]:
         """Execute the side effects of this action.
 
         Args:
             dispatcher: the dispatcher which is used to
-                send messages back to the user. Use
-                ``dispatcher.utter_message()`` for sending messages.
-            tracker: the state tracker for the current
-                user. You can access slot values using
-                ``tracker.get_slot(slot_name)``, the most recent user message
-                is ``tracker.latest_message.text`` and any other
-                ``rasa_sdk.Tracker`` property.
-            domain: the bot's domain
+                send messages back to the user.
+            tracker: the state tracker for the current user.
+            domain: the bot's domain.
         Returns:
-            A dictionary of ``rasa_sdk.events.Event`` instances that is
-                returned through the endpoint
+            A dictionary of ``rasa_sdk.events.Event`` instances.
         """
 
         slots_to_validate: Dict[Text, Any] = tracker.form_slots_to_validate()

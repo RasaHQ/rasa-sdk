@@ -5,7 +5,7 @@ from typing import Type, Text, Dict, Any, List, Optional
 from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.events import SlotSet, ActiveLoop
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.forms import FormAction, REQUESTED_SLOT, LOOP_INTERRUPTED_KEY
+from rasa_sdk.forms import FormAction, FormSlotsValidatorAction, REQUESTED_SLOT, LOOP_INTERRUPTED_KEY
 
 
 def test_extract_requested_slot_default():
@@ -1493,3 +1493,60 @@ async def test_submit(form_class: Type[FormAction]):
 def test_form_deprecation():
     with pytest.warns(FutureWarning):
         FormAction()
+
+
+class TestFormSlotValidator(FormSlotsValidatorAction):
+    def name(self) -> Text:
+        return "some_form"
+
+    @staticmethod
+    def validate_slot1(tracker: Tracker, domain: Dict, slot_value: Any) -> bool:
+        return slot_value == "correct_value"
+
+    @staticmethod
+    def validate_slot2(tracker: Tracker, domain: Dict, slot_value: Any) -> bool:
+        return slot_value == "correct_value"
+
+
+async def test_form_slot_validator():
+    form = TestFormSlotValidator()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [SlotSet("slot1", "correct_value"), SlotSet("slot2", "incorrect_value")],
+        False,
+        None,
+        {"name": "some_form", "validate": True, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    # check that the form was activated and validation was performed
+    assert events == [
+        SlotSet("slot2", None),
+        SlotSet("slot1", "correct_value"),
+    ]
+
+
+async def test_form_slot_validator_missing_method():
+    form = TestFormSlotValidator()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [SlotSet("slot1", "correct_value"), SlotSet("slot2", "incorrect_value"), SlotSet("slot3", "some_value")],
+        False,
+        None,
+        {"name": "some_form", "validate": True, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    with pytest.raises(AttributeError):
+        events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)

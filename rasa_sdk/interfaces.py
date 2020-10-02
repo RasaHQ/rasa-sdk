@@ -245,6 +245,7 @@ class Tracker:
 
         slots: Dict[Text, Any] = {}
 
+        print(self.events)
         for event in reversed(self.events):
             # The `FormAction` in Rasa Open Source will append all slot candidates
             # at the end of the tracker events.
@@ -267,10 +268,7 @@ class Action:
         raise NotImplementedError("An action must implement a name")
 
     async def run(
-        self,
-        dispatcher,
-        tracker: Tracker,
-        domain: "DomainDict",
+        self, dispatcher, tracker: Tracker, domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
         """Execute the side effects of this action.
 

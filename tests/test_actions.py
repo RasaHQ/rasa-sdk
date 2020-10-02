@@ -12,10 +12,7 @@ class CustomAsyncAction(Action):
         return "custom_async_action"
 
     async def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: DomainDict,
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: DomainDict,
     ) -> List[Dict[Text, Any]]:
         return [SlotSet("test", "foo"), SlotSet("test2", "boo")]
 
@@ -25,10 +22,7 @@ class CustomAction(Action):
         return "custom_action"
 
     def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: DomainDict,
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: DomainDict,
     ) -> List[Dict[Text, Any]]:
         return [SlotSet("test", "bar")]
 
