@@ -3,6 +3,7 @@ import asyncio
 from typing import Type, Text, Dict, Any, List, Optional
 
 from rasa_sdk import Tracker, ActionExecutionRejection
+from rasa_sdk.types import DomainDict
 from rasa_sdk.events import SlotSet, ActiveLoop
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.forms import FormAction, FormSlotsValidatorAction, REQUESTED_SLOT, LOOP_INTERRUPTED_KEY
@@ -1500,11 +1501,11 @@ class TestFormSlotValidator(FormSlotsValidatorAction):
         return "some_form"
 
     @staticmethod
-    def validate_slot1(tracker: Tracker, domain: Dict, slot_value: Any) -> bool:
+    def validate_slot1(tracker: Tracker, domain: "DomainDict", slot_value: Any) -> bool:
         return slot_value == "correct_value"
 
     @staticmethod
-    def validate_slot2(tracker: Tracker, domain: Dict, slot_value: Any) -> bool:
+    def validate_slot2(tracker: Tracker, domain: "DomainDict", slot_value: Any) -> bool:
         return slot_value == "correct_value"
 
 
