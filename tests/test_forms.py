@@ -1553,4 +1553,4 @@ async def test_form_slot_validator_attribute_error():
 
     dispatcher = CollectingDispatcher()
     with pytest.raises(AttributeError):
-        events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+        await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
