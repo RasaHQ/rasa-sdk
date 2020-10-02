@@ -1532,7 +1532,7 @@ async def test_form_slot_validator():
     ]
 
 
-async def test_form_slot_validator_missing_method():
+async def test_form_slot_validator_attribute_error():
     form = TestFormSlotValidator()
 
     # tracker with active form
@@ -1540,7 +1540,11 @@ async def test_form_slot_validator_missing_method():
         "default",
         {},
         {},
-        [SlotSet("slot1", "correct_value"), SlotSet("slot2", "incorrect_value"), SlotSet("slot3", "some_value")],
+        [
+            SlotSet("slot1", "correct_value"),
+            SlotSet("slot2", "incorrect_value"),
+            SlotSet("slot3", "some_value"),
+        ],
         False,
         None,
         {"name": "some_form", "validate": True, "rejected": False},

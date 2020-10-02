@@ -700,7 +700,9 @@ class FormSlotsValidatorAction(Action):
 
         raise NotImplementedError("An action must implement a name")
 
-    async def run(self, dispatcher, tracker: "Tracker", domain: Dict) -> List[EventType]:
+    async def run(
+        self, dispatcher, tracker: "Tracker", domain: Dict
+    ) -> List[EventType]:
         """Execute the side effects of this action.
 
         Args:
