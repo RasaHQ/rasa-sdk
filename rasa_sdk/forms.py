@@ -693,13 +693,76 @@ class FormAction(Action):
         return entity_type
 
 
-class FormSlotsValidatorAction(Action):
-    """An action that validates if every extracted slot is valid."""
+class FormValidationAction(Action):
+    """An action that validates if every extracted slot is valid.
+
+    Example of usage:
+    ```
+        class MyFormValidationAction(FormValidationAction):
+            def name(self) -> Text:
+                return "some_form"
+
+            def validate_slot1(
+                self,
+                slot_value: Any,
+                dispatcher: "CollectingDispatcher",
+                tracker: "Tracker",
+                domain: "DomainDict",
+            )
+                return slot_value == "correct_value"
+    ```
+        """
 
     def name(self) -> Text:
-        """Unique identifier of this action."""
+        """Unique identifier of this action.
+
+        Returns:
+            Name of the action.
+        """
 
         raise NotImplementedError("An action must implement a name")
+
+    async def validate(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        """Validate slots by calling a validation function for each slot.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user.
+            tracker: the state tracker for the current user.
+            domain: the bot's domain.
+        Returns:
+            A dictionary of `rasa_sdk.events.Event` instances.
+        """
+        slots_to_validate: Dict[Text, Any] = tracker.form_slots_to_validate()
+        validated_events = []
+
+        for slot_name, slot_value in slots_to_validate.items():
+            function_name = f"validate_{slot_name}"
+            validate_func = getattr(self, function_name, lambda *x: False)
+
+            if utils.is_coroutine_action(validate_func):
+                validation_output = await validate_func(
+                    slot_value, dispatcher, tracker, domain
+                )
+            else:
+                validation_output = validate_func(slot_value, dispatcher, tracker, domain)
+
+            if validation_output:
+                validated_events.append(SlotSet(slot_name, slot_value))
+            else:
+                # Return a `SlotSet` event with value `None` to indicate that this
+                # slot still needs to be filled.
+                warnings.warn(
+                    f"Cannot validate `{slot_name}`: make sure the validation function is specified and "
+                    f"returns `True`"
+                )
+
+        return validated_events
 
     async def run(
         self,
@@ -715,20 +778,7 @@ class FormSlotsValidatorAction(Action):
             tracker: the state tracker for the current user.
             domain: the bot's domain.
         Returns:
-            A dictionary of ``rasa_sdk.events.Event`` instances.
+            A dictionary of `rasa_sdk.events.Event` instances.
         """
 
-        slots_to_validate: Dict[Text, Any] = tracker.form_slots_to_validate()
-        validation_events = []
-
-        for slot_name, slot_value in slots_to_validate.items():
-            function_name = f"validate_{slot_name}"
-            fn = getattr(self, function_name)
-            if fn(tracker, domain, slot_value):
-                validation_events.append(SlotSet(slot_name, slot_value))
-            else:
-                # Return a `SlotSet` event with value `None` to indicate that this
-                # slot still needs to be filled.
-                validation_events.append(SlotSet(slot_name, None))
-
-        return validation_events
+        return await self.validate(dispatcher, tracker, domain)

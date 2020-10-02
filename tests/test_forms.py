@@ -6,7 +6,7 @@ from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.types import DomainDict
 from rasa_sdk.events import SlotSet, ActiveLoop
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.forms import FormAction, FormSlotsValidatorAction, REQUESTED_SLOT, LOOP_INTERRUPTED_KEY
+from rasa_sdk.forms import FormAction, FormValidationAction, REQUESTED_SLOT, LOOP_INTERRUPTED_KEY
 
 
 def test_extract_requested_slot_default():
@@ -1496,21 +1496,31 @@ def test_form_deprecation():
         FormAction()
 
 
-class TestFormSlotValidator(FormSlotsValidatorAction):
+class TestFormValidationAction(FormValidationAction):
     def name(self) -> Text:
         return "some_form"
 
-    @staticmethod
-    def validate_slot1(tracker: Tracker, domain: "DomainDict", slot_value: Any) -> bool:
+    def validate_slot1(
+        self,
+        slot_value: Any,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> bool:
         return slot_value == "correct_value"
 
-    @staticmethod
-    def validate_slot2(tracker: Tracker, domain: "DomainDict", slot_value: Any) -> bool:
+    def validate_slot2(
+        self,
+        slot_value: Any,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> bool:
         return slot_value == "correct_value"
 
 
-async def test_form_slot_validator():
-    form = TestFormSlotValidator()
+async def test_form_validation_action():
+    form = TestFormValidationAction()
 
     # tracker with active form
     tracker = Tracker(
@@ -1528,13 +1538,12 @@ async def test_form_slot_validator():
     events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
     # check that the form was activated and validation was performed
     assert events == [
-        SlotSet("slot2", None),
         SlotSet("slot1", "correct_value"),
     ]
 
 
-async def test_form_slot_validator_attribute_error():
-    form = TestFormSlotValidator()
+async def test_form_validation_action_attribute_error():
+    form = TestFormValidationAction()
 
     # tracker with active form
     tracker = Tracker(
@@ -1553,5 +1562,8 @@ async def test_form_slot_validator_attribute_error():
     )
 
     dispatcher = CollectingDispatcher()
-    with pytest.raises(AttributeError):
-        await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    # check that the form was activated and validation was performed
+    assert events == [
+        SlotSet("slot1", "correct_value"),
+    ]
