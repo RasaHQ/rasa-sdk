@@ -92,8 +92,10 @@ class ActionQueryKnowledgeBase(Action):
             if utils.is_coroutine_action(
                 self.knowledge_base.get_representation_function_of_object
             ):
-                repr_function = await self.knowledge_base.get_representation_function_of_object(
-                    object_type
+                repr_function = (
+                    await self.knowledge_base.get_representation_function_of_object(
+                        object_type
+                    )
                 )
             else:
                 # see https://github.com/python/mypy/issues/5206
@@ -112,7 +114,10 @@ class ActionQueryKnowledgeBase(Action):
             )
 
     async def run(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: "DomainDict",
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
         """
         Executes this action. If the user ask a question about an attribute,
@@ -268,8 +273,10 @@ class ActionQueryKnowledgeBase(Action):
         if utils.is_coroutine_action(
             self.knowledge_base.get_representation_function_of_object
         ):
-            repr_function = await self.knowledge_base.get_representation_function_of_object(
-                object_type
+            repr_function = (
+                await self.knowledge_base.get_representation_function_of_object(
+                    object_type
+                )
             )
         else:
             # see https://github.com/python/mypy/issues/5206
