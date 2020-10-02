@@ -711,7 +711,7 @@ class FormValidationAction(Action):
             )
                 return slot_value == "correct_value"
     ```
-        """
+    """
 
     def name(self) -> Text:
         """Unique identifier of this action.
@@ -750,7 +750,9 @@ class FormValidationAction(Action):
                     slot_value, dispatcher, tracker, domain
                 )
             else:
-                validation_output = validate_func(slot_value, dispatcher, tracker, domain)
+                validation_output = validate_func(
+                    slot_value, dispatcher, tracker, domain
+                )
 
             if validation_output:
                 validated_events.append(SlotSet(slot_name, slot_value))
