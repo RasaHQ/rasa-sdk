@@ -5,7 +5,7 @@ from typing import Type, Text, Dict, Any, List, Optional
 from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.events import SlotSet, ActiveLoop
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.forms import FormAction, REQUESTED_SLOT
+from rasa_sdk.forms import FormAction, REQUESTED_SLOT, LOOP_INTERRUPTED_KEY
 
 
 def test_extract_requested_slot_default():
@@ -569,7 +569,7 @@ def test_extract_trigger_slots():
         [],
         False,
         None,
-        {"name": "some_form", "validate": True, "rejected": False},
+        {"name": "some_form", LOOP_INTERRUPTED_KEY: False, "rejected": False},
         "action_listen",
     )
 
@@ -1127,7 +1127,7 @@ async def test_validate_trigger_slots():
         None,
         {
             "name": "some_form",
-            "validate": True,
+            LOOP_INTERRUPTED_KEY: False,
             "rejected": False,
             "trigger_message": {
                 "intent": {"name": "trigger_intent", "confidence": 1.0}
@@ -1152,7 +1152,7 @@ async def test_validate_trigger_slots():
         None,
         {
             "name": "some_form",
-            "validate": True,
+            LOOP_INTERRUPTED_KEY: False,
             "rejected": False,
             "trigger_message": {
                 "intent": {"name": "trigger_intent", "confidence": 1.0}
@@ -1210,7 +1210,7 @@ async def test_activate_if_required():
         [],
         False,
         None,
-        {"name": "some_form", "validate": True, "rejected": False},
+        {"name": "some_form", LOOP_INTERRUPTED_KEY: False, "rejected": False},
         "action_listen",
     )
 
@@ -1245,7 +1245,7 @@ async def test_validate_if_required():
         [],
         False,
         None,
-        {"name": "some_form", "validate": True, "rejected": False},
+        {"name": "some_form", LOOP_INTERRUPTED_KEY: False, "rejected": False},
         "action_listen",
     )
 
@@ -1271,12 +1271,12 @@ async def test_validate_if_required():
         [],
         False,
         None,
-        {"name": "some_form", "validate": False, "rejected": False},
+        {"name": "some_form", LOOP_INTERRUPTED_KEY: True, "rejected": False},
         "action_listen",
     )
 
     events = await form._validate_if_required(CollectingDispatcher(), tracker, {})
-    # check that validation was skipped because 'validate': False
+    # check that validation was skipped because loop was interrupted
     assert events == []
 
     tracker = Tracker(
@@ -1291,7 +1291,7 @@ async def test_validate_if_required():
         [],
         False,
         None,
-        {"name": "some_form", "validate": True, "rejected": False},
+        {"name": "some_form", LOOP_INTERRUPTED_KEY: False, "rejected": False},
         "some_form",
     )
 
@@ -1440,7 +1440,7 @@ async def test_early_deactivation(form_class: Type[FormAction]):
         [],
         False,
         None,
-        {"name": "some_form", "validate": True, "rejected": False},
+        {"name": "some_form", LOOP_INTERRUPTED_KEY: False, "rejected": False},
         "action_listen",
     )
 
@@ -1480,7 +1480,7 @@ async def test_submit(form_class: Type[FormAction]):
         [],
         False,
         None,
-        {"name": "some_form", "validate": False, "rejected": False},
+        {"name": "some_form", LOOP_INTERRUPTED_KEY: True, "rejected": False},
         "action_listen",
     )
 

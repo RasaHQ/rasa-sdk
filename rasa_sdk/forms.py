@@ -18,6 +18,8 @@ if typing.TYPE_CHECKING:  # pragma: no cover
 # to do the form handling
 REQUESTED_SLOT = "requested_slot"
 
+LOOP_INTERRUPTED_KEY = "is_interrupted"
+
 
 class FormAction(Action):
     def __init__(self):
@@ -588,7 +590,7 @@ class FormAction(Action):
         # no active_loop means that it is called during activation
         need_validation = not tracker.active_loop or (
             tracker.latest_action_name == "action_listen"
-            and tracker.active_loop.get("validate", True)
+            and not tracker.active_loop.get(LOOP_INTERRUPTED_KEY, False)
         )
         if need_validation:
             logger.debug(f"Validating user input '{tracker.latest_message}'")
