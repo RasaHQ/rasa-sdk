@@ -3,6 +3,7 @@ from typing import List, Dict, Text, Any
 from rasa_sdk import Action, Tracker
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
+from rasa_sdk.types import DomainDict
 from rasa_sdk.utils import is_coroutine_action
 
 
@@ -14,7 +15,7 @@ class CustomAsyncAction(Action):
         self,
         dispatcher: CollectingDispatcher,
         tracker: Tracker,
-        domain: Dict[Text, Any],
+        domain: DomainDict,
     ) -> List[Dict[Text, Any]]:
         return [SlotSet("test", "foo"), SlotSet("test2", "boo")]
 
@@ -27,7 +28,7 @@ class CustomAction(Action):
         self,
         dispatcher: CollectingDispatcher,
         tracker: Tracker,
-        domain: Dict[Text, Any],
+        domain: DomainDict,
     ) -> List[Dict[Text, Any]]:
         return [SlotSet("test", "bar")]
 

@@ -1,3 +1,6 @@
+import typing
+from typing import Text, Callable, Dict, List, Any, Optional, cast
+
 from rasa_sdk import Action
 from rasa_sdk.events import SlotSet
 from rasa_sdk.knowledge_base.utils import (
@@ -11,11 +14,13 @@ from rasa_sdk.knowledge_base.utils import (
     get_object_name,
     get_attribute_slots,
 )
-from typing import Text, Callable, Dict, List, Any, Optional
 from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.interfaces import Tracker
 from rasa_sdk.knowledge_base.storage import KnowledgeBase
+
+if typing.TYPE_CHECKING:  # pragma: no cover
+    from rasa_sdk.types import DomainDict
 
 
 class ActionQueryKnowledgeBase(Action):
@@ -45,7 +50,7 @@ class ActionQueryKnowledgeBase(Action):
         object_name: Text,
         attribute_name: Text,
         attribute_value: Text,
-    ) -> None:
+    ):
         """
         Utters a response that informs the user about the attribute value of the
         attribute of interest.
@@ -70,7 +75,7 @@ class ActionQueryKnowledgeBase(Action):
         dispatcher: CollectingDispatcher,
         object_type: Text,
         objects: List[Dict[Text, Any]],
-    ) -> None:
+    ):
         """
         Utters a response to the user that lists all found objects.
 
@@ -93,10 +98,12 @@ class ActionQueryKnowledgeBase(Action):
                     )
                 )
             else:
-                repr_function = (
+                # see https://github.com/python/mypy/issues/5206
+                repr_function = cast(
+                    Callable,
                     self.knowledge_base.get_representation_function_of_object(
                         object_type
-                    )
+                    ),
                 )
 
             for i, obj in enumerate(objects, 1):
@@ -110,7 +117,7 @@ class ActionQueryKnowledgeBase(Action):
         self,
         dispatcher: CollectingDispatcher,
         tracker: Tracker,
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
         """
         Executes this action. If the user ask a question about an attribute,
@@ -140,15 +147,17 @@ class ActionQueryKnowledgeBase(Action):
             return []
 
         if not attribute or new_request:
-            return await self._query_objects(dispatcher, tracker)
+            return await self._query_objects(dispatcher, object_type, tracker)
         elif attribute:
-            return await self._query_attribute(dispatcher, tracker)
+            return await self._query_attribute(
+                dispatcher, object_type, attribute, tracker
+            )
 
         dispatcher.utter_message(template="utter_ask_rephrase")
         return []
 
     async def _query_objects(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker
+        self, dispatcher: CollectingDispatcher, object_type: Text, tracker: Tracker
     ) -> List[Dict]:
         """
         Queries the knowledge base for objects of the requested object type and
@@ -161,14 +170,14 @@ class ActionQueryKnowledgeBase(Action):
 
         Returns: list of slots
         """
-        object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
         if utils.is_coroutine_action(self.knowledge_base.get_attributes_of_object):
             object_attributes = await self.knowledge_base.get_attributes_of_object(
                 object_type
             )
         else:
-            object_attributes = self.knowledge_base.get_attributes_of_object(
-                object_type
+            # see https://github.com/python/mypy/issues/5206
+            object_attributes = cast(
+                List[Text], self.knowledge_base.get_attributes_of_object(object_type)
             )
 
         # get all set attribute slots of the object type to be able to filter the
@@ -178,10 +187,14 @@ class ActionQueryKnowledgeBase(Action):
         if utils.is_coroutine_action(self.knowledge_base.get_objects):
             objects = await self.knowledge_base.get_objects(object_type, attributes)
         else:
-            objects = self.knowledge_base.get_objects(object_type, attributes)
+            # see https://github.com/python/mypy/issues/5206
+            objects = cast(
+                List[Dict[Text, Any]],
+                self.knowledge_base.get_objects(object_type, attributes),
+            )
 
         if utils.is_coroutine_action(self.utter_objects):
-            await self.utter_objects(dispatcher, object_type, objects)  # type: ignore
+            await self.utter_objects(dispatcher, object_type, objects)
         else:
             self.utter_objects(dispatcher, object_type, objects)
 
@@ -193,7 +206,10 @@ class ActionQueryKnowledgeBase(Action):
                 object_type
             )
         else:
-            key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
+            # see https://github.com/python/mypy/issues/5206
+            key_attribute = cast(
+                Text, self.knowledge_base.get_key_attribute_of_object(object_type)
+            )
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
 
@@ -211,7 +227,11 @@ class ActionQueryKnowledgeBase(Action):
         return slots + reset_attribute_slots(tracker, object_attributes)
 
     async def _query_attribute(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker
+        self,
+        dispatcher: CollectingDispatcher,
+        object_type: Text,
+        attribute: Text,
+        tracker: Tracker,
     ) -> List[Dict]:
         """
         Queries the knowledge base for the value of the requested attribute of the
@@ -223,8 +243,6 @@ class ActionQueryKnowledgeBase(Action):
 
         Returns: list of slots
         """
-        object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
-        attribute = tracker.get_slot(SLOT_ATTRIBUTE)
 
         object_name = get_object_name(
             tracker,
@@ -238,11 +256,13 @@ class ActionQueryKnowledgeBase(Action):
 
         if utils.is_coroutine_action(self.knowledge_base.get_object):
             object_of_interest = await self.knowledge_base.get_object(
-                object_type, object_name  # type: ignore
+                object_type, object_name
             )
         else:
-            object_of_interest = self.knowledge_base.get_object(
-                object_type, object_name
+            # see https://github.com/python/mypy/issues/5206
+            object_of_interest = cast(
+                Optional[Dict[Text, Any]],
+                self.knowledge_base.get_object(object_type, object_name),
             )
 
         if not object_of_interest or attribute not in object_of_interest:
@@ -253,12 +273,16 @@ class ActionQueryKnowledgeBase(Action):
         if utils.is_coroutine_action(
             self.knowledge_base.get_representation_function_of_object
         ):
-            repr_function = await self.knowledge_base.get_representation_function_of_object(
-                object_type  # type: ignore
+            repr_function = (
+                await self.knowledge_base.get_representation_function_of_object(
+                    object_type
+                )
             )
         else:
-            repr_function = self.knowledge_base.get_representation_function_of_object(
-                object_type
+            # see https://github.com/python/mypy/issues/5206
+            repr_function = cast(
+                Callable,
+                self.knowledge_base.get_representation_function_of_object(object_type),
             )
         object_representation = repr_function(object_of_interest)
         if utils.is_coroutine_action(self.knowledge_base.get_key_attribute_of_object):
@@ -266,12 +290,15 @@ class ActionQueryKnowledgeBase(Action):
                 object_type
             )
         else:
-            key_attribute = self.knowledge_base.get_key_attribute_of_object(object_type)
+            # see https://github.com/python/mypy/issues/5206
+            key_attribute = cast(
+                Text, self.knowledge_base.get_key_attribute_of_object(object_type)
+            )
         object_identifier = object_of_interest[key_attribute]
 
         if utils.is_coroutine_action(self.utter_attribute_value):
             await self.utter_attribute_value(
-                dispatcher, object_representation, attribute, value  # type: ignore
+                dispatcher, object_representation, attribute, value
             )
         else:
             self.utter_attribute_value(
