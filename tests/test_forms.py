@@ -6,7 +6,12 @@ from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.types import DomainDict
 from rasa_sdk.events import SlotSet, ActiveLoop
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.forms import FormAction, FormValidationAction, REQUESTED_SLOT, LOOP_INTERRUPTED_KEY
+from rasa_sdk.forms import (
+    FormAction,
+    FormValidationAction,
+    REQUESTED_SLOT,
+    LOOP_INTERRUPTED_KEY,
+)
 
 
 def test_extract_requested_slot_default():
