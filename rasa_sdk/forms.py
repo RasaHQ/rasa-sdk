@@ -3,6 +3,7 @@ import typing
 import warnings
 from typing import Dict, Text, Any, List, Union, Optional, Tuple, cast
 
+from abc import ABC
 from rasa_sdk import utils
 from rasa_sdk.events import SlotSet, EventType, ActiveLoop
 from rasa_sdk.interfaces import Action, ActionExecutionRejection
@@ -693,17 +694,8 @@ class FormAction(Action):
         return entity_type
 
 
-class FormValidationAction(Action):
+class FormValidationAction(Action, ABC):
     """An action that validates if every extracted slot is valid."""
-
-    def name(self) -> Text:
-        """Unique identifier of this action.
-
-        Returns:
-            Name of the action.
-        """
-
-        raise NotImplementedError("An action must implement a name")
 
     async def validate(
         self,
@@ -716,16 +708,22 @@ class FormValidationAction(Action):
         Args:
             dispatcher: the dispatcher which is used to
                 send messages back to the user.
-            tracker: the state tracker for the current user.
+            tracker: the conversation tracker for the current user.
             domain: the bot's domain.
         Returns:
-            A dictionary of `rasa_sdk.events.Event` instances.
+            `SlotSet` events for every validated slot.
         """
         slots: Dict[Text, Any] = tracker.form_slots_to_validate()
 
         for slot_name, slot_value in slots.items():
             function_name = f"validate_{slot_name}"
-            validate_func = getattr(self, function_name, lambda *x: False)
+            validate_func = getattr(self, function_name, None)
+
+            if not validate_func:
+                warnings.warn(
+                    f"Cannot validate `{slot_name}`: there is no validation function specified."
+                )
+                continue
 
             if utils.is_coroutine_action(validate_func):
                 validation_output = await validate_func(
@@ -740,8 +738,7 @@ class FormValidationAction(Action):
                 slots.update(validation_output)
             else:
                 warnings.warn(
-                    f"Cannot validate `{slot_name}`: make sure the validation function is specified and "
-                    f"returns a list of `rasa_sdk.events.Event` instances."
+                    f"Cannot validate `{slot_name}`: make sure the validation function returns the correct output."
                 )
 
         return [SlotSet(slot, value) for slot, value in slots.items()]
@@ -752,15 +749,4 @@ class FormValidationAction(Action):
         tracker: "Tracker",
         domain: "DomainDict",
     ) -> List[EventType]:
-        """Execute the side effects of this action.
-
-        Args:
-            dispatcher: the dispatcher which is used to
-                send messages back to the user.
-            tracker: the state tracker for the current user.
-            domain: the bot's domain.
-        Returns:
-            A dictionary of `rasa_sdk.events.Event` instances.
-        """
-
         return await self.validate(dispatcher, tracker, domain)

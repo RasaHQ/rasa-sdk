@@ -1511,6 +1511,9 @@ class TestFormValidationAction(FormValidationAction):
             return {
                 "slot1": "validated_value",
             }
+        return {
+            "slot1": None,
+        }
 
     def validate_slot2(
         self,
@@ -1523,6 +1526,9 @@ class TestFormValidationAction(FormValidationAction):
             return {
                 "slot2": "validated_value",
             }
+        return {
+            "slot2": None,
+        }
 
     async def validate_slot3(
         self,
@@ -1535,6 +1541,7 @@ class TestFormValidationAction(FormValidationAction):
             return {
                 "slot3": "validated_value",
             }
+        # this function doesn't return anything when the slot value is incorrect
 
 
 async def test_form_validation_action():
@@ -1548,15 +1555,14 @@ async def test_form_validation_action():
         [SlotSet("slot1", "correct_value"), SlotSet("slot2", "incorrect_value")],
         False,
         None,
-        {"name": "some_form", "validate": True, "rejected": False},
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
         "action_listen",
     )
 
     dispatcher = CollectingDispatcher()
     events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
-    # check that the form was activated and validation was performed
     assert events == [
-        SlotSet("slot2", "incorrect_value"),
+        SlotSet("slot2", None),
         SlotSet("slot1", "validated_value"),
     ]
 
@@ -1572,16 +1578,13 @@ async def test_form_validation_action_async():
         [SlotSet("slot3", "correct_value")],
         False,
         None,
-        {"name": "some_form", "validate": True, "rejected": False},
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
         "action_listen",
     )
 
     dispatcher = CollectingDispatcher()
     events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
-    # check that the form was activated and validation was performed
-    assert events == [
-        SlotSet("slot3", "validated_value")
-    ]
+    assert events == [SlotSet("slot3", "validated_value")]
 
 
 async def test_form_validation_action_attribute_error():
@@ -1599,16 +1602,15 @@ async def test_form_validation_action_attribute_error():
         ],
         False,
         None,
-        {"name": "some_form", "validate": True, "rejected": False},
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
         "action_listen",
     )
 
     dispatcher = CollectingDispatcher()
-    with pytest.warns(None):
+    with pytest.warns(UserWarning):
         events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
-        # check that the form was activated and validation was performed
         assert events == [
             SlotSet("slot3", "some_value"),
-            SlotSet("slot2", "incorrect_value"),
+            SlotSet("slot2", None),
             SlotSet("slot1", "validated_value"),
         ]
