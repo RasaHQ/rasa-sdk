@@ -99,7 +99,7 @@ def test_get_extracted_slots(
 ):
     tracker = get_tracker(events)
     tracker.active_loop = {"name": "my form"}
-    assert tracker.form_slots_to_validate() == expected_extracted_slots
+    assert tracker.slots_to_validate() == expected_extracted_slots
 
 
 def test_get_extracted_slots_with_no_active_loop():
@@ -110,7 +110,7 @@ def test_get_extracted_slots_with_no_active_loop():
     ]
     tracker = get_tracker(events)
 
-    assert tracker.form_slots_to_validate() == {
+    assert tracker.slots_to_validate() == {
         "some_other": "some_value2",
         "my_slot": "some_value",
     }

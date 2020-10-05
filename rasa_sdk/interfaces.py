@@ -228,30 +228,28 @@ class Tracker:
                 applied_events.append(event)
         return applied_events
 
-    def form_slots_to_validate(self) -> Dict[Text, Any]:
-        """Get form slots which need validation.
+    def slots_to_validate(self) -> Dict[Text, Any]:
+        """Get slots which were recently set.
 
-        You can use a custom action to validate slots which were extracted during the
-        latest form execution. This method provides you all extracted candidates for
-        form slots.
+        This can e.g. be used to validate form slots after they were extracted.
 
         Returns:
             A mapping of extracted slot candidates and their values.
         """
 
-        slots_to_validate = {}
+        slots = {}
 
         for event in reversed(self.events):
             # The `FormAction` in Rasa Open Source will append all slot candidates
             # at the end of the tracker events.
             if event["event"] == "slot":
-                slots_to_validate[event["name"]] = event["value"]
+                slots[event["name"]] = event["value"]
             else:
                 # Stop as soon as there is another event type as this means that we
                 # checked all potential slot candidates.
                 break
 
-        return slots_to_validate
+        return slots
 
 
 class Action:
