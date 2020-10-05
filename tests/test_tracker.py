@@ -1,7 +1,13 @@
 import pytest
 
 from rasa_sdk import Tracker
-from rasa_sdk.events import ActionExecuted, UserUttered, ActionReverted, SlotSet
+from rasa_sdk.events import (
+    ActionExecuted,
+    UserUttered,
+    ActionReverted,
+    SlotSet,
+    Restarted,
+)
 from rasa_sdk.interfaces import ACTION_LISTEN_NAME
 from typing import List, Dict, Text, Any
 
@@ -48,6 +54,19 @@ def test_get_last_event_for_with_exclude():
     tracker = get_tracker(events)
 
     assert tracker.get_last_event_for("action", exclude=["three"]).get("name") == "one"
+
+
+def test_applied_events_after_restart():
+    events = [
+        ActionExecuted("one"),
+        user_uttered("two", 1),
+        Restarted(),
+        ActionExecuted("three"),
+    ]
+
+    tracker = get_tracker(events)
+
+    assert tracker.applied_events() == [ActionExecuted("three")]
 
 
 def test_last_executed_has():
