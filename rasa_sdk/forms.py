@@ -713,7 +713,7 @@ class FormValidationAction(Action, ABC):
         Returns:
             `SlotSet` events for every validated slot.
         """
-        slots: Dict[Text, Any] = tracker.form_slots_to_validate()
+        slots: Dict[Text, Any] = tracker.slots_to_validate()
 
         for slot_name, slot_value in slots.items():
             function_name = f"validate_{slot_name}"
