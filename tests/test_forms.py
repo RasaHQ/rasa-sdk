@@ -1587,7 +1587,7 @@ async def test_form_validation_action_async():
     assert events == [SlotSet("slot3", "validated_value")]
 
 
-async def test_form_validation_action_attribute_error():
+async def test_form_validation_without_validate_function():
     form = TestFormValidationAction()
 
     # tracker with active form
