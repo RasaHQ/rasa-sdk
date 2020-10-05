@@ -1524,6 +1524,18 @@ class TestFormValidationAction(FormValidationAction):
                 "slot2": "validated_value",
             }
 
+    async def validate_slot3(
+        self,
+        slot_value: Any,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> Dict[Text, Any]:
+        if slot_value == "correct_value":
+            return {
+                "slot3": "validated_value",
+            }
+
 
 async def test_form_validation_action():
     form = TestFormValidationAction()
@@ -1544,8 +1556,31 @@ async def test_form_validation_action():
     events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
     # check that the form was activated and validation was performed
     assert events == [
+        SlotSet("slot2", "incorrect_value"),
         SlotSet("slot1", "validated_value"),
-        SlotSet("slot2", "incorrect_value")
+    ]
+
+
+async def test_form_validation_action_async():
+    form = TestFormValidationAction()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [SlotSet("slot3", "correct_value")],
+        False,
+        None,
+        {"name": "some_form", "validate": True, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    # check that the form was activated and validation was performed
+    assert events == [
+        SlotSet("slot3", "validated_value")
     ]
 
 
@@ -1569,8 +1604,11 @@ async def test_form_validation_action_attribute_error():
     )
 
     dispatcher = CollectingDispatcher()
-    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
-    # check that the form was activated and validation was performed
-    assert events == [
-        SlotSet("slot1", "validated_value"),
-    ]
+    with pytest.warns(None):
+        events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+        # check that the form was activated and validation was performed
+        assert events == [
+            SlotSet("slot3", "some_value"),
+            SlotSet("slot2", "incorrect_value"),
+            SlotSet("slot1", "validated_value"),
+        ]
