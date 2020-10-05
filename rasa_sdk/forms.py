@@ -3,6 +3,7 @@ import typing
 import warnings
 from typing import Dict, Text, Any, List, Union, Optional, Tuple, cast
 
+from abc import ABC
 from rasa_sdk import utils
 from rasa_sdk.events import SlotSet, EventType, ActiveLoop
 from rasa_sdk.interfaces import Action, ActionExecutionRejection
@@ -691,3 +692,61 @@ class FormAction(Action):
                 return None
 
         return entity_type
+
+
+class FormValidationAction(Action, ABC):
+    """An action that validates if every extracted slot is valid."""
+
+    async def validate(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        """Validate slots by calling a validation function for each slot.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user.
+            tracker: the conversation tracker for the current user.
+            domain: the bot's domain.
+        Returns:
+            `SlotSet` events for every validated slot.
+        """
+        slots: Dict[Text, Any] = tracker.slots_to_validate()
+
+        for slot_name, slot_value in slots.items():
+            function_name = f"validate_{slot_name}"
+            validate_func = getattr(self, function_name, None)
+
+            if not validate_func:
+                warnings.warn(
+                    f"Cannot validate `{slot_name}`: there is no validation function specified."
+                )
+                continue
+
+            if utils.is_coroutine_action(validate_func):
+                validation_output = await validate_func(
+                    slot_value, dispatcher, tracker, domain
+                )
+            else:
+                validation_output = validate_func(
+                    slot_value, dispatcher, tracker, domain
+                )
+
+            if validation_output:
+                slots.update(validation_output)
+            else:
+                warnings.warn(
+                    f"Cannot validate `{slot_name}`: make sure the validation function returns the correct output."
+                )
+
+        return [SlotSet(slot, value) for slot, value in slots.items()]
+
+    async def run(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        return await self.validate(dispatcher, tracker, domain)

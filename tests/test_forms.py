@@ -3,9 +3,15 @@ import asyncio
 from typing import Type, Text, Dict, Any, List, Optional
 
 from rasa_sdk import Tracker, ActionExecutionRejection
+from rasa_sdk.types import DomainDict
 from rasa_sdk.events import SlotSet, ActiveLoop
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.forms import FormAction, REQUESTED_SLOT, LOOP_INTERRUPTED_KEY
+from rasa_sdk.forms import (
+    FormAction,
+    FormValidationAction,
+    REQUESTED_SLOT,
+    LOOP_INTERRUPTED_KEY,
+)
 
 
 def test_extract_requested_slot_default():
@@ -1493,3 +1499,123 @@ async def test_submit(form_class: Type[FormAction]):
 def test_form_deprecation():
     with pytest.warns(FutureWarning):
         FormAction()
+
+
+class TestFormValidationAction(FormValidationAction):
+    def name(self) -> Text:
+        return "some_form"
+
+    def validate_slot1(
+        self,
+        slot_value: Any,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> Dict[Text, Any]:
+        if slot_value == "correct_value":
+            return {
+                "slot1": "validated_value",
+            }
+        return {
+            "slot1": None,
+        }
+
+    def validate_slot2(
+        self,
+        slot_value: Any,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> Dict[Text, Any]:
+        if slot_value == "correct_value":
+            return {
+                "slot2": "validated_value",
+            }
+        return {
+            "slot2": None,
+        }
+
+    async def validate_slot3(
+        self,
+        slot_value: Any,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> Dict[Text, Any]:
+        if slot_value == "correct_value":
+            return {
+                "slot3": "validated_value",
+            }
+        # this function doesn't return anything when the slot value is incorrect
+
+
+async def test_form_validation_action():
+    form = TestFormValidationAction()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [SlotSet("slot1", "correct_value"), SlotSet("slot2", "incorrect_value")],
+        False,
+        None,
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    assert events == [
+        SlotSet("slot2", None),
+        SlotSet("slot1", "validated_value"),
+    ]
+
+
+async def test_form_validation_action_async():
+    form = TestFormValidationAction()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [SlotSet("slot3", "correct_value")],
+        False,
+        None,
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    assert events == [SlotSet("slot3", "validated_value")]
+
+
+async def test_form_validation_without_validate_function():
+    form = TestFormValidationAction()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [
+            SlotSet("slot1", "correct_value"),
+            SlotSet("slot2", "incorrect_value"),
+            SlotSet("slot3", "some_value"),
+        ],
+        False,
+        None,
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    with pytest.warns(UserWarning):
+        events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+        assert events == [
+            SlotSet("slot3", "some_value"),
+            SlotSet("slot2", None),
+            SlotSet("slot1", "validated_value"),
+        ]
