@@ -1506,8 +1506,11 @@ class TestFormValidationAction(FormValidationAction):
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         domain: "DomainDict",
-    ) -> bool:
-        return slot_value == "correct_value"
+    ) -> Dict[Text, Any]:
+        if slot_value == "correct_value":
+            return {
+                "slot1": "validated_value",
+            }
 
     def validate_slot2(
         self,
@@ -1515,8 +1518,11 @@ class TestFormValidationAction(FormValidationAction):
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         domain: "DomainDict",
-    ) -> bool:
-        return slot_value == "correct_value"
+    ) -> Dict[Text, Any]:
+        if slot_value == "correct_value":
+            return {
+                "slot2": "validated_value",
+            }
 
 
 async def test_form_validation_action():
@@ -1538,7 +1544,8 @@ async def test_form_validation_action():
     events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
     # check that the form was activated and validation was performed
     assert events == [
-        SlotSet("slot1", "correct_value"),
+        SlotSet("slot1", "validated_value"),
+        SlotSet("slot2", "incorrect_value")
     ]
 
 
@@ -1565,5 +1572,5 @@ async def test_form_validation_action_attribute_error():
     events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
     # check that the form was activated and validation was performed
     assert events == [
-        SlotSet("slot1", "correct_value"),
+        SlotSet("slot1", "validated_value"),
     ]

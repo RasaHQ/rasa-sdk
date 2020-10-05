@@ -694,24 +694,7 @@ class FormAction(Action):
 
 
 class FormValidationAction(Action):
-    """An action that validates if every extracted slot is valid.
-
-    Example of usage:
-    ```
-        class MyFormValidationAction(FormValidationAction):
-            def name(self) -> Text:
-                return "some_form"
-
-            def validate_slot1(
-                self,
-                slot_value: Any,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
-            ) -> bool:
-                return slot_value == "correct_value"
-    ```
-    """
+    """An action that validates if every extracted slot is valid."""
 
     def name(self) -> Text:
         """Unique identifier of this action.
@@ -738,10 +721,9 @@ class FormValidationAction(Action):
         Returns:
             A dictionary of `rasa_sdk.events.Event` instances.
         """
-        slots_to_validate: Dict[Text, Any] = tracker.form_slots_to_validate()
-        validated_events = []
+        slots: Dict[Text, Any] = tracker.form_slots_to_validate()
 
-        for slot_name, slot_value in slots_to_validate.items():
+        for slot_name, slot_value in slots.items():
             function_name = f"validate_{slot_name}"
             validate_func = getattr(self, function_name, lambda *x: False)
 
@@ -755,16 +737,14 @@ class FormValidationAction(Action):
                 )
 
             if validation_output:
-                validated_events.append(SlotSet(slot_name, slot_value))
+                slots.update(validation_output)
             else:
-                # Return a `SlotSet` event with value `None` to indicate that this
-                # slot still needs to be filled.
                 warnings.warn(
                     f"Cannot validate `{slot_name}`: make sure the validation function is specified and "
-                    f"returns `True`"
+                    f"returns a list of `rasa_sdk.events.Event` instances."
                 )
 
-        return validated_events
+        return [SlotSet(slot, value) for slot, value in slots.items()]
 
     async def run(
         self,
