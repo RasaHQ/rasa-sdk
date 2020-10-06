@@ -673,8 +673,7 @@ class FormAction(Action):
         return f"FormAction('{self.name()}')"
 
     def _get_entity_type_of_slot_to_fill(
-        self,
-        slot_to_fill: Optional[Text],
+        self, slot_to_fill: Optional[Text],
     ) -> Optional[Text]:
         if not slot_to_fill:
             return None
@@ -715,7 +714,7 @@ class FormValidationAction(Action, ABC):
         """
         slots: Dict[Text, Any] = tracker.slots_to_validate()
 
-        for slot_name, slot_value in slots.items():
+        for slot_name, slot_value in list(slots.items()):
             function_name = f"validate_{slot_name.replace('-','_')}"
             validate_func = getattr(self, function_name, None)
 
