@@ -1619,3 +1619,44 @@ async def test_form_validation_without_validate_function():
             SlotSet("slot2", None),
             SlotSet("slot1", "validated_value"),
         ]
+
+
+async def test_form_validation_dash_slot():
+    class TestFormValidationDashSlotAction(FormValidationAction):
+        def name(self) -> Text:
+            return "some_form"
+
+        def validate_slot_with_dash(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            if slot_value == "correct_value":
+                return {
+                    "slot-with-dash": "validated_value",
+                }
+            return {
+                "slot-with-dash": None,
+            }
+
+    form = TestFormValidationDashSlotAction()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [SlotSet("slot-with-dash", "correct_value")],
+        False,
+        None,
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    assert events == [
+        SlotSet("slot-with-dash", "validated_value"),
+    ]
