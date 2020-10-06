@@ -720,8 +720,8 @@ class FormValidationAction(Action, ABC):
             validate_func = getattr(self, function_name, None)
 
             if not validate_func:
-                warnings.warn(
-                    f"Cannot validate `{slot_name}`: there is no validation function specified."
+                logger.debug(
+                    f"Skipping validation for `{slot_name}`: there is no validation function specified."
                 )
                 continue
 
