@@ -1,1 +1,0 @@
-Removed support for the ``rasa_core_sdk`` python module: use ``import rasa_sdk`` syntax instead.
