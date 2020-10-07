@@ -1,6 +1,11 @@
 [build-system]
-requires = [ "poetry>=1.0.3",]
+requires = [ "poetry>=1.0.5",]
 build-backend = "poetry.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = [ "py36", "py37", "py38",]
+exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist))"
 
 [tool.poetry]
 name = "rasa-sdk"
@@ -17,11 +22,6 @@ include = [ "LICENSE.txt", "README.md",]
 readme = "README.md"
 license = "Apache-2.0"
 
-[tool.black]
-line-length = 88
-target-version = [ "py36", "py37",]
-exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist))"
-
 [tool.towncrier]
 package = "rasa_sdk"
 package_dir = "rasa_sdk"
@@ -32,6 +32,7 @@ title_format = "## [{version}] - {project_date}"
 template = "./changelog/_template.md.jinja2"
 start_string = "<!-- TOWNCRIER -->\n"
 issue_format = "[#{issue}](https://github.com/rasahq/rasa/issues/{issue})"
+
 [[tool.towncrier.type]]
 directory = "removal"
 name = "Deprecations and Removals"
@@ -63,11 +64,11 @@ name = "Miscellaneous internal changes"
 showcontent = false
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = ">=3.6,<3.9"
 coloredlogs = ">=10,<15"
 sanic = ">=19.12.2,<21.0.0"
 sanic-cors = "^0.10.0"
-requests = "^2.0"
+requests = "^2.23"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^2.10.1"
