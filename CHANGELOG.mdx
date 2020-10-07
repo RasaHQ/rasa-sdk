@@ -5,7 +5,8 @@ title: Rasa SDK Change Log
 ---
 
 All notable changes to this project will be documented in this file.
-This project adheres to [Semantic Versioning](https://semver.org/) starting with version 0.11.0.
+This project adheres to [Semantic Versioning](https://semver.org/)
+starting with version 0.11.0.
 
 <!-- You should **NOT** be adding new change log entries to this file, this
 file is managed by ``towncrier``.
@@ -20,64 +21,83 @@ https://github.com/RasaHQ/rasa/tree/master/changelog/ . -->
                        
 
 ### Deprecations and Removals
-- [#246](https://github.com/rasahq/rasa/issues/246): Using the `Form` event is deprecated. Please use the new `ActiveLoop` event instead.
+- [#246](https://github.com/rasahq/rasa/issues/246): Using the `Form` event is
+  deprecated. Please use the new `ActiveLoop` event instead.
   Using the `active_form` property of the `Tracker` object is now deprecated. Please
   use the `active_loop` property instead.
 
   The usage of the `FormAction` is deprecated. Please see the migration guide
   for Rasa Open Source 2.0 for instructions how to migrate your `FormAction`s.
-- [#250](https://github.com/rasahq/rasa/issues/250): Removed support for the ``rasa_core_sdk`` python module: use ``import rasa_sdk`` syntax instead.
-- [#6463](https://github.com/rasahq/rasa/issues/6463): The `FormValidation` event was renamed to `LoopInterrupted` as part of Rasa Open Source
-  2.0. Using the `FormValidation` is now deprecated and will be removed in the future.
+- [#250](https://github.com/rasahq/rasa/issues/250): Removed support for the
+  `rasa_core_sdk` python module: use `import rasa_sdk` syntax instead.
+- [#6463](https://github.com/rasahq/rasa/issues/6463): The `FormValidation` event
+  was renamed to `LoopInterrupted` as part of Rasa Open Source 2.0. Using the
+  `FormValidation` is now deprecated and will be removed in the future.
   Please use `LoopInterrupted` instead.
 
 ### Features
-- [#238](https://github.com/rasahq/rasa/issues/238): Added the method ``slots_to_validate`` to ``Tracker``. This method is helpful
-  when using a custom action to validate slots which were extracted by a Form as shown
-  by the following example.
+- [#238](https://github.com/rasahq/rasa/issues/238): Added the method
+  `slots_to_validate` to `Tracker`. This method is helpful
+  when using a custom action to validate slots which were extracted by a
+  form as shown by the following example.
 
-  .. code-block:: python
+  ```python
+  from typing import Text, Dict, List, Any
+  from rasa_sdk import Action, Tracker
+  from rasa_sdk.events import EventType, SlotSet
+  from rasa_sdk.types import DomainDict
+  from rasa_sdk.executor import CollectingDispatcher
 
-      class ValidateSlots(Action):
-          def name(self) -> Text:
-              return "validate_your_form"
+  class ValidateSlots(Action):
+      def name(self) -> Text:
+          return "validate_your_form"
 
-          def run(
-              self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
-          ) -> List[EventType]:
-              extracted_slots: Dict[Text, Any] = tracker.slots_to_validate()
+      def run(
+          self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: DomainDict
+      ) -> List[EventType]:
+          extracted_slots: Dict[Text, Any] = tracker.slots_to_validate()
 
-              validation_events = []
+          validation_events = []
 
-              for slot_name, slot_value in extracted_slots:
-                  # Check if slot is valid.
-                  if is_valid(slot_value):
-                      validation_events.append(SlotSet(slot_name, slot_value))
-                  else:
-                      # Return a `SlotSet` event with value `None` to indicate that this
-                      # slot still needs to be filled.
-                      validation_events.append(SlotSet(slot_name, None))
+          for slot_name, slot_value in extracted_slots.items():
+              # Check if slot is valid.
+              if self.is_valid(slot_value):
+                  validation_events.append(SlotSet(slot_name, slot_value))
+              else:
+                  # Return a `SlotSet` event with value `None` to indicate that this
+                  # slot still needs to be filled.
+                  validation_events.append(SlotSet(slot_name, None))
 
-              return validation_events
+          return validation_events
 
-          def is_valid(slot_value: Any) -> bool:
-              # Implementation of the validate function.
+      def is_valid(self, slot_value: Any) -> bool:
+          # Implementation of the validate function.
+        return True
+  ```
 
-   Please note that ``tracker.form_slots_to_validate`` only works with Rasa Open Source 2.
+  Please note that `tracker.form_slots_to_validate` only works with Rasa Open Source 2.
 
 ### Improvements
-- [#239](https://github.com/rasahq/rasa/issues/239): Validate user input during form activation even if there is an action in between.
-- [#246](https://github.com/rasahq/rasa/issues/246): Rasa Open Source 2.0 renamed the `Form` event to `ActiveLoop`. The `ActiveLoop`
+- [#239](https://github.com/rasahq/rasa/issues/239): Validate user input during
+  form activation even if there is an action in between.
+- [#246](https://github.com/rasahq/rasa/issues/246): Rasa Open Source 2.0 renamed
+  the `Form` event to `ActiveLoop`. The `ActiveLoop`
   event was added to the SDK and support for the `active_loop` field in JSON payloads
   was added.
-- [#267](https://github.com/rasahq/rasa/issues/267): The `actions` package in a Rasa project may contain multiple files containing custom 
+- [#267](https://github.com/rasahq/rasa/issues/267): The `actions` package
+  in a Rasa project may contain multiple files containing custom
   action code. The Rasa SDK Docker container now loads the entire `actions` package.
-- [#288](https://github.com/rasahq/rasa/issues/288): Add the `FormValidationAction` abstract class that can be used
-  to validate slots which were extracted by a Form.
+- [#288](https://github.com/rasahq/rasa/issues/288): Add the `FormValidationAction`
+  abstract class that can be used to validate slots which were extracted by a Form.
 
   Example:
 
   ```python
+  from typing import Text, Any, Dict
+  from rasa_sdk import FormValidationAction, Tracker
+  from rasa_sdk.types import DomainDict
+  from rasa_sdk.executor import CollectingDispatcher
+
   class MyFormValidationAction(FormValidationAction):
       def name(self) -> Text:
           return "some_form"
@@ -97,10 +117,12 @@ https://github.com/RasaHQ/rasa/tree/master/changelog/ . -->
               "slot1": None,
           }
   ```
-- [#6463](https://github.com/rasahq/rasa/issues/6463): Added support for the `LoopInterrupted` event.
+- [#6463](https://github.com/rasahq/rasa/issues/6463): Added support for the
+  `LoopInterrupted` event.
 
 ### Bugfixes
-- [#280](https://github.com/rasahq/rasa/issues/280): `tracker.applied_events` now correctly deals with restart, undo, and rewind events
+- [#280](https://github.com/rasahq/rasa/issues/280): `tracker.applied_events`
+  now correctly deals with restart, undo, and rewind events
 
 ### Miscellaneous internal changes
 - [#265](https://github.com/rasahq/rasa/issues/265)
