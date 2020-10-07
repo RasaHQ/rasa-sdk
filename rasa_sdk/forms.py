@@ -715,7 +715,7 @@ class FormValidationAction(Action, ABC):
         """
         slots: Dict[Text, Any] = tracker.slots_to_validate()
 
-        for slot_name, slot_value in slots.items():
+        for slot_name, slot_value in list(slots.items()):
             function_name = f"validate_{slot_name.replace('-','_')}"
             validate_func = getattr(self, function_name, None)
 
