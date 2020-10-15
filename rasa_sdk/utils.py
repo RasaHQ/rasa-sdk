@@ -39,7 +39,7 @@ def all_subclasses(cls: Any) -> List[Any]:
     ]
 
 
-def add_logging_option_arguments(parser):
+def add_logging_level_option_arguments(parser):
     """Add options to an argument parser to configure logging levels."""
 
     # arguments for logging configuration
