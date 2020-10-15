@@ -69,6 +69,15 @@ def add_logging_option_arguments(parser):
     )
 
 
+def add_logging_file_arguments(parser):
+    parser.add_argument(
+        "--log-file",
+        type=str,
+        default=None,
+        help="Store logs in specified file.",
+    )
+
+
 def configure_colored_logging(loglevel):
     import coloredlogs
 
