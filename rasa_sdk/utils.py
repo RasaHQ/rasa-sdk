@@ -106,7 +106,7 @@ def configure_file_logging(
     if not log_file:
         return
 
-    formatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s]  %(message)s")
+    formatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s]  %(name)s  -  %(message)s")
     file_handler = logging.FileHandler(log_file, encoding="utf-8")
     file_handler.setLevel(logger_obj.level)
     file_handler.setFormatter(formatter)
