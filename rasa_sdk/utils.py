@@ -94,9 +94,7 @@ def configure_colored_logging(loglevel):
     )
 
 
-def configure_file_logging(
-    logger_obj: logging.Logger, log_file: Optional[Text]
-) -> None:
+def configure_file_logging(logger_obj: logging.Logger, log_file: Optional[Text]) -> None:
     """Configure logging to a file.
 
     Args:
