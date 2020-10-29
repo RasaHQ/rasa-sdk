@@ -7,6 +7,8 @@ help:
 	@echo "        Remove python artifacts and build artifacts."
 	@echo "    lint"
 	@echo "        Check style with flake8."
+	@echo "    lint-docstrings"
+	@echo "        Check docstring conventions in changed files."
 	@echo "    test"
 	@echo "        Run py.test"
 	@echo "    init"
@@ -34,8 +36,15 @@ types:
 	poetry run mypy rasa_sdk
 
 lint:
-	poetry run flake8 rasa_sdk tests
+	poetry run flake8 rasa_sdk tests --extend-ignore D
 	poetry run black --check rasa_sdk tests
+	make lint-docstrings
+
+BRANCH ?= master # Compare against `master` if no branch was provided
+lint-docstrings:
+	# Lint docstrings only against the the diff to avoid too many errors.
+	# Check only production code. Ignore other flake errors which are captured by `lint`
+	git diff $(BRANCH) -- rasa_sdk | poetry run flake8 --select D --diff
 
 test: clean
 	poetry run py.test tests --cov rasa_sdk -v
