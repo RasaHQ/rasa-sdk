@@ -40,11 +40,17 @@ lint:
 	poetry run black --check rasa_sdk tests
 	make lint-docstrings
 
-BRANCH ?= master # Compare against `master` if no branch was provided
+ # Compare against `master` if no branch was provided
+BRANCH ?= master
 lint-docstrings:
 	# Lint docstrings only against the the diff to avoid too many errors.
 	# Check only production code. Ignore other flake errors which are captured by `lint`
-	git diff $(BRANCH) -- rasa_sdk | poetry run flake8 --select D --diff
+	# Diff of committed changes (shows only changes introduced by your branch)
+	if [[ -n "$(BRANCH)" ]]; then \
+	    git diff $(BRANCH)...HEAD -- rasa-sdk | poetry run flake8 --select D --diff; \
+	fi
+	# Diff of uncommitted changes for running locally
+	git diff HEAD -- rasa-sdk | poetry run flake8 --select D --diff
 
 test: clean
 	poetry run py.test tests --cov rasa_sdk -v
