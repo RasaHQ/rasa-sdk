@@ -1,9 +1,10 @@
+import asyncio
 import inspect
 import logging
 import warnings
 import os
 
-from typing import AbstractSet, Any, List, Text, Optional
+from typing import AbstractSet, Any, List, Text, Optional, Coroutine, Union
 
 import rasa_sdk
 from rasa_sdk.constants import (
@@ -189,3 +190,12 @@ def update_sanic_log_level() -> None:
     logger.propagate = False
     error_logger.propagate = False
     access_logger.propagate = False
+
+
+async def call_potential_coroutine(
+    coroutine_or_return_value: Union[Any, Coroutine]
+) -> Any:
+    if asyncio.iscoroutine(coroutine_or_return_value):
+        return await coroutine_or_return_value
+
+    return coroutine_or_return_value
