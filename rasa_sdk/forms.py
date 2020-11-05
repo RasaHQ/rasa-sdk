@@ -726,7 +726,7 @@ class FormValidationAction(Action, ABC):
             `SlotSet` for any extracted slots.
         """
         custom_slots = []
-        slots_to_extract = await self.missing_slots(dispatcher, tracker, domain)
+        slots_to_extract = await self.custom_slots(dispatcher, tracker, domain)
 
         if slots_to_extract is None:
             return []
@@ -758,13 +758,13 @@ class FormValidationAction(Action, ABC):
 
         return custom_slots
 
-    async def missing_slots(
+    async def custom_slots(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         domain: "DomainDict",
     ) -> Optional[List[Text]]:
-        """Returns the slots which still need to be filled.
+        """Returns custom slots which this action fills.
 
         Args:
             dispatcher: the dispatcher which is used to
@@ -774,7 +774,7 @@ class FormValidationAction(Action, ABC):
 
         Returns:
             `None` in case this form doesn't extract any custom slots. Otherwise
-            returns the names of the slots which still need to be filled.
+            returns the names of all custom slots which need to be filled.
         """
         return None
 
@@ -844,16 +844,56 @@ class FormValidationAction(Action, ABC):
             If the `SlotSet` event sets `requested_slot` to `None`, the form will be
             deactivated.
         """
-        required_slots = await self.missing_slots(dispatcher, tracker, domain)
-        if required_slots is None:
-            # It seems like `required_slots` wasn't overridden. In this case we
+        custom_slots = await self.custom_slots(dispatcher, tracker, domain)
+        missing_slots = await self.missing_slots(dispatcher, tracker, domain)
+
+        if custom_slots is None and not missing_slots:
+            # It seems like `custom_slots` wasn't overridden. In this case we
             # leave the deactivation of the form to the `FormAction` within
             # Rasa Open Source
             return None
 
-        if not required_slots:
-            # No more required slots. Form can be deactivated.
+        missing_slots = await self.missing_slots(dispatcher, tracker, domain)
+        if not missing_slots:
+            # No more missing_slots slots. Form can be deactivated.
             return SlotSet(REQUESTED_SLOT, None)
 
         # request next slot
-        return SlotSet(REQUESTED_SLOT, required_slots[0])
+        return SlotSet(REQUESTED_SLOT, missing_slots[0])
+
+    async def missing_slots(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[Text]:
+        """Returns slots which still need to be filled.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user.
+            tracker: the conversation tracker for the current user.
+            domain: the bot's domain.
+
+        Returns:
+            The slots which aren't already filled.
+        """
+        custom_slots = await self.custom_slots(dispatcher, tracker, domain)
+        if custom_slots is None:
+            return []
+
+        slots_mapped_in_domain = set(
+            domain.get("forms", {}).get(self.name(), {}).keys()
+        )
+
+        all_required_slots = custom_slots + [
+            domain_slot
+            for domain_slot in slots_mapped_in_domain
+            if domain_slot not in custom_slots
+        ]
+
+        return [
+            slot_name
+            for slot_name in all_required_slots
+            if not tracker.slots.get(slot_name)
+        ]
