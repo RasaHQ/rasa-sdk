@@ -206,11 +206,9 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         objects = self.data[object_type]
 
-        if utils.is_coroutine_action(self.get_key_attribute_of_object):
-            key_attribute = await self.get_key_attribute_of_object(object_type)
-        else:
-            # see https://github.com/python/mypy/issues/5206
-            key_attribute = cast(Text, self.get_key_attribute_of_object(object_type))
+        key_attribute = await utils.call_potential_coroutine(
+            self.get_key_attribute_of_object(object_type)
+        )
 
         # filter the objects by its key attribute, for example, 'id'
         objects_of_interest = list(
@@ -224,15 +222,9 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         # if the object was referred to directly, we need to compare the representation
         # of each object with the given object identifier
         if not objects_of_interest:
-            if utils.is_coroutine_action(self.get_representation_function_of_object):
-                repr_function = await self.get_representation_function_of_object(
-                    object_type
-                )
-            else:
-                # see https://github.com/python/mypy/issues/5206
-                repr_function = cast(
-                    Callable, self.get_representation_function_of_object(object_type)
-                )
+            repr_function = await utils.call_potential_coroutine(
+                self.get_representation_function_of_object(object_type)
+            )
 
             objects_of_interest = list(
                 filter(

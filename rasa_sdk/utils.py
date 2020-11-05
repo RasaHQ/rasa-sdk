@@ -169,10 +169,6 @@ def check_version_compatibility(rasa_version: Optional[Text]) -> None:
         )
 
 
-def is_coroutine_action(action) -> bool:
-    return inspect.iscoroutinefunction(action)
-
-
 def update_sanic_log_level() -> None:
     """Set the log level of sanic loggers.
 

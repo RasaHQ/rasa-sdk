@@ -89,22 +89,9 @@ class ActionQueryKnowledgeBase(Action):
                 text=f"Found the following objects of type '{object_type}':"
             )
 
-            if utils.is_coroutine_action(
-                self.knowledge_base.get_representation_function_of_object
-            ):
-                repr_function = (
-                    await self.knowledge_base.get_representation_function_of_object(
-                        object_type
-                    )
-                )
-            else:
-                # see https://github.com/python/mypy/issues/5206
-                repr_function = cast(
-                    Callable,
-                    self.knowledge_base.get_representation_function_of_object(
-                        object_type
-                    ),
-                )
+            repr_function = await utils.call_potential_coroutine(
+                self.knowledge_base.get_representation_function_of_object(object_type)
+            )
 
             for i, obj in enumerate(objects, 1):
                 dispatcher.utter_message(text=f"{i}: {repr_function(obj)}")
@@ -170,46 +157,28 @@ class ActionQueryKnowledgeBase(Action):
 
         Returns: list of slots
         """
-        if utils.is_coroutine_action(self.knowledge_base.get_attributes_of_object):
-            object_attributes = await self.knowledge_base.get_attributes_of_object(
-                object_type
-            )
-        else:
-            # see https://github.com/python/mypy/issues/5206
-            object_attributes = cast(
-                List[Text], self.knowledge_base.get_attributes_of_object(object_type)
-            )
+        object_attributes = await utils.call_potential_coroutine(
+            self.knowledge_base.get_attributes_of_object(object_type)
+        )
 
         # get all set attribute slots of the object type to be able to filter the
         # list of objects
         attributes = get_attribute_slots(tracker, object_attributes)
         # query the knowledge base
-        if utils.is_coroutine_action(self.knowledge_base.get_objects):
-            objects = await self.knowledge_base.get_objects(object_type, attributes)
-        else:
-            # see https://github.com/python/mypy/issues/5206
-            objects = cast(
-                List[Dict[Text, Any]],
-                self.knowledge_base.get_objects(object_type, attributes),
-            )
+        objects = await utils.call_potential_coroutine(
+            self.knowledge_base.get_objects(object_type, attributes)
+        )
 
-        if utils.is_coroutine_action(self.utter_objects):
-            await self.utter_objects(dispatcher, object_type, objects)
-        else:
+        await utils.call_potential_coroutine(
             self.utter_objects(dispatcher, object_type, objects)
+        )
 
         if not objects:
             return reset_attribute_slots(tracker, object_attributes)
 
-        if utils.is_coroutine_action(self.knowledge_base.get_key_attribute_of_object):
-            key_attribute = await self.knowledge_base.get_key_attribute_of_object(
-                object_type
-            )
-        else:
-            # see https://github.com/python/mypy/issues/5206
-            key_attribute = cast(
-                Text, self.knowledge_base.get_key_attribute_of_object(object_type)
-            )
+        key_attribute = await utils.call_potential_coroutine(
+            self.knowledge_base.get_key_attribute_of_object(object_type)
+        )
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
 
@@ -254,56 +223,31 @@ class ActionQueryKnowledgeBase(Action):
             dispatcher.utter_message(template="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 
-        if utils.is_coroutine_action(self.knowledge_base.get_object):
-            object_of_interest = await self.knowledge_base.get_object(
-                object_type, object_name
-            )
-        else:
-            # see https://github.com/python/mypy/issues/5206
-            object_of_interest = cast(
-                Optional[Dict[Text, Any]],
-                self.knowledge_base.get_object(object_type, object_name),
-            )
+        object_of_interest = await utils.call_potential_coroutine(
+            self.knowledge_base.get_object(object_type, object_name)
+        )
 
         if not object_of_interest or attribute not in object_of_interest:
             dispatcher.utter_message(template="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 
         value = object_of_interest[attribute]
-        if utils.is_coroutine_action(
-            self.knowledge_base.get_representation_function_of_object
-        ):
-            repr_function = (
-                await self.knowledge_base.get_representation_function_of_object(
-                    object_type
-                )
-            )
-        else:
-            # see https://github.com/python/mypy/issues/5206
-            repr_function = cast(
-                Callable,
-                self.knowledge_base.get_representation_function_of_object(object_type),
-            )
-        object_representation = repr_function(object_of_interest)
-        if utils.is_coroutine_action(self.knowledge_base.get_key_attribute_of_object):
-            key_attribute = await self.knowledge_base.get_key_attribute_of_object(
-                object_type
-            )
-        else:
-            # see https://github.com/python/mypy/issues/5206
-            key_attribute = cast(
-                Text, self.knowledge_base.get_key_attribute_of_object(object_type)
-            )
+
+        object_representation = await utils.call_potential_coroutine(
+            self.knowledge_base.get_representation_function_of_object(object_type)
+        )
+
+        key_attribute = await utils.call_potential_coroutine(
+            self.knowledge_base.get_key_attribute_of_object(object_type)
+        )
+
         object_identifier = object_of_interest[key_attribute]
 
-        if utils.is_coroutine_action(self.utter_attribute_value):
-            await self.utter_attribute_value(
-                dispatcher, object_representation, attribute, value
-            )
-        else:
+        await utils.call_potential_coroutine(
             self.utter_attribute_value(
                 dispatcher, object_representation, attribute, value
             )
+        )
 
         slots = [
             SlotSet(SLOT_OBJECT_TYPE, object_type),
