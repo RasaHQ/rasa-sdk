@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import random
-from typing import DefaultDict, Text, Callable, Dict, List, Any, Optional, cast
+from typing import DefaultDict, Text, Callable, Dict, List, Any, Optional
 from collections import defaultdict
 
 from rasa_sdk import utils

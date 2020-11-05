@@ -1,7 +1,7 @@
 import logging
 import typing
 import warnings
-from typing import Dict, Text, Any, List, Union, Optional, Tuple, cast
+from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
 from abc import ABC
 from rasa_sdk import utils
