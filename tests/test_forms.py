@@ -1677,7 +1677,7 @@ async def test_extract_and_validate_slot(
         def name(self) -> Text:
             return "some_form"
 
-        async def custom_slots(
+        async def required_slots(
             self,
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
@@ -1734,7 +1734,7 @@ async def test_extract_slot_only():
         def name(self) -> Text:
             return "some_form"
 
-        async def custom_slots(
+        async def required_slots(
             self,
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
@@ -1799,7 +1799,7 @@ async def test_ask_for_next_slot(
         def name(self) -> Text:
             return "some_form"
 
-        async def custom_slots(
+        async def required_slots(
             self,
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",

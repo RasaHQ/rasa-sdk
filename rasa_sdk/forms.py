@@ -726,7 +726,7 @@ class FormValidationAction(Action, ABC):
             `SlotSet` for any extracted slots.
         """
         custom_slots = []
-        slots_to_extract = await self.custom_slots(dispatcher, tracker, domain)
+        slots_to_extract = await self.required_slots(dispatcher, tracker, domain)
 
         if slots_to_extract is None:
             return []
@@ -758,13 +758,13 @@ class FormValidationAction(Action, ABC):
 
         return custom_slots
 
-    async def custom_slots(
+    async def required_slots(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         domain: "DomainDict",
     ) -> Optional[List[Text]]:
-        """Returns custom slots which this action fills.
+        """Returns slots which the form should fill.
 
         Args:
             dispatcher: the dispatcher which is used to
@@ -844,11 +844,11 @@ class FormValidationAction(Action, ABC):
             If the `SlotSet` event sets `requested_slot` to `None`, the form will be
             deactivated.
         """
-        custom_slots = await self.custom_slots(dispatcher, tracker, domain)
+        required_slots = await self.required_slots(dispatcher, tracker, domain)
         missing_slots = await self.missing_slots(dispatcher, tracker, domain)
 
-        if custom_slots is None and not missing_slots:
-            # It seems like `custom_slots` wasn't overridden. In this case we
+        if required_slots is None and not missing_slots:
+            # It seems like `required_slots` wasn't overridden. In this case we
             # leave the deactivation of the form to the `FormAction` within
             # Rasa Open Source
             return None
@@ -878,18 +878,16 @@ class FormValidationAction(Action, ABC):
         Returns:
             The slots which aren't already filled.
         """
-        custom_slots = await self.custom_slots(dispatcher, tracker, domain)
-        if custom_slots is None:
+        required_slots = await self.required_slots(dispatcher, tracker, domain)
+        if required_slots is None:
             return []
 
-        slots_mapped_in_domain = set(
-            domain.get("forms", {}).get(self.name(), {}).keys()
-        )
+        slots_mapped_in_domain = self.slots_mapped_in_domain(domain)
 
-        all_required_slots = custom_slots + [
+        all_required_slots = required_slots + [
             domain_slot
             for domain_slot in slots_mapped_in_domain
-            if domain_slot not in custom_slots
+            if domain_slot not in required_slots
         ]
 
         return [
@@ -897,3 +895,8 @@ class FormValidationAction(Action, ABC):
             for slot_name in all_required_slots
             if not tracker.slots.get(slot_name)
         ]
+
+    def slots_mapped_in_domain(self, domain: "DomainDict") -> List[Text]:
+        return list(
+            domain.get("forms", {}).get(self.name(), {}).keys()
+        )
