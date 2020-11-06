@@ -657,8 +657,7 @@ class FormAction(Action):
         return f"FormAction('{self.name()}')"
 
     def _get_entity_type_of_slot_to_fill(
-        self,
-        slot_to_fill: Optional[Text],
+        self, slot_to_fill: Optional[Text],
     ) -> Optional[Text]:
         if not slot_to_fill:
             return None
@@ -897,6 +896,4 @@ class FormValidationAction(Action, ABC):
         ]
 
     def slots_mapped_in_domain(self, domain: "DomainDict") -> List[Text]:
-        return list(
-            domain.get("forms", {}).get(self.name(), {}).keys()
-        )
+        return list(domain.get("forms", {}).get(self.name(), {}).keys())
