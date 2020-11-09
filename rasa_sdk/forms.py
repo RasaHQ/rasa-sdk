@@ -719,7 +719,7 @@ class FormValidationAction(Action, ABC):
                 `tracker.get_slot(slot_name)`, the most recent user message
                 is `tracker.latest_message.text` and any other
                 `rasa_sdk.Tracker` property.
-            domain: the bot's domain
+            domain: the bot's domain.
 
         Returns:
             `SlotSet` for any extracted slots.
