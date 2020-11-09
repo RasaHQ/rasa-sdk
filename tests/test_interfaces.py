@@ -1,6 +1,7 @@
 from typing import Dict
 
 import pytest
+from rasa_sdk.events import SlotSet
 
 from rasa_sdk.interfaces import Tracker
 
@@ -49,3 +50,14 @@ def test_active_loop_in_tracker_state():
     tracker = Tracker.from_dict(state)
 
     assert tracker.current_state()["active_loop"] == form
+
+
+def test_tracker_with_slots():
+    form = {"name": "my form"}
+    state = {"events": [], "sender_id": "old", "active_loop": form}
+    tracker = Tracker.from_dict(state)
+
+    tracker.add_slots([SlotSet("my slot", 5), SlotSet("my slot 2", None)])
+
+    assert tracker.slots["my slot"] == 5
+    assert tracker.slots["my slot 2"] is None

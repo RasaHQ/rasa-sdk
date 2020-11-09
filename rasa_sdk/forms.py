@@ -1,7 +1,7 @@
 import logging
 import typing
 import warnings
-from typing import Dict, Text, Any, List, Union, Optional, Tuple, cast
+from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
 from abc import ABC
 from rasa_sdk import utils
@@ -405,12 +405,9 @@ class FormAction(Action):
 
         for slot, value in list(slot_dict.items()):
             validate_func = getattr(self, f"validate_{slot}", lambda *x: {slot: value})
-            if utils.is_coroutine_action(validate_func):
-                validation_output = await validate_func(
-                    value, dispatcher, tracker, domain
-                )
-            else:
-                validation_output = validate_func(value, dispatcher, tracker, domain)
+            validation_output = await utils.call_potential_coroutine(
+                validate_func(value, dispatcher, tracker, domain)
+            )
             if not isinstance(validation_output, dict):
                 warnings.warn(
                     "Returning values in helper validation methods is deprecated. "
@@ -595,13 +592,9 @@ class FormAction(Action):
         )
         if need_validation:
             logger.debug(f"Validating user input '{tracker.latest_message}'")
-            if utils.is_coroutine_action(self.validate):
-                return await self.validate(dispatcher, tracker, domain)
-            else:
-                # see https://github.com/python/mypy/issues/5206
-                return cast(
-                    List[Dict[Text, Any]], self.validate(dispatcher, tracker, domain)
-                )
+            return await utils.call_potential_coroutine(
+                self.validate(dispatcher, tracker, domain)
+            )
         else:
             logger.debug("Skipping validation")
             return []
@@ -651,21 +644,12 @@ class FormAction(Action):
                 # there is nothing more to request, so we can submit
                 self._log_form_slots(temp_tracker)
                 logger.debug(f"Submitting the form '{self.name()}'")
-                if utils.is_coroutine_action(self.submit):
-                    events.extend(await self.submit(dispatcher, temp_tracker, domain))
-                else:
-                    # see https://github.com/python/mypy/issues/5206
-                    events.extend(
-                        cast(
-                            List[EventType],
-                            self.submit(dispatcher, temp_tracker, domain),
-                        )
-                    )
+                events += await utils.call_potential_coroutine(
+                    self.submit(dispatcher, temp_tracker, domain)
+                )
+
                 # deactivate the form after submission
-                if utils.is_coroutine_action(self.deactivate):
-                    events.extend(await self.deactivate())  # type: ignore
-                else:
-                    events.extend(self.deactivate())
+                events += await utils.call_potential_coroutine(self.deactivate())
 
         return events
 
@@ -695,7 +679,104 @@ class FormAction(Action):
 
 
 class FormValidationAction(Action, ABC):
-    """An action that validates if every extracted slot is valid."""
+    """A helper class for slot validations and extractions of custom slots."""
+
+    async def run(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        extraction_events = await self.extract_custom_slots(dispatcher, tracker, domain)
+        tracker.add_slots(extraction_events)
+
+        validation_events = await self.validate(dispatcher, tracker, domain)
+        tracker.add_slots(validation_events)
+
+        next_slot = await self.next_requested_slot(dispatcher, tracker, domain)
+        if next_slot:
+            validation_events.append(next_slot)
+
+        # Validation events include events for extracted slots
+        return validation_events
+
+    async def extract_custom_slots(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        """Extracts custom slots using available `extract_<slot name>` methods.
+
+        Uses the information from `self.missing_slots` to gather which slots should
+        be extracted.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user. Use
+                `dispatcher.utter_message()` for sending messages.
+            tracker: the state tracker for the current
+                user. You can access slot values using
+                `tracker.get_slot(slot_name)`, the most recent user message
+                is `tracker.latest_message.text` and any other
+                `rasa_sdk.Tracker` property.
+            domain: the bot's domain.
+
+        Returns:
+            `SlotSet` for any extracted slots.
+        """
+        custom_slots = []
+        slots_to_extract = await self.required_slots(dispatcher, tracker, domain)
+
+        if slots_to_extract is None:
+            return []
+
+        for slot_name in slots_to_extract:
+            method_name = f"extract_{slot_name.replace('-', '_')}"
+            extract_method = getattr(self, method_name, None)
+
+            if not extract_method:
+                warnings.warn(
+                    f"No method '{method_name}' found for slot "
+                    f"'{slot_name}'. Skipping extraction for this slot."
+                )
+                continue
+
+            extracted = await utils.call_potential_coroutine(
+                extract_method(dispatcher, tracker, domain)
+            )
+
+            if extracted:
+                custom_slots += [
+                    SlotSet(slot, value) for slot, value in extracted.items()
+                ]
+            else:
+                warnings.warn(
+                    f"Cannot extract `{slot_name}`: make sure the extract method "
+                    f"returns the correct output."
+                )
+
+        return custom_slots
+
+    async def required_slots(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> Optional[List[Text]]:
+        """Returns slots which the form should fill.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user.
+            tracker: the conversation tracker for the current user.
+            domain: the bot's domain.
+
+        Returns:
+            `None` in case this form doesn't extract any custom slots. Otherwise
+            returns the names of all custom slots which need to be filled.
+        """
+        return None
 
     async def validate(
         self,
@@ -716,37 +797,104 @@ class FormValidationAction(Action, ABC):
         slots: Dict[Text, Any] = tracker.slots_to_validate()
 
         for slot_name, slot_value in list(slots.items()):
-            function_name = f"validate_{slot_name.replace('-','_')}"
-            validate_func = getattr(self, function_name, None)
+            method_name = f"validate_{slot_name.replace('-','_')}"
+            validate_method = getattr(self, method_name, None)
 
-            if not validate_func:
-                logger.debug(
-                    f"Skipping validation for `{slot_name}`: there is no validation function specified."
+            if not validate_method:
+                logger.warning(
+                    f"Skipping validation for `{slot_name}`: there is no validation "
+                    f"method specified."
                 )
                 continue
 
-            if utils.is_coroutine_action(validate_func):
-                validation_output = await validate_func(
-                    slot_value, dispatcher, tracker, domain
-                )
-            else:
-                validation_output = validate_func(
-                    slot_value, dispatcher, tracker, domain
-                )
+            validation_output = await utils.call_potential_coroutine(
+                validate_method(slot_value, dispatcher, tracker, domain)
+            )
 
             if validation_output:
                 slots.update(validation_output)
             else:
                 warnings.warn(
-                    f"Cannot validate `{slot_name}`: make sure the validation function returns the correct output."
+                    f"Cannot validate `{slot_name}`: make sure the validation method "
+                    f"returns the correct output."
                 )
 
         return [SlotSet(slot, value) for slot, value in slots.items()]
 
-    async def run(
+    async def next_requested_slot(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         domain: "DomainDict",
-    ) -> List[EventType]:
-        return await self.validate(dispatcher, tracker, domain)
+    ) -> Optional[EventType]:
+        """Sets the next slot which should be requested.
+
+        Skips setting the next requested slot in case `missing_slots` was not
+        overridden.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user.
+            tracker: the conversation tracker for the current user.
+            domain: the bot's domain.
+
+        Returns:
+            `None` in case `missing_slots` was not overridden and returns `None`.
+            Otherwise returns a `SlotSet` event for the next slot to be requested.
+            If the `SlotSet` event sets `requested_slot` to `None`, the form will be
+            deactivated.
+        """
+        required_slots = await self.required_slots(dispatcher, tracker, domain)
+        missing_slots = await self.missing_slots(dispatcher, tracker, domain)
+
+        if required_slots is None and not missing_slots:
+            # It seems like `required_slots` wasn't overridden. In this case we
+            # leave the deactivation of the form to the `FormAction` within
+            # Rasa Open Source
+            return None
+
+        missing_slots = await self.missing_slots(dispatcher, tracker, domain)
+        if not missing_slots:
+            # No more missing_slots slots. Form can be deactivated.
+            return SlotSet(REQUESTED_SLOT, None)
+
+        # request next slot
+        return SlotSet(REQUESTED_SLOT, missing_slots[0])
+
+    async def missing_slots(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[Text]:
+        """Returns slots which still need to be filled.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user.
+            tracker: the conversation tracker for the current user.
+            domain: the bot's domain.
+
+        Returns:
+            The slots which aren't already filled.
+        """
+        required_slots = await self.required_slots(dispatcher, tracker, domain)
+        if required_slots is None:
+            return []
+
+        slots_mapped_in_domain = self.slots_mapped_in_domain(domain)
+
+        all_required_slots = required_slots + [
+            domain_slot
+            for domain_slot in slots_mapped_in_domain
+            if domain_slot not in required_slots
+        ]
+
+        return [
+            slot_name
+            for slot_name in all_required_slots
+            if not tracker.slots.get(slot_name)
+        ]
+
+    def slots_mapped_in_domain(self, domain: "DomainDict") -> List[Text]:
+        return list(domain.get("forms", {}).get(self.name(), {}).keys())
