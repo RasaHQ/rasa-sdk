@@ -1,0 +1,10 @@
+docs/*
+.git/*
+.github/*
+tests/*
+.gitignore
+README.md
+Dockerfile
+CHANGELOG.txt
+.pre-commit-config.yaml
+changelog/*
