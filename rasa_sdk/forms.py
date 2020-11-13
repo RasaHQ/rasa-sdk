@@ -760,15 +760,17 @@ class FormValidationAction(Action, ABC):
         if also_mapped_in_domain:
             warnings.warn(
                 f"Slot '{slot_name}' is mapped in the domain and your custom "
-                f"action defines '{method_name}'. It is recommended to define a "
-                f"slot mapping in either of both places."
+                f"action defines '{method_name}'. '{method_name}' will override any "
+                f"extractions of the predefined slot mapping from the domain. It is "
+                f"suggested to define a slot mapping in only one of the two ways for "
+                f"clarity."
             )
 
         extracted = await utils.call_potential_coroutine(
             extract_method(dispatcher, tracker, domain)
         )
 
-        if extracted:
+        if isinstance(extracted, dict):
             return [SlotSet(slot, value) for slot, value in extracted.items()]
 
         warnings.warn(
@@ -796,7 +798,7 @@ class FormValidationAction(Action, ABC):
 
         Returns:
             Slot names which should be filled by the form. By default it
-            returns the slot names which are listed for this form in the domain 
+            returns the slot names which are listed for this form in the domain
             and use predefined mappings.
         """
         return slots_mapped_in_domain
@@ -845,7 +847,7 @@ class FormValidationAction(Action, ABC):
                 validate_method(slot_value, dispatcher, tracker, domain)
             )
 
-            if validation_output:
+            if isinstance(validation_output, dict):
                 slots.update(validation_output)
             else:
                 warnings.warn(
