@@ -795,8 +795,9 @@ class FormValidationAction(Action, ABC):
             domain: the bot's domain.
 
         Returns:
-            Slot names which should be filled by the domain. By default it
-            returns the slot names which were mapped in the domain for this form.
+            Slot names which should be filled by the form. By default it
+            returns the slot names which are listed for this form in the domain 
+            and use predefined mappings.
         """
         return slots_mapped_in_domain
 

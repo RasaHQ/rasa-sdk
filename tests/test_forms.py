@@ -1707,7 +1707,7 @@ async def test_extract_and_validate_slot(
 
         async def required_slots(
             self,
-            slot_mapped_in_domain: List[Text],
+            slots_mapped_in_domain: List[Text],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
@@ -1765,7 +1765,7 @@ async def test_extract_slot_only():
 
         async def required_slots(
             self,
-            slot_mapped_in_domain: List[Text],
+            slots_mapped_in_domain: List[Text],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
@@ -1824,7 +1824,7 @@ async def test_warning_for_slot_extractions(
 
         async def required_slots(
             self,
-            slot_mapped_in_domain: List[Text],
+            slots_mapped_in_domain: List[Text],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
