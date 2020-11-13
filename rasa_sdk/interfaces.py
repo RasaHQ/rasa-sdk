@@ -13,6 +13,7 @@ if typing.TYPE_CHECKING:  # pragma: no cover
 logger = logging.getLogger(__name__)
 
 ACTION_LISTEN_NAME = "action_listen"
+NLU_FALLBACK_INTENT_NAME = "nlu_fallback"
 
 
 class Tracker:
@@ -270,6 +271,29 @@ class Tracker:
                 continue
             self.slots[event["name"]] = event["value"]
             self.events.append(event)
+
+    def get_intent_if_not_fallback(self) -> Optional[Text]:
+        """Retrieves the intent the last user message would have been classified as
+        if it was not nlu_fallback
+        """
+        last_user_action = self.get_last_event_for("user")
+        if not last_user_action:
+            warnings.warn("No last user action.")
+            return None
+
+        parse_data = last_user_action["parse_data"]
+        intent = parse_data["intent"]
+        if intent["name"] != NLU_FALLBACK_INTENT_NAME:
+            warnings.warn("Last user action was not nlu fallback")
+            return None
+
+        intent_ranking = parse_data["intent_ranking"]
+        if len(intent_ranking) < 2:
+            warnings.warn("No other potential intents.")
+            return None
+
+        second_highest_intent = intent_ranking[1]
+        return second_highest_intent["name"]
 
 
 class Action:

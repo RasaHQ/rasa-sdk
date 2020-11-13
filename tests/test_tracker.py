@@ -4,7 +4,6 @@ from rasa_sdk import Tracker
 from rasa_sdk.events import (
     ActionExecuted,
     UserUttered,
-    ActionReverted,
     SlotSet,
     Restarted,
 )
@@ -133,3 +132,41 @@ def test_get_extracted_slots_with_no_active_loop():
         "some_other": "some_value2",
         "my_slot": "some_value",
     }
+
+
+def test_get_intent_if_not_fallback():
+    tracker = get_tracker([])
+    assert not tracker.get_intent_if_not_fallback()
+
+    tracker = get_tracker([user_uttered("hello", 0.8)])
+    assert not tracker.get_intent_if_not_fallback()
+
+    tracker = get_tracker(
+        [
+            UserUttered(
+                text="Some Fallback",
+                parse_data={
+                    "intent": {"name": "nlu_fallback", "confidence": 0.9},
+                    "intent_ranking": [{"name": "nlu_fallback", "confidence": 0.9}],
+                },
+            )
+        ]
+    )
+    assert not tracker.get_intent_if_not_fallback()
+
+    tracker = get_tracker(
+        [
+            UserUttered(
+                text="Some Fallback",
+                parse_data={
+                    "intent": {"name": "nlu_fallback", "confidence": 0.9},
+                    "intent_ranking": [
+                        {"name": "nlu_fallback", "confidence": 0.9},
+                        {"name": "hello", "confidence": 0.8},
+                        {"name": "goodbye", "confidence": 0.7},
+                    ],
+                },
+            )
+        ]
+    )
+    assert tracker.get_intent_if_not_fallback() == "hello"
