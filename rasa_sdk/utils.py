@@ -94,19 +94,23 @@ def configure_colored_logging(loglevel):
     )
 
 
-def configure_file_logging(logger_obj: logging.Logger, log_file: Optional[Text]) -> None:
+def configure_file_logging(logger_obj: logging.Logger, log_file: Optional[Text], loglevel: int) -> None:
     """Configure logging to a file.
 
     Args:
-        logger_obj: Logger object to configure.
-        log_file: Path of log file to write to.
+        :param logger_obj: Logger object to configure.
+        :param log_file: Path of log file to write to.
+        :param loglevel:
     """
     if not log_file:
         return
 
+    if not loglevel:
+        loglevel = logging.INFO
+
     formatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s]  %(name)s  -  %(message)s")
     file_handler = logging.FileHandler(log_file, encoding="utf-8")
-    file_handler.setLevel(logger_obj.level)
+    file_handler.setLevel(loglevel)
     file_handler.setFormatter(formatter)
     logger_obj.addHandler(file_handler)
 

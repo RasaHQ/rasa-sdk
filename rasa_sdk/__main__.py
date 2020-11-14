@@ -6,11 +6,10 @@ from rasa_sdk.constants import APPLICATION_ROOT_LOGGER_NAME
 
 
 def main_from_args(args):
-    logging.basicConfig(level=logging.DEBUG)
     logging.getLogger("matplotlib").setLevel(logging.WARN)
 
     utils.configure_colored_logging(args.loglevel)
-    utils.configure_file_logging(logging.getLogger(APPLICATION_ROOT_LOGGER_NAME), args.log_file)
+    utils.configure_file_logging(logging.getLogger(APPLICATION_ROOT_LOGGER_NAME), args.log_file, args.loglevel)
     utils.update_sanic_log_level()
 
     run(
