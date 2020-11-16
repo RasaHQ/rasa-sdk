@@ -280,6 +280,9 @@ class Tracker:
         Args:
             skip_fallback_intent: Optionally skip the nlu_fallback intent
                 and return the next.
+
+        Returns:
+            Intent of latest message if available.
         """
         latest_message = self.latest_message
         if not latest_message:
