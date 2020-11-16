@@ -289,9 +289,9 @@ class Tracker:
         if not intent_ranking:
             return None
 
-        highest_randing_intent = intent_ranking[0]
+        highest_ranking_intent = intent_ranking[0]
         if (
-            highest_randing_intent["name"] == NLU_FALLBACK_INTENT_NAME
+            highest_ranking_intent["name"] == NLU_FALLBACK_INTENT_NAME
             and skip_fallback_intent
         ):
             if len(intent_ranking) >= 2:
@@ -299,7 +299,7 @@ class Tracker:
             else:
                 return None
         else:
-            return highest_randing_intent["name"]
+            return highest_ranking_intent["name"]
 
 
 class Action:
