@@ -708,7 +708,7 @@ class FormValidationAction(Action, ABC):
     ) -> List[EventType]:
         """Extracts custom slots using available `extract_<slot name>` methods.
 
-        Uses the information from `self.missing_slots` to gather which slots should
+        Uses the information from `self.required_slots` to gather which slots should
         be extracted.
 
         Args:
@@ -726,57 +726,93 @@ class FormValidationAction(Action, ABC):
             `SlotSet` for any extracted slots.
         """
         custom_slots = []
-        slots_to_extract = await self.required_slots(dispatcher, tracker, domain)
-
-        if slots_to_extract is None:
-            return []
+        slots_to_extract = await self.required_slots(
+            self.slots_mapped_in_domain(domain), dispatcher, tracker, domain
+        )
 
         for slot_name in slots_to_extract:
-            method_name = f"extract_{slot_name.replace('-', '_')}"
-            extract_method = getattr(self, method_name, None)
+            custom_slots += await self._extract_slot(
+                slot_name, dispatcher, tracker, domain
+            )
+        return custom_slots
 
-            if not extract_method:
+    async def _extract_slot(
+        self,
+        slot_name: Text,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        method_name = f"extract_{slot_name.replace('-', '_')}"
+        slot_mapped_in_domain = slot_name in self.slots_mapped_in_domain(domain)
+        extract_method = getattr(self, method_name, None)
+
+        if not extract_method:
+            if not slot_mapped_in_domain:
                 warnings.warn(
                     f"No method '{method_name}' found for slot "
                     f"'{slot_name}'. Skipping extraction for this slot."
                 )
-                continue
+                return []
+            else:
+                return []
 
-            extracted = await utils.call_potential_coroutine(
-                extract_method(dispatcher, tracker, domain)
+        if extract_method and slot_mapped_in_domain:
+            warnings.warn(
+                f"Slot '{slot_name}' is mapped in the domain and your custom "
+                f"action defines '{method_name}'. '{method_name}' will override any "
+                f"extractions of the predefined slot mapping from the domain. It is "
+                f"suggested to define a slot mapping in only one of the two ways for "
+                f"clarity."
             )
 
-            if extracted:
-                custom_slots += [
-                    SlotSet(slot, value) for slot, value in extracted.items()
-                ]
-            else:
-                warnings.warn(
-                    f"Cannot extract `{slot_name}`: make sure the extract method "
-                    f"returns the correct output."
-                )
+        extracted = await utils.call_potential_coroutine(
+            extract_method(dispatcher, tracker, domain)
+        )
 
-        return custom_slots
+        if isinstance(extracted, dict):
+            return [SlotSet(slot, value) for slot, value in extracted.items()]
+
+        warnings.warn(
+            f"Cannot extract `{slot_name}`: make sure the extract method "
+            f"returns the correct output."
+        )
+        return []
 
     async def required_slots(
         self,
+        slots_mapped_in_domain: List[Text],
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         domain: "DomainDict",
-    ) -> Optional[List[Text]]:
+    ) -> List[Text]:
         """Returns slots which the form should fill.
 
         Args:
+            slots_mapped_in_domain: Names of slots of this form which were mapped in
+                the domain.
             dispatcher: the dispatcher which is used to
                 send messages back to the user.
             tracker: the conversation tracker for the current user.
             domain: the bot's domain.
 
         Returns:
-            `None` in case this form doesn't extract any custom slots. Otherwise
-            returns the names of all custom slots which need to be filled.
+            Slot names which should be filled by the form. By default it
+            returns the slot names which are listed for this form in the domain
+            and use predefined mappings.
         """
-        return None
+        return slots_mapped_in_domain
+
+    def slots_mapped_in_domain(self, domain: "DomainDict") -> List[Text]:
+        """Returns slots which were mapped in the domain for the current form.
+
+        Args:
+            domain: The current domain.
+
+        Returns:
+            Slot names mapped in the domain.
+        """
+        return list(domain.get("forms", {}).get(self.name(), {}).keys())
 
     async def validate(
         self,
@@ -796,7 +832,7 @@ class FormValidationAction(Action, ABC):
         """
         slots: Dict[Text, Any] = tracker.slots_to_validate()
 
-        for slot_name, slot_value in list(slots.items()):
+        for slot_name, slot_value in slots.items():
             method_name = f"validate_{slot_name.replace('-','_')}"
             validate_method = getattr(self, method_name, None)
 
@@ -811,7 +847,7 @@ class FormValidationAction(Action, ABC):
                 validate_method(slot_value, dispatcher, tracker, domain)
             )
 
-            if validation_output:
+            if isinstance(validation_output, dict):
                 slots.update(validation_output)
             else:
                 warnings.warn(
@@ -844,57 +880,20 @@ class FormValidationAction(Action, ABC):
             If the `SlotSet` event sets `requested_slot` to `None`, the form will be
             deactivated.
         """
-        required_slots = await self.required_slots(dispatcher, tracker, domain)
-        missing_slots = await self.missing_slots(dispatcher, tracker, domain)
-
-        if required_slots is None and not missing_slots:
-            # It seems like `required_slots` wasn't overridden. In this case we
-            # leave the deactivation of the form to the `FormAction` within
-            # Rasa Open Source
+        required_slots = await self.required_slots(
+            self.slots_mapped_in_domain(domain), dispatcher, tracker, domain
+        )
+        if required_slots and required_slots == self.slots_mapped_in_domain(domain):
+            # If users didn't override `required_slots` then we'll let the `FormAction`
+            # within Rasa Open Source request the next slot.
             return None
 
-        missing_slots = await self.missing_slots(dispatcher, tracker, domain)
-        if not missing_slots:
-            # No more missing_slots slots. Form can be deactivated.
-            return SlotSet(REQUESTED_SLOT, None)
-
-        # request next slot
-        return SlotSet(REQUESTED_SLOT, missing_slots[0])
-
-    async def missing_slots(
-        self,
-        dispatcher: "CollectingDispatcher",
-        tracker: "Tracker",
-        domain: "DomainDict",
-    ) -> List[Text]:
-        """Returns slots which still need to be filled.
-
-        Args:
-            dispatcher: the dispatcher which is used to
-                send messages back to the user.
-            tracker: the conversation tracker for the current user.
-            domain: the bot's domain.
-
-        Returns:
-            The slots which aren't already filled.
-        """
-        required_slots = await self.required_slots(dispatcher, tracker, domain)
-        if required_slots is None:
-            return []
-
-        slots_mapped_in_domain = self.slots_mapped_in_domain(domain)
-
-        all_required_slots = required_slots + [
-            domain_slot
-            for domain_slot in slots_mapped_in_domain
-            if domain_slot not in required_slots
-        ]
-
-        return [
+        missing_slots = (
             slot_name
-            for slot_name in all_required_slots
-            if not tracker.slots.get(slot_name)
-        ]
+            for slot_name in await self.required_slots(
+                self.slots_mapped_in_domain(domain), dispatcher, tracker, domain
+            )
+            if tracker.slots.get(slot_name) is None
+        )
 
-    def slots_mapped_in_domain(self, domain: "DomainDict") -> List[Text]:
-        return list(domain.get("forms", {}).get(self.name(), {}).keys())
+        return SlotSet(REQUESTED_SLOT, next(missing_slots, None))
