@@ -134,39 +134,43 @@ def test_get_extracted_slots_with_no_active_loop():
     }
 
 
-def test_get_intent_if_not_fallback():
+def test_get_intent_of_latest_message_with_missing_data():
     tracker = get_tracker([])
-    assert not tracker.get_intent_if_not_fallback()
 
-    tracker = get_tracker([user_uttered("hello", 0.8)])
-    assert not tracker.get_intent_if_not_fallback()
+    tracker.latest_message = None
+    assert not tracker.get_intent_of_latest_message()
 
-    tracker = get_tracker(
-        [
-            UserUttered(
-                text="Some Fallback",
-                parse_data={
-                    "intent": {"name": "nlu_fallback", "confidence": 0.9},
-                    "intent_ranking": [{"name": "nlu_fallback", "confidence": 0.9}],
-                },
-            )
-        ]
+    tracker.latest_message = {
+        "intent": {"name": "nlu_fallback", "confidence": 0.9},
+    }
+    assert not tracker.get_intent_of_latest_message()
+
+
+def test_get_intent_of_latest_message_with_only_fallback():
+    tracker = get_tracker([])
+    tracker.latest_message = {
+        "intent": {"name": "nlu_fallback", "confidence": 0.9},
+        "intent_ranking": [{"name": "nlu_fallback", "confidence": 0.9}],
+    }
+    assert not tracker.get_intent_of_latest_message()
+    assert (
+        tracker.get_intent_of_latest_message(skip_fallback_intent=False)
+        == "nlu_fallback"
     )
-    assert not tracker.get_intent_if_not_fallback()
 
-    tracker = get_tracker(
-        [
-            UserUttered(
-                text="Some Fallback",
-                parse_data={
-                    "intent": {"name": "nlu_fallback", "confidence": 0.9},
-                    "intent_ranking": [
-                        {"name": "nlu_fallback", "confidence": 0.9},
-                        {"name": "hello", "confidence": 0.8},
-                        {"name": "goodbye", "confidence": 0.7},
-                    ],
-                },
-            )
-        ]
+
+def test_get_intent_of_latest_message_with_user_intent():
+    tracker = get_tracker([])
+    tracker.latest_message = {
+        "intent": {"name": "nlu_fallback", "confidence": 0.9},
+        "intent_ranking": [
+            {"name": "nlu_fallback", "confidence": 0.9},
+            {"name": "hello", "confidence": 0.8},
+            {"name": "goodbye", "confidence": 0.7},
+        ],
+    }
+    assert tracker.get_intent_of_latest_message() == "hello"
+    assert (
+        tracker.get_intent_of_latest_message(skip_fallback_intent=False)
+        == "nlu_fallback"
     )
-    assert tracker.get_intent_if_not_fallback() == "hello"

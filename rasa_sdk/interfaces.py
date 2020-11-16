@@ -272,28 +272,34 @@ class Tracker:
             self.slots[event["name"]] = event["value"]
             self.events.append(event)
 
-    def get_intent_if_not_fallback(self) -> Optional[Text]:
-        """Retrieves the intent the last user message would have been classified as
-        if it was not nlu_fallback
+    def get_intent_of_latest_message(
+        self, skip_fallback_intent: bool = True
+    ) -> Optional[Text]:
+        """Retrieves the intent the last user message.
+
+        Args:
+            skip_fallback_intent: Optionally skip the nlu_fallback intent
+                and return the next.
         """
-        last_user_action = self.get_last_event_for("user")
-        if not last_user_action:
-            warnings.warn("No last user action.")
+        latest_message = self.latest_message
+        if not latest_message:
             return None
 
-        parse_data = last_user_action["parse_data"]
-        intent = parse_data["intent"]
-        if intent["name"] != NLU_FALLBACK_INTENT_NAME:
-            warnings.warn("Last user action was not nlu fallback")
+        intent_ranking = latest_message.get("intent_ranking")
+        if not intent_ranking:
             return None
 
-        intent_ranking = parse_data["intent_ranking"]
-        if len(intent_ranking) < 2:
-            warnings.warn("No other potential intents.")
-            return None
-
-        second_highest_intent = intent_ranking[1]
-        return second_highest_intent["name"]
+        highest_randing_intent = intent_ranking[0]
+        if (
+            highest_randing_intent["name"] == NLU_FALLBACK_INTENT_NAME
+            and skip_fallback_intent
+        ):
+            if len(intent_ranking) >= 2:
+                return intent_ranking[1]["name"]
+            else:
+                return None
+        else:
+            return highest_randing_intent["name"]
 
 
 class Action:
