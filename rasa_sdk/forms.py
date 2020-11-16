@@ -744,20 +744,20 @@ class FormValidationAction(Action, ABC):
         domain: "DomainDict",
     ) -> List[EventType]:
         method_name = f"extract_{slot_name.replace('-', '_')}"
-        also_mapped_in_domain = slot_name in self.slots_mapped_in_domain(domain)
+        slot_mapped_in_domain = slot_name in self.slots_mapped_in_domain(domain)
         extract_method = getattr(self, method_name, None)
 
-        if not extract_method and not also_mapped_in_domain:
-            warnings.warn(
-                f"No method '{method_name}' found for slot "
-                f"'{slot_name}'. Skipping extraction for this slot."
-            )
-            return []
-
         if not extract_method:
-            return []
+            if not slot_mapped_in_domain:
+                warnings.warn(
+                    f"No method '{method_name}' found for slot "
+                    f"'{slot_name}'. Skipping extraction for this slot."
+                )
+                return []
+            else:
+                return []
 
-        if also_mapped_in_domain:
+        if extract_method and slot_mapped_in_domain:
             warnings.warn(
                 f"Slot '{slot_name}' is mapped in the domain and your custom "
                 f"action defines '{method_name}'. '{method_name}' will override any "
@@ -886,7 +886,7 @@ class FormValidationAction(Action, ABC):
         if required_slots and required_slots == self.slots_mapped_in_domain(domain):
             # If users didn't override `required_slots` then we'll let the `FormAction`
             # within Rasa Open Source request the next slot.
-            return
+            return None
 
         missing_slots = (
             slot_name
