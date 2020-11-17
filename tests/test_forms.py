@@ -1503,10 +1503,10 @@ def test_form_deprecation():
 
 class TestFormValidationAction(FormValidationAction):
     def __init__(self, form_name: Text = "some_form") -> None:
-        self.form_name = form_name
+        self.name_of_form = form_name
 
     def name(self) -> Text:
-        return self.form_name
+        return self.name_of_form
 
     def validate_slot1(
         self,
@@ -1640,6 +1640,48 @@ async def test_form_validation_without_validate_function():
         SlotSet("slot3", "some_value"),
         SlotSet("slot2", None),
         SlotSet("slot1", "validated_value"),
+    ]
+
+
+async def test_form_validation_changing_slots_during_validation():
+    form_name = "some_form"
+
+    class TestForm(FormValidationAction):
+        def name(self) -> Text:
+            return form_name
+
+        async def validate_my_slot(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            return {"my_slot": None, "other_slot": "value"}
+
+    form = TestForm()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [SlotSet("my_slot", "correct_value")],
+        False,
+        None,
+        {"name": form_name, "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(
+        dispatcher=dispatcher,
+        tracker=tracker,
+        domain={"forms": {form_name: {"my_slot": []}}},
+    )
+    assert events == [
+        SlotSet("my_slot", None),
+        SlotSet("other_slot", "value"),
     ]
 
 

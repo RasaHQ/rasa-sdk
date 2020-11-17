@@ -681,6 +681,9 @@ class FormAction(Action):
 class FormValidationAction(Action, ABC):
     """A helper class for slot validations and extractions of custom slots."""
 
+    def form_name(self) -> Text:
+        return self.name().replace("validate_", "", 1)
+
     async def run(
         self,
         dispatcher: "CollectingDispatcher",
@@ -812,9 +815,7 @@ class FormValidationAction(Action, ABC):
         Returns:
             Slot names mapped in the domain.
         """
-        return list(
-            domain.get("forms", {}).get(self.name().strip("validate_"), {}).keys()
-        )
+        return list(domain.get("forms", {}).get(self.form_name(), {}).keys())
 
     async def validate(
         self,
