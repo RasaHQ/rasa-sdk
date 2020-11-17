@@ -682,6 +682,7 @@ class FormValidationAction(Action, ABC):
     """A helper class for slot validations and extractions of custom slots."""
 
     def form_name(self) -> Text:
+        """Returns the form's name."""
         return self.name().replace("validate_", "", 1)
 
     async def run(
@@ -690,6 +691,7 @@ class FormValidationAction(Action, ABC):
         tracker: "Tracker",
         domain: "DomainDict",
     ) -> List[EventType]:
+        """Runs the custom actions. Please the docstring of the parent class."""
         extraction_events = await self.extract_custom_slots(dispatcher, tracker, domain)
         tracker.add_slots(extraction_events)
 
