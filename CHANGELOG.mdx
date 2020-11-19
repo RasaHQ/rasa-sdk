@@ -17,6 +17,60 @@ https://github.com/RasaHQ/rasa/tree/master/changelog/ . -->
 
 <!-- TOWNCRIER -->
 
+## [2.1.1] - 2020-11-17
+                       
+
+### Bugfixes
+- [#344](https://github.com/rasahq/rasa/issues/344): Fix a bug in the `FormValidationAction` which immediately deactivated the form.
+
+
+## [2.1.0] - 2020-11-17
+                       
+
+### Features
+- [#329](https://github.com/rasahq/rasa/issues/329): Extend `FormValidationAction` with support for extracting slots. If you
+  want to extract an additional slot, add the slot's name to the list of `required_slots`
+  and add a method `extract_<slot name>` to your action:
+
+  ```python
+  from typing import Text, Dict, Any, List, Optional
+
+  from rasa_sdk.forms import (
+      FormValidationAction,
+  )
+
+  class FormWithSlotExtractions(FormValidationAction):
+      def name(self) -> Text:
+          return "some_form"
+
+      async def required_slots(
+          self,
+          slots_mapped_in_domain: List[Text],
+          dispatcher: "CollectingDispatcher",
+          tracker: "Tracker",
+          domain: "DomainDict",
+      ) -> Optional[List[Text]]:
+          return slots_mapped_in_domain + ["my_slot"]
+
+      async def extract_my_slot(
+          self,
+          dispatcher: "CollectingDispatcher",
+          tracker: "Tracker",
+          domain: "DomainDict",
+      ) -> Dict[Text, Any]:
+          return {"my_slot": "some value"}
+  ```
+
+  If all slots returned by `required_slots` are filled,
+  the action will automatically return an event to disable the form. 
+  If not all required slots are filled, the SDK will return an event
+  to Rasa Open Source to fill the first missing slot next.
+
+### Improvements
+- [#7078](https://github.com/rasahq/rasa/issues/7078): Adds the method `get_intent_of_latest_message` to the `Tracker` allowing easier 
+  access to the user's latest intent in case of an `nlu_fallback`.
+
+
 ## [2.0.0] - 2020-10-07
                        
 

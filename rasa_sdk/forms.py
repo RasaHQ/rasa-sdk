@@ -681,12 +681,17 @@ class FormAction(Action):
 class FormValidationAction(Action, ABC):
     """A helper class for slot validations and extractions of custom slots."""
 
+    def form_name(self) -> Text:
+        """Returns the form's name."""
+        return self.name().replace("validate_", "", 1)
+
     async def run(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         domain: "DomainDict",
     ) -> List[EventType]:
+        """Runs the custom actions. Please the docstring of the parent class."""
         extraction_events = await self.extract_custom_slots(dispatcher, tracker, domain)
         tracker.add_slots(extraction_events)
 
@@ -812,7 +817,7 @@ class FormValidationAction(Action, ABC):
         Returns:
             Slot names mapped in the domain.
         """
-        return list(domain.get("forms", {}).get(self.name(), {}).keys())
+        return list(domain.get("forms", {}).get(self.form_name(), {}).keys())
 
     async def validate(
         self,
@@ -832,7 +837,7 @@ class FormValidationAction(Action, ABC):
         """
         slots: Dict[Text, Any] = tracker.slots_to_validate()
 
-        for slot_name, slot_value in slots.items():
+        for slot_name, slot_value in list(slots.items()):
             method_name = f"validate_{slot_name.replace('-','_')}"
             validate_method = getattr(self, method_name, None)
 
