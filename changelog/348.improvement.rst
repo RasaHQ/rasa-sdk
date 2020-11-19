@@ -1,0 +1,1 @@
+Add the http headers to the existing domain object so that OpenTelemetry context information can be passed to the action server.
