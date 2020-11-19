@@ -1,9 +1,17 @@
 name: Continous Integration
 
-on: [push]
+on:
+  push:
+    branches:
+    - master
+    tags:
+    - '*'
+  pull_request:
+
+env:
+  IS_TAG_BUILD: ${{ startsWith(github.event.ref, 'refs/tags') }}
 
 # SECRETS
-# - COVERALLS_REPO_TOKEN: can be found on the coveralls page for the repo
 # - PYPI_TOKEN: publishing token for amn41 account, needs to be maintainer of
 #               RasaHQ/rasa-sdk on pypi (account credentials in 1password)
 
@@ -23,11 +31,11 @@ jobs:
 
     - name: Read Poetry Version 🔢
       run: |
-           echo "::set-env name=POETRY_VERSION::$(scripts/poetry-version.sh)"
+           echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
       shell: bash
 
     - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v1
+      uses: Gr1N/setup-poetry@v4
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
@@ -38,14 +46,38 @@ jobs:
         key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
         restore-keys: ${{ runner.os }}-poetry-
 
+    - name: Load Yarn Cached Packages ⬇
+      uses: actions/cache@v1
+      with:
+        path: docs/node_modules
+        key: ${{ runner.os }}-yarn-12.x-${{ hashFiles('docs/yarn.lock') }}
+        restore-keys: ${{ runner.os }}-yarn-12.x
+
     - name: Install Dependencies 📦
-      run: make install
+      run: make install install-docs
+
+    - name: Checkout target branch to be able to diff
+      if: github.event_name == 'pull_request'
+      run: |
+        git fetch origin "${{ github.base_ref }}"
+        echo "DOCSTRING_DIFF_BRANCH=origin/${{ github.base_ref }}" >> $GITHUB_ENV
+
+        # Fetch entire history for current branch so that `make lint-docstrings`
+        # can calculate the proper diff between the branches
+        git pull --ff-only --unshallow origin "${{ github.head_ref }}"
 
     - name: Lint Code 🎎
-      run: make lint
+      run: |
+        # If it's not a pull request, $DOCSTRING_DIFF_BRANCH is unset.
+        # This will result in an empty diff, which effictively means that
+        # make lint-docstrings will be skipped for other events than `pull_request`
+        make lint BRANCH=$DOCSTRING_DIFF_BRANCH
 
     - name: Check Types 📚
       run: make types
+
+    - name: Test Docs 🕸
+      run: make test-docs
 
   test:
     name: Run Tests
@@ -66,11 +98,11 @@ jobs:
 
     - name: Read Poetry Version 🔢
       run: |
-           echo "::set-env name=POETRY_VERSION::$(scripts/poetry-version.sh)"
+           echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
       shell: bash
 
     - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v1
+      uses: Gr1N/setup-poetry@v4
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
@@ -90,8 +122,8 @@ jobs:
     - name: Send Coverage Report 📊
       if: matrix.python-version == 3.6
       env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        COVERALLS_SERVICE_NAME: github-ci
+        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COVERALLS_SERVICE_NAME: github
       run: poetry run coveralls
 
   deploy:
@@ -113,11 +145,11 @@ jobs:
 
     - name: Read Poetry Version 🔢
       run: |
-           echo "::set-env name=POETRY_VERSION::$(scripts/poetry-version.sh)"
+           echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
       shell: bash
 
     - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v1
+      uses: Gr1N/setup-poetry@v4
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
@@ -129,3 +161,16 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
+
+    - name: Publish Release Notes 🗞
+      if: env.IS_TAG_BUILD
+      env:
+        GITHUB_TAG: ${{ github.ref }}
+        GITHUB_REPO_SLUG: ${{ github.repository }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        GITHUB_TAG=${GITHUB_TAG/refs\/tags\//}
+        sudo apt-get update
+        sudo apt-get -y install pandoc
+        pip install -U github3.py
+        python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py

@@ -1,9 +1,10 @@
+import asyncio
 import inspect
 import logging
 import warnings
 import os
 
-from typing import Any, List, Text, Optional
+from typing import AbstractSet, Any, List, Text, Optional, Coroutine, Union
 
 import rasa_sdk
 from rasa_sdk.constants import (
@@ -39,7 +40,7 @@ def all_subclasses(cls: Any) -> List[Any]:
     ]
 
 
-def add_logging_option_arguments(parser) -> None:
+def add_logging_option_arguments(parser):
     """Add options to an argument parser to configure logging levels."""
 
     # arguments for logging configuration
@@ -69,7 +70,7 @@ def add_logging_option_arguments(parser) -> None:
     )
 
 
-def configure_colored_logging(loglevel) -> None:
+def configure_colored_logging(loglevel):
     import coloredlogs
 
     field_styles = coloredlogs.DEFAULT_FIELD_STYLES.copy()
@@ -85,7 +86,7 @@ def configure_colored_logging(loglevel) -> None:
     )
 
 
-def arguments_of(func) -> List[Text]:
+def arguments_of(func) -> AbstractSet[Text]:
     """Return the parameters of the function `func` as a list of their names."""
 
     return inspect.signature(func).parameters.keys()
@@ -168,10 +169,6 @@ def check_version_compatibility(rasa_version: Optional[Text]) -> None:
         )
 
 
-def is_coroutine_action(action) -> bool:
-    return inspect.iscoroutinefunction(action)
-
-
 def update_sanic_log_level() -> None:
     """Set the log level of sanic loggers.
 
@@ -189,3 +186,12 @@ def update_sanic_log_level() -> None:
     logger.propagate = False
     error_logger.propagate = False
     access_logger.propagate = False
+
+
+async def call_potential_coroutine(
+    coroutine_or_return_value: Union[Any, Coroutine]
+) -> Any:
+    if asyncio.iscoroutine(coroutine_or_return_value):
+        return await coroutine_or_return_value
+
+    return coroutine_or_return_value

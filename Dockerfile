@@ -1,4 +1,4 @@
-FROM python:3.6-slim as python_builder
+FROM python:3.7-slim as python_builder
 RUN apt-get update -qq && \
   apt-get install -y --no-install-recommends \
   build-essential \
@@ -19,7 +19,7 @@ RUN python -m venv /opt/venv && \
   poetry install --no-dev --no-interaction
 
 # start a new build stage
-FROM python:3.6-slim
+FROM python:3.7-slim
 
 # copy everything from /opt
 COPY --from=python_builder /opt/venv /opt/venv
@@ -37,4 +37,4 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /app
 EXPOSE 5055
 ENTRYPOINT ["./entrypoint.sh"]
-CMD ["start", "--actions", "actions.actions"]
+CMD ["start", "--actions", "actions"]

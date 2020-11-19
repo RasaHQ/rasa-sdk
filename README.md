@@ -41,7 +41,7 @@ Detailed instructions can be found in the Rasa Documentation about
 ### Usage
 
 In order to start an action server using implemented custom actions,
-you can use the available Docker image `rasa/rasa-sdk:latest`.
+you can use the available Docker image `rasa/rasa-sdk`.
 
 Before starting the action server ensure that the folder containing
 your actions is handled as Python module and therefore has to contain
@@ -51,7 +51,7 @@ Then start the action server using:
 
 ```bash
 docker run -p 5055:5055 --mount type=bind,source=<ABSOLUTE_PATH_TO_YOUR_ACTIONS>,target=/app/actions \
-	rasa/rasa-sdk:latest
+	rasa/rasa-sdk:<version>
 ```
 
 The action server is then available at `http://localhost:5055/webhook`.
@@ -61,7 +61,11 @@ The action server is then available at `http://localhost:5055/webhook`.
 To add custom dependencies you enhance the given Docker image, e.g.:
 
 ```
-FROM rasa/rasa-sdk:latest
+# Extend the official Rasa SDK image
+FROM rasa/rasa-sdk:<version>
+
+# Change back to root user to install dependencies
+USER root
 
 # To install system dependencies
 RUN apt-get update -qq && \
@@ -71,6 +75,9 @@ RUN apt-get update -qq && \
 
 # To install packages from PyPI
 RUN pip install --no-cache-dir <A_REQUIRED_PACKAGE_ON_PYPI>
+
+# Switch back to non-root to run code
+USER 1001
 ```
 
 
@@ -117,7 +124,7 @@ by GitHub Actions.
   master or release branches), e.g. using
     ```bash
     git tag 1.2.0 -m "next release"
-    git push origin 1.2.0 --tags
+    git push origin 1.2.0
     ```
     GitHub Actions will build this tag and push a package to 
     [pypi](https://pypi.python.org/pypi/rasa-sdk).

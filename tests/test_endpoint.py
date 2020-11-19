@@ -4,7 +4,13 @@ import json
 import rasa_sdk.endpoint as ep
 from rasa_sdk.events import SlotSet
 
-app = ep.create_app("actions.act")
+# noinspection PyTypeChecker
+app = ep.create_app(None)
+
+
+def test_endpoint_exit_for_unknown_actions_package():
+    with pytest.raises(SystemExit):
+        ep.create_app("non-existing-actions-package")
 
 
 def test_server_health_returns_200():
@@ -36,7 +42,7 @@ def test_server_webhook_custom_action_returns_200():
     request, response = app.test_client.post("/webhook", data=json.dumps(data))
     events = response.json.get("events")
 
-    assert events == [SlotSet("test", "test")]
+    assert events == [SlotSet("test", "bar")]
     assert response.status == 200
 
 

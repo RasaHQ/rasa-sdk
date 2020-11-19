@@ -46,7 +46,7 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
-.pytype/
+.mypy_cache/
 
 # Translations
 *.mo
@@ -64,8 +64,13 @@ instance/
 # Scrapy stuff:
 .scrapy
 
-# Sphinx documentation
-docs/_build/
+# docs stuff
+docs/.docusaurus
+docs/docs/variables.json
+docs/docs/sources/
+docs/docs/reference/
+docs/docs/changelog.mdx
+node_modules/
 
 # PyBuilder
 target/
@@ -112,3 +117,5 @@ examples/moodbot/models/
 
 *.DS_Store
 .history
+tests/executor_test_packages
+.pytype/

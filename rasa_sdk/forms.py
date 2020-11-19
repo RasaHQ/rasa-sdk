@@ -1,23 +1,37 @@
 import logging
 import typing
+import warnings
 from typing import Dict, Text, Any, List, Union, Optional, Tuple
 
+from abc import ABC
 from rasa_sdk import utils
-from rasa_sdk.events import SlotSet, Form, EventType
+from rasa_sdk.events import SlotSet, EventType, ActiveLoop
 from rasa_sdk.interfaces import Action, ActionExecutionRejection
 
 logger = logging.getLogger(__name__)
 
-if typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:  # pragma: no cover
     from rasa_sdk import Tracker
     from rasa_sdk.executor import CollectingDispatcher
+    from rasa_sdk.types import DomainDict
 
 # this slot is used to store information needed
 # to do the form handling
 REQUESTED_SLOT = "requested_slot"
 
+LOOP_INTERRUPTED_KEY = "is_interrupted"
+
 
 class FormAction(Action):
+    def __init__(self):
+        warnings.warn(
+            "Using the `FormAction` class is deprecated as of Rasa Open "
+            "Source version 2.0. Please see the migration guide "
+            "for Rasa Open Source 2.0 for instructions how to migrate.",
+            FutureWarning,
+        )
+        super().__init__()
+
     def name(self) -> Text:
         """Unique identifier of the form"""
 
@@ -40,6 +54,8 @@ class FormAction(Action):
         entity: Text,
         intent: Optional[Union[Text, List[Text]]] = None,
         not_intent: Optional[Union[Text, List[Text]]] = None,
+        role: Optional[Text] = None,
+        group: Optional[Text] = None,
     ) -> Dict[Text, Any]:
         """A dictionary for slot mapping to extract slot value.
 
@@ -49,6 +65,8 @@ class FormAction(Action):
             - intent if it is not None
             - not_intent if it is not None,
                 meaning user intent should not be this intent
+            - role if it is not None
+            - group if it is not None
         """
 
         intent, not_intent = self._list_intents(intent, not_intent)
@@ -58,6 +76,8 @@ class FormAction(Action):
             "entity": entity,
             "intent": intent,
             "not_intent": not_intent,
+            "role": role,
+            "group": group,
         }
 
     def from_trigger_intent(
@@ -177,36 +197,99 @@ class FormAction(Action):
         mapping_not_intents = requested_slot_mapping.get("not_intent", [])
         intent = tracker.latest_message.get("intent", {}).get("name")
 
-        intent_not_blacklisted = (
-            not mapping_intents and intent not in mapping_not_intents
-        )
+        intent_not_excluded = not mapping_intents and intent not in mapping_not_intents
 
-        return intent_not_blacklisted or intent in mapping_intents
+        return intent_not_excluded or intent in mapping_intents
+
+    def entity_is_desired(
+        self,
+        other_slot_mapping: Dict[Text, Any],
+        other_slot: Text,
+        entity_type_of_slot_to_fill: Optional[Text],
+        tracker: "Tracker",
+    ) -> bool:
+        """Check whether the other slot should be filled by an entity in the input or
+        not.
+        Args:
+            other_slot_mapping: Slot mapping.
+            other_slot: The other slot to be filled.
+            entity_type_of_slot_to_fill: Entity type of slot to fill.
+            tracker: The tracker.
+        Returns:
+            True, if other slot should be filled, false otherwise.
+        """
+
+        # slot name is equal to the entity type
+        entity_type = other_slot_mapping.get("entity")
+        other_slot_equals_entity = other_slot == entity_type
+
+        # use the custom slot mapping 'from_entity' defined by the user to check
+        # whether we can fill a slot with an entity
+        other_slot_fulfils_entity_mapping = False
+        if (
+            entity_type is not None
+            and (
+                other_slot_mapping.get("role") is not None
+                or other_slot_mapping.get("group") is not None
+            )
+            and entity_type_of_slot_to_fill == other_slot_mapping.get("entity")
+        ):
+            matching_values = self.get_entity_value(
+                entity_type,
+                tracker,
+                other_slot_mapping.get("role"),
+                other_slot_mapping.get("group"),
+            )
+            other_slot_fulfils_entity_mapping = matching_values is not None
+
+        return other_slot_equals_entity or other_slot_fulfils_entity_mapping
 
     @staticmethod
-    def get_entity_value(name: Text, tracker: "Tracker") -> Any:
-        """Extract entities for given name"""
+    def get_entity_value(
+        name: Text,
+        tracker: "Tracker",
+        role: Optional[Text] = None,
+        group: Optional[Text] = None,
+    ) -> Optional[Union[Text, List[Text]]]:
+        """Extract entities for given name and optional role and group.
 
+        Args:
+            name: entity type (name) of interest
+            tracker: the tracker
+            role: optional entity role of interest
+            group: optional entity group of interest
+
+        Returns:
+            Value of entity.
+        """
         # list is used to cover the case of list slot type
-        value = list(tracker.get_latest_entity_values(name))
-        if len(value) == 0:
-            value = None
-        elif len(value) == 1:
-            value = value[0]
-        return value
+        values = list(
+            tracker.get_latest_entity_values(name, entity_group=group, entity_role=role)
+        )
+        if not values:
+            return None
+
+        if len(values) == 1:
+            return values[0]
+
+        return values
 
     # noinspection PyUnusedLocal
     def extract_other_slots(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> Dict[Text, Any]:
         """Extract the values of the other slots
-            if they are set by corresponding entities from the user input
-            else return None
+        if they are set by corresponding entities from the user input
+        else return None
         """
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
+
+        entity_type_of_slot_to_fill = self._get_entity_type_of_slot_to_fill(
+            slot_to_fill
+        )
 
         slot_values = {}
         for slot in self.required_slots(tracker):
@@ -216,22 +299,31 @@ class FormAction(Action):
                 other_slot_mappings = self.get_mappings_for_slot(slot)
 
                 for other_slot_mapping in other_slot_mappings:
-                    # check whether the slot should be filled
-                    # by entity with the same name
+                    # check whether the slot should be filled by an entity in the input
                     should_fill_entity_slot = (
                         other_slot_mapping["type"] == "from_entity"
-                        and other_slot_mapping.get("entity") == slot
                         and self.intent_is_desired(other_slot_mapping, tracker)
+                        and self.entity_is_desired(
+                            other_slot_mapping,
+                            slot,
+                            entity_type_of_slot_to_fill,
+                            tracker,
+                        )
                     )
                     # check whether the slot should be
                     # filled from trigger intent mapping
                     should_fill_trigger_slot = (
-                        tracker.active_form.get("name") != self.name()
+                        tracker.active_loop.get("name") != self.name()
                         and other_slot_mapping["type"] == "from_trigger_intent"
                         and self.intent_is_desired(other_slot_mapping, tracker)
                     )
                     if should_fill_entity_slot:
-                        value = self.get_entity_value(slot, tracker)
+                        value = self.get_entity_value(
+                            other_slot_mapping["entity"],
+                            tracker,
+                            other_slot_mapping.get("role"),
+                            other_slot_mapping.get("group"),
+                        )
                     elif should_fill_trigger_slot:
                         value = other_slot_mapping.get("value")
                     else:
@@ -250,12 +342,12 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        slot_to_fill: Any,
+        domain: "DomainDict",
     ) -> Dict[Text, Any]:
         """Extract the value of requested slot from a user input
-            else return None
+        else return None
         """
-        slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         logger.debug(f"Trying to extract requested slot '{slot_to_fill}' ...")
 
         # get mapping for requested slot
@@ -268,8 +360,16 @@ class FormAction(Action):
                 mapping_type = requested_slot_mapping["type"]
 
                 if mapping_type == "from_entity":
-                    value = self.get_entity_value(
-                        requested_slot_mapping.get("entity"), tracker
+                    entity_type = requested_slot_mapping.get("entity")
+                    value = (
+                        self.get_entity_value(
+                            entity_type,
+                            tracker,
+                            requested_slot_mapping.get("role"),
+                            requested_slot_mapping.get("group"),
+                        )
+                        if entity_type
+                        else None
                     )
                 elif mapping_type == "from_intent":
                     value = requested_slot_mapping.get("value")
@@ -295,7 +395,7 @@ class FormAction(Action):
         slot_dict: Dict[Text, Any],
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Validate slots using helper validation functions.
 
@@ -305,14 +405,11 @@ class FormAction(Action):
 
         for slot, value in list(slot_dict.items()):
             validate_func = getattr(self, f"validate_{slot}", lambda *x: {slot: value})
-            if utils.is_coroutine_action(validate_func):
-                validation_output = await validate_func(
-                    value, dispatcher, tracker, domain
-                )
-            else:
-                validation_output = validate_func(value, dispatcher, tracker, domain)
+            validation_output = await utils.call_potential_coroutine(
+                validate_func(value, dispatcher, tracker, domain)
+            )
             if not isinstance(validation_output, dict):
-                logger.warning(
+                warnings.warn(
                     "Returning values in helper validation methods is deprecated. "
                     + f"Your `validate_{slot}()` method should return "
                     + "a dict of {'slot_name': value} instead."
@@ -327,7 +424,7 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Extract and validate value of requested slot.
 
@@ -342,7 +439,9 @@ class FormAction(Action):
         # extract requested slot
         slot_to_fill = tracker.get_slot(REQUESTED_SLOT)
         if slot_to_fill:
-            slot_values.update(self.extract_requested_slot(dispatcher, tracker, domain))
+            slot_values.update(
+                self.extract_requested_slot(dispatcher, tracker, slot_to_fill, domain)
+            )
 
             if not slot_values:
                 # reject to execute the form action
@@ -350,7 +449,8 @@ class FormAction(Action):
                 # it will allow other policies to predict another action
                 raise ActionExecutionRejection(
                     self.name(),
-                    f"Failed to extract slot {slot_to_fill} with action {self.name()}",
+                    f"Failed to extract slot {slot_to_fill} with action {self.name()}."
+                    f"Allowing other policies to predict next action.",
                 )
         logger.debug(f"Validating extracted slots: {slot_values}")
         return await self.validate_slots(slot_values, dispatcher, tracker, domain)
@@ -360,10 +460,10 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> Optional[List[EventType]]:
         """Request the next slot and utter template if needed,
-            else return None"""
+        else return None"""
 
         for slot in self.required_slots(tracker):
             if self._should_request_slot(tracker, slot):
@@ -376,19 +476,19 @@ class FormAction(Action):
 
     def deactivate(self) -> List[EventType]:
         """Return `Form` event with `None` as name to deactivate the form
-            and reset the requested slot"""
+        and reset the requested slot"""
 
         logger.debug(f"Deactivating the form '{self.name()}'")
-        return [Form(None), SlotSet(REQUESTED_SLOT, None)]
+        return [ActiveLoop(None), SlotSet(REQUESTED_SLOT, None)]
 
     async def submit(
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Define what the form has to do
-            after all required slots are filled"""
+        after all required slots are filled"""
 
         raise NotImplementedError("A form must implement a submit method")
 
@@ -396,7 +496,7 @@ class FormAction(Action):
     @staticmethod
     def _to_list(x: Optional[Any]) -> List[Any]:
         """Convert object to a list if it is not a list,
-            None converted to empty list
+        None converted to empty list
         """
         if x is None:
             x = []
@@ -434,7 +534,7 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Activate form if the form is called for the first time.
 
@@ -443,16 +543,16 @@ class FormAction(Action):
         as any `SlotSet` events from validation of pre-filled slots.
         """
 
-        if tracker.active_form.get("name") is not None:
-            logger.debug(f"The form '{tracker.active_form}' is active")
+        if tracker.active_loop.get("name") is not None:
+            logger.debug(f"The form '{tracker.active_loop}' is active")
         else:
             logger.debug("There is no active form")
 
-        if tracker.active_form.get("name") == self.name():
+        if tracker.active_loop.get("name") == self.name():
             return []
         else:
             logger.debug(f"Activated the form '{self.name()}'")
-            events = [Form(self.name())]
+            events = [ActiveLoop(self.name())]
 
             # collect values of required slots filled before activation
             prefilled_slots = {}
@@ -477,22 +577,24 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Return a list of events from `self.validate(...)`
-            if validation is required:
-            - the form is active
-            - the form is called after `action_listen`
-            - form validation was not cancelled
+        if validation is required:
+        - the form is active
+        - the form is called after `action_listen`
+        - form validation was not cancelled
         """
-        if tracker.latest_action_name == "action_listen" and tracker.active_form.get(
-            "validate", True
-        ):
+        # no active_loop means that it is called during activation
+        need_validation = not tracker.active_loop or (
+            tracker.latest_action_name == "action_listen"
+            and not tracker.active_loop.get(LOOP_INTERRUPTED_KEY, False)
+        )
+        if need_validation:
             logger.debug(f"Validating user input '{tracker.latest_message}'")
-            if utils.is_coroutine_action(self.validate):
-                return await self.validate(dispatcher, tracker, domain)
-            else:
-                return self.validate(dispatcher, tracker, domain)
+            return await utils.call_potential_coroutine(
+                self.validate(dispatcher, tracker, domain)
+            )
         else:
             logger.debug("Skipping validation")
             return []
@@ -507,7 +609,7 @@ class FormAction(Action):
         self,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
-        domain: Dict[Text, Any],
+        domain: "DomainDict",
     ) -> List[EventType]:
         """Execute the side effects of this form.
 
@@ -525,7 +627,7 @@ class FormAction(Action):
         # validate user input
         events.extend(await self._validate_if_required(dispatcher, tracker, domain))
         # check that the form wasn't deactivated in validation
-        if Form(None) not in events:
+        if ActiveLoop(None) not in events:
 
             # create temp tracker with populated slots from `validate` method
             temp_tracker = tracker.copy()
@@ -542,17 +644,261 @@ class FormAction(Action):
                 # there is nothing more to request, so we can submit
                 self._log_form_slots(temp_tracker)
                 logger.debug(f"Submitting the form '{self.name()}'")
-                if utils.is_coroutine_action(self.submit):
-                    events.extend(await self.submit(dispatcher, temp_tracker, domain))
-                else:
-                    events.extend(self.submit(dispatcher, temp_tracker, domain))
+                events += await utils.call_potential_coroutine(
+                    self.submit(dispatcher, temp_tracker, domain)
+                )
+
                 # deactivate the form after submission
-                if utils.is_coroutine_action(self.deactivate):
-                    events.extend(await self.deactivate())  # type: ignore
-                else:
-                    events.extend(self.deactivate())
+                events += await utils.call_potential_coroutine(self.deactivate())
 
         return events
 
     def __str__(self) -> Text:
         return f"FormAction('{self.name()}')"
+
+    def _get_entity_type_of_slot_to_fill(
+        self,
+        slot_to_fill: Optional[Text],
+    ) -> Optional[Text]:
+        if not slot_to_fill:
+            return None
+
+        mappings = self.get_mappings_for_slot(slot_to_fill)
+        mappings = [m for m in mappings if m.get("type") == "from_entity"]
+
+        if not mappings:
+            return None
+
+        entity_type = mappings[0].get("entity")
+
+        for i in range(1, len(mappings)):
+            if entity_type != mappings[i].get("entity"):
+                return None
+
+        return entity_type
+
+
+class FormValidationAction(Action, ABC):
+    """A helper class for slot validations and extractions of custom slots."""
+
+    def form_name(self) -> Text:
+        """Returns the form's name."""
+        return self.name().replace("validate_", "", 1)
+
+    async def run(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        """Runs the custom actions. Please the docstring of the parent class."""
+        extraction_events = await self.extract_custom_slots(dispatcher, tracker, domain)
+        tracker.add_slots(extraction_events)
+
+        validation_events = await self.validate(dispatcher, tracker, domain)
+        tracker.add_slots(validation_events)
+
+        next_slot = await self.next_requested_slot(dispatcher, tracker, domain)
+        if next_slot:
+            validation_events.append(next_slot)
+
+        # Validation events include events for extracted slots
+        return validation_events
+
+    async def extract_custom_slots(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        """Extracts custom slots using available `extract_<slot name>` methods.
+
+        Uses the information from `self.required_slots` to gather which slots should
+        be extracted.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user. Use
+                `dispatcher.utter_message()` for sending messages.
+            tracker: the state tracker for the current
+                user. You can access slot values using
+                `tracker.get_slot(slot_name)`, the most recent user message
+                is `tracker.latest_message.text` and any other
+                `rasa_sdk.Tracker` property.
+            domain: the bot's domain.
+
+        Returns:
+            `SlotSet` for any extracted slots.
+        """
+        custom_slots = []
+        slots_to_extract = await self.required_slots(
+            self.slots_mapped_in_domain(domain), dispatcher, tracker, domain
+        )
+
+        for slot_name in slots_to_extract:
+            custom_slots += await self._extract_slot(
+                slot_name, dispatcher, tracker, domain
+            )
+        return custom_slots
+
+    async def _extract_slot(
+        self,
+        slot_name: Text,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        method_name = f"extract_{slot_name.replace('-', '_')}"
+        slot_mapped_in_domain = slot_name in self.slots_mapped_in_domain(domain)
+        extract_method = getattr(self, method_name, None)
+
+        if not extract_method:
+            if not slot_mapped_in_domain:
+                warnings.warn(
+                    f"No method '{method_name}' found for slot "
+                    f"'{slot_name}'. Skipping extraction for this slot."
+                )
+                return []
+            else:
+                return []
+
+        if extract_method and slot_mapped_in_domain:
+            warnings.warn(
+                f"Slot '{slot_name}' is mapped in the domain and your custom "
+                f"action defines '{method_name}'. '{method_name}' will override any "
+                f"extractions of the predefined slot mapping from the domain. It is "
+                f"suggested to define a slot mapping in only one of the two ways for "
+                f"clarity."
+            )
+
+        extracted = await utils.call_potential_coroutine(
+            extract_method(dispatcher, tracker, domain)
+        )
+
+        if isinstance(extracted, dict):
+            return [SlotSet(slot, value) for slot, value in extracted.items()]
+
+        warnings.warn(
+            f"Cannot extract `{slot_name}`: make sure the extract method "
+            f"returns the correct output."
+        )
+        return []
+
+    async def required_slots(
+        self,
+        slots_mapped_in_domain: List[Text],
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[Text]:
+        """Returns slots which the form should fill.
+
+        Args:
+            slots_mapped_in_domain: Names of slots of this form which were mapped in
+                the domain.
+            dispatcher: the dispatcher which is used to
+                send messages back to the user.
+            tracker: the conversation tracker for the current user.
+            domain: the bot's domain.
+
+        Returns:
+            Slot names which should be filled by the form. By default it
+            returns the slot names which are listed for this form in the domain
+            and use predefined mappings.
+        """
+        return slots_mapped_in_domain
+
+    def slots_mapped_in_domain(self, domain: "DomainDict") -> List[Text]:
+        """Returns slots which were mapped in the domain for the current form.
+
+        Args:
+            domain: The current domain.
+
+        Returns:
+            Slot names mapped in the domain.
+        """
+        return list(domain.get("forms", {}).get(self.form_name(), {}).keys())
+
+    async def validate(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        """Validate slots by calling a validation function for each slot.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user.
+            tracker: the conversation tracker for the current user.
+            domain: the bot's domain.
+        Returns:
+            `SlotSet` events for every validated slot.
+        """
+        slots: Dict[Text, Any] = tracker.slots_to_validate()
+
+        for slot_name, slot_value in list(slots.items()):
+            method_name = f"validate_{slot_name.replace('-','_')}"
+            validate_method = getattr(self, method_name, None)
+
+            if not validate_method:
+                logger.warning(
+                    f"Skipping validation for `{slot_name}`: there is no validation "
+                    f"method specified."
+                )
+                continue
+
+            validation_output = await utils.call_potential_coroutine(
+                validate_method(slot_value, dispatcher, tracker, domain)
+            )
+
+            if isinstance(validation_output, dict):
+                slots.update(validation_output)
+            else:
+                warnings.warn(
+                    f"Cannot validate `{slot_name}`: make sure the validation method "
+                    f"returns the correct output."
+                )
+
+        return [SlotSet(slot, value) for slot, value in slots.items()]
+
+    async def next_requested_slot(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> Optional[EventType]:
+        """Sets the next slot which should be requested.
+
+        Skips setting the next requested slot in case `missing_slots` was not
+        overridden.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user.
+            tracker: the conversation tracker for the current user.
+            domain: the bot's domain.
+
+        Returns:
+            `None` in case `missing_slots` was not overridden and returns `None`.
+            Otherwise returns a `SlotSet` event for the next slot to be requested.
+            If the `SlotSet` event sets `requested_slot` to `None`, the form will be
+            deactivated.
+        """
+        required_slots = await self.required_slots(
+            self.slots_mapped_in_domain(domain), dispatcher, tracker, domain
+        )
+        if required_slots and required_slots == self.slots_mapped_in_domain(domain):
+            # If users didn't override `required_slots` then we'll let the `FormAction`
+            # within Rasa Open Source request the next slot.
+            return None
+
+        missing_slots = (
+            slot_name
+            for slot_name in await self.required_slots(
+                self.slots_mapped_in_domain(domain), dispatcher, tracker, domain
+            )
+            if tracker.slots.get(slot_name) is None
+        )
+
+        return SlotSet(REQUESTED_SLOT, next(missing_slots, None))

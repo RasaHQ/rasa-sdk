@@ -170,13 +170,39 @@ def AgentUttered(
 
 
 # noinspection PyPep8Naming
-def Form(name: Optional[Text], timestamp: Optional[float] = None) -> EventType:
-    return {"event": "form", "name": name, "timestamp": timestamp}
+def ActiveLoop(name: Optional[Text], timestamp: Optional[float] = None) -> EventType:
+    return {"event": "active_loop", "name": name, "timestamp": timestamp}
 
 
 # noinspection PyPep8Naming
-def FormValidation(validate, timestamp: Optional[float] = None) -> EventType:
-    return {"event": "form_validation", "validate": validate, "timestamp": timestamp}
+def Form(name: Optional[Text], timestamp: Optional[float] = None) -> EventType:
+    warnings.warn(
+        "The `Form` event is deprecated. Please use the `ActiveLoop` event " "instead.",
+        DeprecationWarning,
+    )
+    return ActiveLoop(name, timestamp)
+
+
+# noinspection PyPep8Naming
+def LoopInterrupted(
+    is_interrupted: bool, timestamp: Optional[float] = None
+) -> EventType:
+    return {
+        "event": "loop_interrupted",
+        "is_interrupted": is_interrupted,
+        "timestamp": timestamp,
+    }
+
+
+# noinspection PyPep8Naming
+def FormValidation(validate: bool, timestamp: Optional[float] = None) -> EventType:
+    warnings.warn(
+        f"The {FormValidation.__name__}` event is deprecated. Please use the "
+        f"`{LoopInterrupted.__name__}` event instead.",
+        DeprecationWarning,
+    )
+    # `validate = False` is the same as `is_interrupted = True`
+    return LoopInterrupted(not validate, timestamp)
 
 
 # noinspection PyPep8Naming
