@@ -55,8 +55,6 @@ def create_argument_parser():
     utils.add_logging_option_arguments(parser)
     return parser
 
-def test_without_docstring():
-    print("bla")
 
 def create_app(
     action_package_name: Union[Text, types.ModuleType],
