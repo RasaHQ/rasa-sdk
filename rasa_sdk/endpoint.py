@@ -56,10 +56,6 @@ def create_argument_parser():
     return parser
 
 
-def function_without_docstring():
-    print("I don't have a docstring")
-
-
 def create_app(
     action_package_name: Union[Text, types.ModuleType],
     cors_origins: Union[Text, List[Text], None] = "*",
