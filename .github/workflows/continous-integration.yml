@@ -162,24 +162,8 @@ jobs:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
 
-    - name: Check if tag version is official release
-      # We need this to avoid attempting to publish changelogs for alphas / rcs
-      id: rasa_sdk_get_version
-      if: env.IS_TAG_BUILD == 'true'
-      env:
-        GITHUB_TAG: ${{ github.ref }}
-      run: |
-        CURRENT_TAG=${GITHUB_TAG/refs\/tags\//}
-
-        # Avoid that the script gets released for alphas or release candidates
-        if [[ "$CURRENT_TAG" =~ ^[0-9.]+$ ]]; then
-          echo "::set-output name=is_official_version::true"
-        else
-          echo "::set-output name=is_official_version::false"
-        fi
-
     - name: Publish Release Notes 🗞
-      if: env.IS_TAG_BUILD && steps.rasa_sdk_get_version.outputs.is_official_version == 'true'
+      if: env.IS_TAG_BUILD
       env:
         GITHUB_TAG: ${{ github.ref }}
         GITHUB_REPO_SLUG: ${{ github.repository }}
