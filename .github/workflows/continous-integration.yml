@@ -34,13 +34,13 @@ jobs:
            echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
       shell: bash
 
-    - name: Update Pip 🥄
-      run: python -m pip install --upgrade pip
-
     - name: Install poetry 🦄
       uses: Gr1N/setup-poetry@v1
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
+
+    - name: Update Pip 🥄
+      run: python -m pip install --upgrade pip
 
     - name: Load Poetry Cached Libraries ⬇
       uses: actions/cache@v1
@@ -95,9 +95,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Update Pip 🥄
-      run: python -m pip install --upgrade pip
-
     - name: Read Poetry Version 🔢
       run: |
            echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
@@ -107,6 +104,9 @@ jobs:
       uses: Gr1N/setup-poetry@v1
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
+
+    - name: Update Pip 🥄
+      run: python -m pip install --upgrade pip
 
     - name: Load Poetry Cached Libraries ⬇
       uses: actions/cache@v1
@@ -145,9 +145,6 @@ jobs:
       with:
         python-version: 3.6
 
-    - name: Update Pip 🥄
-      run: python -m pip install --upgrade pip
-
     - name: Read Poetry Version 🔢
       run: |
            echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
@@ -157,6 +154,9 @@ jobs:
       uses: Gr1N/setup-poetry@v1
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
+
+    - name: Update Pip 🥄
+      run: python -m pip install --upgrade pip
 
     - name: Build ⚒️ Distributions
       run: poetry build
