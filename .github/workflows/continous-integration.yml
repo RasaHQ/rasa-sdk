@@ -119,9 +119,6 @@ jobs:
     - name: Update Buildtools 🥄
       run: poetry run pip install --upgrade pip setuptools
 
-    - name: Show Pip
-      run: poetry run pip -V
-
     - name: Install Dependencies 📦
       run: make install
 
