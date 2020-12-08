@@ -39,12 +39,8 @@ jobs:
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
-    - name: Update Pip 🥄
-      run: poetry run python -m pip install --upgrade pip
-
-    - name: Show Pip
-      run: poetry run pip -V
-
+    - name: Update Buildtools 🥄
+      run: poetry run pip install --upgrade pip setuptools
 
     - name: Load Poetry Cached Libraries ⬇
       uses: actions/cache@v1
@@ -109,8 +105,8 @@ jobs:
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
-    - name: Update Pip 🥄
-      run: poetry run python -m pip install --upgrade pip
+    - name: Update Buildtools 🥄
+      run: poetry run pip install --upgrade pip setuptools
 
     - name: Load Poetry Cached Libraries ⬇
       uses: actions/cache@v1
@@ -162,8 +158,8 @@ jobs:
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
-    - name: Update Pip 🥄
-      run: poetry run python -m pip install --upgrade pip
+    - name: Update Buildtools 🥄
+      run: poetry run pip install --upgrade pip setuptools
 
     - name: Build ⚒️ Distributions
       run: poetry build
