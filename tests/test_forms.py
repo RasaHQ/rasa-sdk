@@ -1516,12 +1516,8 @@ class TestFormValidationAction(FormValidationAction):
         domain: "DomainDict",
     ) -> Dict[Text, Any]:
         if slot_value == "correct_value":
-            return {
-                "slot1": "validated_value",
-            }
-        return {
-            "slot1": None,
-        }
+            return {"slot1": "validated_value"}
+        return {"slot1": None}
 
     def validate_slot2(
         self,
@@ -1531,12 +1527,8 @@ class TestFormValidationAction(FormValidationAction):
         domain: "DomainDict",
     ) -> Dict[Text, Any]:
         if slot_value == "correct_value":
-            return {
-                "slot2": "validated_value",
-            }
-        return {
-            "slot2": None,
-        }
+            return {"slot2": "validated_value"}
+        return {"slot2": None}
 
     async def validate_slot3(
         self,
@@ -1546,9 +1538,7 @@ class TestFormValidationAction(FormValidationAction):
         domain: "DomainDict",
     ) -> Dict[Text, Any]:
         if slot_value == "correct_value":
-            return {
-                "slot3": "validated_value",
-            }
+            return {"slot3": "validated_value"}
         # this function doesn't return anything when the slot value is incorrect
 
 
@@ -1577,10 +1567,7 @@ async def test_form_validation_action():
         )
 
     assert not warnings
-    assert events == [
-        SlotSet("slot2", None),
-        SlotSet("slot1", "validated_value"),
-    ]
+    assert events == [SlotSet("slot2", None), SlotSet("slot1", "validated_value")]
 
 
 async def test_form_validation_action_async():
@@ -1679,10 +1666,7 @@ async def test_form_validation_changing_slots_during_validation():
         tracker=tracker,
         domain={"forms": {form_name: {"my_slot": []}}},
     )
-    assert events == [
-        SlotSet("my_slot", None),
-        SlotSet("other_slot", "value"),
-    ]
+    assert events == [SlotSet("my_slot", None), SlotSet("other_slot", "value")]
 
 
 async def test_form_validation_dash_slot():
@@ -1700,12 +1684,8 @@ async def test_form_validation_dash_slot():
             domain: "DomainDict",
         ) -> Dict[Text, Any]:
             if slot_value == "correct_value":
-                return {
-                    "slot-with-dash": "validated_value",
-                }
-            return {
-                "slot-with-dash": None,
-            }
+                return {"slot-with-dash": "validated_value"}
+            return {"slot-with-dash": None}
 
     form = TestFormValidationDashSlotAction()
 
@@ -1727,9 +1707,7 @@ async def test_form_validation_dash_slot():
         tracker=tracker,
         domain={"forms": {form_name: {"slot-with-dash": []}}},
     )
-    assert events == [
-        SlotSet("slot-with-dash", "validated_value"),
-    ]
+    assert events == [SlotSet("slot-with-dash", "validated_value")]
 
 
 @pytest.mark.parametrize(
@@ -1908,11 +1886,7 @@ async def test_warning_for_slot_extractions(
         # No domain slots, no custom slots
         ([], {}, [SlotSet(REQUESTED_SLOT, None)]),
         # Custom slot - no domain slots
-        (
-            ["some value"],
-            {},
-            [SlotSet(REQUESTED_SLOT, "some value")],
-        ),
+        (["some value"], {}, [SlotSet(REQUESTED_SLOT, "some value")]),
         # Domain slots are ignored in overridden `required_slots`
         (
             [],
@@ -1920,17 +1894,11 @@ async def test_warning_for_slot_extractions(
             [SlotSet(REQUESTED_SLOT, None)],
         ),
         # `required_slots` was not overridden - Rasa Open Source will request next slot.
-        (
-            ["another_slot"],
-            {"forms": {"some_form": {"another_slot": []}}},
-            [],
-        ),
+        (["another_slot"], {"forms": {"some_form": {"another_slot": []}}}, []),
     ],
 )
 async def test_ask_for_next_slot(
-    custom_slots: List[Text],
-    domain: Dict,
-    expected_return_events: List[EventType],
+    custom_slots: List[Text], domain: Dict, expected_return_events: List[EventType]
 ):
     class TestFormRequestSlot(FormValidationAction):
         def name(self) -> Text:

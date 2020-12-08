@@ -1,12 +1,7 @@
 import pytest
 
 from rasa_sdk import Tracker
-from rasa_sdk.events import (
-    ActionExecuted,
-    UserUttered,
-    SlotSet,
-    Restarted,
-)
+from rasa_sdk.events import ActionExecuted, UserUttered, SlotSet, Restarted
 from rasa_sdk.interfaces import ACTION_LISTEN_NAME, NLU_FALLBACK_INTENT_NAME
 from typing import List, Dict, Text, Any
 
@@ -141,7 +136,7 @@ def test_get_intent_of_latest_message_with_missing_data():
     assert not tracker.get_intent_of_latest_message()
 
     tracker.latest_message = {
-        "intent": {"name": NLU_FALLBACK_INTENT_NAME, "confidence": 0.9},
+        "intent": {"name": NLU_FALLBACK_INTENT_NAME, "confidence": 0.9}
     }
     assert not tracker.get_intent_of_latest_message()
 
