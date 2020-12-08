@@ -4,7 +4,7 @@ from typing import Type, Text, Dict, Any, List, Optional
 
 from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.types import DomainDict
-from rasa_sdk.events import SlotSet, ActiveLoop
+from rasa_sdk.events import SlotSet, ActiveLoop, EventType
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.forms import (
     FormAction,
@@ -1063,7 +1063,7 @@ async def test_validate_prefilled_slots():
     )
 
     events = await form._activate_if_required(
-        dispatcher=None, tracker=tracker, domain=None
+        dispatcher=None, tracker=tracker, domain={}
     )
     # check that the form was activated and prefilled slots were validated
     assert events == [
@@ -1073,7 +1073,7 @@ async def test_validate_prefilled_slots():
     ]
 
     events.extend(
-        await form._validate_if_required(dispatcher=None, tracker=tracker, domain=None)
+        await form._validate_if_required(dispatcher=None, tracker=tracker, domain={})
     )
 
     # check that entities picked up in input overwrite prefilled slots
@@ -1204,7 +1204,7 @@ async def test_activate_if_required():
     )
 
     events = await form._activate_if_required(
-        dispatcher=None, tracker=tracker, domain=None
+        dispatcher=None, tracker=tracker, domain={}
     )
     # check that the form was activated
     assert events == [ActiveLoop("some_form")]
@@ -1221,7 +1221,7 @@ async def test_activate_if_required():
     )
 
     events = await form._activate_if_required(
-        dispatcher=None, tracker=tracker, domain=None
+        dispatcher=None, tracker=tracker, domain={}
     )
     # check that the form was not activated again
     assert events == []
@@ -1334,7 +1334,7 @@ async def test_validate_on_activation():
         "action_listen",
     )
     dispatcher = CollectingDispatcher()
-    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain={})
     # check that the form was activated and validation was performed
     assert events == [
         ActiveLoop("some_form"),
@@ -1369,7 +1369,7 @@ async def test_validate_on_activation_with_other_action_after_user_utterance():
         "some_action",
     )
     dispatcher = CollectingDispatcher()
-    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain={})
     # check that the form was activated and validation was performed
     assert events == [
         ActiveLoop("some_form"),
@@ -1450,7 +1450,7 @@ async def test_early_deactivation(form_class: Type[FormAction]):
         "action_listen",
     )
 
-    events = await form.run(dispatcher=None, tracker=tracker, domain=None)
+    events = await form.run(dispatcher=None, tracker=tracker, domain={})
 
     # check that form was deactivated before requesting next slot
     assert events == [ActiveLoop(None), SlotSet(REQUESTED_SLOT, None)]
@@ -1491,7 +1491,7 @@ async def test_submit(form_class: Type[FormAction]):
     )
 
     form = form_class()
-    events = await form.run(dispatcher=None, tracker=tracker, domain=None)
+    events = await form.run(dispatcher=None, tracker=tracker, domain={})
 
     assert events[0]["value"] == 42
 
@@ -1502,8 +1502,11 @@ def test_form_deprecation():
 
 
 class TestFormValidationAction(FormValidationAction):
+    def __init__(self, form_name: Text = "some_form") -> None:
+        self.name_of_form = form_name
+
     def name(self) -> Text:
-        return "some_form"
+        return self.name_of_form
 
     def validate_slot1(
         self,
@@ -1550,7 +1553,8 @@ class TestFormValidationAction(FormValidationAction):
 
 
 async def test_form_validation_action():
-    form = TestFormValidationAction()
+    form_name = "test_form_validation_action"
+    form = TestFormValidationAction(form_name)
 
     # tracker with active form
     tracker = Tracker(
@@ -1560,12 +1564,19 @@ async def test_form_validation_action():
         [SlotSet("slot1", "correct_value"), SlotSet("slot2", "incorrect_value")],
         False,
         None,
-        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        {"name": form_name, "is_interrupted": False, "rejected": False},
         "action_listen",
     )
 
     dispatcher = CollectingDispatcher()
-    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    with pytest.warns(None) as warnings:
+        events = await form.run(
+            dispatcher=dispatcher,
+            tracker=tracker,
+            domain={"forms": {form_name: {"slot1": [], "slot2": []}}},
+        )
+
+    assert not warnings
     assert events == [
         SlotSet("slot2", None),
         SlotSet("slot1", "validated_value"),
@@ -1573,6 +1584,7 @@ async def test_form_validation_action():
 
 
 async def test_form_validation_action_async():
+    form_name = "some_form"
     form = TestFormValidationAction()
 
     # tracker with active form
@@ -1583,16 +1595,21 @@ async def test_form_validation_action_async():
         [SlotSet("slot3", "correct_value")],
         False,
         None,
-        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        {"name": form_name, "is_interrupted": False, "rejected": False},
         "action_listen",
     )
 
     dispatcher = CollectingDispatcher()
-    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    events = await form.run(
+        dispatcher=dispatcher,
+        tracker=tracker,
+        domain={"forms": {form_name: {"slot1": [], "slot3": []}}},
+    )
     assert events == [SlotSet("slot3", "validated_value")]
 
 
 async def test_form_validation_without_validate_function():
+    form_name = "some_form"
     form = TestFormValidationAction()
 
     # tracker with active form
@@ -1607,24 +1624,73 @@ async def test_form_validation_without_validate_function():
         ],
         False,
         None,
-        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        {"name": form_name, "is_interrupted": False, "rejected": False},
         "action_listen",
     )
 
     dispatcher = CollectingDispatcher()
     with pytest.warns(UserWarning):
-        events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
-        assert events == [
-            SlotSet("slot3", "some_value"),
-            SlotSet("slot2", None),
-            SlotSet("slot1", "validated_value"),
-        ]
+        events = await form.run(
+            dispatcher=dispatcher,
+            tracker=tracker,
+            domain={"forms": {form_name: {"slot1": [], "slot2": [], "slot3": []}}},
+        )
+
+    assert events == [
+        SlotSet("slot3", "some_value"),
+        SlotSet("slot2", None),
+        SlotSet("slot1", "validated_value"),
+    ]
+
+
+async def test_form_validation_changing_slots_during_validation():
+    form_name = "some_form"
+
+    class TestForm(FormValidationAction):
+        def name(self) -> Text:
+            return form_name
+
+        async def validate_my_slot(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            return {"my_slot": None, "other_slot": "value"}
+
+    form = TestForm()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [SlotSet("my_slot", "correct_value")],
+        False,
+        None,
+        {"name": form_name, "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(
+        dispatcher=dispatcher,
+        tracker=tracker,
+        domain={"forms": {form_name: {"my_slot": []}}},
+    )
+    assert events == [
+        SlotSet("my_slot", None),
+        SlotSet("other_slot", "value"),
+    ]
 
 
 async def test_form_validation_dash_slot():
+    form_name = "some_form"
+
     class TestFormValidationDashSlotAction(FormValidationAction):
         def name(self) -> Text:
-            return "some_form"
+            return form_name
 
         def validate_slot_with_dash(
             self,
@@ -1651,12 +1717,248 @@ async def test_form_validation_dash_slot():
         [SlotSet("slot-with-dash", "correct_value")],
         False,
         None,
+        {"name": form_name, "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(
+        dispatcher=dispatcher,
+        tracker=tracker,
+        domain={"forms": {form_name: {"slot-with-dash": []}}},
+    )
+    assert events == [
+        SlotSet("slot-with-dash", "validated_value"),
+    ]
+
+
+@pytest.mark.parametrize(
+    "required_slots, next_slot",
+    [(["my_slot"], None), (["my_slot", "other_slot"], "other_slot")],
+)
+async def test_extract_and_validate_slot(
+    required_slots: List[Text], next_slot: Optional[Text]
+):
+    custom_slot = "my_slot"
+    unvalidated_value = "some value"
+    validated_value = "validated value"
+
+    class TestFormValidationWithCustomSlots(FormValidationAction):
+        def name(self) -> Text:
+            return "some_form"
+
+        async def required_slots(
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> List[Text]:
+            return required_slots
+
+        async def extract_my_slot(
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            return {custom_slot: unvalidated_value}
+
+        async def validate_my_slot(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            assert slot_value == unvalidated_value
+            return {custom_slot: validated_value}
+
+    form = TestFormValidationWithCustomSlots()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [],
+        False,
+        None,
         {"name": "some_form", "is_interrupted": False, "rejected": False},
         "action_listen",
     )
 
     dispatcher = CollectingDispatcher()
-    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=None)
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain={})
+
     assert events == [
-        SlotSet("slot-with-dash", "validated_value"),
+        SlotSet(custom_slot, validated_value),
+        SlotSet(REQUESTED_SLOT, next_slot),
     ]
+
+
+async def test_extract_slot_only():
+    custom_slot = "my_slot"
+    unvalidated_value = "some value"
+
+    class TestFormValidationWithCustomSlots(FormValidationAction):
+        def name(self) -> Text:
+            return "some_form"
+
+        async def required_slots(
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> List[Text]:
+            return [custom_slot]
+
+        async def extract_my_slot(
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            return {custom_slot: unvalidated_value}
+
+    form = TestFormValidationWithCustomSlots()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [],
+        False,
+        None,
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain={})
+
+    assert events == [
+        SlotSet(custom_slot, unvalidated_value),
+        SlotSet(REQUESTED_SLOT, None),
+    ]
+
+
+@pytest.mark.parametrize(
+    "required_slots, domain, next_slot_events",
+    [
+        # Custom slot mapping but no `extract` method
+        (["my_slot", "other_slot"], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
+        # Extract method for slot which is also mapped in domain
+        (["my_slot"], {"forms": {"some_form": {"my_slot": []}}}, []),
+    ],
+)
+async def test_warning_for_slot_extractions(
+    required_slots: List[Text], domain: DomainDict, next_slot_events: List[EventType]
+):
+    custom_slot = "my_slot"
+    unvalidated_value = "some value"
+
+    class TestFormValidationWithCustomSlots(FormValidationAction):
+        def name(self) -> Text:
+            return "some_form"
+
+        async def required_slots(
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> List[Text]:
+            return required_slots
+
+        async def extract_my_slot(
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            return {custom_slot: unvalidated_value}
+
+    form = TestFormValidationWithCustomSlots()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [],
+        False,
+        None,
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    with pytest.warns(UserWarning):
+        events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=domain)
+
+    assert events == [SlotSet(custom_slot, unvalidated_value), *next_slot_events]
+
+
+@pytest.mark.parametrize(
+    "custom_slots, domain, expected_return_events",
+    [
+        # No domain slots, no custom slots
+        ([], {}, [SlotSet(REQUESTED_SLOT, None)]),
+        # Custom slot - no domain slots
+        (
+            ["some value"],
+            {},
+            [SlotSet(REQUESTED_SLOT, "some value")],
+        ),
+        # Domain slots are ignored in overridden `required_slots`
+        (
+            [],
+            {"forms": {"some_form": {"another_slot": []}}},
+            [SlotSet(REQUESTED_SLOT, None)],
+        ),
+        # `required_slots` was not overridden - Rasa Open Source will request next slot.
+        (
+            ["another_slot"],
+            {"forms": {"some_form": {"another_slot": []}}},
+            [],
+        ),
+    ],
+)
+async def test_ask_for_next_slot(
+    custom_slots: List[Text],
+    domain: Dict,
+    expected_return_events: List[EventType],
+):
+    class TestFormRequestSlot(FormValidationAction):
+        def name(self) -> Text:
+            return "some_form"
+
+        async def required_slots(
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> List[Text]:
+            return custom_slots
+
+    form = TestFormRequestSlot()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [],
+        False,
+        None,
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=domain)
+    assert events == expected_return_events

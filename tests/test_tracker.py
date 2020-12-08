@@ -4,11 +4,10 @@ from rasa_sdk import Tracker
 from rasa_sdk.events import (
     ActionExecuted,
     UserUttered,
-    ActionReverted,
     SlotSet,
     Restarted,
 )
-from rasa_sdk.interfaces import ACTION_LISTEN_NAME
+from rasa_sdk.interfaces import ACTION_LISTEN_NAME, NLU_FALLBACK_INTENT_NAME
 from typing import List, Dict, Text, Any
 
 
@@ -133,3 +132,45 @@ def test_get_extracted_slots_with_no_active_loop():
         "some_other": "some_value2",
         "my_slot": "some_value",
     }
+
+
+def test_get_intent_of_latest_message_with_missing_data():
+    tracker = get_tracker([])
+
+    tracker.latest_message = None
+    assert not tracker.get_intent_of_latest_message()
+
+    tracker.latest_message = {
+        "intent": {"name": NLU_FALLBACK_INTENT_NAME, "confidence": 0.9},
+    }
+    assert not tracker.get_intent_of_latest_message()
+
+
+def test_get_intent_of_latest_message_with_only_fallback():
+    tracker = get_tracker([])
+    tracker.latest_message = {
+        "intent": {"name": NLU_FALLBACK_INTENT_NAME, "confidence": 0.9},
+        "intent_ranking": [{"name": NLU_FALLBACK_INTENT_NAME, "confidence": 0.9}],
+    }
+    assert not tracker.get_intent_of_latest_message()
+    assert (
+        tracker.get_intent_of_latest_message(skip_fallback_intent=False)
+        == NLU_FALLBACK_INTENT_NAME
+    )
+
+
+def test_get_intent_of_latest_message_with_user_intent():
+    tracker = get_tracker([])
+    tracker.latest_message = {
+        "intent": {"name": NLU_FALLBACK_INTENT_NAME, "confidence": 0.9},
+        "intent_ranking": [
+            {"name": NLU_FALLBACK_INTENT_NAME, "confidence": 0.9},
+            {"name": "hello", "confidence": 0.8},
+            {"name": "goodbye", "confidence": 0.7},
+        ],
+    }
+    assert tracker.get_intent_of_latest_message() == "hello"
+    assert (
+        tracker.get_intent_of_latest_message(skip_fallback_intent=False)
+        == NLU_FALLBACK_INTENT_NAME
+    )

@@ -35,7 +35,7 @@ jobs:
       shell: bash
 
     - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v1
+      uses: Gr1N/setup-poetry@v4
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
@@ -62,8 +62,12 @@ jobs:
     - name: Checkout target branch to be able to diff
       if: github.event_name == 'pull_request'
       run: |
-        git fetch --depth=1 origin ${{ github.base_ref }}
+        git fetch origin "${{ github.base_ref }}"
         echo "DOCSTRING_DIFF_BRANCH=origin/${{ github.base_ref }}" >> $GITHUB_ENV
+
+        # Fetch entire history for current branch so that `make lint-docstrings`
+        # can calculate the proper diff between the branches
+        git fetch --unshallow origin "${{ github.ref }}"
 
     - name: Lint Code 🎎
       run: |
@@ -101,7 +105,7 @@ jobs:
       shell: bash
 
     - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v1
+      uses: Gr1N/setup-poetry@v4
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
@@ -154,7 +158,7 @@ jobs:
       shell: bash
 
     - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v1
+      uses: Gr1N/setup-poetry@v4
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
