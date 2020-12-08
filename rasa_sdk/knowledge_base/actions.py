@@ -233,9 +233,10 @@ class ActionQueryKnowledgeBase(Action):
 
         value = object_of_interest[attribute]
 
-        object_representation = await utils.call_potential_coroutine(
+        repr_function = await utils.call_potential_coroutine(
             self.knowledge_base.get_representation_function_of_object(object_type)
         )
+        object_representation = repr_function(object_of_interest)
 
         key_attribute = await utils.call_potential_coroutine(
             self.knowledge_base.get_key_attribute_of_object(object_type)
