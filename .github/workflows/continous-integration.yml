@@ -39,15 +39,15 @@ jobs:
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
-    - name: Update Buildtools 🥄
-      run: poetry run pip install --upgrade pip setuptools
-
     - name: Load Poetry Cached Libraries ⬇
       uses: actions/cache@v1
       with:
         path: ~/.cache/pypoetry/virtualenvs
         key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
         restore-keys: ${{ runner.os }}-poetry-
+
+    - name: Update Buildtools 🥄
+      run: poetry run pip install --upgrade pip setuptools
 
     - name: Load Yarn Cached Packages ⬇
       uses: actions/cache@v1
@@ -105,15 +105,15 @@ jobs:
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
-    - name: Update Buildtools 🥄
-      run: poetry run pip install --upgrade pip setuptools
-
     - name: Load Poetry Cached Libraries ⬇
       uses: actions/cache@v1
       with:
         path: ~/.cache/pypoetry/virtualenvs
         key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
         restore-keys: ${{ runner.os }}-poetry-
+
+    - name: Update Buildtools 🥄
+      run: poetry run pip install --upgrade pip setuptools
 
     - name: Show Pip
       run: poetry run pip -V
