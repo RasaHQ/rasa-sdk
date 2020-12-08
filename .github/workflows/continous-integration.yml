@@ -34,6 +34,9 @@ jobs:
            echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
       shell: bash
 
+    - name: Update Pip 🥄
+      run: python -m pip install --upgrade pip
+
     - name: Install poetry 🦄
       uses: Gr1N/setup-poetry@v1
       with:
@@ -92,6 +95,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Update Pip 🥄
+      run: python -m pip install --upgrade pip
+
     - name: Read Poetry Version 🔢
       run: |
            echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
@@ -138,6 +144,9 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.6
+
+    - name: Update Pip 🥄
+      run: python -m pip install --upgrade pip
 
     - name: Read Poetry Version 🔢
       run: |
