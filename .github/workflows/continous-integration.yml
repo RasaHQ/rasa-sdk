@@ -163,27 +163,32 @@ jobs:
         password: ${{ secrets.PYPI_TOKEN }}
 
     - name: Notify Slack & Publish Release Notes 🗞
-      if: env.IS_TAG_BUILD == 'true' && env.WORKFLOW_CONCLUSION == 'success'
+      uses: Ilshidur/action-slack@2.1.0
+
       env:
         RASA_SDK_VERSION: ${{ github.ref }}
-        SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }
+        SLACK_WEBHOOK: ${{ SLACK_WEBHOOK }}
         GITHUB_TAG: ${{ github.ref }}
         GITHUB_REPO_SLUG: ${{ github.repository }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//
+        RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//}
         GITHUB_TAG=${GITHUB_TAG/refs\/tags\//}
         sudo apt-get update
         sudo apt-get -y install pandoc
         pip install -U github3.py
         python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py
-        ${GITHUB_WORKSPACE}/scripts/ping_slack_about_package_release.sh
+      if: success()
+      with:
+        args: "⚡ New *Rasa SDK* version ${RASA_SDK_VERSION} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/${RASA_SDK_VERSION}/CHANGELOG.mdx"
 
     - name: Notify Slack of failure ⛔️
-      if: env.IS_TAG_BUILD == 'true' && env.WORKFLOW_CONCLUSION != 'success'
+      uses: Ilshidur/action-slack@2.1.0
       env:
         RASA_SDK_VERSION: ${{ github.ref }}
-        SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
       run: |
         RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//}
-        ${GITHUB_WORKSPACE}/scripts/ping_slack_about_package_release.sh
+      if: failure()
+      with:
+        args: "⛔️ *Rasa SDK* version ${RASA_SDK_VERSION} could not be released 😱 GitHub Actions: https://github.com/RasaHQ/rasa-sdk/actions?query=branch%3A${RASA_SDK_VERSION}"
