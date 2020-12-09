@@ -177,18 +177,16 @@ jobs:
 
     - name: Notify Slack 💬
       env:
-        RASA_SDK_VERSION: ${{ GITHUB_REF/refs\/tags\// }}
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
       uses: Ilshidur/action-slack@2.1.0
       if: success()
       with:
-        args: "⚡ New *Rasa SDK* version ${RASA_SDK_VERSION} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/${RASA_SDK_VERSION}/CHANGELOG.mdx"
+        args: "⚡ New *Rasa SDK* version ${ GITHUB_REF/refs\/tags\// } has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/${ GITHUB_REF/refs\/tags\// }/CHANGELOG.mdx"
 
     - name: Notify Slack of Failure ⛔
       env:
-        RASA_SDK_VERSION: ${{ GITHUB_REF/refs\/tags\// }}
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
       uses: Ilshidur/action-slack@2.1.0
       if: failure()
       with:
-        args: "⛔️ *Rasa SDK* version ${RASA_SDK_VERSION} could not be released 😱 GitHub Actions: https://github.com/RasaHQ/rasa-sdk/actions?query=branch%3A${RASA_SDK_VERSION}"
+        args: "⛔️ *Rasa SDK* version ${ GITHUB_REF/refs\/tags\// } could not be released 😱 GitHub Actions: https://github.com/RasaHQ/rasa-sdk/actions?query=branch%3A${ GITHUB_REF/refs\/tags\// }"
