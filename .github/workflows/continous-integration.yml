@@ -175,6 +175,14 @@ jobs:
         pip install -U github3.py
         python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py
 
+  send_slack_notification_for_release:
+    name: Notify Slack
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+    - deploy
+
+    steps:
     - name: Notify Slack of Failure ⛔
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -187,5 +195,6 @@ jobs:
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
       uses: Ilshidur/action-slack@2.1.0
+      if: success()
       with:
         args: "⚡ New *Rasa SDK* version {{ github.event.release.tag_name }} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/{{ github.event.release.tag_name }}/CHANGELOG.mdx"
