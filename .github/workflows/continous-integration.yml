@@ -198,4 +198,4 @@ jobs:
       uses: Ilshidur/action-slack@2.1.0
       if: success()
       with:
-        args: "⚡ New *Rasa SDK* version {{ EVENT_PAYLOADt.release.tag_name }} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/{{ EVENT_PAYLOAD.release.tag_name }}/CHANGELOG.mdx"
+        args: "⚡ New *Rasa SDK* version {{ EVENT_PAYLOAD.release.tag_name }} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/{{ EVENT_PAYLOAD.release.tag_name }}/CHANGELOG.mdx"
