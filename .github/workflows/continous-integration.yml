@@ -187,8 +187,8 @@ jobs:
         env:
           RASA_SDK_VERSION: ${{ github.ref }}
         run: |
-          RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//}
-
+          echo "RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//}" >> $GITHUB_ENV
+          
       - name: Notify Slack of Failure ⛔
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
