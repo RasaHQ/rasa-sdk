@@ -174,3 +174,25 @@ jobs:
         sudo apt-get -y install pandoc
         pip install -U github3.py pep440_version_utils
         python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py
+
+    - name: Get RASA SDK Version
+      env:
+        RASA_SDK_VERSION: ${{ github.ref }}
+      run: |
+        echo "RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//}" >> $GITHUB_ENV
+
+    - name: Notify Slack 💬
+      if: env.IS_TAG_BUILD && success()
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      uses: Ilshidur/action-slack@2.1.0
+      with:
+        args: "⚡ New *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/${{ env.RASA_SDK_VERSION }}/CHANGELOG.mdx"
+
+    - name: Notify Slack of Failure ⛔
+      if: env.IS_TAG_BUILD && failure()
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      uses: Ilshidur/action-slack@2.1.0
+      with:
+        args: "⛔️ *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} could not be released 😱 GitHub Actions: https://github.com/RasaHQ/rasa-sdk/actions?query=branch%3A${{ env.RASA_SDK_VERSION }}"
