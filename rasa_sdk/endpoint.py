@@ -89,7 +89,8 @@ def create_app(
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
         action_call = request.json
-        action_call["domain"]["headers"] = request.headers
+        if "domain" in action_call:
+            action_call["domain"]["headers"] = request.headers
         if action_call is None:
             body = {"error": "Invalid body request"}
             return response.json(body, status=400)
