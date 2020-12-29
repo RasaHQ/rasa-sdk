@@ -30,3 +30,19 @@ class CustomAction(Action):
         domain: DomainDict,
     ) -> List[Dict[Text, Any]]:
         return [SlotSet("test", "bar")]
+
+
+class CustomHeadersAction(Action):
+    def name(cls) -> Text:
+        return "custom_headers_action"
+
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: DomainDict,
+    ) -> List[Dict[Text, Any]]:
+        if (domain and "headers" in domain):
+            return [SlotSet("headers", "True")]
+        else:
+            return [SlotSet("headers", "False")]

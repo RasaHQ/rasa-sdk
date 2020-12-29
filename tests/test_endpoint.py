@@ -22,7 +22,7 @@ def test_server_health_returns_200():
 def test_server_list_actions_returns_200():
     request, response = app.test_client.get("/actions")
     assert response.status == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
 
 
 def test_server_webhook_unknown_action_returns_404():
@@ -55,6 +55,20 @@ def test_server_webhook_custom_async_action_returns_200():
     events = response.json.get("events")
 
     assert events == [SlotSet("test", "foo"), SlotSet("test2", "boo")]
+    assert response.status == 200
+
+
+def test_server_webhook_custom_headers_action_returns_200():
+    data = {
+        "next_action": "custom_headers_action",
+        "tracker": {"sender_id": "1", "conversation_id": "default"},
+        "domain": {},
+    }
+    headers = {"uber-trace-id": "1234:5678:9012:0a"}
+    request, response = app.test_client.post("/webhook", data=json.dumps(data), headers=headers)
+    events = response.json.get("events")
+
+    assert events == [SlotSet("headers", "True")]
     assert response.status == 200
 
 
