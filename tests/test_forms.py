@@ -1908,11 +1908,7 @@ async def test_warning_for_slot_extractions(
         # No domain slots, no custom slots
         ([], {}, [SlotSet(REQUESTED_SLOT, None)]),
         # Custom slot - no domain slots
-        (
-            ["some value"],
-            {},
-            [SlotSet(REQUESTED_SLOT, "some value")],
-        ),
+        (["some value"], {}, [SlotSet(REQUESTED_SLOT, "some value")],),
         # Domain slots are ignored in overridden `required_slots`
         (
             [],
@@ -1920,17 +1916,11 @@ async def test_warning_for_slot_extractions(
             [SlotSet(REQUESTED_SLOT, None)],
         ),
         # `required_slots` was not overridden - Rasa Open Source will request next slot.
-        (
-            ["another_slot"],
-            {"forms": {"some_form": {"another_slot": []}}},
-            [],
-        ),
+        (["another_slot"], {"forms": {"some_form": {"another_slot": []}}}, [],),
     ],
 )
 async def test_ask_for_next_slot(
-    custom_slots: List[Text],
-    domain: Dict,
-    expected_return_events: List[EventType],
+    custom_slots: List[Text], domain: Dict, expected_return_events: List[EventType],
 ):
     class TestFormRequestSlot(FormValidationAction):
         def name(self) -> Text:

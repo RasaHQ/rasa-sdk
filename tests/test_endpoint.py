@@ -65,7 +65,9 @@ def test_server_webhook_custom_headers_action_returns_200():
         "domain": {},
     }
     headers = {"uber-trace-id": "1234:5678:9012:0a"}
-    request, response = app.test_client.post("/webhook", data=json.dumps(data), headers=headers)
+    request, response = app.test_client.post(
+        "/webhook", data=json.dumps(data), headers=headers
+    )
     events = response.json.get("events")
 
     assert events == [SlotSet("headers", "True")]

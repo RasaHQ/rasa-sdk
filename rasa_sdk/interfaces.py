@@ -314,10 +314,7 @@ class Action:
         raise NotImplementedError("An action must implement a name")
 
     async def run(
-        self,
-        dispatcher,
-        tracker: Tracker,
-        domain: "DomainDict",
+        self, dispatcher, tracker: Tracker, domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
         """Execute the side effects of this action.
 
