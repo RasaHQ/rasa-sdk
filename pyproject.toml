@@ -9,7 +9,7 @@ exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist))"
 
 [tool.poetry]
 name = "rasa-sdk"
-version = "2.0.0"
+version = "2.2.0"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
 authors = [ "Rasa Technologies GmbH <hi@rasa.com>",]
 maintainers = [ "Tom Bocklisch <tom@rasa.com>",]
@@ -75,8 +75,9 @@ coveralls = "^2.1.2"
 pytest = "^5.4.1"
 black = "^20.8b1"
 flake8 = "^3.8.2"
+flake8-docstrings = "^1.5.0"
 pytest-sanic = "^1.6.1"
-questionary = "^1.5.2"
+questionary = "^1.8.1"
 towncrier = "^19.2.0"
 toml = "^0.10.0"
 pep440-version-utils = "^0.3.0"

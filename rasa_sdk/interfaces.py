@@ -4,6 +4,8 @@ import typing
 import warnings
 from typing import Any, Dict, Iterator, List, Optional, Text
 
+from rasa_sdk.events import EventType
+
 if typing.TYPE_CHECKING:  # pragma: no cover
     from rasa_sdk.types import DomainDict, TrackerState
 
@@ -11,6 +13,7 @@ if typing.TYPE_CHECKING:  # pragma: no cover
 logger = logging.getLogger(__name__)
 
 ACTION_LISTEN_NAME = "action_listen"
+NLU_FALLBACK_INTENT_NAME = "nlu_fallback"
 
 
 class Tracker:
@@ -150,7 +153,7 @@ class Tracker:
     def idx_after_latest_restart(self) -> int:
         """Return the idx of the most recent restart in the list of events.
 
-        If the conversation has not been restarted, ``0`` is returned."""
+        If the conversation has not been restarted, `0` is returned."""
 
         idx = 0
         for i, event in enumerate(self.events):
@@ -257,6 +260,50 @@ class Tracker:
 
         return slots
 
+    def add_slots(self, slots: List[EventType]) -> None:
+        """Adds slots to the current tracker.
+
+        Args:
+            slots: `SlotSet` events.
+        """
+        for event in slots:
+            if not event.get("event") == "slot":
+                continue
+            self.slots[event["name"]] = event["value"]
+            self.events.append(event)
+
+    def get_intent_of_latest_message(
+        self, skip_fallback_intent: bool = True
+    ) -> Optional[Text]:
+        """Retrieves the intent the last user message.
+
+        Args:
+            skip_fallback_intent: Optionally skip the nlu_fallback intent
+                and return the next.
+
+        Returns:
+            Intent of latest message if available.
+        """
+        latest_message = self.latest_message
+        if not latest_message:
+            return None
+
+        intent_ranking = latest_message.get("intent_ranking")
+        if not intent_ranking:
+            return None
+
+        highest_ranking_intent = intent_ranking[0]
+        if (
+            highest_ranking_intent["name"] == NLU_FALLBACK_INTENT_NAME
+            and skip_fallback_intent
+        ):
+            if len(intent_ranking) >= 2:
+                return intent_ranking[1]["name"]
+            else:
+                return None
+        else:
+            return highest_ranking_intent["name"]
+
 
 class Action:
     """Next action to be taken in response to a dialogue state."""
@@ -277,15 +324,15 @@ class Action:
         Args:
             dispatcher: the dispatcher which is used to
                 send messages back to the user. Use
-                ``dispatcher.utter_message()`` for sending messages.
+                `dispatcher.utter_message()` for sending messages.
             tracker: the state tracker for the current
                 user. You can access slot values using
-                ``tracker.get_slot(slot_name)``, the most recent user message
-                is ``tracker.latest_message.text`` and any other
-                ``rasa_sdk.Tracker`` property.
+                `tracker.get_slot(slot_name)`, the most recent user message
+                is `tracker.latest_message.text` and any other
+                `rasa_sdk.Tracker` property.
             domain: the bot's domain
         Returns:
-            A dictionary of ``rasa_sdk.events.Event`` instances that is
+            A dictionary of `rasa_sdk.events.Event` instances that is
                 returned through the endpoint
         """
 
