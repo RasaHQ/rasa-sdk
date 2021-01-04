@@ -895,9 +895,7 @@ class FormValidationAction(Action, ABC):
 
         missing_slots = (
             slot_name
-            for slot_name in await self.required_slots(
-                self.slots_mapped_in_domain(domain), dispatcher, tracker, domain
-            )
+            for slot_name in required_slots
             if tracker.slots.get(slot_name) is None
         )
 
