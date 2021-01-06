@@ -6,6 +6,7 @@ from rasa_sdk.constants import APPLICATION_ROOT_LOGGER_NAME
 
 
 def main_from_args(args):
+    """Run with arguments."""
     logging.getLogger("matplotlib").setLevel(logging.WARN)
 
     utils.configure_colored_logging(args.loglevel)

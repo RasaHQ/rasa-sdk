@@ -42,7 +42,6 @@ def all_subclasses(cls: Any) -> List[Any]:
 
 def add_logging_level_option_arguments(parser):
     """Add options to an argument parser to configure logging levels."""
-
     # arguments for logging configuration
     parser.add_argument(
         "-v",
@@ -71,6 +70,7 @@ def add_logging_level_option_arguments(parser):
 
 
 def add_logging_file_arguments(parser):
+    """Add options to an argument parser to configure logging to a file."""
     parser.add_argument(
         "--log-file",
         type=str,
@@ -80,6 +80,7 @@ def add_logging_file_arguments(parser):
 
 
 def configure_colored_logging(loglevel):
+    """Configure logging with colors."""
     import coloredlogs
 
     field_styles = coloredlogs.DEFAULT_FIELD_STYLES.copy()
@@ -100,10 +101,10 @@ def configure_file_logging(
 ) -> None:
     """Configure logging to a file.
 
-    Args:
-        :param logger_obj: Logger object to configure.
-        :param log_file: Path of log file to write to.
-        :param loglevel:
+    :param logger_obj: Logger object to configure.
+    :param log_file: Path of log file to write to.
+    :param loglevel: Log Level
+    :return:
     """
     if not log_file:
         return
@@ -122,7 +123,6 @@ def configure_file_logging(
 
 def arguments_of(func) -> AbstractSet[Text]:
     """Return the parameters of the function `func` as a list of their names."""
-
     return inspect.signature(func).parameters.keys()
 
 
@@ -225,6 +225,7 @@ def update_sanic_log_level() -> None:
 async def call_potential_coroutine(
     coroutine_or_return_value: Union[Any, Coroutine]
 ) -> Any:
+    """Await if its a coroutine."""
     if asyncio.iscoroutine(coroutine_or_return_value):
         return await coroutine_or_return_value
 
