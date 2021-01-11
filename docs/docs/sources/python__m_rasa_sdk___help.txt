@@ -2,7 +2,7 @@ usage: __main__.py [-h] [-p PORT] [--cors [CORS [CORS ...]]]
                    [--actions ACTIONS] [--ssl-keyfile SSL_KEYFILE]
                    [--ssl-certificate SSL_CERTIFICATE]
                    [--ssl-password SSL_PASSWORD] [--auto-reload] [-v] [-vv]
-                   [--quiet]
+                   [--quiet] [--log-file LOG_FILE]
 
 starts the action endpoint
 
@@ -28,3 +28,4 @@ optional arguments:
   -vv, --debug          Print lots of debugging statements. Sets logging level
                         to DEBUG
   --quiet               Be quiet! Sets logging level to WARNING
+  --log-file LOG_FILE   Store logs in specified file.
