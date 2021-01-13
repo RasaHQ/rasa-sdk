@@ -52,7 +52,8 @@ def create_argument_parser():
 
     parser = argparse.ArgumentParser(description="starts the action endpoint")
     add_endpoint_arguments(parser)
-    utils.add_logging_option_arguments(parser)
+    utils.add_logging_level_option_arguments(parser)
+    utils.add_logging_file_arguments(parser)
     return parser
 
 
