@@ -471,7 +471,7 @@ Furthermore, resolving any mention to the last mentioned object in the conversat
 
 If you want to tackle more complex use cases, you can write your own custom action.
 We added some helper functions to `rasa_sdk.knowledge_base.utils`
-([link to code](https://github.com/RasaHQ/rasa-sdk/tree/master/rasa_sdk/knowledge_base/) )
+([link to code](https://github.com/RasaHQ/rasa-sdk/tree/main/rasa_sdk/knowledge_base/) )
 to help you when implement your own solution.
 We recommend using `KnowledgeBase` interface so that you can still use the `ActionQueryKnowledgeBase`
 alongside your new custom action.
@@ -548,7 +548,7 @@ See the [example bot](https://github.com/RasaHQ/rasa/blob/master/examples/knowle
 example implementation of an `InMemoryKnowledgeBase` that uses the method `set_representation_function_of_object()`
 to overwrite the default representation of the object type “hotel.”
 The implementation of the `InMemoryKnowledgeBase` itself can be found in the
-[rasa-sdk](https://github.com/RasaHQ/rasa-sdk/tree/master/rasa_sdk/knowledge_base/) package.
+[rasa-sdk](https://github.com/RasaHQ/rasa-sdk/tree/main/rasa_sdk/knowledge_base/) package.
 
 <a aria-hidden="true" tabIndex="-1" className="anchor enhancedAnchor" id="custom-knowledge-base"></a>
 
@@ -557,7 +557,7 @@ The implementation of the `InMemoryKnowledgeBase` itself can be found in the
 If you have more data or if you want to use a more complex data structure that, for example, involves relations between
 different objects, you can create your own knowledge base implementation.
 Just inherit `KnowledgeBase` and implement the methods `get_objects()`, `get_object()`, and
-`get_attributes_of_object()`. The [knowledge base code](https://github.com/RasaHQ/rasa-sdk/tree/master/rasa_sdk/knowledge_base/)
+`get_attributes_of_object()`. The [knowledge base code](https://github.com/RasaHQ/rasa-sdk/tree/main/rasa_sdk/knowledge_base/)
 provides more information on what those methods should do.
 
 You can also customize your knowledge base further, by adapting the methods mentioned in the section
