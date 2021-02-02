@@ -1202,6 +1202,7 @@ components:
           description: ID of the conversation
           example: default
         slots:
+          description: Slot values
           $ref: '#/components/schemas/Slot'
         latest_message:
           $ref: '#/components/schemas/ParseResult'
