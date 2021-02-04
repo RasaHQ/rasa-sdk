@@ -1202,10 +1202,8 @@ components:
           description: ID of the conversation
           example: default
         slots:
-          type: array
           description: Slot values
-          items:
-            $ref: '#/components/schemas/Slot'
+          $ref: '#/components/schemas/Slot'
         latest_message:
           $ref: '#/components/schemas/ParseResult'
         latest_event_time:
@@ -1688,11 +1686,13 @@ components:
       required: ['type', 'auto_fill']
 
     TemplateDescription:
-      type: object
-      properties:
-        text:
-          type: string
-          description: Template text
+      type: array
+      items:
+        type: object
+        description: Template text
+        properties:
+          text:
+            type: string
       required: ['text']
 
     IntentDescription:
