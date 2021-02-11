@@ -85,6 +85,7 @@ semantic_version = "^2.8.5"
 typing-extensions = "^3.7.4"
 mypy = "^0.782"
 
+# uvloop >= 0.15.0 is not compatible with Python 3.6 and not available on Windows
 [tool.poetry.dependencies.uvloop]
 version = "<0.15.0"
 markers = "sys_platform != 'win32'"
