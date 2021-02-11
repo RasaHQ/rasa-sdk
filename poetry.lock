@@ -663,6 +663,11 @@ optional = false
 python-versions = "*"
 version = "1.4.0"
 
+[package.dependencies]
+[package.dependencies.idna]
+optional = true
+version = "*"
+
 [package.extras]
 idna2008 = ["idna"]
 
@@ -805,6 +810,7 @@ socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
 [[package]]
 category = "main"
 description = "Fast implementation of asyncio event loop on top of libuv"
+marker = "sys_platform != \"win32\" and implementation_name == \"cpython\" or sys_platform != \"win32\""
 name = "uvloop"
 optional = false
 python-versions = "*"
@@ -856,7 +862,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [metadata]
-content-hash = "be8ed1cec049833bce3d32f57a9562394520b698f42e680051b64749560a74df"
+content-hash = "8d6abadf78b0602616ed0572d947e540b2357fc1741fc4a98e5b81a310d7503c"
 python-versions = ">=3.6,<3.9"
 
 [metadata.files]
