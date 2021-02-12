@@ -1,7 +1,7 @@
 # Rasa Python-SDK
 [![Join the chat on Rasa Community Forum](https://img.shields.io/badge/forum-join%20discussions-brightgreen.svg)](https://forum.rasa.com/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://github.com/RasaHQ/rasa-sdk/workflows/Continous%20Integration/badge.svg?event=push)](https://github.com/RasaHQ/rasa-sdk/actions/runs/)
-[![Coverage Status](https://coveralls.io/repos/github/RasaHQ/rasa-sdk/badge.svg?branch=master)](https://coveralls.io/github/RasaHQ/rasa-sdk?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/RasaHQ/rasa-sdk/badge.svg?branch=main)](https://coveralls.io/github/RasaHQ/rasa-sdk?branch=main)
 [![PyPI version](https://img.shields.io/pypi/v/rasa-sdk.svg)](https://pypi.python.org/pypi/rasa-sdk)
 [![Documentation Status](https://img.shields.io/badge/docs-stable-brightgreen.svg)](https://rasa.com/docs)
 
@@ -116,12 +116,12 @@ Releasing a new version is quite simple, as the packages are build and distribut
 by GitHub Actions.
 
 *Release steps*:
-1. Switch to the branch you want to cut the release from (`master` in case of a 
+1. Switch to the branch you want to cut the release from (`main` in case of a 
   major / minor, the current release branch for patch releases).
 2. Run `make release`
-3. Create a PR against master or the release branch (e.g. `1.2.x`)
+3. Create a PR against main or the release branch (e.g. `1.2.x`)
 4. Once your PR is merged, tag a new release (this SHOULD always happen on 
-  master or release branches), e.g. using
+  `main` or release branches), e.g. using
     ```bash
     git tag 1.2.0 -m "next release"
     git push origin 1.2.0

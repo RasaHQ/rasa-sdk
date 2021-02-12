@@ -28,6 +28,5 @@ module.exports = {
           },
           'rasa-sdk-changelog',
     ],
-    'HTTP API': ['about-http-api','http-api-spec'],
   },
 };

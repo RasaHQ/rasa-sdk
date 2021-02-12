@@ -153,8 +153,8 @@ class Tracker:
     def idx_after_latest_restart(self) -> int:
         """Return the idx of the most recent restart in the list of events.
 
-        If the conversation has not been restarted, `0` is returned."""
-
+        If the conversation has not been restarted, `0` is returned.
+        """
         idx = 0
         for i, event in enumerate(self.events):
             if event.get("event") == "restart":
