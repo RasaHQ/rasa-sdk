@@ -3,7 +3,7 @@ name: Continous Integration
 on:
   push:
     branches:
-    - master
+    - main
     tags:
     - '*'
   pull_request:
@@ -35,7 +35,7 @@ jobs:
       shell: bash
 
     - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v1
+      uses: Gr1N/setup-poetry@v4
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
@@ -56,8 +56,22 @@ jobs:
     - name: Install Dependencies 📦
       run: make install install-docs
 
+    - name: Checkout target branch to be able to diff
+      if: github.event_name == 'pull_request'
+      run: |
+        git fetch origin "${{ github.base_ref }}"
+        echo "DOCSTRING_DIFF_BRANCH=origin/${{ github.base_ref }}" >> $GITHUB_ENV
+
+        # Fetch entire history for current branch so that `make lint-docstrings`
+        # can calculate the proper diff between the branches
+        git fetch --unshallow origin "${{ github.ref }}"
+
     - name: Lint Code 🎎
-      run: make lint
+      run: |
+        # If it's not a pull request, $DOCSTRING_DIFF_BRANCH is unset.
+        # This will result in an empty diff, which effictively means that
+        # make lint-docstrings will be skipped for other events than `pull_request`
+        make lint BRANCH=$DOCSTRING_DIFF_BRANCH
 
     - name: Check Types 📚
       run: make types
@@ -88,7 +102,7 @@ jobs:
       shell: bash
 
     - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v1
+      uses: Gr1N/setup-poetry@v4
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
@@ -135,7 +149,7 @@ jobs:
       shell: bash
 
     - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v1
+      uses: Gr1N/setup-poetry@v4
       with:
         poetry-version: ${{ env.POETRY_VERSION }}
 
@@ -158,5 +172,27 @@ jobs:
         GITHUB_TAG=${GITHUB_TAG/refs\/tags\//}
         sudo apt-get update
         sudo apt-get -y install pandoc
-        pip install -U github3.py
+        pip install -U github3.py pep440_version_utils
         python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py
+
+    - name: Get RASA SDK Version
+      env:
+        RASA_SDK_VERSION: ${{ github.ref }}
+      run: |
+        echo "RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//}" >> $GITHUB_ENV
+
+    - name: Notify Slack 💬
+      if: env.IS_TAG_BUILD && success()
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      uses: Ilshidur/action-slack@2.1.0
+      with:
+        args: "⚡ New *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/${{ env.RASA_SDK_VERSION }}/CHANGELOG.mdx"
+
+    - name: Notify Slack of Failure ⛔
+      if: env.IS_TAG_BUILD && failure()
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      uses: Ilshidur/action-slack@2.1.0
+      with:
+        args: "⛔️ *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} could not be released 😱 GitHub Actions: https://github.com/RasaHQ/rasa-sdk/actions?query=branch%3A${{ env.RASA_SDK_VERSION }}"

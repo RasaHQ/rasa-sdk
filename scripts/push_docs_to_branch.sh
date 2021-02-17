@@ -6,15 +6,15 @@ TODAY=`date "+%Y%m%d"`
 # we build new versions only for minors and majors
 PATTERN_FOR_NEW_VERSION="^refs/tags/[0-9]+\\.[0-9]+\\.0$"
 PATTERN_FOR_PATCH_VERSION="^refs/tags/[0-9]+\\.[0-9]+\\.[1-9]+$"
-MASTER_REF=refs/heads/master
+MAIN_REF=refs/heads/main
 VARIABLES_JSON=docs/docs/variables.json
 SOURCES_FILES=docs/docs/sources/
 CHANGELOG=docs/docs/changelog.mdx
 
 [[ ! $GITHUB_REF =~ $PATTERN_FOR_NEW_VERSION ]] \
 && [[ ! $GITHUB_REF =~ $PATTERN_FOR_PATCH_VERSION ]] \
-&& [[ $GITHUB_REF != $MASTER_REF ]] \
-&& echo "Not on master or tagged version, skipping." \
+&& [[ $GITHUB_REF != $MAIN_REF ]] \
+&& echo "Not on main or tagged version, skipping." \
 && exit 0
 
 NEW_VERSION=
@@ -42,7 +42,7 @@ then
     # FIXME: this doesn't support all types of docs updates on an existing version at the moment,
     # For instance if we were to make significant updates to the documentation pages
     # (creating new page, deleting some, updating the sidebar), these changes wouldn't work here.
-    cp -R docs/docs/ $TMP_DOCS_FOLDER/docs/versioned_docs/version-$EXISTING_VERSION/
+    cp -R docs/docs/* $TMP_DOCS_FOLDER/docs/versioned_docs/version-$EXISTING_VERSION/
 else
     echo "Updating the docs..."
     # remove everything in the previous docs/ folder, except versioned_docs/*, versioned_sidebars/*

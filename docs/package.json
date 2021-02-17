@@ -9,7 +9,7 @@
     "start": "yarn pre-build && yarn develop",
     "develop": "docusaurus start --port 3002",
     "pre-build": "yarn copy-md-files && yarn variables && yarn included-sources && yarn program-outputs",
-    "build": "docusaurus build",
+    "build": "docusaurus build --out-dir build/docs/action-server",
     "serve": "netlify dev --dir=build --port=5002",
     "swizzle": "docusaurus swizzle",
     "new-version": "docusaurus docs:version",
@@ -63,6 +63,14 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "resolutions": {
+    "react-dev-utils": "^11.0",
+    "immer": "^8.0.1",
+    "dompurify": "^2.0.17",
+    "ini": "^1.3.6",
+    "jpeg-js": "^0.4.0",
+    "node-forge": "^0.10.0"
   },
   "devDependencies": {
     "netlify-cli": "^2.59.0",
