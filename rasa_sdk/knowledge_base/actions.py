@@ -101,10 +101,7 @@ class ActionQueryKnowledgeBase(Action):
             )
 
     async def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: "DomainDict",
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
         """
         Executes this action. If the user ask a question about an attribute,
@@ -233,9 +230,11 @@ class ActionQueryKnowledgeBase(Action):
 
         value = object_of_interest[attribute]
 
-        object_representation = await utils.call_potential_coroutine(
+        object_repr_func = await utils.call_potential_coroutine(
             self.knowledge_base.get_representation_function_of_object(object_type)
         )
+
+        object_representation = object_repr_func(object_of_interest)
 
         key_attribute = await utils.call_potential_coroutine(
             self.knowledge_base.get_key_attribute_of_object(object_type)
