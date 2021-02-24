@@ -22,6 +22,7 @@ const versionLabels = {
 
 module.exports = {
   customFields: {
+    productName: 'Rasa Action Server',
     productLogo: '/img/logo-rasa-oss.png',
     versionLabels,
     redocPages: [
