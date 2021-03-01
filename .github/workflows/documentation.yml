@@ -66,7 +66,7 @@ jobs:
       run: make install install-docs
 
     - name: Pre-build Docs 🧶
-      run: cd $DOCS_FOLDER && poetry run yarn pre-build
+      run: make prepare-docs
 
     - name: Set up SSH key for cloning / pushing docs
       uses: webfactory/ssh-agent@v0.4.1
