@@ -83,7 +83,7 @@ toml = "^0.10.2"
 pep440-version-utils = "^0.3.0"
 semantic_version = "^2.8.5"
 typing-extensions = "^3.7.4"
-mypy = "^0.790"
+mypy = "^0.812"
 
 # uvloop >= 0.15.0 is not compatible with Python 3.6 and not available on Windows
 [tool.poetry.dependencies.uvloop]
