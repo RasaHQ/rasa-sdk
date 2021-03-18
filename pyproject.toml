@@ -68,6 +68,7 @@ coloredlogs = ">=10,<16"
 sanic = ">=19.12.2,<21.0.0"
 sanic-cors = "^0.10.0"
 requests = ">=2.23.0,<2.26.0"
+typing-extensions = "^3.7.4"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^2.10.1"
