@@ -69,6 +69,7 @@ def test_deprecated_utter_elements():
         "attachment": None,
     }
 
+
 def test_utter_message_with_template_param():
     dispatcher = CollectingDispatcher()
     with pytest.warns(FutureWarning):
@@ -84,6 +85,7 @@ def test_utter_message_with_template_param():
         "image": None,
         "attachment": None,
     }
+
 
 def test_utter_message_with_response_param():
     dispatcher = CollectingDispatcher()
