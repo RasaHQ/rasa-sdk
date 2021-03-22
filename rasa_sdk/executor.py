@@ -126,11 +126,11 @@ class CollectingDispatcher:
         """"Send a message to the client based on a template."""
         warnings.warn(
             "Use of `utter_template` is deprecated. "
-            "Use `utter_message(template=<template_name>)` instead.",
+            "Use `utter_message(response=<template_name>)` instead.",
             FutureWarning,
         )
 
-        self.utter_message(template=template, **kwargs)
+        self.utter_message(response=template, **kwargs)
 
     def utter_custom_json(self, json_message: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends custom json to the output channel."""
