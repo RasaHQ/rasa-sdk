@@ -85,6 +85,21 @@ def test_utter_message_with_template_param():
         "attachment": None,
     }
 
+def test_utter_message_with_response_param():
+    dispatcher = CollectingDispatcher()
+    dispatcher.utter_message(response="utter_greet")
+
+    assert dispatcher.messages[0] == {
+        "text": None,
+        "buttons": [],
+        "elements": [],
+        "custom": {},
+        "template": None,
+        "response": "utter_greet",
+        "image": None,
+        "attachment": None,
+    }
+
 
 @pytest.fixture()
 def package_path() -> Generator[Text, None, Text]:
@@ -214,6 +229,7 @@ async def test_reload_module(
         "elements": [],
         "custom": {},
         "template": None,
+        "response": None,
         "image": None,
         "attachment": None,
     }

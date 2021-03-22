@@ -40,7 +40,7 @@ class CollectingDispatcher:
         **kwargs: Any,
     ) -> None:
         """Send a text to the output channel."""
-        if template:
+        if template and not response:
             response = template
             warnings.warn(
                 "Please pass the parameter `response` instead of `template` "
