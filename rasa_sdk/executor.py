@@ -33,19 +33,27 @@ class CollectingDispatcher:
         image: Optional[Text] = None,
         json_message: Optional[Dict[Text, Any]] = None,
         template: Optional[Text] = None,
+        response: Optional[Text] = None,
         attachment: Optional[Text] = None,
         buttons: Optional[List[Dict[Text, Any]]] = None,
         elements: Optional[List[Dict[Text, Any]]] = None,
         **kwargs: Any,
     ) -> None:
         """"Send a text to the output channel"""
-
+        if template:
+            response = template
+            warnings.warn(
+                "Please pass the parameter `response` instead of `template` "
+                "to utter_message. `template` will be deprecated in Rasa 3.0.0. ",
+                FutureWarning,
+            )
         message = {
             "text": text,
             "buttons": buttons or [],
             "elements": elements or [],
             "custom": json_message or {},
-            "template": template,
+            "template": response,
+            "response": response,
             "image": image,
             "attachment": attachment,
         }
