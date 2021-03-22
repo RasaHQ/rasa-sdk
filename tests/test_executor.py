@@ -94,7 +94,7 @@ def test_utter_message_with_response_param():
         "buttons": [],
         "elements": [],
         "custom": {},
-        "template": None,
+        "template": 'utter_greet',
         "response": "utter_greet",
         "image": None,
         "attachment": None,
