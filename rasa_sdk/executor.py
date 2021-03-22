@@ -123,7 +123,7 @@ class CollectingDispatcher:
     def utter_template(
         self, template: Text, tracker: Tracker, silent_fail: bool = False, **kwargs: Any
     ) -> None:
-        """"Send a message to the client based on a template."""
+        """Send a message to the client based on a template."""
         warnings.warn(
             "Use of `utter_template` is deprecated. "
             "Use `utter_message(response=<template_name>)` instead.",
