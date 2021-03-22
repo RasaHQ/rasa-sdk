@@ -39,7 +39,7 @@ class CollectingDispatcher:
         elements: Optional[List[Dict[Text, Any]]] = None,
         **kwargs: Any,
     ) -> None:
-        """"Send a text to the output channel"""
+        """Send a text to the output channel."""
         if template:
             response = template
             warnings.warn(
