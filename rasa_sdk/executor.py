@@ -44,7 +44,7 @@ class CollectingDispatcher:
             response = template
             warnings.warn(
                 "Please pass the parameter `response` instead of `template` "
-                "to utter_message. `template` will be deprecated in Rasa 3.0.0. ",
+                "to `utter_message`. `template` will be deprecated in Rasa 3.0.0. ",
                 FutureWarning,
             )
         message = {
