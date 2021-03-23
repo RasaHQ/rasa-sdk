@@ -33,19 +33,27 @@ class CollectingDispatcher:
         image: Optional[Text] = None,
         json_message: Optional[Dict[Text, Any]] = None,
         template: Optional[Text] = None,
+        response: Optional[Text] = None,
         attachment: Optional[Text] = None,
         buttons: Optional[List[Dict[Text, Any]]] = None,
         elements: Optional[List[Dict[Text, Any]]] = None,
         **kwargs: Any,
     ) -> None:
-        """"Send a text to the output channel"""
-
+        """Send a text to the output channel."""
+        if template and not response:
+            response = template
+            warnings.warn(
+                "Please pass the parameter `response` instead of `template` "
+                "to `utter_message`. `template` will be deprecated in Rasa 3.0.0. ",
+                FutureWarning,
+            )
         message = {
             "text": text,
             "buttons": buttons or [],
             "elements": elements or [],
             "custom": json_message or {},
-            "template": template,
+            "template": response,
+            "response": response,
             "image": image,
             "attachment": attachment,
         }
@@ -115,14 +123,14 @@ class CollectingDispatcher:
     def utter_template(
         self, template: Text, tracker: Tracker, silent_fail: bool = False, **kwargs: Any
     ) -> None:
-        """"Send a message to the client based on a template."""
+        """Send a message to the client based on a template."""
         warnings.warn(
             "Use of `utter_template` is deprecated. "
-            "Use `utter_message(template=<template_name>)` instead.",
+            "Use `utter_message(response=<template_name>)` instead.",
             FutureWarning,
         )
 
-        self.utter_message(template=template, **kwargs)
+        self.utter_message(response=template, **kwargs)
 
     def utter_custom_json(self, json_message: Dict[Text, Any], **kwargs: Any) -> None:
         """Sends custom json to the output channel."""
