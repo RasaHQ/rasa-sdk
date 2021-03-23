@@ -17,6 +17,16 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 <!-- TOWNCRIER -->
 
+## [2.4.1] - 2021-03-23
+                       
+
+### Bugfixes
+- [#419](https://github.com/rasahq/rasa/issues/419): Missing `typing_extensions` module added
+
+  Minor dependency updates
+- [#8223](https://github.com/rasahq/rasa/issues/8223): `utter_message` in `CollectingDispatcher` now explicitly takes in both `response` and `template`. Note that the parameter `template` will be deprecated in Rasa SDK 3.0.0. Please use `dispatcher.utter_message(response=...)` instead.
+
+
 ## [2.4.0] - 2021-03-11
                        
 
