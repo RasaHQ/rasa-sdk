@@ -64,6 +64,40 @@ def test_deprecated_utter_elements():
         "elements": [1, 2, 3],
         "custom": {},
         "template": None,
+        "response": None,
+        "image": None,
+        "attachment": None,
+    }
+
+
+def test_utter_message_with_template_param():
+    dispatcher = CollectingDispatcher()
+    with pytest.warns(FutureWarning):
+        dispatcher.utter_message(template="utter_greet")
+
+    assert dispatcher.messages[0] == {
+        "text": None,
+        "buttons": [],
+        "elements": [],
+        "custom": {},
+        "template": "utter_greet",
+        "response": "utter_greet",
+        "image": None,
+        "attachment": None,
+    }
+
+
+def test_utter_message_with_response_param():
+    dispatcher = CollectingDispatcher()
+    dispatcher.utter_message(response="utter_greet")
+
+    assert dispatcher.messages[0] == {
+        "text": None,
+        "buttons": [],
+        "elements": [],
+        "custom": {},
+        "template": "utter_greet",
+        "response": "utter_greet",
         "image": None,
         "attachment": None,
     }
@@ -165,6 +199,7 @@ async def test_reload_module(
         "elements": [],
         "custom": {},
         "template": None,
+        "response": None,
         "image": None,
         "attachment": None,
     }
@@ -196,6 +231,7 @@ async def test_reload_module(
         "elements": [],
         "custom": {},
         "template": None,
+        "response": None,
         "image": None,
         "attachment": None,
     }
