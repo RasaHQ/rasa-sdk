@@ -17,6 +17,7 @@ help:
 	@echo "        Prepare a new release"
 
 install:
+	poetry run python -m pip install -U pip
 	poetry install
 
 install-docs:
