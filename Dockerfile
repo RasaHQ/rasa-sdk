@@ -43,28 +43,20 @@ RUN python -m venv /opt/venv && \
   pip install --no-cache-dir wheel && \
   poetry install --no-dev --no-root --no-interaction
 
-# install rasa-sdk and build wheels
+# install dependencies and build wheels
 # hadolint ignore=SC1091,DL3013
 RUN . /opt/venv/bin/activate && poetry build -f wheel -n \
   && pip install --no-cache-dir --no-deps dist/*.whl \
   && mkdir /wheels \
-  && poetry export -f requirements.txt --without-hashes > /wheels/requirements.txt \
+  && poetry export -f requirements.txt --without-hashes --output /wheels/requirements.txt \
   && poetry run pip wheel --wheel-dir=/wheels -r /wheels/requirements.txt \
   && find /app/dist -maxdepth 1 -mindepth 1 -name '*.whl' -print0 | xargs -0 -I {} mv {} /wheels/
 
-# start a new build stage
-FROM base
-
-# copy needed files
-COPY ./poetry.lock /app/
-COPY ./entrypoint.sh /app/
-COPY --from=python_builder /wheels /wheels
-
 WORKDIR /wheels
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# pip install & make directories
+# install wheels
 # hadolint ignore=SC1091,DL3013
 RUN find . -name '*.whl' -maxdepth 1 -exec basename {} \; | awk -F - '{ gsub("_", "-", $1); print $1 }' | uniq > /wheels/requirements.txt \
+  && rm -rf /opt/venv \
   && python -m venv /opt/venv \
   && . /opt/venv/bin/activate \
   && pip install --no-cache-dir -U pip \
@@ -72,6 +64,14 @@ RUN find . -name '*.whl' -maxdepth 1 -exec basename {} \; | awk -F - '{ gsub("_"
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
   && rm -rf /wheels \
   && rm -rf /root/.cache/pip/*
+
+# final image
+FROM base
+
+# copy needed files
+COPY ./poetry.lock /app/
+COPY ./entrypoint.sh /app/
+COPY --from=python_builder /opt/venv /opt/venv
 
 ENV PATH="/opt/venv/bin:$PATH"
 
