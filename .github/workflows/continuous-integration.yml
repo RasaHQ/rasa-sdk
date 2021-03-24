@@ -83,7 +83,7 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 2
+      max-parallel: 3
       matrix:
         python-version: [3.6, 3.7, 3.8]
 
@@ -252,11 +252,17 @@ jobs:
       run: |
         docker buildx bake --load
 
+    - name: Login to DockerHub Registry 🔢
+      if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true' && github.repository == 'RasaHQ/rasa-sdk'
+      run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ env.DOCKER_HUB_USERNAME }} --password-stdin || true
+
     - name: Push Docker image 📦
       if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true' && github.repository == 'RasaHQ/rasa-sdk'
       run: |
         IS_NEWEST_VERSION=${{ needs.build_docker_image_set_env.outputs.is_newest_version }}
-        docker buildx bake --push
+
+        # Push image
+        docker push rasa/rasa-sdk:${IMAGE_TAG}
 
         # Tag the image as latest
         if [[ "${IS_NEWEST_VERSION}" == "true" ]]; then
