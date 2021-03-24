@@ -252,7 +252,7 @@ jobs:
       run: |
         docker buildx bake --load
 
-    - name: Login to DockerHub Registry 🔢
+    - name: Login to Docker Hub Registry 🔢
       if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true' && github.repository == 'RasaHQ/rasa-sdk'
       run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ env.DOCKER_HUB_USERNAME }} --password-stdin || true
 
