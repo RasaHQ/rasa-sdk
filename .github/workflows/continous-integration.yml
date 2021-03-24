@@ -132,7 +132,22 @@ jobs:
     outputs:
       # Tag name used for intermediate images created during Docker image builds, e.g. 3886 - a PR number
       image_tag: ${{ steps.set_output.outputs.image_tag }}
+      # Return 'true' if tag version is equal or higher than the latest tagged rasa-sdk version
+      is_newest_version: ${{ steps.rasa_sdk_get_version.outputs.is_newest_version }}
     steps:
+      # Due to an issue with checking out a wrong commit, we make sure
+      # to checkout HEAD commit for a pull request.
+      # More details: https://github.com/actions/checkout/issues/299
+    - name: Checkout pull request HEAD commit instead of merge commit 🕝
+      uses: actions/checkout@v2
+      if: github.event_name == 'pull_request'
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Checkout git repository 🕝
+      uses: actions/checkout@v2
+      if: github.event_name != 'pull_request'
+
     # Set environment variables for a pull request
     #
     # In this scenario, we've created a PR #1234
@@ -173,6 +188,27 @@ jobs:
       run: |
         echo "::set-output name=image_tag::${{ env.IMAGE_TAG }}"
 
+    - name: Check if tag version is equal or higher than the latest tagged rasa-sdk version
+      id: rasa_sdk_get_version
+      if: env.IS_TAG_BUILD == 'true'
+      run: |
+        # Get latest tagged rasa-sdk version
+        git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
+        # Fetch branch history
+        git fetch --prune --unshallow
+        LATEST_TAGGED_NON_ALPHA_RASA_SDK_VERSION=$(git tag | sort -r -V | grep -E "^[0-9.]+$" | head -n1)
+        CURRENT_TAG=${GITHUB_REF#refs/tags/}
+        # Return 'true' if tag version is equal or higher than the latest tagged rasa-sdk version
+        IS_NEWEST_VERSION=$((printf '%s\n%s\n' "${LATEST_TAGGED_NON_ALPHA_RASA_SDK_VERSION}" "$CURRENT_TAG" \
+          | sort -V -C && echo true || echo false) || true)
+
+
+        if [[ "${IS_NEWEST_VERSION}" == "true" && "$CURRENT_TAG" =~ ^[0-9.]+$ ]]; then
+          echo "::set-output name=is_newest_version::true"
+        else
+          echo "::set-output name=is_newest_version::false"
+        fi
+
   build_docker_image:
     name: Build Docker image
     runs-on: ubuntu-latest
@@ -195,7 +231,8 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@154c24e1f33dbb5865a021c99f1318cfebf27b32
       with:
-        version: latest
+        version: v0.5.1
+        driver: docker
 
     - name: Set environment variables
       run: |
@@ -204,6 +241,18 @@ jobs:
     - name: Build Docker image
       run: |
         docker buildx bake --load
+
+    - name: Push Docker image 📦
+      if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true' && github.repository == 'RasaHQ/rasa-sdk'
+      run: |
+        IS_NEWEST_VERSION=${{ needs.build_docker_image_set_env.outputs.is_newest_version }}
+        docker buildx bake --push
+
+        # Tag the image as latest
+        if [[ "${IS_NEWEST_VERSION}" == "true" ]]; then
+          docker tag rasa/rasa-sdk:${IMAGE_TAG} rasa/rasa-sdk:latest
+          docker push rasa/rasa-sdk:latest
+        fi
 
   deploy:
     name: Deploy to PyPI
