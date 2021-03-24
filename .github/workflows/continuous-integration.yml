@@ -127,6 +127,7 @@ jobs:
       run: poetry run coveralls
 
   docker_linter:
+    name: Lint Dockerfile
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -269,7 +270,7 @@ jobs:
 
     # deploy will only be run when there is a tag available
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-    needs: [quality, test]     # only run after all other stages succeeded
+    needs: [quality, test, build_docker_image]     # only run after all other stages succeeded
 
     steps:
     - name: Checkout git repository 🕝
