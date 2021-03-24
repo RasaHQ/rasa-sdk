@@ -9,7 +9,7 @@ exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist))"
 
 [tool.poetry]
 name = "rasa-sdk"
-version = "2.3.1"
+version = "2.4.1"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
 authors = [ "Rasa Technologies GmbH <hi@rasa.com>",]
 maintainers = [ "Tom Bocklisch <tom@rasa.com>",]
@@ -68,6 +68,7 @@ coloredlogs = ">=10,<16"
 sanic = ">=19.12.2,<21.0.0"
 sanic-cors = "^0.10.0"
 requests = ">=2.23.0,<2.26.0"
+typing-extensions = "^3.7.4"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^2.10.1"
@@ -82,10 +83,8 @@ towncrier = "^19.2.0"
 toml = "^0.10.2"
 pep440-version-utils = "^0.3.0"
 semantic_version = "^2.8.5"
-typing-extensions = "^3.7.4"
 mypy = "^0.812"
 
-# uvloop >= 0.15.0 is not compatible with Python 3.6 and not available on Windows
 [tool.poetry.dependencies.uvloop]
 version = "<0.15.0"
 markers = "sys_platform != 'win32'"
