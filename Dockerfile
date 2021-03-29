@@ -69,7 +69,6 @@ RUN find . -name '*.whl' -maxdepth 1 -exec basename {} \; | awk -F - '{ gsub("_"
 FROM base
 
 # copy needed files
-COPY ./poetry.lock /app/
 COPY ./entrypoint.sh /app/
 COPY --from=python_builder /opt/venv /opt/venv
 
