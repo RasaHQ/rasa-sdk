@@ -1573,7 +1573,9 @@ async def test_form_validation_action():
         events = await form.run(
             dispatcher=dispatcher,
             tracker=tracker,
-            domain={"forms": {form_name: {"slot1": [], "slot2": []}}},
+            domain={
+                "forms": {form_name: {"required_slots": {"slot1": [], "slot2": []}}}
+            },
         )
 
     assert not warnings
@@ -1603,7 +1605,7 @@ async def test_form_validation_action_async():
     events = await form.run(
         dispatcher=dispatcher,
         tracker=tracker,
-        domain={"forms": {form_name: {"slot1": [], "slot3": []}}},
+        domain={"forms": {form_name: {"required_slots": {"slot1": [], "slot3": []}}}},
     )
     assert events == [SlotSet("slot3", "validated_value")]
 
@@ -1633,7 +1635,13 @@ async def test_form_validation_without_validate_function():
         events = await form.run(
             dispatcher=dispatcher,
             tracker=tracker,
-            domain={"forms": {form_name: {"slot1": [], "slot2": [], "slot3": []}}},
+            domain={
+                "forms": {
+                    form_name: {
+                        "required_slots": {"slot1": [], "slot2": [], "slot3": []}
+                    }
+                }
+            },
         )
 
     assert events == [
@@ -1677,7 +1685,7 @@ async def test_form_validation_changing_slots_during_validation():
     events = await form.run(
         dispatcher=dispatcher,
         tracker=tracker,
-        domain={"forms": {form_name: {"my_slot": []}}},
+        domain={"forms": {form_name: {"required_slots": {"my_slot": []}}}},
     )
     assert events == [
         SlotSet("my_slot", None),
@@ -1725,7 +1733,7 @@ async def test_form_validation_dash_slot():
     events = await form.run(
         dispatcher=dispatcher,
         tracker=tracker,
-        domain={"forms": {form_name: {"slot-with-dash": []}}},
+        domain={"forms": {form_name: {"required_slots": {"slot-with-dash": []}}}},
     )
     assert events == [
         SlotSet("slot-with-dash", "validated_value"),
@@ -1851,7 +1859,11 @@ async def test_extract_slot_only():
         # Custom slot mapping but no `extract` method
         (["my_slot", "other_slot"], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
         # Extract method for slot which is also mapped in domain
-        (["my_slot"], {"forms": {"some_form": {"my_slot": []}}}, []),
+        (
+            ["my_slot"],
+            {"forms": {"some_form": {"required_slots": {"my_slot": []}}}},
+            [],
+        ),
     ],
 )
 async def test_warning_for_slot_extractions(
@@ -1916,13 +1928,13 @@ async def test_warning_for_slot_extractions(
         # Domain slots are ignored in overridden `required_slots`
         (
             [],
-            {"forms": {"some_form": {"another_slot": []}}},
+            {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
             [SlotSet(REQUESTED_SLOT, None)],
         ),
         # `required_slots` was not overridden - Rasa Open Source will request next slot.
         (
             ["another_slot"],
-            {"forms": {"some_form": {"another_slot": []}}},
+            {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
             [],
         ),
     ],

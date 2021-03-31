@@ -817,7 +817,12 @@ class FormValidationAction(Action, ABC):
         Returns:
             Slot names mapped in the domain.
         """
-        return list(domain.get("forms", {}).get(self.form_name(), {}).keys())
+        return list(
+            domain.get("forms", {})
+            .get(self.form_name(), {})
+            .get("required_slots", {})
+            .keys()
+        )
 
     async def validate(
         self,
