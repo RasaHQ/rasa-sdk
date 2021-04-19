@@ -1932,9 +1932,16 @@ async def test_warning_for_slot_extractions(
             [SlotSet(REQUESTED_SLOT, None)],
         ),
         # `required_slots` was not overridden - Rasa Open Source will request next slot.
+        # slot mappings with the `required_slots` keyword preceding them (new format)
         (
             ["another_slot"],
             {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
+            [],
+        ),
+        # slot mappings without the `required_slots` keyword preceding them (old format)
+        (
+            ["another_slot"],
+            {"forms": {"some_form": {"another_slot": []}}},
             [],
         ),
     ],
