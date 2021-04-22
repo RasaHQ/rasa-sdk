@@ -19,7 +19,3 @@ jobs:
         # typo_ci_license_key: ${{ secrets.TYPO_CI_LICENSE_KEY }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-# Any files/folders we should ignore?
-excluded_files:
-  - "rasa_sdk/**/*"
