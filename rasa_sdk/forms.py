@@ -864,6 +864,9 @@ class FormValidationAction(Action, ABC):
 
             if isinstance(validation_output, dict):
                 slots.update(validation_output)
+                # for sequential consistency, also update tracker
+                # to make changes visible to subsequent validate_{slot_name}
+                tracker.slots.update(validation_output)
             else:
                 warnings.warn(
                     f"Cannot validate `{slot_name}`: make sure the validation method "
