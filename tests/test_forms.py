@@ -1534,6 +1534,10 @@ class TestFormValidationAction(FormValidationAction):
             return {
                 "slot2": "validated_value",
             }
+        if tracker.get_slot("slot1") == "validated_value":
+            return {
+                "slot2": "slot1 == validated_value",
+            }
         return {
             "slot2": None,
         }
@@ -1580,8 +1584,8 @@ async def test_form_validation_action():
 
     assert not warnings
     assert events == [
-        SlotSet("slot2", None),
         SlotSet("slot1", "validated_value"),
+        SlotSet("slot2", "slot1 == validated_value"),
     ]
 
 
@@ -1645,9 +1649,9 @@ async def test_form_validation_without_validate_function():
         )
 
     assert events == [
-        SlotSet("slot3", "some_value"),
-        SlotSet("slot2", None),
         SlotSet("slot1", "validated_value"),
+        SlotSet("slot2", "slot1 == validated_value"),
+        SlotSet("slot3", "some_value"),
     ]
 
 
