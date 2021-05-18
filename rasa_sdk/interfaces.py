@@ -259,7 +259,7 @@ class Tracker:
                 # checked all potential slot candidates.
                 break
 
-        for event in self.events[len(self.events)-count:]:
+        for event in self.events[len(self.events) - count :]:
             slots[event["name"]] = event["value"]
 
         return slots
