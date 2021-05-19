@@ -1809,6 +1809,101 @@ async def test_extract_and_validate_slot(
     ]
 
 
+@pytest.mark.parametrize(
+    "my_required_slots, extracted_values, asserted_events",
+    [
+        (
+            ["state", "city"],
+            {"state": "california", "city": "san francisco"},
+            [["state", "CA"], ["city", "San Francisco"], [REQUESTED_SLOT, None]],
+        ),
+        (
+            ["city", "state"],
+            {"state": None, "city": "san francisco"},
+            [["city", "san francisco"], ["state", "CA"], [REQUESTED_SLOT, None]],
+        ),
+    ],
+)
+async def test_extract_and_validate_slot_visibility(
+    my_required_slots: List[Text],
+    extracted_values: Dict[Text, Any],
+    asserted_events: List[List[Text]],
+):
+    class TestFormValidationWithCustomSlots(FormValidationAction):
+        def name(self) -> Text:
+            return "some_form"
+
+        async def required_slots(
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> List[Text]:
+            return my_required_slots
+
+        async def extract_state(
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            state = extracted_values.get("state")
+            if state is None and tracker.get_slot("city") == "san francisco":
+                state = "california"
+            return {"state": state}
+
+        async def validate_state(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            if slot_value == "california":
+                slot_value = "CA"
+            return {"state": slot_value}
+
+        async def extract_city(
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            return {"city": extracted_values.get("city")}
+
+        async def validate_city(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            assert slot_value == "san francisco"
+            if tracker.get_slot("state") == "CA":
+                slot_value = "San Francisco"
+            return {"city": slot_value}
+
+    form = TestFormValidationWithCustomSlots()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [],
+        False,
+        None,
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain={})
+
+    assert events == [SlotSet(e[0], e[1]) for e in asserted_events]
+
+
 async def test_extract_slot_only():
     custom_slot = "my_slot"
     unvalidated_value = "some value"
