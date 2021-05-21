@@ -1534,10 +1534,6 @@ class TestFormValidationAction(FormValidationAction):
             return {
                 "slot2": "validated_value",
             }
-        if tracker.get_slot("slot1") == "validated_value":
-            return {
-                "slot2": "slot1 == validated_value",
-            }
         return {
             "slot2": None,
         }
@@ -1585,7 +1581,7 @@ async def test_form_validation_action():
     assert not warnings
     assert events == [
         SlotSet("slot1", "validated_value"),
-        SlotSet("slot2", "slot1 == validated_value"),
+        SlotSet("slot2", None),
     ]
 
 
@@ -1650,7 +1646,7 @@ async def test_form_validation_without_validate_function():
 
     assert events == [
         SlotSet("slot1", "validated_value"),
-        SlotSet("slot2", "slot1 == validated_value"),
+        SlotSet("slot2", None),
         SlotSet("slot3", "some_value"),
     ]
 
@@ -1813,13 +1809,22 @@ async def test_extract_and_validate_slot(
     "my_required_slots, extracted_values, asserted_events",
     [
         (
+            # request slot "state" before "city"
             ["state", "city"],
+            # both are extracted as follow
             {"state": "california", "city": "san francisco"},
+            # validate_state turns "california" to "CA"
+            # validate_city sees "state" == "CA" and turns "san francisco" to "San Francisco"
             [["state", "CA"], ["city", "San Francisco"], [REQUESTED_SLOT, None]],
         ),
         (
+            # request slot "city" before "state"
             ["city", "state"],
+            # only "city" can be extracted from user message
+            # seeing "city" == "san francisco", "state" is extracted as "california"
             {"state": None, "city": "san francisco"},
+            # validate_city keeps "city" as is
+            # validate_state turns "california" to "CA"
             [["city", "san francisco"], ["state", "CA"], [REQUESTED_SLOT, None]],
         ),
     ],
