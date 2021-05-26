@@ -3,7 +3,7 @@ name: Typo CI
 on:
   push:
     branches-ignore:
-      - main
+      - master
 jobs:
   spellcheck:
     name: Typo CI (GitHub Action)

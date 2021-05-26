@@ -17,7 +17,7 @@ const RASA_OPEN_SOURCE_SWAP_URL = isDev ? 'http://localhost:3000' : SITE_URL;
 const RASA_X_SWAP_URL = isDev ? 'http://localhost:3001' : SITE_URL;
 
 const versionLabels = {
-  current: 'Main/Unreleased'
+  current: 'Master/Unreleased'
 };
 
 module.exports = {
@@ -126,7 +126,7 @@ module.exports = {
       // https://v2.docusaurus.io/docs/next/docs-introduction/#docs-only-mode
       routeBasePath: '/',
       sidebarPath: require.resolve('./sidebars.js'),
-      editUrl: 'https://github.com/rasahq/rasa-sdk/edit/main/docs/',
+      editUrl: 'https://github.com/rasahq/rasa-sdk/edit/master/docs/',
       showLastUpdateTime: true,
       showLastUpdateAuthor: true,
       rehypePlugins: [

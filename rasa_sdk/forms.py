@@ -817,17 +817,7 @@ class FormValidationAction(Action, ABC):
         Returns:
             Slot names mapped in the domain.
         """
-        form = domain.get("forms", {}).get(self.form_name(), {})
-        # In forms now, the keyword `required_slots` should always precede
-        # the definition of slot mappings and the lack of it is deprecated.
-        # So, we add the following check here to make sure we support
-        # the old (without keyword) and new (with keyword) format
-        # of the slot mappings definition.
-        if "required_slots" in form:
-            required_slots = form.get("required_slots", {}).keys()
-        else:
-            required_slots = form.keys()
-        return list(required_slots)
+        return list(domain.get("forms", {}).get(self.form_name(), {}).keys())
 
     async def validate(
         self,

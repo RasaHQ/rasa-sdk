@@ -9,6 +9,6 @@ updates:
     separator: "-"
   open-pull-requests-limit: 10
   reviewers:
-  - RasaHQ/enable-squad
+  - alwx
   labels:
   - type:dependencies

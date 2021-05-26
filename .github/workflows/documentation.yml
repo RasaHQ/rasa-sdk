@@ -3,7 +3,7 @@ name: Publish Documentation
 on:
   push:
     branches:
-    - 'main'
+    - 'master'
     tags:
     - '**'
 
@@ -20,7 +20,7 @@ jobs:
   docs:
     name: Build Docs
     runs-on: ubuntu-latest
-    if: github.repository == 'RasaHQ/rasa-sdk'  # don't run this for main branches of forks, would fail anyways
+    if: github.repository == 'RasaHQ/rasa-sdk'  # don't run this for master branches of forks, would fail anyways
 
     steps:
     - name: Checkout git repository 🕝
@@ -66,7 +66,7 @@ jobs:
       run: make install install-docs
 
     - name: Pre-build Docs 🧶
-      run: make prepare-docs
+      run: cd $DOCS_FOLDER && poetry run yarn pre-build
 
     - name: Set up SSH key for cloning / pushing docs
       uses: webfactory/ssh-agent@v0.4.1

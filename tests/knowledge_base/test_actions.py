@@ -127,28 +127,3 @@ async def test_action_run(data_file, slots, expected_slots):
 
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)
-
-    # Check that utterances produced by action are correct.
-    if slots[SLOT_ATTRIBUTE]:
-        if slots.get("restaurant") is not None:
-
-            name = slots["restaurant"]
-            attr = slots[SLOT_ATTRIBUTE]
-            obj = await knowledge_base.get_object("restaurant", name)
-            value = obj[attr]
-
-            expected_msg = f"'{name}' has the value '{value}' for attribute '{attr}'."
-            actual_msg = dispatcher.messages[0]["text"]
-
-            assert actual_msg == expected_msg
-
-        elif slots.get(SLOT_MENTION):
-            obj = await knowledge_base.get_object("restaurant", slots[SLOT_MENTION])
-            name = obj["name"]
-            attr = slots[SLOT_ATTRIBUTE]
-            value = obj[attr]
-
-            expected_msg = f"'{name}' has the value '{value}' for attribute '{attr}'."
-            actual_msg = dispatcher.messages[0]["text"]
-
-            assert actual_msg == expected_msg

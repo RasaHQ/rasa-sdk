@@ -18,8 +18,7 @@
     "copy-md-files": "node scripts/copy_md_files.js",
     "included-sources": "node scripts/compile_included_sources.js",
     "clean": "find docs/sources -type f -not -name '.keep' -print0 | xargs -0  -I {} rm {}",
-    "ci": "yarn install --frozen-lockfile",
-    "update-versioned-sources": "node scripts/update_versioned_sources.js"
+    "ci": "yarn install --frozen-lockfile"
   },
   "dependencies": {
     "@docusaurus/core": "2.0.0-alpha.63",
@@ -64,14 +63,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "resolutions": {
-    "react-dev-utils": "^11.0",
-    "immer": "^8.0.1",
-    "dompurify": "^2.0.17",
-    "ini": "^1.3.6",
-    "jpeg-js": "^0.4.0",
-    "node-forge": "^0.10.0"
   },
   "devDependencies": {
     "netlify-cli": "^2.59.0",
