@@ -21,6 +21,7 @@ pip install rasa-sdk
 
 | SDK version    | compatible Rasa version           |
 |----------------|-----------------------------------|
+| `2.x`          | `>=2.0.0` and `<3.0.0`            |
 | `1.0.x`        | `>=1.0.x`                         |
 
 old `rasa_core_sdk` package:
