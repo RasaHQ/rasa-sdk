@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import types
 from typing import List, Text, Union, Optional, Any
 from ssl import SSLContext
@@ -139,9 +140,10 @@ def run(
     )
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
     protocol = "https" if ssl_context else "http"
+    host = os.environ.get("SANIC_HOST", "0.0.0.0")
 
-    logger.info(f"Action endpoint is up and running on {protocol}://localhost:{port}")
-    app.run("0.0.0.0", port, ssl=ssl_context, workers=utils.number_of_sanic_workers())
+    logger.info(f"Action endpoint is up and running on {protocol}://{host}:{port}")
+    app.run(host, port, ssl=ssl_context, workers=utils.number_of_sanic_workers())
 
 
 if __name__ == "__main__":

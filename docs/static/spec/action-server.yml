@@ -41,7 +41,7 @@ paths:
                   $ref: "./rasa.yml#/components/schemas/Domain"
       responses:
         200:
-          description: Action was executed succesfully.
+          description: Action was executed successfully.
           content:
             application/json:
               schema:
@@ -88,6 +88,7 @@ components:
         - $ref: '#/components/schemas/ImageResponse'
         - $ref: '#/components/schemas/AttachmentResponse'
         - $ref: '#/components/schemas/TemplateResponse'
+        - $ref: '#/components/schemas/ResponseResponse'
 
     TextResponse:
       description: Text which the bot should utter.
@@ -107,7 +108,17 @@ components:
       additionalProperties:
         description: Keyword argument to fill the template
         type: string
-      required: ["template"]
+    ResponseResponse:
+      description: Response the bot should utter.
+      type: object
+      properties:
+        response:
+          description: Name of the response
+          type: string
+      additionalProperties:
+        description: Keyword argument to fill the response
+        type: string
+      required: ["response"]
     ButtonResponse:
       description: Buttons which should be sent to the user.
       type: object

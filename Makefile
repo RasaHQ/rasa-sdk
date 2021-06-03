@@ -17,6 +17,7 @@ help:
 	@echo "        Prepare a new release"
 
 install:
+	poetry run python -m pip install -U pip
 	poetry install
 
 install-docs:
@@ -40,8 +41,8 @@ lint:
 	poetry run black --check rasa_sdk tests
 	make lint-docstrings
 
- # Compare against `master` if no branch was provided
-BRANCH ?= master
+ # Compare against `main` if no branch was provided
+BRANCH ?= main
 lint-docstrings:
 # Lint docstrings only against the the diff to avoid too many errors.
 # Check only production code. Ignore other flake errors which are captured by `lint`
@@ -66,8 +67,11 @@ cleanup-generated-changelog:
 	git ls-files --deleted | xargs git checkout
 	git checkout CHANGELOG.mdx
 
-docs:
-	cd docs/ && poetry run yarn pre-build && yarn build
+prepare-docs:
+	cd docs/ && poetry run yarn pre-build
+
+docs: prepare-docs
+	cd docs/ && yarn build
 
 test-docs: generate-pending-changelog docs
 
