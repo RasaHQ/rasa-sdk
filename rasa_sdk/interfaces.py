@@ -248,16 +248,20 @@ class Tracker:
         """
 
         slots: Dict[Text, Any] = {}
+        count: int = 0
 
         for event in reversed(self.events):
             # The `FormAction` in Rasa Open Source will append all slot candidates
             # at the end of the tracker events.
             if event["event"] == "slot":
-                slots[event["name"]] = event["value"]
+                count += 1
             else:
                 # Stop as soon as there is another event type as this means that we
                 # checked all potential slot candidates.
                 break
+
+        for event in self.events[len(self.events) - count :]:
+            slots[event["name"]] = event["value"]
 
         return slots
 
