@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterator, List, Optional, Text
 from rasa_sdk.events import EventType
 
 if typing.TYPE_CHECKING:  # pragma: no cover
+    from rasa_sdk.executor import CollectingDispatcher
     from rasa_sdk.types import DomainDict, TrackerState
 
 
@@ -319,7 +320,7 @@ class Action:
 
     async def run(
         self,
-        dispatcher,
+        dispatcher: "CollectingDispatcher",
         tracker: Tracker,
         domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
