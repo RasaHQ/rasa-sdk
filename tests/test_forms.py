@@ -1573,13 +1573,15 @@ async def test_form_validation_action():
         events = await form.run(
             dispatcher=dispatcher,
             tracker=tracker,
-            domain={"forms": {form_name: {"slot1": [], "slot2": []}}},
+            domain={
+                "forms": {form_name: {"required_slots": {"slot1": [], "slot2": []}}}
+            },
         )
 
     assert not warnings
     assert events == [
-        SlotSet("slot2", None),
         SlotSet("slot1", "validated_value"),
+        SlotSet("slot2", None),
     ]
 
 
@@ -1603,7 +1605,7 @@ async def test_form_validation_action_async():
     events = await form.run(
         dispatcher=dispatcher,
         tracker=tracker,
-        domain={"forms": {form_name: {"slot1": [], "slot3": []}}},
+        domain={"forms": {form_name: {"required_slots": {"slot1": [], "slot3": []}}}},
     )
     assert events == [SlotSet("slot3", "validated_value")]
 
@@ -1633,13 +1635,19 @@ async def test_form_validation_without_validate_function():
         events = await form.run(
             dispatcher=dispatcher,
             tracker=tracker,
-            domain={"forms": {form_name: {"slot1": [], "slot2": [], "slot3": []}}},
+            domain={
+                "forms": {
+                    form_name: {
+                        "required_slots": {"slot1": [], "slot2": [], "slot3": []}
+                    }
+                }
+            },
         )
 
     assert events == [
-        SlotSet("slot3", "some_value"),
-        SlotSet("slot2", None),
         SlotSet("slot1", "validated_value"),
+        SlotSet("slot2", None),
+        SlotSet("slot3", "some_value"),
     ]
 
 
@@ -1677,7 +1685,7 @@ async def test_form_validation_changing_slots_during_validation():
     events = await form.run(
         dispatcher=dispatcher,
         tracker=tracker,
-        domain={"forms": {form_name: {"my_slot": []}}},
+        domain={"forms": {form_name: {"required_slots": {"my_slot": []}}}},
     )
     assert events == [
         SlotSet("my_slot", None),
@@ -1725,7 +1733,7 @@ async def test_form_validation_dash_slot():
     events = await form.run(
         dispatcher=dispatcher,
         tracker=tracker,
-        domain={"forms": {form_name: {"slot-with-dash": []}}},
+        domain={"forms": {form_name: {"required_slots": {"slot-with-dash": []}}}},
     )
     assert events == [
         SlotSet("slot-with-dash", "validated_value"),
@@ -1797,6 +1805,110 @@ async def test_extract_and_validate_slot(
     ]
 
 
+@pytest.mark.parametrize(
+    "my_required_slots, extracted_values, asserted_events",
+    [
+        (
+            # request slot "state" before "city"
+            ["state", "city"],
+            # both are extracted as follow
+            {"state": "california", "city": "san francisco"},
+            # validate_state turns "california" to "CA"
+            # validate_city sees "state" == "CA" and turns "san francisco" to "San Francisco"
+            [["state", "CA"], ["city", "San Francisco"], [REQUESTED_SLOT, None]],
+        ),
+        (
+            # request slot "city" before "state"
+            ["city", "state"],
+            # only "city" can be extracted from user message
+            # seeing "city" == "san francisco", "state" is extracted as "california"
+            {"state": None, "city": "san francisco"},
+            # validate_city keeps "city" as is
+            # validate_state turns "california" to "CA"
+            [["city", "san francisco"], ["state", "CA"], [REQUESTED_SLOT, None]],
+        ),
+    ],
+)
+async def test_extract_and_validate_slot_visibility(
+    my_required_slots: List[Text],
+    extracted_values: Dict[Text, Any],
+    asserted_events: List[List[Text]],
+):
+    class TestFormValidationWithCustomSlots(FormValidationAction):
+        def name(self) -> Text:
+            return "some_form"
+
+        async def required_slots(
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> List[Text]:
+            return my_required_slots
+
+        async def extract_state(
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            state = extracted_values.get("state")
+            if state is None and tracker.get_slot("city") == "san francisco":
+                state = "california"
+            return {"state": state}
+
+        async def validate_state(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            if slot_value == "california":
+                slot_value = "CA"
+            return {"state": slot_value}
+
+        async def extract_city(
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            return {"city": extracted_values.get("city")}
+
+        async def validate_city(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            assert slot_value == "san francisco"
+            if tracker.get_slot("state") == "CA":
+                slot_value = "San Francisco"
+            return {"city": slot_value}
+
+    form = TestFormValidationWithCustomSlots()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [],
+        False,
+        None,
+        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain={})
+
+    assert events == [SlotSet(e[0], e[1]) for e in asserted_events]
+
+
 async def test_extract_slot_only():
     custom_slot = "my_slot"
     unvalidated_value = "some value"
@@ -1851,7 +1963,11 @@ async def test_extract_slot_only():
         # Custom slot mapping but no `extract` method
         (["my_slot", "other_slot"], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
         # Extract method for slot which is also mapped in domain
-        (["my_slot"], {"forms": {"some_form": {"my_slot": []}}}, []),
+        (
+            ["my_slot"],
+            {"forms": {"some_form": {"required_slots": {"my_slot": []}}}},
+            [],
+        ),
     ],
 )
 async def test_warning_for_slot_extractions(
@@ -1916,10 +2032,17 @@ async def test_warning_for_slot_extractions(
         # Domain slots are ignored in overridden `required_slots`
         (
             [],
-            {"forms": {"some_form": {"another_slot": []}}},
+            {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
             [SlotSet(REQUESTED_SLOT, None)],
         ),
         # `required_slots` was not overridden - Rasa Open Source will request next slot.
+        # slot mappings with the `required_slots` keyword preceding them (new format)
+        (
+            ["another_slot"],
+            {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
+            [],
+        ),
+        # slot mappings without the `required_slots` keyword preceding them (old format)
         (
             ["another_slot"],
             {"forms": {"some_form": {"another_slot": []}}},

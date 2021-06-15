@@ -730,16 +730,21 @@ class FormValidationAction(Action, ABC):
         Returns:
             `SlotSet` for any extracted slots.
         """
-        custom_slots = []
+        custom_slots = {}
         slots_to_extract = await self.required_slots(
             self.slots_mapped_in_domain(domain), dispatcher, tracker, domain
         )
 
         for slot_name in slots_to_extract:
-            custom_slots += await self._extract_slot(
+            extraction_output = await self._extract_slot(
                 slot_name, dispatcher, tracker, domain
             )
-        return custom_slots
+            custom_slots.update(extraction_output)
+            # for sequential consistency, also update tracker
+            # to make changes visible to subsequent extract_{slot_name}
+            tracker.slots.update(extraction_output)
+
+        return [SlotSet(slot, value) for slot, value in custom_slots.items()]
 
     async def _extract_slot(
         self,
@@ -747,7 +752,7 @@ class FormValidationAction(Action, ABC):
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         domain: "DomainDict",
-    ) -> List[EventType]:
+    ) -> Dict[Text, Any]:
         method_name = f"extract_{slot_name.replace('-', '_')}"
         slot_mapped_in_domain = slot_name in self.slots_mapped_in_domain(domain)
         extract_method = getattr(self, method_name, None)
@@ -758,9 +763,7 @@ class FormValidationAction(Action, ABC):
                     f"No method '{method_name}' found for slot "
                     f"'{slot_name}'. Skipping extraction for this slot."
                 )
-                return []
-            else:
-                return []
+            return {}
 
         if extract_method and slot_mapped_in_domain:
             warnings.warn(
@@ -776,13 +779,13 @@ class FormValidationAction(Action, ABC):
         )
 
         if isinstance(extracted, dict):
-            return [SlotSet(slot, value) for slot, value in extracted.items()]
+            return extracted
 
         warnings.warn(
             f"Cannot extract `{slot_name}`: make sure the extract method "
             f"returns the correct output."
         )
-        return []
+        return {}
 
     async def required_slots(
         self,
@@ -817,7 +820,17 @@ class FormValidationAction(Action, ABC):
         Returns:
             Slot names mapped in the domain.
         """
-        return list(domain.get("forms", {}).get(self.form_name(), {}).keys())
+        form = domain.get("forms", {}).get(self.form_name(), {})
+        # In forms now, the keyword `required_slots` should always precede
+        # the definition of slot mappings and the lack of it is deprecated.
+        # So, we add the following check here to make sure we support
+        # the old (without keyword) and new (with keyword) format
+        # of the slot mappings definition.
+        if "required_slots" in form:
+            required_slots = form.get("required_slots", {}).keys()
+        else:
+            required_slots = form.keys()
+        return list(required_slots)
 
     async def validate(
         self,
@@ -854,6 +867,9 @@ class FormValidationAction(Action, ABC):
 
             if isinstance(validation_output, dict):
                 slots.update(validation_output)
+                # for sequential consistency, also update tracker
+                # to make changes visible to subsequent validate_{slot_name}
+                tracker.slots.update(validation_output)
             else:
                 warnings.warn(
                     f"Cannot validate `{slot_name}`: make sure the validation method "
