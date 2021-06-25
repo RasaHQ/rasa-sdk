@@ -74,7 +74,7 @@
     "node-forge": "^0.10.0"
   },
   "devDependencies": {
-    "netlify-cli": "^2.59.0",
+    "netlify-cli": "^3.38.10",
     "toml": "^3.0.0"
   }
 }
