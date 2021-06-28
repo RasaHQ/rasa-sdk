@@ -3952,10 +3952,10 @@
     "@types/node" "*"
     form-data "^3.0.0"
 
-"@types/node@*", "@types/node@>= 8":
-  version "14.6.0"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.6.0.tgz#7d4411bf5157339337d7cff864d9ff45f177b499"
-  integrity sha512-mikldZQitV94akrc4sCcSjtJfsTKt4p+e/s0AGscVA6XArQ9kFclP+ZiYUMnq987rc6QlYxXv/EivqlfSLxpKA==
+"@types/node@*", "@types/node@>= 8", "@types/node@^14.0.27":
+  version "14.17.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.17.4.tgz#218712242446fc868d0e007af29a4408c7765bc0"
+  integrity sha512-8kQ3+wKGRNN0ghtEn7EGps/B8CzuBz1nXZEIGGLP2GnwbqYn4dbTs7k+VKLTq1HvZLRCIDtN3Snx1Ege8B7L5A==
 
 "@types/node@^10.11.7":
   version "10.17.35"
@@ -3966,11 +3966,6 @@
   version "13.13.16"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-13.13.16.tgz#66f2177047b61131eaac18c47eb25d6f1317070a"
   integrity sha512-dJ9vXxJ8MEwzNn4GkoAGauejhXoKuJyYKegsA6Af25ZpEDXomeVXt5HUWUNVHk5UN7+U0f6ghC6otwt+7PdSDg==
-
-"@types/node@^14.0.27":
-  version "14.17.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.17.4.tgz#218712242446fc868d0e007af29a4408c7765bc0"
-  integrity sha512-8kQ3+wKGRNN0ghtEn7EGps/B8CzuBz1nXZEIGGLP2GnwbqYn4dbTs7k+VKLTq1HvZLRCIDtN3Snx1Ege8B7L5A==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -8019,12 +8014,7 @@ eval@^0.1.4:
   dependencies:
     require-like ">= 0.1.1"
 
-eventemitter3@^4.0.0:
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.6.tgz#1258f6fa51b4908aadc2cd624fcd6e64f99f49d6"
-  integrity sha512-s3GJL04SQoM+gn2c14oyqxvZ3Pcq7cduSDqy3sBFXx6UPSUmgVYwQM9zwkTn9je0lrfg0gHEwR42pF3Q2dCQkQ==
-
-eventemitter3@^4.0.4:
+eventemitter3@^4.0.0, eventemitter3@^4.0.4:
   version "4.0.7"
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
@@ -14942,10 +14932,10 @@ redeyed@~2.1.0:
   dependencies:
     esprima "~4.0.0"
 
-redoc@^2.0.0-rc.31:
-  version "2.0.0-rc.40"
-  resolved "https://registry.yarnpkg.com/redoc/-/redoc-2.0.0-rc.40.tgz#4dd7d095265bd2af464069e684863a5b17f7a507"
-  integrity sha512-f1na5vWCr37R5+G4xhbD1TjH6j6b/he8nEMGGJOwDcIMMcDK88S0YEWuhplhdVuZdc4c61CoxZqGXqcDRp5m0w==
+redoc@^2.0.0-rc.41:
+  version "2.0.0-rc.41"
+  resolved "https://registry.yarnpkg.com/redoc/-/redoc-2.0.0-rc.41.tgz#b8b71a6b636b46ef404eac9109686c3ca55c080a"
+  integrity sha512-WqY4Qo3mxBvSVTqzBUAvRJ5Sq8rEDCd3I6Rs03WriPJZVG65qcf7eCnBaMEdppq+VG8nJNBebu4RC5T+QRLMIQ==
   dependencies:
     "@redocly/react-dropdown-aria" "^2.0.11"
     "@types/node" "^13.11.1"
