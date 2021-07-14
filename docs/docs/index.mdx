@@ -7,6 +7,15 @@ title: Introduction to Rasa Action Servers
 A Rasa action server runs [custom actions](https://rasa.com/docs/rasa/next/custom-actions) for a Rasa Open Source
 conversational assistant.
 
+Rasa will call an endpoint you can specify, when a custom action is predicted. This endpoint should be a webserver that reacts to this call, runs the code and optionally returns information to modify the dialogue state.
+
+To specify your action server use the endpoints.yml:
+
+```yaml
+action_endpoint:
+  url: "http://localhost:5055/webhook"
+```
+
 ## How it works
 
 When your assistant predicts a custom action, the Rasa server sends
