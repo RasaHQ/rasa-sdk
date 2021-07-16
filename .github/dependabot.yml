@@ -21,6 +21,6 @@ updates:
       separator: "-"
     open-pull-requests-limit: 10
     reviewers:
-      - RasaHQ/enable-squad
+      - "m-vdb"
     labels:
       - type:dependencies
