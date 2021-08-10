@@ -127,7 +127,7 @@ def create_app(
 
 def run(
     action_package_name: Union[Text, types.ModuleType],
-    port: Union[Text, int] = DEFAULT_SERVER_PORT,
+    port: int = DEFAULT_SERVER_PORT,
     cors_origins: Union[Text, List[Text], None] = "*",
     ssl_certificate: Optional[Text] = None,
     ssl_keyfile: Optional[Text] = None,
