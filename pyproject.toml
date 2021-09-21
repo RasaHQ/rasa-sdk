@@ -69,6 +69,7 @@ sanic = "^21.6.0"
 requests = ">=2.23.0,<2.26.0"
 typing-extensions = "^3.7.4"
 Sanic-Cors = "^1.0.0"
+sanic-prometheus = "^0.2.1"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^2.12.1"

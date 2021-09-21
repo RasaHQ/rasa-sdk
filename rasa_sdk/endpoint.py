@@ -9,6 +9,7 @@ from sanic import Sanic, response
 from sanic.response import HTTPResponse
 from sanic.request import Request
 from sanic_cors import CORS
+from sanic_prometheus import monitor
 
 from rasa_sdk import utils
 from rasa_sdk.cli.arguments import add_endpoint_arguments
@@ -75,7 +76,7 @@ def create_app(
         A new Sanic application ready to be run.
     """
     app = Sanic(__name__, configure_logging=False)
-
+    monitor(app).expose_endpoint()
     configure_cors(app, cors_origins)
 
     executor = ActionExecutor()
