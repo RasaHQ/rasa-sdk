@@ -814,8 +814,10 @@ def test_extract_other_slots_with_intent():
                     "entity": "some_other_entity",
                 }
             ],
-            [{"entity": "some_entity", "value": "some_value"}],
+            [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
             "some_intent",
+            # other slot should not be extracted
+            # because even though slot mapping is unique it doesn't contain the role
             {},
         ),
         (
@@ -836,6 +838,7 @@ def test_extract_other_slots_with_intent():
             ],
             [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
             "some_intent",
+            # other slot should not be extracted because slot mapping is not unique
             {},
         ),
     ],
@@ -858,12 +861,6 @@ def test_extract_other_slots_with_entity(
         def required_slots(_tracker):
             return ["some_slot", "some_other_slot"]
 
-        def slot_mappings(self):
-            return {
-                "some_other_slot": some_other_slot_mapping,
-                "some_slot": some_slot_mapping,
-            }
-
     form = CustomFormAction()
 
     tracker = Tracker(
@@ -877,7 +874,20 @@ def test_extract_other_slots_with_entity(
         "action_listen",
     )
 
-    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, {})
+    domain = {
+        "slots": {
+            "some_other_slot": {
+                "type": "any",
+                "mappings": some_other_slot_mapping,
+            },
+            "some_slot": {
+                "type": "any",
+                "mappings": some_slot_mapping,
+            },
+        },
+    }
+
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, domain)
     # check that the value was extracted for non requested slot
     assert slot_values == expected_slot_values
 

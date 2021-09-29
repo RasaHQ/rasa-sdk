@@ -1,8 +1,9 @@
 import logging
 import typing
 import warnings
+import json
 from enum import Enum
-from typing import Dict, Text, Any, List, Union, Optional, Tuple
+from typing import Dict, Text, Any, List, Union, Optional, Set
 
 from abc import ABC
 from rasa_sdk import utils
@@ -138,6 +139,7 @@ class FormAction(Action):
             "for Rasa Open Source 2.0 for instructions how to migrate.",
             FutureWarning,
         )
+        self._have_unique_entity_mappings_been_initialized = False
         super().__init__()
 
     def name(self) -> Text:
@@ -280,30 +282,15 @@ class FormAction(Action):
         }
 
     # noinspection PyMethodMayBeStatic
-    def slot_mappings(self) -> Dict[Text, Union[Dict, List[Dict[Text, Any]]]]:
-        """A dictionary to map required slots.
-
-        Options:
-        - an extracted entity
-        - intent: value pairs
-        - trigger_intent: value pairs
-        - a whole message
-        or a list of them, where the first match will be picked
-
-        Empty dict is converted to a mapping of
-        the slot to the extracted entity with the same name
-        """
-
-        return {}
-
-    def get_mappings_for_slot(self, slot_to_fill: Text) -> List[Dict[Text, Any]]:
+    def get_mappings_for_slot(
+        self, slot_to_fill: Text, domain: "DomainDict"
+    ) -> List[Dict[Text, Any]]:
         """Get mappings for requested slot.
 
         If None, map requested slot to an entity with the same name
         """
-        requested_slot_mappings = SlotMapping.to_list(
-            self.slot_mappings().get(slot_to_fill, self.from_entity(slot_to_fill))
-        )
+        domain_slots = domain.get("slots")
+        requested_slot_mappings = domain_slots.get(slot_to_fill).get("mappings")
 
         # check provided slot mappings
         for requested_slot_mapping in requested_slot_mappings:
@@ -420,7 +407,7 @@ class FormAction(Action):
             # look for other slots
             if slot != slot_to_fill:
                 # list is used to cover the case of list slot type
-                other_slot_mappings = self.get_mappings_for_slot(slot)
+                other_slot_mappings = self.get_mappings_for_slot(slot, domain)
 
                 for other_slot_mapping in other_slot_mappings:
                     if not self._matches_mapping_conditions(
@@ -431,8 +418,7 @@ class FormAction(Action):
                     # check whether the slot should be filled by an entity in the input
                     entity_is_desired = SlotMapping.entity_is_desired(
                         other_slot_mapping, tracker
-                    )
-                    print("SM TYPE", other_slot_mapping["type"])
+                    )  # and self._entity_mapping_is_unique(other_slot_mapping, domain)
                     should_fill_entity_slot = (
                         other_slot_mapping["type"] == str(SlotMapping.FROM_ENTITY)
                         and SlotMapping.intent_is_desired(
@@ -470,6 +456,79 @@ class FormAction(Action):
 
         return slot_values
 
+    def _entity_mapping_is_unique(
+        self, slot_mapping: Dict[Text, Any], domain: "DomainDict"
+    ) -> bool:
+        if not self._have_unique_entity_mappings_been_initialized:
+            # create unique entity mappings on the first call
+            self._unique_entity_mappings = self._create_unique_entity_mappings(domain)
+            self._have_unique_entity_mappings_been_initialized = True
+
+        mapping_as_string = json.dumps(slot_mapping, sort_keys=True)
+        return mapping_as_string in self._unique_entity_mappings
+
+    def _create_unique_entity_mappings(self, domain: "DomainDict") -> Set[Text]:
+        """Finds mappings of type `from_entity` that uniquely set a slot.
+
+        For example in the following form:
+        some_form:
+          departure_city:
+            - type: from_entity
+              entity: city
+              role: from
+            - type: from_entity
+              entity: city
+          arrival_city:
+            - type: from_entity
+              entity: city
+              role: to
+            - type: from_entity
+              entity: city
+
+        An entity `city` with a role `from` uniquely sets the slot `departure_city`
+        and an entity `city` with a role `to` uniquely sets the slot `arrival_city`,
+        so corresponding mappings are unique.
+        But an entity `city` without a role can fill both `departure_city`
+        and `arrival_city`, so corresponding mapping is not unique.
+
+        Args:
+            domain: The domain.
+
+        Returns:
+            A set of json dumps of unique mappings of type `from_entity`.
+        """
+        unique_entity_slot_mappings = set()
+        duplicate_entity_slot_mappings = set()
+        domain_slots = domain.get("slots")
+        for slot in self._required_slots_for_form(domain, self.name()):
+            for slot_mapping in domain_slots.get(slot).get("mappings"):
+                if slot_mapping.get("type") == str(SlotMapping.FROM_ENTITY):
+                    mapping_as_string = json.dumps(slot_mapping, sort_keys=True)
+                    if mapping_as_string in unique_entity_slot_mappings:
+                        unique_entity_slot_mappings.remove(mapping_as_string)
+                        duplicate_entity_slot_mappings.add(mapping_as_string)
+                    elif mapping_as_string not in duplicate_entity_slot_mappings:
+                        unique_entity_slot_mappings.add(mapping_as_string)
+
+        return unique_entity_slot_mappings
+
+    def _required_slots_for_form(
+        self, domain: "DomainDict", form_name: Text
+    ) -> List[Text]:
+        """Retrieve the list of required slot names for a form defined in the domain.
+
+        Args:
+            form_name: The name of the form.
+
+        Returns:
+            The list of slot names or an empty list if no form was found.
+        """
+        form = domain.get("forms", {}).get(form_name)
+        if form:
+            return form["required_slots"]
+
+        return []
+
     # noinspection PyUnusedLocal
     def extract_requested_slot(
         self,
@@ -484,7 +543,7 @@ class FormAction(Action):
         logger.debug(f"Trying to extract requested slot '{slot_to_fill}' ...")
 
         # get mapping for requested slot
-        requested_slot_mappings = self.get_mappings_for_slot(slot_to_fill)
+        requested_slot_mappings = self.get_mappings_for_slot(slot_to_fill, domain)
 
         for requested_slot_mapping in requested_slot_mappings:
             logger.debug(f"Got mapping '{requested_slot_mapping}'")
