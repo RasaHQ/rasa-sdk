@@ -725,9 +725,118 @@ def test_extract_other_slots_with_intent():
                 }
             ],
             [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "role": "some_other_role",
+                }
+            ],
+            "some_intent",
+            {},
+        ),
+        (
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "role": "some_role",
+                }
+            ],
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
             [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
             "some_intent",
             {"some_other_slot": "some_value"},
+        ),
+        (
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "group": "some_group",
+                }
+            ],
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "group": "some_other_group",
+                }
+            ],
+            "some_intent",
+            {},
+        ),
+        (
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "group": "some_group",
+                }
+            ],
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [{"entity": "some_entity", "value": "some_value", "group": "some_group"}],
+            "some_intent",
+            {"some_other_slot": "some_value"},
+        ),
+        (
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "group": "some_group",
+                    "role": "some_role",
+                }
+            ],
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "role": "some_role",
+                    "group": "some_group",
+                }
+            ],
+            "some_intent",
+            {"some_other_slot": "some_value"},
+        ),
+        (
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_other_entity",
+                }
+            ],
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            {},
+        ),
+        (
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "role": "some_role",
+                }
+            ],
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_other_entity",
+                }
+            ],
+            [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
+            "some_intent",
+            {},
         ),
     ],
 )
@@ -751,8 +860,14 @@ def test_extract_other_slots_with_entity(
 
         def slot_mappings(self):
             return {
-                "some_other_slot": some_other_slot_mapping,
-                "some_slot": some_slot_mapping,
+                "some_other_slot": {
+                    "type": "any",
+                    "mapping": some_other_slot_mapping,
+                },
+                "some_slot": {
+                    "type": "any",
+                    "mappings": some_slot_mapping,
+                },
             }
 
     form = CustomFormAction()
