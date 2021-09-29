@@ -32,6 +32,10 @@ class SlotMapping(Enum):
     FROM_TEXT = 3
     CUSTOM = 4
 
+    def __str__(self) -> Text:
+        """Returns a string representation of the object."""
+        return self.name.lower()
+
     @staticmethod
     def to_list(x: Optional[Any]) -> List[Any]:
         """Convert object to a list if it isn't."""
@@ -341,6 +345,20 @@ class FormAction(Action):
 
         return values
 
+    @staticmethod
+    def intent_is_desired(
+        requested_slot_mapping: Dict[Text, Any], tracker: "Tracker"
+    ) -> bool:
+        """Check whether user intent matches intent conditions"""
+
+        mapping_intents = requested_slot_mapping.get("intent", [])
+        mapping_not_intents = requested_slot_mapping.get("not_intent", [])
+        intent = tracker.latest_message.get("intent", {}).get("name")
+
+        intent_not_excluded = not mapping_intents and intent not in mapping_not_intents
+
+        return intent_not_excluded or intent in mapping_intents
+
     def entity_is_desired(
         self,
         other_slot_mapping: Dict[Text, Any],
@@ -402,38 +420,45 @@ class FormAction(Action):
             # look for other slots
             if slot != slot_to_fill:
                 # list is used to cover the case of list slot type
-                slot_mappings = self.get_mappings_for_slot(slot)
+                other_slot_mappings = self.get_mappings_for_slot(slot)
 
-                for slot_mapping in slot_mappings:
-                    if not self._matches_mapping_conditions(slot_mapping, slot_to_fill):
+                for other_slot_mapping in other_slot_mappings:
+                    if not self._matches_mapping_conditions(
+                        other_slot_mapping, slot_to_fill
+                    ):
                         continue
 
                     # check whether the slot should be filled by an entity in the input
                     entity_is_desired = SlotMapping.entity_is_desired(
-                        slot_mapping,
-                        tracker,
+                        other_slot_mapping, tracker
                     )
+                    print("SM TYPE", other_slot_mapping["type"])
                     should_fill_entity_slot = (
-                        slot_mapping["type"] == str(SlotMapping.FROM_ENTITY)
-                        and SlotMapping.intent_is_desired(slot_mapping, tracker, domain)
+                        other_slot_mapping["type"] == str(SlotMapping.FROM_ENTITY)
+                        and SlotMapping.intent_is_desired(
+                            other_slot_mapping, tracker, domain
+                        )
                         and entity_is_desired
                     )
                     # check whether the slot should be
                     # filled from trigger intent mapping
                     should_fill_trigger_slot = (
-                        tracker.active_loop_name != self.name()
-                        and slot_mapping["type"] == str(SlotMapping.FROM_TRIGGER_INTENT)
-                        and SlotMapping.intent_is_desired(slot_mapping, tracker, domain)
+                        tracker.active_loop.get("name") != self.name()
+                        and other_slot_mapping["type"]
+                        == str(SlotMapping.FROM_TRIGGER_INTENT)
+                        and SlotMapping.intent_is_desired(
+                            other_slot_mapping, tracker, domain
+                        )
                     )
                     if should_fill_entity_slot:
                         value = self.get_entity_value(
-                            slot_mapping["entity"],
+                            other_slot_mapping["entity"],
                             tracker,
-                            slot_mapping.get("role"),
-                            slot_mapping.get("group"),
+                            other_slot_mapping.get("role"),
+                            other_slot_mapping.get("group"),
                         )
                     elif should_fill_trigger_slot:
-                        value = slot_mapping.get("value")
+                        value = other_slot_mapping.get("value")
                     else:
                         value = None
 

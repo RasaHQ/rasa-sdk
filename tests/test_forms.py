@@ -860,14 +860,8 @@ def test_extract_other_slots_with_entity(
 
         def slot_mappings(self):
             return {
-                "some_other_slot": {
-                    "type": "any",
-                    "mapping": some_other_slot_mapping,
-                },
-                "some_slot": {
-                    "type": "any",
-                    "mappings": some_slot_mapping,
-                },
+                "some_other_slot": some_other_slot_mapping,
+                "some_slot": some_slot_mapping,
             }
 
     form = CustomFormAction()
