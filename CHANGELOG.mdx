@@ -117,14 +117,14 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
   want to extract an additional slot, add the slot's name to the list of `required_slots`
   and add a method `extract_<slot name>` to your action:
 
-  ```python
+```python
   from typing import Text, Dict, Any, List, Optional
 
   from rasa_sdk.forms import (
-      FormValidationAction,
+      ValidationAction,
   )
 
-  class FormWithSlotExtractions(FormValidationAction):
+  class FormWithSlotExtractions(ValidationAction):
       def name(self) -> Text:
           return "some_form"
 
@@ -231,13 +231,13 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
   Example:
 
-  ```python
+```python
   from typing import Text, Any, Dict
-  from rasa_sdk import FormValidationAction, Tracker
+  from rasa_sdk import ValidationAction, Tracker
   from rasa_sdk.types import DomainDict
   from rasa_sdk.executor import CollectingDispatcher
 
-  class MyFormValidationAction(FormValidationAction):
+  class MyFormValidationAction(ValidationAction):
       def name(self) -> Text:
           return "some_form"
 

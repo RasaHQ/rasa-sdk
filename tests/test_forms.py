@@ -8,7 +8,7 @@ from rasa_sdk.events import SlotSet, ActiveLoop, EventType
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.forms import (
     FormAction,
-    FormValidationAction,
+    ValidationAction,
     REQUESTED_SLOT,
     LOOP_INTERRUPTED_KEY,
 )
@@ -1501,7 +1501,7 @@ def test_form_deprecation():
         FormAction()
 
 
-class TestFormValidationAction(FormValidationAction):
+class TestFormValidationAction(ValidationAction):
     def __init__(self, form_name: Text = "some_form") -> None:
         self.name_of_form = form_name
 
@@ -1654,7 +1654,7 @@ async def test_form_validation_without_validate_function():
 async def test_form_validation_changing_slots_during_validation():
     form_name = "some_form"
 
-    class TestForm(FormValidationAction):
+    class TestForm(ValidationAction):
         def name(self) -> Text:
             return form_name
 
@@ -1696,7 +1696,7 @@ async def test_form_validation_changing_slots_during_validation():
 async def test_form_validation_dash_slot():
     form_name = "some_form"
 
-    class TestFormValidationDashSlotAction(FormValidationAction):
+    class TestFormValidationDashSlotAction(ValidationAction):
         def name(self) -> Text:
             return form_name
 
@@ -1751,7 +1751,7 @@ async def test_extract_and_validate_slot(
     unvalidated_value = "some value"
     validated_value = "validated value"
 
-    class TestFormValidationWithCustomSlots(FormValidationAction):
+    class TestFormValidationWithCustomSlots(ValidationAction):
         def name(self) -> Text:
             return "some_form"
 
@@ -1834,7 +1834,7 @@ async def test_extract_and_validate_slot_visibility(
     extracted_values: Dict[Text, Any],
     asserted_events: List[List[Text]],
 ):
-    class TestFormValidationWithCustomSlots(FormValidationAction):
+    class TestFormValidationWithCustomSlots(ValidationAction):
         def name(self) -> Text:
             return "some_form"
 
@@ -1913,7 +1913,7 @@ async def test_extract_slot_only():
     custom_slot = "my_slot"
     unvalidated_value = "some value"
 
-    class TestFormValidationWithCustomSlots(FormValidationAction):
+    class TestFormValidationWithCustomSlots(ValidationAction):
         def name(self) -> Text:
             return "some_form"
 
@@ -1976,7 +1976,7 @@ async def test_warning_for_slot_extractions(
     custom_slot = "my_slot"
     unvalidated_value = "some value"
 
-    class TestFormValidationWithCustomSlots(FormValidationAction):
+    class TestFormValidationWithCustomSlots(ValidationAction):
         def name(self) -> Text:
             return "some_form"
 
@@ -2055,7 +2055,7 @@ async def test_ask_for_next_slot(
     domain: Dict,
     expected_return_events: List[EventType],
 ):
-    class TestFormRequestSlot(FormValidationAction):
+    class TestFormRequestSlot(ValidationAction):
         def name(self) -> Text:
             return "some_form"
 

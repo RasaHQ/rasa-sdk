@@ -166,6 +166,17 @@ class Tracker:
         """Return a list of events after the most recent restart."""
         return list(self.events)[self.idx_after_latest_restart() :]
 
+    @property
+    def active_loop_name(self) -> Optional[Text]:
+        """Get the name of the currently active loop.
+
+        Returns: `None` if no active loop or the name of the currently active loop.
+        """
+        if not self.active_loop or self.active_loop.get("name") == "should_not_be_set":
+            return None
+
+        return self.active_loop.get("name")
+
     def __eq__(self, other: Any) -> bool:
         if isinstance(self, type(other)):
             return other.events == self.events and self.sender_id == other.sender_id
