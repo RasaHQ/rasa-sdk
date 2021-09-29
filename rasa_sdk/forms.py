@@ -341,6 +341,49 @@ class FormAction(Action):
 
         return values
 
+    def entity_is_desired(
+        self,
+        other_slot_mapping: Dict[Text, Any],
+        other_slot: Text,
+        entity_type_of_slot_to_fill: Optional[Text],
+        tracker: "Tracker",
+    ) -> bool:
+        """Check whether the other slot should be filled by an entity in the input or
+        not.
+        Args:
+            other_slot_mapping: Slot mapping.
+            other_slot: The other slot to be filled.
+            entity_type_of_slot_to_fill: Entity type of slot to fill.
+            tracker: The tracker.
+        Returns:
+            True, if other slot should be filled, false otherwise.
+        """
+
+        # slot name is equal to the entity type
+        entity_type = other_slot_mapping.get("entity")
+        other_slot_equals_entity = other_slot == entity_type
+
+        # use the custom slot mapping 'from_entity' defined by the user to check
+        # whether we can fill a slot with an entity
+        other_slot_fulfils_entity_mapping = False
+        if (
+            entity_type is not None
+            and (
+                other_slot_mapping.get("role") is not None
+                or other_slot_mapping.get("group") is not None
+            )
+            and entity_type_of_slot_to_fill == other_slot_mapping.get("entity")
+        ):
+            matching_values = self.get_entity_value(
+                entity_type,
+                tracker,
+                other_slot_mapping.get("role"),
+                other_slot_mapping.get("group"),
+            )
+            other_slot_fulfils_entity_mapping = matching_values is not None
+
+        return other_slot_equals_entity or other_slot_fulfils_entity_mapping
+
     # noinspection PyUnusedLocal
     def extract_other_slots(
         self,
@@ -367,7 +410,8 @@ class FormAction(Action):
 
                     # check whether the slot should be filled by an entity in the input
                     entity_is_desired = SlotMapping.entity_is_desired(
-                        slot_mapping, tracker
+                        slot_mapping,
+                        tracker,
                     )
                     should_fill_entity_slot = (
                         slot_mapping["type"] == str(SlotMapping.FROM_ENTITY)
@@ -723,27 +767,6 @@ class FormAction(Action):
 
     def __str__(self) -> Text:
         return f"FormAction('{self.name()}')"
-
-    def _get_entity_type_of_slot_to_fill(
-        self,
-        slot_to_fill: Optional[Text],
-    ) -> Optional[Text]:
-        if not slot_to_fill:
-            return None
-
-        mappings = self.get_mappings_for_slot(slot_to_fill)
-        mappings = [m for m in mappings if m.get("type") == "from_entity"]
-
-        if not mappings:
-            return None
-
-        entity_type = mappings[0].get("entity")
-
-        for i in range(1, len(mappings)):
-            if entity_type != mappings[i].get("entity"):
-                return None
-
-        return entity_type
 
 
 class ValidationAction(Action, ABC):
