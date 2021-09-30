@@ -159,9 +159,9 @@ class FormAction(Action):
             "A form must implement required slots that it has to fill"
         )
 
-    # noinspection PyMethodMayBeStatic
+    # TODO(alwx): move to `SlotMapping`
+    @staticmethod
     def from_entity(
-        self,
         entity: Text,
         intent: Optional[Union[Text, List[Text]]] = None,
         not_intent: Optional[Union[Text, List[Text]]] = None,
@@ -332,63 +332,6 @@ class FormAction(Action):
 
         return values
 
-    @staticmethod
-    def intent_is_desired(
-        requested_slot_mapping: Dict[Text, Any], tracker: "Tracker"
-    ) -> bool:
-        """Check whether user intent matches intent conditions"""
-
-        mapping_intents = requested_slot_mapping.get("intent", [])
-        mapping_not_intents = requested_slot_mapping.get("not_intent", [])
-        intent = tracker.latest_message.get("intent", {}).get("name")
-
-        intent_not_excluded = not mapping_intents and intent not in mapping_not_intents
-
-        return intent_not_excluded or intent in mapping_intents
-
-    def entity_is_desired(
-        self,
-        other_slot_mapping: Dict[Text, Any],
-        other_slot: Text,
-        entity_type_of_slot_to_fill: Optional[Text],
-        tracker: "Tracker",
-    ) -> bool:
-        """Check whether the other slot should be filled by an entity in the input or
-        not.
-        Args:
-            other_slot_mapping: Slot mapping.
-            other_slot: The other slot to be filled.
-            entity_type_of_slot_to_fill: Entity type of slot to fill.
-            tracker: The tracker.
-        Returns:
-            True, if other slot should be filled, false otherwise.
-        """
-
-        # slot name is equal to the entity type
-        entity_type = other_slot_mapping.get("entity")
-        other_slot_equals_entity = other_slot == entity_type
-
-        # use the custom slot mapping 'from_entity' defined by the user to check
-        # whether we can fill a slot with an entity
-        other_slot_fulfils_entity_mapping = False
-        if (
-            entity_type is not None
-            and (
-                other_slot_mapping.get("role") is not None
-                or other_slot_mapping.get("group") is not None
-            )
-            and entity_type_of_slot_to_fill == other_slot_mapping.get("entity")
-        ):
-            matching_values = self.get_entity_value(
-                entity_type,
-                tracker,
-                other_slot_mapping.get("role"),
-                other_slot_mapping.get("group"),
-            )
-            other_slot_fulfils_entity_mapping = matching_values is not None
-
-        return other_slot_equals_entity or other_slot_fulfils_entity_mapping
-
     # noinspection PyUnusedLocal
     def extract_other_slots(
         self,
@@ -418,7 +361,7 @@ class FormAction(Action):
                     # check whether the slot should be filled by an entity in the input
                     entity_is_desired = SlotMapping.entity_is_desired(
                         other_slot_mapping, tracker
-                    )  # and self._entity_mapping_is_unique(other_slot_mapping, domain)
+                    ) and self._entity_mapping_is_unique(other_slot_mapping, tracker, domain)
                     should_fill_entity_slot = (
                         other_slot_mapping["type"] == str(SlotMapping.FROM_ENTITY)
                         and SlotMapping.intent_is_desired(
@@ -457,17 +400,17 @@ class FormAction(Action):
         return slot_values
 
     def _entity_mapping_is_unique(
-        self, slot_mapping: Dict[Text, Any], domain: "DomainDict"
+        self, slot_mapping: Dict[Text, Any], tracker: "Tracker", domain: "DomainDict"
     ) -> bool:
         if not self._have_unique_entity_mappings_been_initialized:
             # create unique entity mappings on the first call
-            self._unique_entity_mappings = self._create_unique_entity_mappings(domain)
+            self._unique_entity_mappings = self._create_unique_entity_mappings(tracker, domain)
             self._have_unique_entity_mappings_been_initialized = True
 
         mapping_as_string = json.dumps(slot_mapping, sort_keys=True)
         return mapping_as_string in self._unique_entity_mappings
 
-    def _create_unique_entity_mappings(self, domain: "DomainDict") -> Set[Text]:
+    def _create_unique_entity_mappings(self, tracker: "Tracker", domain: "DomainDict") -> Set[Text]:
         """Finds mappings of type `from_entity` that uniquely set a slot.
 
         For example in the following form:
@@ -500,7 +443,7 @@ class FormAction(Action):
         unique_entity_slot_mappings = set()
         duplicate_entity_slot_mappings = set()
         domain_slots = domain.get("slots")
-        for slot in self._required_slots_for_form(domain, self.name()):
+        for slot in self.required_slots(tracker):
             for slot_mapping in domain_slots.get(slot).get("mappings"):
                 if slot_mapping.get("type") == str(SlotMapping.FROM_ENTITY):
                     mapping_as_string = json.dumps(slot_mapping, sort_keys=True)
@@ -511,23 +454,6 @@ class FormAction(Action):
                         unique_entity_slot_mappings.add(mapping_as_string)
 
         return unique_entity_slot_mappings
-
-    def _required_slots_for_form(
-        self, domain: "DomainDict", form_name: Text
-    ) -> List[Text]:
-        """Retrieve the list of required slot names for a form defined in the domain.
-
-        Args:
-            form_name: The name of the form.
-
-        Returns:
-            The list of slot names or an empty list if no form was found.
-        """
-        form = domain.get("forms", {}).get(form_name)
-        if form:
-            return form["required_slots"]
-
-        return []
 
     # noinspection PyUnusedLocal
     def extract_requested_slot(

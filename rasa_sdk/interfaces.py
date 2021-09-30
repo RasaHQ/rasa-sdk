@@ -135,8 +135,8 @@ class Tracker:
             x.get("value")
             for x in entities
             if x.get("entity") == entity_type
-            and (entity_group is None or x.get("group") == entity_group)
-            and (entity_role is None or x.get("role") == entity_role)
+            and x.get("group") == entity_group
+            and x.get("role") == entity_role
         )
 
     def get_latest_input_channel(self) -> Optional[Text]:
