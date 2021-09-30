@@ -264,7 +264,9 @@ def test_extract_requested_slot_from_entity_with_intent():
                     }
                 ],
                 "some_intent",
-                {"some_slot": "some_value"},
+                # nothing should be extracted, because entity contain role and group
+                # but mapping expects them to be None
+                {},
         ),
     ],
 )
@@ -339,11 +341,6 @@ def test_extract_requested_slot_from_intent():
         def name(self):
             return "some_form"
 
-        def slot_mappings(self):
-            return {
-                "some_slot": self.from_intent(intent="some_intent", value="some_value")
-            }
-
     form = CustomFormAction()
 
     tracker = Tracker(
@@ -357,8 +354,17 @@ def test_extract_requested_slot_from_intent():
         "action_listen",
     )
 
+    domain = {
+        "slots": {
+            "some_slot": {
+                "type": "any",
+                "mappings": [FormAction.from_intent(intent="some_intent", value="some_value")]
+            }
+        }
+    }
+
     slot_values = form.extract_requested_slot(
-        CollectingDispatcher(), tracker, "some_slot", {}
+        CollectingDispatcher(), tracker, "some_slot", domain
     )
     # check that the value was extracted for correct intent
     assert slot_values == {"some_slot": "some_value"}
@@ -375,7 +381,7 @@ def test_extract_requested_slot_from_intent():
     )
 
     slot_values = form.extract_requested_slot(
-        CollectingDispatcher(), tracker, "some_slot", {}
+        CollectingDispatcher(), tracker, "some_slot", domain
     )
     # check that the value was not extracted for incorrect intent
     assert slot_values == {}

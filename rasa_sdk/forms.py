@@ -225,9 +225,8 @@ class FormAction(Action):
             "not_intent": not_intent,
         }
 
-    # noinspection PyMethodMayBeStatic
+    @staticmethod
     def from_intent(
-        self,
         value: Any,
         intent: Optional[Union[Text, List[Text]]] = None,
         not_intent: Optional[Union[Text, List[Text]]] = None,
