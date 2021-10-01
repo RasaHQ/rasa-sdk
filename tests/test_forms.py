@@ -77,7 +77,7 @@ def test_extract_requested_slot_from_entity_no_intent():
         "slots": {
             "some_slot": {
                 "type": "any",
-                "mappings": [FormAction.from_entity(entity="some_entity")]
+                "mappings": [FormAction.from_entity(entity="some_entity")],
             }
         }
     }
@@ -125,9 +125,9 @@ def test_extract_requested_slot_from_entity_with_intent():
         "slots": {
             "some_slot": {
                 "type": "any",
-                "mappings": [FormAction.from_entity(
-                    entity="some_entity", intent="some_intent"
-                )]
+                "mappings": [
+                    FormAction.from_entity(entity="some_entity", intent="some_intent")
+                ],
             }
         }
     }
@@ -163,121 +163,121 @@ def test_extract_requested_slot_from_entity_with_intent():
     "mapping_not_intent, mapping_intent, mapping_role, mapping_group, entities, intent, expected_slot_values",
     [
         (
-                "some_intent",
-                None,
-                None,
-                None,
-                [{"entity": "some_entity", "value": "some_value"}],
-                "some_intent",
-                {},
+            "some_intent",
+            None,
+            None,
+            None,
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            {},
         ),
         (
-                None,
-                "some_intent",
-                None,
-                None,
-                [{"entity": "some_entity", "value": "some_value"}],
-                "some_intent",
-                {"some_slot": "some_value"},
+            None,
+            "some_intent",
+            None,
+            None,
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            {"some_slot": "some_value"},
         ),
         (
-                "some_intent",
-                None,
-                None,
-                None,
-                [{"entity": "some_entity", "value": "some_value"}],
-                "some_other_intent",
-                {"some_slot": "some_value"},
+            "some_intent",
+            None,
+            None,
+            None,
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_other_intent",
+            {"some_slot": "some_value"},
         ),
         (
-                None,
-                None,
-                "some_role",
-                None,
-                [{"entity": "some_entity", "value": "some_value"}],
-                "some_intent",
-                {},
+            None,
+            None,
+            "some_role",
+            None,
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            {},
         ),
         (
-                None,
-                None,
-                "some_role",
-                None,
-                [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
-                "some_intent",
-                {"some_slot": "some_value"},
+            None,
+            None,
+            "some_role",
+            None,
+            [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
+            "some_intent",
+            {"some_slot": "some_value"},
         ),
         (
-                None,
-                None,
-                None,
-                "some_group",
-                [{"entity": "some_entity", "value": "some_value"}],
-                "some_intent",
-                {},
+            None,
+            None,
+            None,
+            "some_group",
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            {},
         ),
         (
-                None,
-                None,
-                None,
-                "some_group",
-                [{"entity": "some_entity", "value": "some_value", "group": "some_group"}],
-                "some_intent",
-                {"some_slot": "some_value"},
+            None,
+            None,
+            None,
+            "some_group",
+            [{"entity": "some_entity", "value": "some_value", "group": "some_group"}],
+            "some_intent",
+            {"some_slot": "some_value"},
         ),
         (
-                None,
-                None,
-                "some_role",
-                "some_group",
-                [
-                    {
-                        "entity": "some_entity",
-                        "value": "some_value",
-                        "group": "some_group",
-                        "role": "some_role",
-                    }
-                ],
-                "some_intent",
-                {"some_slot": "some_value"},
+            None,
+            None,
+            "some_role",
+            "some_group",
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "group": "some_group",
+                    "role": "some_role",
+                }
+            ],
+            "some_intent",
+            {"some_slot": "some_value"},
         ),
         (
-                None,
-                None,
-                "some_role",
-                "some_group",
-                [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
-                "some_intent",
-                {},
+            None,
+            None,
+            "some_role",
+            "some_group",
+            [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
+            "some_intent",
+            {},
         ),
         (
-                None,
-                None,
-                None,
-                None,
-                [
-                    {
-                        "entity": "some_entity",
-                        "value": "some_value",
-                        "group": "some_group",
-                        "role": "some_role",
-                    }
-                ],
-                "some_intent",
-                # nothing should be extracted, because entity contain role and group
-                # but mapping expects them to be None
-                {},
+            None,
+            None,
+            None,
+            None,
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "group": "some_group",
+                    "role": "some_role",
+                }
+            ],
+            "some_intent",
+            # nothing should be extracted, because entity contain role and group
+            # but mapping expects them to be None
+            {},
         ),
     ],
 )
 def test_extract_requested_slot_from_entity(
-        mapping_not_intent: Optional[Text],
-        mapping_intent: Optional[Text],
-        mapping_role: Optional[Text],
-        mapping_group: Optional[Text],
-        entities: List[Dict[Text, Any]],
-        intent: Text,
-        expected_slot_values: Dict[Text, Text],
+    mapping_not_intent: Optional[Text],
+    mapping_intent: Optional[Text],
+    mapping_role: Optional[Text],
+    mapping_group: Optional[Text],
+    entities: List[Dict[Text, Any]],
+    intent: Text,
+    expected_slot_values: Dict[Text, Text],
 ):
     """Test extraction of a slot value from entity with the different restrictions."""
 
@@ -358,7 +358,9 @@ def test_extract_requested_slot_from_intent():
         "slots": {
             "some_slot": {
                 "type": "any",
-                "mappings": [FormAction.from_intent(intent="some_intent", value="some_value")]
+                "mappings": [
+                    FormAction.from_intent(intent="some_intent", value="some_value")
+                ],
             }
         }
     }
@@ -415,13 +417,12 @@ def test_extract_requested_slot_from_not_intent():
         "slots": {
             "some_slot": {
                 "type": "any",
-                "mappings": [FormAction.from_intent(
-                    not_intent="some_intent", value="some_value"
-                )]
+                "mappings": [
+                    FormAction.from_intent(not_intent="some_intent", value="some_value")
+                ],
             }
         }
     }
-
 
     slot_values = form.extract_requested_slot(
         CollectingDispatcher(), tracker, "some_slot", domain
@@ -469,12 +470,7 @@ def test_extract_requested_slot_from_text_no_intent():
     )
 
     domain = {
-        "slots": {
-            "some_slot": {
-                "type": "any",
-                "mappings": [FormAction.from_text()]
-            }
-        }
+        "slots": {"some_slot": {"type": "any", "mappings": [FormAction.from_text()]}}
     }
 
     slot_values = form.extract_requested_slot(
@@ -508,7 +504,7 @@ def test_extract_requested_slot_from_text_with_intent():
         "slots": {
             "some_slot": {
                 "type": "any",
-                "mappings": [FormAction.from_text(intent="some_intent")]
+                "mappings": [FormAction.from_text(intent="some_intent")],
             }
         }
     }
@@ -565,7 +561,7 @@ def test_extract_requested_slot_from_text_with_not_intent():
         "slots": {
             "some_slot": {
                 "type": "any",
-                "mappings": [FormAction.from_text(not_intent="some_intent")]
+                "mappings": [FormAction.from_text(not_intent="some_intent")],
             }
         }
     }
@@ -630,7 +626,7 @@ def test_extract_trigger_slots():
                     FormAction.from_trigger_intent(
                         intent="trigger_intent", value="some_value"
                     )
-                ]
+                ],
             }
         }
     }
@@ -702,16 +698,12 @@ def test_extract_other_slots_no_intent():
         "slots": {
             "some_slot": {
                 "type": "any",
-                "mappings": [
-                    FormAction.from_entity(entity="some_slot")
-                ]
+                "mappings": [FormAction.from_entity(entity="some_slot")],
             },
             "some_other_slot": {
                 "type": "any",
-                "mappings": [
-                    FormAction.from_entity(entity="some_other_slot")
-                ]
-            }
+                "mappings": [FormAction.from_entity(entity="some_other_slot")],
+            },
         }
     }
 
@@ -787,14 +779,20 @@ def test_extract_other_slots_with_intent():
 
     domain = {
         "slots": {
+            "some_slot": {
+                "type": "any",
+                "mappings": [
+                    FormAction.from_entity(entity="some_slot", intent="some_intent")
+                ],
+            },
             "some_other_slot": {
                 "type": "any",
                 "mappings": [
                     FormAction.from_entity(
                         entity="some_other_slot", intent="some_intent"
                     )
-                ]
-            }
+                ],
+            },
         }
     }
 
@@ -816,170 +814,170 @@ def test_extract_other_slots_with_intent():
         "action_listen",
     )
 
-    # slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, domain)
+    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, domain)
     # check that the value was extracted only for non requested slot
-    # assert slot_values == {"some_other_slot": "some_other_value"}
+    assert slot_values == {"some_other_slot": "some_other_value"}
 
 
 @pytest.mark.parametrize(
     "some_other_slot_mapping, some_slot_mapping, entities, intent, expected_slot_values",
     [
         (
-                [
-                    {
-                        "type": "from_entity",
-                        "intent": "some_intent",
-                        "entity": "some_entity",
-                        "role": "some_role",
-                    }
-                ],
-                [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
-                [
-                    {
-                        "entity": "some_entity",
-                        "value": "some_value",
-                        "role": "some_other_role",
-                    }
-                ],
-                "some_intent",
-                {},
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "role": "some_role",
+                }
+            ],
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "role": "some_other_role",
+                }
+            ],
+            "some_intent",
+            {},
         ),
         (
-                [
-                    {
-                        "type": "from_entity",
-                        "intent": "some_intent",
-                        "entity": "some_entity",
-                        "role": "some_role",
-                    }
-                ],
-                [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
-                [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
-                "some_intent",
-                {"some_other_slot": "some_value"},
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "role": "some_role",
+                }
+            ],
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
+            "some_intent",
+            {"some_other_slot": "some_value"},
         ),
         (
-                [
-                    {
-                        "type": "from_entity",
-                        "intent": "some_intent",
-                        "entity": "some_entity",
-                        "group": "some_group",
-                    }
-                ],
-                [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
-                [
-                    {
-                        "entity": "some_entity",
-                        "value": "some_value",
-                        "group": "some_other_group",
-                    }
-                ],
-                "some_intent",
-                {},
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "group": "some_group",
+                }
+            ],
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "group": "some_other_group",
+                }
+            ],
+            "some_intent",
+            {},
         ),
         (
-                [
-                    {
-                        "type": "from_entity",
-                        "intent": "some_intent",
-                        "entity": "some_entity",
-                        "group": "some_group",
-                    }
-                ],
-                [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
-                [{"entity": "some_entity", "value": "some_value", "group": "some_group"}],
-                "some_intent",
-                {"some_other_slot": "some_value"},
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "group": "some_group",
+                }
+            ],
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [{"entity": "some_entity", "value": "some_value", "group": "some_group"}],
+            "some_intent",
+            {"some_other_slot": "some_value"},
         ),
         (
-                [
-                    {
-                        "type": "from_entity",
-                        "intent": "some_intent",
-                        "entity": "some_entity",
-                        "group": "some_group",
-                        "role": "some_role",
-                    }
-                ],
-                [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
-                [
-                    {
-                        "entity": "some_entity",
-                        "value": "some_value",
-                        "role": "some_role",
-                        "group": "some_group",
-                    }
-                ],
-                "some_intent",
-                {"some_other_slot": "some_value"},
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "group": "some_group",
+                    "role": "some_role",
+                }
+            ],
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [
+                {
+                    "entity": "some_entity",
+                    "value": "some_value",
+                    "role": "some_role",
+                    "group": "some_group",
+                }
+            ],
+            "some_intent",
+            {"some_other_slot": "some_value"},
         ),
         (
-                [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
-                [
-                    {
-                        "type": "from_entity",
-                        "intent": "some_intent",
-                        "entity": "some_other_entity",
-                    }
-                ],
-                [{"entity": "some_entity", "value": "some_value"}],
-                "some_intent",
-                # other slot should be extracted because slot mapping is unique
-                {"some_other_slot": "some_value"},
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_other_entity",
+                }
+            ],
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            # other slot should be extracted because slot mapping is unique
+            {"some_other_slot": "some_value"},
         ),
         (
-                [
-                    {
-                        "type": "from_entity",
-                        "intent": "some_intent",
-                        "entity": "some_entity",
-                        "role": "some_role",
-                    }
-                ],
-                [
-                    {
-                        "type": "from_entity",
-                        "intent": "some_intent",
-                        "entity": "some_other_entity",
-                    }
-                ],
-                [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
-                "some_intent",
-                # other slot should be extracted because slot mapping is unique
-                {"some_other_slot": "some_value"},
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_entity",
+                    "role": "some_role",
+                }
+            ],
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_other_entity",
+                }
+            ],
+            [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
+            "some_intent",
+            # other slot should be extracted because slot mapping is unique
+            {"some_other_slot": "some_value"},
         ),
         (
-                [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
-                [
-                    {
-                        "type": "from_entity",
-                        "intent": "some_intent",
-                        "entity": "some_other_entity",
-                    }
-                ],
-                [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
-                "some_intent",
-                # other slot should not be extracted
-                # because even though slot mapping is unique it doesn't contain the role
-                {},
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [
+                {
+                    "type": "from_entity",
+                    "intent": "some_intent",
+                    "entity": "some_other_entity",
+                }
+            ],
+            [{"entity": "some_entity", "value": "some_value", "role": "some_role"}],
+            "some_intent",
+            # other slot should not be extracted
+            # because even though slot mapping is unique it doesn't contain the role
+            {},
         ),
         (
-                [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
-                [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
-                [{"entity": "some_entity", "value": "some_value"}],
-                "some_intent",
-                # other slot should not be extracted because slot mapping is not unique
-                {},
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [{"type": "from_entity", "intent": "some_intent", "entity": "some_entity"}],
+            [{"entity": "some_entity", "value": "some_value"}],
+            "some_intent",
+            # other slot should not be extracted because slot mapping is not unique
+            {},
         ),
     ],
 )
 def test_extract_other_slots_with_entity(
-        some_other_slot_mapping: List[Dict[Text, Any]],
-        some_slot_mapping: List[Dict[Text, Any]],
-        entities: List[Dict[Text, Any]],
-        intent: Text,
-        expected_slot_values: Dict[Text, Text],
+    some_other_slot_mapping: List[Dict[Text, Any]],
+    some_slot_mapping: List[Dict[Text, Any]],
+    entities: List[Dict[Text, Any]],
+    intent: Text,
+    expected_slot_values: Dict[Text, Text],
 ):
     """Test extraction of other not requested slots values from entities."""
 
@@ -1057,9 +1055,9 @@ async def test_validate():
         SlotSet("some_other_slot", "some_other_value"),
         SlotSet("some_slot", "some_value"),
     ] or events == [
-               SlotSet("some_slot", "some_value"),
-               SlotSet("some_other_slot", "some_other_value"),
-           ]
+        SlotSet("some_slot", "some_value"),
+        SlotSet("some_other_slot", "some_other_value"),
+    ]
 
     tracker = Tracker(
         "default",
@@ -1133,9 +1131,9 @@ async def test_set_slot_within_helper():
         SlotSet("some_other_slot", "other_value"),
         SlotSet("some_slot", "validated_value"),
     ] or events == [
-               SlotSet("some_slot", "validated_value"),
-               SlotSet("some_other_slot", "other_value"),
-           ]
+        SlotSet("some_slot", "validated_value"),
+        SlotSet("some_other_slot", "other_value"),
+    ]
 
 
 async def test_validate_extracted_no_requested():
@@ -1402,9 +1400,9 @@ async def test_validate_if_required():
         SlotSet("some_other_slot", "some_other_value"),
         SlotSet("some_slot", "some_value"),
     ] or events == [
-               SlotSet("some_slot", "some_value"),
-               SlotSet("some_other_slot", "some_other_value"),
-           ]
+        SlotSet("some_slot", "some_value"),
+        SlotSet("some_other_slot", "some_other_value"),
+    ]
 
     tracker = Tracker(
         "default",
@@ -1650,11 +1648,11 @@ class TestFormValidationAction(ValidationAction):
         return self.name_of_form
 
     def validate_slot1(
-            self,
-            slot_value: Any,
-            dispatcher: "CollectingDispatcher",
-            tracker: "Tracker",
-            domain: "DomainDict",
+        self,
+        slot_value: Any,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
     ) -> Dict[Text, Any]:
         if slot_value == "correct_value":
             return {
@@ -1665,11 +1663,11 @@ class TestFormValidationAction(ValidationAction):
         }
 
     def validate_slot2(
-            self,
-            slot_value: Any,
-            dispatcher: "CollectingDispatcher",
-            tracker: "Tracker",
-            domain: "DomainDict",
+        self,
+        slot_value: Any,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
     ) -> Dict[Text, Any]:
         if slot_value == "correct_value":
             return {
@@ -1680,11 +1678,11 @@ class TestFormValidationAction(ValidationAction):
         }
 
     async def validate_slot3(
-            self,
-            slot_value: Any,
-            dispatcher: "CollectingDispatcher",
-            tracker: "Tracker",
-            domain: "DomainDict",
+        self,
+        slot_value: Any,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
     ) -> Dict[Text, Any]:
         if slot_value == "correct_value":
             return {
@@ -1800,11 +1798,11 @@ async def test_form_validation_changing_slots_during_validation():
             return form_name
 
         async def validate_my_slot(
-                self,
-                slot_value: Any,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> Dict[Text, Any]:
             return {"my_slot": None, "other_slot": "value"}
 
@@ -1842,11 +1840,11 @@ async def test_form_validation_dash_slot():
             return form_name
 
         def validate_slot_with_dash(
-                self,
-                slot_value: Any,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> Dict[Text, Any]:
             if slot_value == "correct_value":
                 return {
@@ -1886,7 +1884,7 @@ async def test_form_validation_dash_slot():
     [(["my_slot"], None), (["my_slot", "other_slot"], "other_slot")],
 )
 async def test_extract_and_validate_slot(
-        required_slots: List[Text], next_slot: Optional[Text]
+    required_slots: List[Text], next_slot: Optional[Text]
 ):
     custom_slot = "my_slot"
     unvalidated_value = "some value"
@@ -1897,28 +1895,28 @@ async def test_extract_and_validate_slot(
             return "some_form"
 
         async def required_slots(
-                self,
-                slots_mapped_in_domain: List[Text],
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> List[Text]:
             return required_slots
 
         async def extract_my_slot(
-                self,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> Dict[Text, Any]:
             return {custom_slot: unvalidated_value}
 
         async def validate_my_slot(
-                self,
-                slot_value: Any,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> Dict[Text, Any]:
             assert slot_value == unvalidated_value
             return {custom_slot: validated_value}
@@ -1950,49 +1948,49 @@ async def test_extract_and_validate_slot(
     "my_required_slots, extracted_values, asserted_events",
     [
         (
-                # request slot "state" before "city"
-                ["state", "city"],
-                # both are extracted as follow
-                {"state": "california", "city": "san francisco"},
-                # validate_state turns "california" to "CA"
-                # validate_city sees "state" == "CA" and turns "san francisco" to "San Francisco"
-                [["state", "CA"], ["city", "San Francisco"], [REQUESTED_SLOT, None]],
+            # request slot "state" before "city"
+            ["state", "city"],
+            # both are extracted as follow
+            {"state": "california", "city": "san francisco"},
+            # validate_state turns "california" to "CA"
+            # validate_city sees "state" == "CA" and turns "san francisco" to "San Francisco"
+            [["state", "CA"], ["city", "San Francisco"], [REQUESTED_SLOT, None]],
         ),
         (
-                # request slot "city" before "state"
-                ["city", "state"],
-                # only "city" can be extracted from user message
-                # seeing "city" == "san francisco", "state" is extracted as "california"
-                {"state": None, "city": "san francisco"},
-                # validate_city keeps "city" as is
-                # validate_state turns "california" to "CA"
-                [["city", "san francisco"], ["state", "CA"], [REQUESTED_SLOT, None]],
+            # request slot "city" before "state"
+            ["city", "state"],
+            # only "city" can be extracted from user message
+            # seeing "city" == "san francisco", "state" is extracted as "california"
+            {"state": None, "city": "san francisco"},
+            # validate_city keeps "city" as is
+            # validate_state turns "california" to "CA"
+            [["city", "san francisco"], ["state", "CA"], [REQUESTED_SLOT, None]],
         ),
     ],
 )
 async def test_extract_and_validate_slot_visibility(
-        my_required_slots: List[Text],
-        extracted_values: Dict[Text, Any],
-        asserted_events: List[List[Text]],
+    my_required_slots: List[Text],
+    extracted_values: Dict[Text, Any],
+    asserted_events: List[List[Text]],
 ):
     class TestFormValidationWithCustomSlots(ValidationAction):
         def name(self) -> Text:
             return "some_form"
 
         async def required_slots(
-                self,
-                slots_mapped_in_domain: List[Text],
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> List[Text]:
             return my_required_slots
 
         async def extract_state(
-                self,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> Dict[Text, Any]:
             state = extracted_values.get("state")
             if state is None and tracker.get_slot("city") == "san francisco":
@@ -2000,30 +1998,30 @@ async def test_extract_and_validate_slot_visibility(
             return {"state": state}
 
         async def validate_state(
-                self,
-                slot_value: Any,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> Dict[Text, Any]:
             if slot_value == "california":
                 slot_value = "CA"
             return {"state": slot_value}
 
         async def extract_city(
-                self,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> Dict[Text, Any]:
             return {"city": extracted_values.get("city")}
 
         async def validate_city(
-                self,
-                slot_value: Any,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> Dict[Text, Any]:
             assert slot_value == "san francisco"
             if tracker.get_slot("state") == "CA":
@@ -2059,19 +2057,19 @@ async def test_extract_slot_only():
             return "some_form"
 
         async def required_slots(
-                self,
-                slots_mapped_in_domain: List[Text],
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> List[Text]:
             return [custom_slot]
 
         async def extract_my_slot(
-                self,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> Dict[Text, Any]:
             return {custom_slot: unvalidated_value}
 
@@ -2105,14 +2103,14 @@ async def test_extract_slot_only():
         (["my_slot", "other_slot"], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
         # Extract method for slot which is also mapped in domain
         (
-                ["my_slot"],
-                {"forms": {"some_form": {"required_slots": {"my_slot": []}}}},
-                [],
+            ["my_slot"],
+            {"forms": {"some_form": {"required_slots": {"my_slot": []}}}},
+            [],
         ),
     ],
 )
 async def test_warning_for_slot_extractions(
-        required_slots: List[Text], domain: DomainDict, next_slot_events: List[EventType]
+    required_slots: List[Text], domain: DomainDict, next_slot_events: List[EventType]
 ):
     custom_slot = "my_slot"
     unvalidated_value = "some value"
@@ -2122,19 +2120,19 @@ async def test_warning_for_slot_extractions(
             return "some_form"
 
         async def required_slots(
-                self,
-                slots_mapped_in_domain: List[Text],
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> List[Text]:
             return required_slots
 
         async def extract_my_slot(
-                self,
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> Dict[Text, Any]:
             return {custom_slot: unvalidated_value}
 
@@ -2166,46 +2164,46 @@ async def test_warning_for_slot_extractions(
         ([], {}, [SlotSet(REQUESTED_SLOT, None)]),
         # Custom slot - no domain slots
         (
-                ["some value"],
-                {},
-                [SlotSet(REQUESTED_SLOT, "some value")],
+            ["some value"],
+            {},
+            [SlotSet(REQUESTED_SLOT, "some value")],
         ),
         # Domain slots are ignored in overridden `required_slots`
         (
-                [],
-                {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
-                [SlotSet(REQUESTED_SLOT, None)],
+            [],
+            {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
+            [SlotSet(REQUESTED_SLOT, None)],
         ),
         # `required_slots` was not overridden - Rasa Open Source will request next slot.
         # slot mappings with the `required_slots` keyword preceding them (new format)
         (
-                ["another_slot"],
-                {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
-                [],
+            ["another_slot"],
+            {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
+            [],
         ),
         # slot mappings without the `required_slots` keyword preceding them (old format)
         (
-                ["another_slot"],
-                {"forms": {"some_form": {"another_slot": []}}},
-                [],
+            ["another_slot"],
+            {"forms": {"some_form": {"another_slot": []}}},
+            [],
         ),
     ],
 )
 async def test_ask_for_next_slot(
-        custom_slots: List[Text],
-        domain: Dict,
-        expected_return_events: List[EventType],
+    custom_slots: List[Text],
+    domain: Dict,
+    expected_return_events: List[EventType],
 ):
     class TestFormRequestSlot(ValidationAction):
         def name(self) -> Text:
             return "some_form"
 
         async def required_slots(
-                self,
-                slots_mapped_in_domain: List[Text],
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> List[Text]:
             return custom_slots
 
