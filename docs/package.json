@@ -22,7 +22,7 @@
     "update-versioned-sources": "node scripts/update_versioned_sources.js"
   },
   "dependencies": {
-    "@docusaurus/core": "2.0.0-alpha.63",
+    "@docusaurus/core": "2.0.0-beta.6",
     "@docusaurus/plugin-client-redirects": "2.0.0-beta.3",
     "@docusaurus/plugin-content-docs": "2.0.0-alpha.63",
     "@docusaurus/plugin-content-pages": "2.0.0-alpha.63",
