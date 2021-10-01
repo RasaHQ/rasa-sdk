@@ -194,9 +194,8 @@ class FormAction(Action):
             "group": group,
         }
 
-    # noinspection PyMethodMayBeStatic
+    @staticmethod
     def from_trigger_intent(
-        self,
         value: Any,
         intent: Optional[Union[Text, List[Text]]] = None,
         not_intent: Optional[Union[Text, List[Text]]] = None,
@@ -253,9 +252,8 @@ class FormAction(Action):
             "not_intent": not_intent,
         }
 
-    # noinspection PyMethodMayBeStatic
+    @staticmethod
     def from_text(
-        self,
         intent: Optional[Union[Text, List[Text]]] = None,
         not_intent: Optional[Union[Text, List[Text]]] = None,
     ) -> Dict[Text, Any]:
@@ -290,6 +288,8 @@ class FormAction(Action):
         """
         domain_slots = domain.get("slots")
         requested_slot_mappings = domain_slots.get(slot_to_fill).get("mappings")
+
+        print(requested_slot_mappings)
 
         # check provided slot mappings
         for requested_slot_mapping in requested_slot_mappings:
@@ -347,9 +347,11 @@ class FormAction(Action):
         slot_values = {}
         for slot in self.required_slots(tracker):
             # look for other slots
+            print("ALWX slots", slot, slot_to_fill)
             if slot != slot_to_fill:
                 # list is used to cover the case of list slot type
                 other_slot_mappings = self.get_mappings_for_slot(slot, domain)
+                print("ALWX xxx", slot, other_slot_mappings)
 
                 for other_slot_mapping in other_slot_mappings:
                     if not self._matches_mapping_conditions(
