@@ -7,11 +7,26 @@ from rasa_sdk.types import DomainDict
 from rasa_sdk.events import SlotSet, ActiveLoop, EventType
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.forms import (
+    SlotMapping,
     FormAction,
     ValidationAction,
     REQUESTED_SLOT,
     LOOP_INTERRUPTED_KEY,
 )
+
+
+DEFAULT_DOMAIN = {
+    "slots": {
+        "some_other_slot": {
+            "type": "any",
+            "mappings": [SlotMapping.from_entity(entity="some_other_slot")],
+        },
+        "some_slot": {
+            "type": "any",
+            "mappings": [SlotMapping.from_entity(entity="some_slot")],
+        },
+    },
+}
 
 
 def test_extract_requested_slot_default():
@@ -77,7 +92,7 @@ def test_extract_requested_slot_from_entity_no_intent():
         "slots": {
             "some_slot": {
                 "type": "any",
-                "mappings": [FormAction.from_entity(entity="some_entity")],
+                "mappings": [SlotMapping.from_entity(entity="some_entity")],
             }
         }
     }
@@ -97,13 +112,6 @@ def test_extract_requested_slot_from_entity_with_intent():
     class CustomFormAction(FormAction):
         def name(self):
             return "some_form"
-
-        def slot_mappings(self):
-            return {
-                "some_slot": self.from_entity(
-                    entity="some_entity", intent="some_intent"
-                )
-            }
 
     form = CustomFormAction()
 
@@ -126,7 +134,7 @@ def test_extract_requested_slot_from_entity_with_intent():
             "some_slot": {
                 "type": "any",
                 "mappings": [
-                    FormAction.from_entity(entity="some_entity", intent="some_intent")
+                    SlotMapping.from_entity(entity="some_entity", intent="some_intent")
                 ],
             }
         }
@@ -286,17 +294,6 @@ def test_extract_requested_slot_from_entity(
         def name(self):
             return "some_form"
 
-        def slot_mappings(self):
-            return {
-                "some_slot": self.from_entity(
-                    entity="some_entity",
-                    role=mapping_role,
-                    group=mapping_group,
-                    intent=mapping_intent,
-                    not_intent=mapping_not_intent,
-                )
-            }
-
     form = CustomFormAction()
 
     tracker = Tracker(
@@ -315,7 +312,7 @@ def test_extract_requested_slot_from_entity(
             "some_slot": {
                 "type": "any",
                 "mappings": [
-                    FormAction.from_entity(
+                    SlotMapping.from_entity(
                         entity="some_entity",
                         role=mapping_role,
                         group=mapping_group,
@@ -359,7 +356,7 @@ def test_extract_requested_slot_from_intent():
             "some_slot": {
                 "type": "any",
                 "mappings": [
-                    FormAction.from_intent(intent="some_intent", value="some_value")
+                    SlotMapping.from_intent(intent="some_intent", value="some_value")
                 ],
             }
         }
@@ -397,9 +394,6 @@ def test_extract_requested_slot_from_not_intent():
         def name(self):
             return "some_form"
 
-        def slot_mappings(self):
-            return
-
     form = CustomFormAction()
 
     tracker = Tracker(
@@ -418,7 +412,9 @@ def test_extract_requested_slot_from_not_intent():
             "some_slot": {
                 "type": "any",
                 "mappings": [
-                    FormAction.from_intent(not_intent="some_intent", value="some_value")
+                    SlotMapping.from_intent(
+                        not_intent="some_intent", value="some_value"
+                    )
                 ],
             }
         }
@@ -470,7 +466,7 @@ def test_extract_requested_slot_from_text_no_intent():
     )
 
     domain = {
-        "slots": {"some_slot": {"type": "any", "mappings": [FormAction.from_text()]}}
+        "slots": {"some_slot": {"type": "any", "mappings": [SlotMapping.from_text()]}}
     }
 
     slot_values = form.extract_requested_slot(
@@ -504,7 +500,7 @@ def test_extract_requested_slot_from_text_with_intent():
         "slots": {
             "some_slot": {
                 "type": "any",
-                "mappings": [FormAction.from_text(intent="some_intent")],
+                "mappings": [SlotMapping.from_text(intent="some_intent")],
             }
         }
     }
@@ -561,7 +557,7 @@ def test_extract_requested_slot_from_text_with_not_intent():
         "slots": {
             "some_slot": {
                 "type": "any",
-                "mappings": [FormAction.from_text(not_intent="some_intent")],
+                "mappings": [SlotMapping.from_text(not_intent="some_intent")],
             }
         }
     }
@@ -623,7 +619,7 @@ def test_extract_trigger_slots():
             "some_slot": {
                 "type": "any",
                 "mappings": [
-                    FormAction.from_trigger_intent(
+                    SlotMapping.from_trigger_intent(
                         intent="trigger_intent", value="some_value"
                     )
                 ],
@@ -694,20 +690,9 @@ def test_extract_other_slots_no_intent():
         "action_listen",
     )
 
-    domain = {
-        "slots": {
-            "some_slot": {
-                "type": "any",
-                "mappings": [FormAction.from_entity(entity="some_slot")],
-            },
-            "some_other_slot": {
-                "type": "any",
-                "mappings": [FormAction.from_entity(entity="some_other_slot")],
-            },
-        }
-    }
-
-    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, domain)
+    slot_values = form.extract_other_slots(
+        CollectingDispatcher(), tracker, DEFAULT_DOMAIN
+    )
     # check that the value was not extracted for requested slot
     assert slot_values == {}
 
@@ -722,7 +707,9 @@ def test_extract_other_slots_no_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, domain)
+    slot_values = form.extract_other_slots(
+        CollectingDispatcher(), tracker, DEFAULT_DOMAIN
+    )
     # check that the value was extracted for non requested slot
     assert slot_values == {"some_other_slot": "some_other_value"}
 
@@ -742,7 +729,9 @@ def test_extract_other_slots_no_intent():
         "action_listen",
     )
 
-    slot_values = form.extract_other_slots(CollectingDispatcher(), tracker, domain)
+    slot_values = form.extract_other_slots(
+        CollectingDispatcher(), tracker, DEFAULT_DOMAIN
+    )
     # check that the value was extracted only for non requested slot
     assert slot_values == {"some_other_slot": "some_other_value"}
 
@@ -782,13 +771,13 @@ def test_extract_other_slots_with_intent():
             "some_slot": {
                 "type": "any",
                 "mappings": [
-                    FormAction.from_entity(entity="some_slot", intent="some_intent")
+                    SlotMapping.from_entity(entity="some_slot", intent="some_intent")
                 ],
             },
             "some_other_slot": {
                 "type": "any",
                 "mappings": [
-                    FormAction.from_entity(
+                    SlotMapping.from_entity(
                         entity="some_other_slot", intent="some_intent"
                     )
                 ],
@@ -1049,7 +1038,7 @@ async def test_validate():
         "action_listen",
     )
 
-    events = await form.validate(CollectingDispatcher(), tracker, {})
+    events = await form.validate(CollectingDispatcher(), tracker, DEFAULT_DOMAIN)
     # check that validation succeed
     assert events == [
         SlotSet("some_other_slot", "some_other_value"),
@@ -1070,7 +1059,7 @@ async def test_validate():
         "action_listen",
     )
 
-    events = await form.validate(CollectingDispatcher(), tracker, {})
+    events = await form.validate(CollectingDispatcher(), tracker, DEFAULT_DOMAIN)
     # check that validation succeed because other slot was extracted
     assert events == [SlotSet("some_other_slot", "some_other_value")]
 
@@ -1085,7 +1074,7 @@ async def test_validate():
         "action_listen",
     )
     with pytest.raises(Exception) as execinfo:
-        await form.validate(CollectingDispatcher(), tracker, {})
+        await form.validate(CollectingDispatcher(), tracker, DEFAULT_DOMAIN)
 
     # check that validation failed gracefully
     assert execinfo.type == ActionExecutionRejection
@@ -1124,7 +1113,7 @@ async def test_set_slot_within_helper():
         "action_listen",
     )
 
-    events = await form.validate(CollectingDispatcher(), tracker, {})
+    events = await form.validate(CollectingDispatcher(), tracker, DEFAULT_DOMAIN)
 
     # check that some_slot gets validated correctly
     assert events == [
@@ -1163,7 +1152,7 @@ async def test_validate_extracted_no_requested():
         "action_listen",
     )
 
-    events = await form.validate(CollectingDispatcher(), tracker, {})
+    events = await form.validate(CollectingDispatcher(), tracker, DEFAULT_DOMAIN)
 
     # check that some_slot gets validated correctly
     assert events == [SlotSet("some_slot", "validated_value")]
@@ -1202,7 +1191,7 @@ async def test_validate_prefilled_slots():
     )
 
     events = await form._activate_if_required(
-        dispatcher=None, tracker=tracker, domain={}
+        dispatcher=None, tracker=tracker, domain=DEFAULT_DOMAIN
     )
     # check that the form was activated and prefilled slots were validated
     assert events == [
@@ -1212,7 +1201,9 @@ async def test_validate_prefilled_slots():
     ]
 
     events.extend(
-        await form._validate_if_required(dispatcher=None, tracker=tracker, domain={})
+        await form._validate_if_required(
+            dispatcher=None, tracker=tracker, domain=DEFAULT_DOMAIN
+        )
     )
 
     # check that entities picked up in input overwrite prefilled slots
@@ -1236,13 +1227,6 @@ async def test_validate_trigger_slots():
         def required_slots(_tracker):
             return ["some_slot"]
 
-        def slot_mappings(self):
-            return {
-                "some_slot": self.from_trigger_intent(
-                    intent="trigger_intent", value="some_value"
-                )
-            }
-
     form = CustomFormAction()
 
     tracker = Tracker(
@@ -1256,7 +1240,7 @@ async def test_validate_trigger_slots():
         "action_listen",
     )
 
-    slot_values = await form.validate(CollectingDispatcher(), tracker, {})
+    slot_values = await form.validate(CollectingDispatcher(), tracker, DEFAULT_DOMAIN)
 
     # check that the value was extracted on form activation
     assert slot_values == [
@@ -1281,7 +1265,7 @@ async def test_validate_trigger_slots():
         "action_listen",
     )
 
-    slot_values = await form.validate(CollectingDispatcher(), tracker, {})
+    slot_values = await form.validate(CollectingDispatcher(), tracker, DEFAULT_DOMAIN)
     # check that the value was not extracted after form activation
     assert slot_values == []
 
@@ -1306,7 +1290,7 @@ async def test_validate_trigger_slots():
         "action_listen",
     )
 
-    slot_values = await form.validate(CollectingDispatcher(), tracker, {})
+    slot_values = await form.validate(CollectingDispatcher(), tracker, DEFAULT_DOMAIN)
 
     # check that validation failed gracefully
     assert slot_values == [
@@ -1394,7 +1378,9 @@ async def test_validate_if_required():
         "action_listen",
     )
 
-    events = await form._validate_if_required(CollectingDispatcher(), tracker, {})
+    events = await form._validate_if_required(
+        CollectingDispatcher(), tracker, DEFAULT_DOMAIN
+    )
     # check that validation was performed
     assert events == [
         SlotSet("some_other_slot", "some_other_value"),
@@ -1420,7 +1406,9 @@ async def test_validate_if_required():
         "action_listen",
     )
 
-    events = await form._validate_if_required(CollectingDispatcher(), tracker, {})
+    events = await form._validate_if_required(
+        CollectingDispatcher(), tracker, DEFAULT_DOMAIN
+    )
     # check that validation was skipped because loop was interrupted
     assert events == []
 
@@ -1440,7 +1428,9 @@ async def test_validate_if_required():
         "some_form",
     )
 
-    events = await form._validate_if_required(CollectingDispatcher(), tracker, {})
+    events = await form._validate_if_required(
+        CollectingDispatcher(), tracker, DEFAULT_DOMAIN
+    )
 
     # check that validation was skipped
     # because previous action is not action_listen
@@ -1473,7 +1463,9 @@ async def test_validate_on_activation():
         "action_listen",
     )
     dispatcher = CollectingDispatcher()
-    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain={})
+    events = await form.run(
+        dispatcher=dispatcher, tracker=tracker, domain=DEFAULT_DOMAIN
+    )
     # check that the form was activated and validation was performed
     assert events == [
         ActiveLoop("some_form"),
@@ -1508,48 +1500,15 @@ async def test_validate_on_activation_with_other_action_after_user_utterance():
         "some_action",
     )
     dispatcher = CollectingDispatcher()
-    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain={})
+    events = await form.run(
+        dispatcher=dispatcher, tracker=tracker, domain=DEFAULT_DOMAIN
+    )
     # check that the form was activated and validation was performed
     assert events == [
         ActiveLoop("some_form"),
         SlotSet("some_other_slot", "some_other_value"),
         SlotSet(REQUESTED_SLOT, "some_slot"),
     ]
-
-
-async def test_deprecated_helper_style():
-    # noinspection PyAbstractClass
-    # This method tests the old style of returning values instead of {'slot':'value'}
-    # dicts, and can be removed if we officially stop supporting the deprecated style.
-    class CustomFormAction(FormAction):
-        def name(self):
-            return "some_form"
-
-        @staticmethod
-        def required_slots(_tracker):
-            return ["some_slot", "some_other_slot"]
-
-        def validate_some_slot(self, value, dispatcher, tracker, domain):
-            if value == "some_value":
-                return "validated_value"
-
-    form = CustomFormAction()
-
-    tracker = Tracker(
-        "default",
-        {REQUESTED_SLOT: "some_value"},
-        {"entities": [{"entity": "some_slot", "value": "some_value"}]},
-        [],
-        False,
-        None,
-        {},
-        "action_listen",
-    )
-
-    events = await form.validate(CollectingDispatcher(), tracker, {})
-
-    # check that some_slot gets validated correctly
-    assert events == [SlotSet("some_slot", "validated_value")]
 
 
 class FormSyncValidate(FormAction):
