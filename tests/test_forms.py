@@ -1240,7 +1240,16 @@ async def test_validate_trigger_slots():
         "action_listen",
     )
 
-    slot_values = await form.validate(CollectingDispatcher(), tracker, DEFAULT_DOMAIN)
+    domain = {
+        "slots": {
+            "some_slot": {
+                "type": "any",
+                "mappings": [SlotMapping.from_trigger_intent(value="some_value")],
+            },
+        },
+    }
+
+    slot_values = await form.validate(CollectingDispatcher(), tracker, domain)
 
     # check that the value was extracted on form activation
     assert slot_values == [
