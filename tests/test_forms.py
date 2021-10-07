@@ -1952,7 +1952,7 @@ async def test_extract_and_validate_slot(
     unvalidated_value = "some value"
     validated_value = "validated value"
 
-    class TestFormValidationWithCustomSlots(ValidationAction):
+    class TestFormValidationWithCustomSlots(SeparateValidationAction):
         def name(self) -> Text:
             return "some_form"
 

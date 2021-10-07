@@ -119,7 +119,6 @@ class FormAction(Action):
         slot_values = {}
         for slot in self.required_slots(tracker):
             # look for other slots
-            print("ALWX slots", slot, slot_to_fill)
             if slot != slot_to_fill:
                 # list is used to cover the case of list slot type
                 other_slot_mappings = self.get_mappings_for_slot(slot, domain)
@@ -675,7 +674,8 @@ class SeparateValidationAction(Action, ABC):
         print("ALWX slots_to_validate", slots)
 
         for slot_name, slot_value in list(slots.items()):
-            method_name = f"validate_slots_{slot_name.replace('-','_')}"
+            # TODO(alwx): probably the name
+            method_name = f"validate_{slot_name.replace('-','_')}"
             validate_method = getattr(self, method_name, None)
 
             if not validate_method:
@@ -733,10 +733,9 @@ class SeparateValidationAction(Action, ABC):
             # within Rasa Open Source request the next slot.
             return None
 
-        # TODO(alwx):
         missing_slots = (
             slot_name
-            for slot_name in required_slots
+            for slot_name, is_required_in_form in required_slots
             if tracker.slots.get(slot_name) is None
         )
 
