@@ -123,7 +123,6 @@ class FormAction(Action):
             if slot != slot_to_fill:
                 # list is used to cover the case of list slot type
                 other_slot_mappings = self.get_mappings_for_slot(slot, domain)
-                print("ALWX xxx", slot, other_slot_mappings)
 
                 for other_slot_mapping in other_slot_mappings:
                     if not self._matches_mapping_conditions(
