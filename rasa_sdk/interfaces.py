@@ -261,7 +261,6 @@ class Tracker:
         slots: Dict[Text, Any] = {}
         count: int = 0
 
-        print("ALWX ev", self.events)
         for event in reversed(self.events):
             # The `FormAction` in Rasa Open Source will append all slot candidates
             # at the end of the tracker events.
