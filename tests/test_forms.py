@@ -1,6 +1,6 @@
 import pytest
 import asyncio
-from typing import Type, Text, Dict, Any, List, Optional
+from typing import Type, Text, Tuple, Dict, Any, List, Optional
 
 from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.types import DomainDict
@@ -1942,10 +1942,10 @@ async def test_form_validation_dash_slot():
 
 @pytest.mark.parametrize(
     "required_slots, next_slot",
-    [(["my_slot"], None), (["my_slot", "other_slot"], "other_slot")],
+    [([("my_slot", True)], None), ([("my_slot", True), ("other_slot", True)], "other_slot")],
 )
 async def test_extract_and_validate_slot(
-    required_slots: List[Text], next_slot: Optional[Text]
+    required_slots: List[Tuple[Text, bool]], next_slot: Optional[Text]
 ):
     custom_slot = "my_slot"
     unvalidated_value = "some value"
@@ -1957,11 +1957,11 @@ async def test_extract_and_validate_slot(
 
         async def required_slots(
             self,
-            slots_mapped_in_domain: List[Text],
+            slots_mapped_in_domain: List[Tuple[Text, bool]],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
-        ) -> List[Text]:
+        ) -> List[Tuple[Text, bool]]:
             return required_slots
 
         async def extract_my_slot(
@@ -2039,12 +2039,12 @@ async def test_extract_and_validate_slot_visibility(
             return "some_form"
 
         async def required_slots(
-            self,
-            slots_mapped_in_domain: List[Text],
-            dispatcher: "CollectingDispatcher",
-            tracker: "Tracker",
-            domain: "DomainDict",
-        ) -> List[Text]:
+                self,
+                domain_slots: List[Tuple[Text, bool]],
+                dispatcher: "CollectingDispatcher",
+                tracker: "Tracker",
+                domain: "DomainDict",
+        ) -> List[Tuple[Text, bool]]:
             return my_required_slots
 
         async def extract_state(
@@ -2118,13 +2118,13 @@ async def test_extract_slot_only():
             return "some_form"
 
         async def required_slots(
-            self,
-            slots_mapped_in_domain: List[Text],
-            dispatcher: "CollectingDispatcher",
-            tracker: "Tracker",
-            domain: "DomainDict",
-        ) -> List[Text]:
-            return [custom_slot]
+                self,
+                slots_mapped_in_domain: List[Tuple[Text, bool]],
+                dispatcher: "CollectingDispatcher",
+                tracker: "Tracker",
+                domain: "DomainDict",
+        ) -> List[Tuple[Text, bool]]:
+            return [(custom_slot, True)]
 
         async def extract_my_slot(
             self,
@@ -2161,10 +2161,10 @@ async def test_extract_slot_only():
     "required_slots, domain, next_slot_events",
     [
         # Custom slot mapping but no `extract` method
-        (["my_slot", "other_slot"], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
+        ([("my_slot", True), ("other_slot", True)], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
         # Extract method for slot which is also mapped in domain
         (
-            ["my_slot"],
+            [("my_slot", True)],
             {"forms": {"some_form": {"required_slots": {"my_slot": []}}}},
             [],
         ),
@@ -2182,11 +2182,11 @@ async def test_warning_for_slot_extractions(
 
         async def required_slots(
             self,
-            slots_mapped_in_domain: List[Text],
+            domain_slots: List[Tuple[Text, bool]],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
-        ) -> List[Text]:
+        ) -> List[Tuple[Text, bool]]:
             return required_slots
 
         async def extract_my_slot(
@@ -2261,11 +2261,11 @@ async def test_ask_for_next_slot(
 
         async def required_slots(
             self,
-            slots_mapped_in_domain: List[Text],
+            slots_mapped_in_domain: List[Tuple[Text, bool]],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
-        ) -> List[Text]:
+        ) -> List[Tuple[Text, bool]]:
             return custom_slots
 
     form = TestFormRequestSlot()
