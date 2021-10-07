@@ -4,12 +4,13 @@ from typing import Type, Text, Dict, Any, List, Optional
 
 from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.types import DomainDict
-from rasa_sdk.events import SlotSet, ActiveLoop, EventType
+from rasa_sdk.events import SlotSet, ActiveLoop, EventType, UserUttered
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.forms import (
     SlotMapping,
     FormAction,
     ValidationAction,
+    SeparateValidationAction,
     REQUESTED_SLOT,
     LOOP_INTERRUPTED_KEY,
 )
@@ -1659,6 +1660,78 @@ class TestFormValidationAction(ValidationAction):
         # this function doesn't return anything when the slot value is incorrect
 
 
+async def test_validation_action_outside_forms():
+    class TestSlotValidationAction(SeparateValidationAction):
+        def name(self) -> Text:
+            return "validate_slots_in_domain"
+
+        def validate_slots_slot1(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            if slot_value == "correct_value":
+                return {
+                    "slot1": "validated_value",
+                }
+            return {
+                "slot1": None,
+            }
+
+    form = TestSlotValidationAction()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [
+            UserUttered(
+                "My name is Emily.",
+                parse_data={"intent": {"name": "inform", "confidence": 1.0}, "entities": [{"entity": "name", "value": "Emily"}]}
+            ),
+        ],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    domain = {
+        "slots": {
+            "slot1": {
+                "type": "any",
+                "mappings": [
+                    SlotMapping.from_entity(entity="name", intent="test")
+                ],
+            },
+            "slot2": {
+                "type": "any",
+                "mappings": [
+                    SlotMapping.from_entity(
+                        entity="name", intent="inform"
+                    )
+                ],
+            },
+        }
+    }
+
+    dispatcher = CollectingDispatcher()
+    with pytest.warns(None) as warnings:
+        events = await form.run(
+            dispatcher=dispatcher,
+            tracker=tracker,
+            domain=domain,
+        )
+
+    assert not warnings
+    assert events == [
+        SlotSet("slot2", "validated_value"),
+    ]
+
+
 async def test_form_validation_action():
     form_name = "test_form_validation_action"
     form = TestFormValidationAction(form_name)
@@ -1675,14 +1748,34 @@ async def test_form_validation_action():
         "action_listen",
     )
 
+    domain = {
+        "slots": {
+            "slot1": {
+                "type": "any",
+                "mappings": [
+                    SlotMapping.from_entity(entity="slot1")
+                ],
+            },
+            "slot2": {
+                "type": "any",
+                "mappings": [
+                    SlotMapping.from_entity(
+                        entity="slot2"
+                    )
+                ],
+            },
+        },
+        "forms": {
+            form_name: {"required_slots": ["slot1", "slot2"]}
+        }
+    }
+
     dispatcher = CollectingDispatcher()
     with pytest.warns(None) as warnings:
         events = await form.run(
             dispatcher=dispatcher,
             tracker=tracker,
-            domain={
-                "forms": {form_name: {"required_slots": {"slot1": [], "slot2": []}}}
-            },
+            domain=domain,
         )
 
     assert not warnings
