@@ -1665,22 +1665,22 @@ async def test_validation_action_outside_forms():
         def name(self) -> Text:
             return "validate_slots_in_domain"
 
-        def validate_slots_slot1(
+        def validate_slots_slot2(
             self,
             slot_value: Any,
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
         ) -> Dict[Text, Any]:
-            if slot_value == "correct_value":
+            if slot_value == "Emily":
                 return {
-                    "slot1": "validated_value",
+                    "slot2": "validated_value",
                 }
             return {
-                "slot1": None,
+                "slot2": None,
             }
 
-    form = TestSlotValidationAction()
+    validation_action = TestSlotValidationAction()
 
     # tracker with active form
     tracker = Tracker(
@@ -1692,6 +1692,7 @@ async def test_validation_action_outside_forms():
                 "My name is Emily.",
                 parse_data={"intent": {"name": "inform", "confidence": 1.0}, "entities": [{"entity": "name", "value": "Emily"}]}
             ),
+            SlotSet("slot2", "Emily")
         ],
         False,
         None,
@@ -1720,7 +1721,7 @@ async def test_validation_action_outside_forms():
 
     dispatcher = CollectingDispatcher()
     with pytest.warns(None) as warnings:
-        events = await form.run(
+        events = await validation_action.run(
             dispatcher=dispatcher,
             tracker=tracker,
             domain=domain,
