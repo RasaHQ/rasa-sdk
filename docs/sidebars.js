@@ -26,6 +26,7 @@ module.exports = {
               }
           ],
           },
+          'deploy-action-server',
           'rasa-sdk-changelog',
     ],
   },
