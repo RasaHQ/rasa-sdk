@@ -1728,7 +1728,74 @@ async def test_validation_action_outside_forms():
 
     assert not warnings
     assert events == [
-        SlotSet("slot2", "validated_values"),
+        SlotSet("slot2", "validated_value"),
+    ]
+
+
+async def test_validation_action_outside_forms2():
+    class TestSlotValidationAction(ValidationAction):
+        def name(self):
+            return "validate_form1"
+
+        def validate_slot1(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            if slot_value == "Emily":
+                return {
+                    "slot1": "validated_value",
+                }
+            return {
+                "slot1": None,
+            }
+
+    validation_action = TestSlotValidationAction()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [
+            UserUttered(
+                "My name is Emily.",
+                parse_data={"intent": {"name": "inform", "confidence": 1.0}, "entities": [{"entity": "name", "value": "Emily"}]}
+            ),
+            SlotSet("slot1", "Emily")
+        ],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    domain = {
+        "slots": {
+            "slot1": {
+                "type": "any",
+                "mappings": [
+                    SlotMapping.from_entity(
+                        entity="name", intent="inform"
+                    )
+                ],
+            },
+        }
+    }
+
+    dispatcher = CollectingDispatcher()
+    with pytest.warns(None) as warnings:
+        events = await validation_action.run(
+            dispatcher=dispatcher,
+            tracker=tracker,
+            domain=domain,
+        )
+
+    assert not warnings
+    assert events == [
+        SlotSet("slot1", "Emily"), # validation didn't run for this slot
     ]
 
 

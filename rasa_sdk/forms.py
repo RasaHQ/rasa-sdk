@@ -563,7 +563,7 @@ class ValidationAction(Action, ABC):
 
     def name(self) -> Text:
         """Unique identifier of this simple action."""
-        if self.global_slot_mappings():
+        if self.global_slot_mappings:
             return VALIDATE_GLOBAL_SLOT_MAPPINGS_NAME
 
         raise NotImplementedError("An action must implement a name")
@@ -572,6 +572,7 @@ class ValidationAction(Action, ABC):
         """Returns the form's name."""
         return self.name().replace("validate_", "", 1)
 
+    @property
     def global_slot_mappings(self) -> bool:
         """Indicates if action needs to validate mappings outside forms."""
         return False
@@ -681,9 +682,15 @@ class ValidationAction(Action, ABC):
         Returns:
             `SlotSet` events for every validated slot.
         """
+        slots_to_validate = await self.required_slots(
+            self.domain_slots(domain), dispatcher, tracker, domain
+        )
         slots: Dict[Text, Any] = tracker.slots_to_validate()
 
         for slot_name, slot_value in list(slots.items()):
+            if slot_name not in slots_to_validate:
+                continue
+
             method_name = f"validate_{slot_name.replace('-','_')}"
             validate_method = getattr(self, method_name, None)
 
@@ -750,6 +757,25 @@ class ValidationAction(Action, ABC):
 
         return SlotSet(REQUESTED_SLOT, next(missing_slots, None))
 
+    @staticmethod
+    def _is_mapped_to_form(slot_value: Dict[Text, Any]) -> bool:
+        mappings = slot_value.get("mappings")
+        if not mappings:
+            return False
+
+        for mapping in mappings:
+            mapping_conditions = mapping.get("conditions", [])
+            for condition in mapping_conditions:
+                if condition.get("active_loop"):
+                    return True
+
+        return False
+
+    def global_slots(self, domain: "DomainDict") -> List[Text]:
+        """Returns all slots that contain no form condition."""
+        all_slots = domain.get("slots", {})
+        return [k for k, v in all_slots.items() if not self._is_mapped_to_form(v)]
+
     def domain_slots(self, domain: "DomainDict") -> List[Text]:
         """Returns slots which were mapped in the domain.
 
@@ -759,14 +785,8 @@ class ValidationAction(Action, ABC):
         Returns:
             Slot names mapped in the domain.
         """
-        if self.global_slot_mappings():
-            all_slots = domain.get("slots", {})
-            # _get_ignored_intents
-            for k, v in all_slots.items():
-                print(v)
-
-            # TODO(alwx): return mappings outside forms
-            return ["slot2"]
+        if self.global_slot_mappings:
+            return self.global_slots(domain)
 
         form = domain.get("forms", {}).get(self.form_name(), {})
         if "required_slots" in form:
