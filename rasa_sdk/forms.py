@@ -23,6 +23,8 @@ REQUESTED_SLOT = "requested_slot"
 
 LOOP_INTERRUPTED_KEY = "is_interrupted"
 
+VALIDATE_GLOBAL_SLOT_MAPPINGS_NAME = "validate_global_slot_mappings"
+
 
 class FormAction(Action):
     def __init__(self):
@@ -556,12 +558,23 @@ class FormAction(Action):
         return f"FormAction('{self.name()}')"
 
 
-class SeparateValidationAction(Action, ABC):
+class ValidationAction(Action, ABC):
     """A helper class for slot validations and extractions of custom slots."""
+
+    def name(self) -> Text:
+        """Unique identifier of this simple action."""
+        if self.global_slot_mappings():
+            return VALIDATE_GLOBAL_SLOT_MAPPINGS_NAME
+
+        raise NotImplementedError("An action must implement a name")
 
     def form_name(self) -> Text:
         """Returns the form's name."""
         return self.name().replace("validate_", "", 1)
+
+    def global_slot_mappings(self) -> bool:
+        """Indicates if action needs to validate mappings outside forms."""
+        return False
 
     async def run(
         self,
@@ -589,11 +602,11 @@ class SeparateValidationAction(Action, ABC):
 
     async def required_slots(
         self,
-        domain_slots: List[Tuple[Text, bool]],
+        domain_slots: List[Text],
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         domain: "DomainDict",
-    ) -> List[Tuple[Text, bool]]:
+    ) -> List[Text]:
         """Returns slots which the form should fill.
 
         Args:
@@ -668,13 +681,9 @@ class SeparateValidationAction(Action, ABC):
         Returns:
             `SlotSet` events for every validated slot.
         """
-        # TODO(alwx): slots_to_validate
         slots: Dict[Text, Any] = tracker.slots_to_validate()
 
-        print("ALWX slots_to_validate", slots)
-
         for slot_name, slot_value in list(slots.items()):
-            # TODO(alwx): probably the name
             method_name = f"validate_{slot_name.replace('-','_')}"
             validate_method = getattr(self, method_name, None)
 
@@ -735,13 +744,13 @@ class SeparateValidationAction(Action, ABC):
 
         missing_slots = (
             slot_name
-            for slot_name, is_required_in_form in required_slots
+            for slot_name in required_slots
             if tracker.slots.get(slot_name) is None
         )
 
         return SlotSet(REQUESTED_SLOT, next(missing_slots, None))
 
-    def domain_slots(self, domain: "DomainDict") -> List[Tuple[Text, bool]]:
+    def domain_slots(self, domain: "DomainDict") -> List[Text]:
         """Returns slots which were mapped in the domain.
 
         Args:
@@ -750,30 +759,30 @@ class SeparateValidationAction(Action, ABC):
         Returns:
             Slot names mapped in the domain.
         """
-        required_form_slots = self._required_form_slots(domain)
-        slots = domain.get("slots", {})
-        return [(slot, slot in required_form_slots) for slot in slots.keys()]
+        if self.global_slot_mappings():
+            all_slots = domain.get("slots", {})
+            # _get_ignored_intents
+            for k, v in all_slots.items():
+                print(v)
 
-    def _required_form_slots(self, domain: "DomainDict") -> List[Text]:
+            # TODO(alwx): return mappings outside forms
+            return ["slot2"]
+
         form = domain.get("forms", {}).get(self.form_name(), {})
         if "required_slots" in form:
-            return list(form.get("required_slots", []))
+            return form.get("required_slots", [])
         return []
 
     async def _extract_slot(
         self,
-        slot: Tuple[Text, bool],
+        slot_name: Text,
         dispatcher: "CollectingDispatcher",
         tracker: "Tracker",
         domain: "DomainDict",
     ) -> Dict[Text, Any]:
-        slot_name, is_required_in_form = slot
-        if is_required_in_form:
-            method_name = f"extract_{slot_name.replace('-', '_')}"
-        else:
-            method_name = f"extract_slots_{slot_name.replace('-', '_')}"
+        method_name = f"extract_{slot_name.replace('-', '_')}"
 
-        slot_in_domain = slot in self.domain_slots(domain)
+        slot_in_domain = slot_name in self.domain_slots(domain)
         extract_method = getattr(self, method_name, None)
 
         if not extract_method:
@@ -807,239 +816,6 @@ class SeparateValidationAction(Action, ABC):
         return {}
 
 
-class ValidationAction(Action, ABC):
-    """A helper class for slot validations and extractions of custom slots."""
+class FormValidationAction(ValidationAction, ABC):
+    pass
 
-    def form_name(self) -> Text:
-        """Returns the form's name."""
-        return self.name().replace("validate_", "", 1)
-
-    async def run(
-        self,
-        dispatcher: "CollectingDispatcher",
-        tracker: "Tracker",
-        domain: "DomainDict",
-    ) -> List[EventType]:
-        """Runs the custom actions. Please the docstring of the parent class."""
-        extraction_events = await self.extract_custom_slots(dispatcher, tracker, domain)
-        tracker.add_slots(extraction_events)
-
-        validation_events = await self.validate(dispatcher, tracker, domain)
-        tracker.add_slots(validation_events)
-
-        next_slot = await self.next_requested_slot(dispatcher, tracker, domain)
-        if next_slot:
-            validation_events.append(next_slot)
-
-        # Validation events include events for extracted slots
-        return validation_events
-
-    async def extract_custom_slots(
-        self,
-        dispatcher: "CollectingDispatcher",
-        tracker: "Tracker",
-        domain: "DomainDict",
-    ) -> List[EventType]:
-        """Extracts custom slots using available `extract_<slot name>` methods.
-
-        Uses the information from `self.required_slots` to gather which slots should
-        be extracted.
-
-        Args:
-            dispatcher: the dispatcher which is used to
-                send messages back to the user. Use
-                `dispatcher.utter_message()` for sending messages.
-            tracker: the state tracker for the current
-                user. You can access slot values using
-                `tracker.get_slot(slot_name)`, the most recent user message
-                is `tracker.latest_message.text` and any other
-                `rasa_sdk.Tracker` property.
-            domain: the bot's domain.
-
-        Returns:
-            `SlotSet` for any extracted slots.
-        """
-        custom_slots = {}
-        slots_to_extract = await self.required_slots(
-            self.slots_mapped_in_domain(domain), dispatcher, tracker, domain
-        )
-
-        for slot_name in slots_to_extract:
-            extraction_output = await self._extract_slot(
-                slot_name, dispatcher, tracker, domain
-            )
-            custom_slots.update(extraction_output)
-            # for sequential consistency, also update tracker
-            # to make changes visible to subsequent extract_{slot_name}
-            tracker.slots.update(extraction_output)
-
-        return [SlotSet(slot, value) for slot, value in custom_slots.items()]
-
-    async def _extract_slot(
-        self,
-        slot_name: Text,
-        dispatcher: "CollectingDispatcher",
-        tracker: "Tracker",
-        domain: "DomainDict",
-    ) -> Dict[Text, Any]:
-        method_name = f"extract_{slot_name.replace('-', '_')}"
-        slot_mapped_in_domain = slot_name in self.slots_mapped_in_domain(domain)
-        extract_method = getattr(self, method_name, None)
-
-        if not extract_method:
-            if not slot_mapped_in_domain:
-                warnings.warn(
-                    f"No method '{method_name}' found for slot "
-                    f"'{slot_name}'. Skipping extraction for this slot."
-                )
-            return {}
-
-        if extract_method and slot_mapped_in_domain:
-            warnings.warn(
-                f"Slot '{slot_name}' is mapped in the domain and your custom "
-                f"action defines '{method_name}'. '{method_name}' will override any "
-                f"extractions of the predefined slot mapping from the domain. It is "
-                f"suggested to define a slot mapping in only one of the two ways for "
-                f"clarity."
-            )
-
-        extracted = await utils.call_potential_coroutine(
-            extract_method(dispatcher, tracker, domain)
-        )
-
-        if isinstance(extracted, dict):
-            return extracted
-
-        warnings.warn(
-            f"Cannot extract `{slot_name}`: make sure the extract method "
-            f"returns the correct output."
-        )
-        return {}
-
-    async def required_slots(
-        self,
-        slots_mapped_in_domain: List[Text],
-        dispatcher: "CollectingDispatcher",
-        tracker: "Tracker",
-        domain: "DomainDict",
-    ) -> List[Text]:
-        """Returns slots which the form should fill.
-
-        Args:
-            slots_mapped_in_domain: Names of slots of this form which were mapped in
-                the domain.
-            dispatcher: the dispatcher which is used to
-                send messages back to the user.
-            tracker: the conversation tracker for the current user.
-            domain: the bot's domain.
-
-        Returns:
-            Slot names which should be filled by the form. By default it
-            returns the slot names which are listed for this form in the domain
-            and use predefined mappings.
-        """
-        return slots_mapped_in_domain
-
-    def slots_mapped_in_domain(self, domain: "DomainDict") -> List[Text]:
-        """Returns slots which were mapped in the domain for the current form.
-
-        Args:
-            domain: The current domain.
-
-        Returns:
-            Slot names mapped in the domain.
-        """
-        form = domain.get("forms", {}).get(self.form_name(), {})
-        # In forms now, the keyword `required_slots` should always precede
-        # the definition of slot mappings and the lack of it is deprecated.
-        # So, we add the following check here to make sure we support
-        # the old (without keyword) and new (with keyword) format
-        # of the slot mappings definition.
-        if "required_slots" in form:
-            return list(form.get("required_slots", []))
-        return []
-
-    async def validate(
-        self,
-        dispatcher: "CollectingDispatcher",
-        tracker: "Tracker",
-        domain: "DomainDict",
-    ) -> List[EventType]:
-        """Validate slots by calling a validation function for each slot.
-
-        Args:
-            dispatcher: the dispatcher which is used to
-                send messages back to the user.
-            tracker: the conversation tracker for the current user.
-            domain: the bot's domain.
-        Returns:
-            `SlotSet` events for every validated slot.
-        """
-        slots: Dict[Text, Any] = tracker.slots_to_validate()
-
-        for slot_name, slot_value in list(slots.items()):
-            method_name = f"validate_{slot_name.replace('-','_')}"
-            validate_method = getattr(self, method_name, None)
-
-            if not validate_method:
-                logger.warning(
-                    f"Skipping validation for `{slot_name}`: there is no validation "
-                    f"method specified."
-                )
-                continue
-
-            validation_output = await utils.call_potential_coroutine(
-                validate_method(slot_value, dispatcher, tracker, domain)
-            )
-
-            if isinstance(validation_output, dict):
-                slots.update(validation_output)
-                # for sequential consistency, also update tracker
-                # to make changes visible to subsequent validate_{slot_name}
-                tracker.slots.update(validation_output)
-            else:
-                warnings.warn(
-                    f"Cannot validate `{slot_name}`: make sure the validation method "
-                    f"returns the correct output."
-                )
-
-        return [SlotSet(slot, value) for slot, value in slots.items()]
-
-    async def next_requested_slot(
-        self,
-        dispatcher: "CollectingDispatcher",
-        tracker: "Tracker",
-        domain: "DomainDict",
-    ) -> Optional[EventType]:
-        """Sets the next slot which should be requested.
-
-        Skips setting the next requested slot in case `missing_slots` was not
-        overridden.
-
-        Args:
-            dispatcher: the dispatcher which is used to
-                send messages back to the user.
-            tracker: the conversation tracker for the current user.
-            domain: the bot's domain.
-
-        Returns:
-            `None` in case `missing_slots` was not overridden and returns `None`.
-            Otherwise returns a `SlotSet` event for the next slot to be requested.
-            If the `SlotSet` event sets `requested_slot` to `None`, the form will be
-            deactivated.
-        """
-        required_slots = await self.required_slots(
-            self.slots_mapped_in_domain(domain), dispatcher, tracker, domain
-        )
-        if required_slots and required_slots == self.slots_mapped_in_domain(domain):
-            # If users didn't override `required_slots` then we'll let the `FormAction`
-            # within Rasa Open Source request the next slot.
-            return None
-
-        missing_slots = (
-            slot_name
-            for slot_name in required_slots
-            if tracker.slots.get(slot_name) is None
-        )
-
-        return SlotSet(REQUESTED_SLOT, next(missing_slots, None))

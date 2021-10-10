@@ -10,7 +10,6 @@ from rasa_sdk.forms import (
     SlotMapping,
     FormAction,
     ValidationAction,
-    SeparateValidationAction,
     REQUESTED_SLOT,
     LOOP_INTERRUPTED_KEY,
 )
@@ -1661,11 +1660,11 @@ class TestFormValidationAction(ValidationAction):
 
 
 async def test_validation_action_outside_forms():
-    class TestSlotValidationAction(SeparateValidationAction):
-        def name(self) -> Text:
-            return "validate_slots_in_domain"
+    class TestSlotValidationAction(ValidationAction):
+        def global_slot_mappings(self) -> bool:
+            return True
 
-        def validate_slots_slot2(
+        def validate_slot2(
             self,
             slot_value: Any,
             dispatcher: "CollectingDispatcher",
@@ -1729,7 +1728,7 @@ async def test_validation_action_outside_forms():
 
     assert not warnings
     assert events == [
-        SlotSet("slot2", "validated_value"),
+        SlotSet("slot2", "validated_values"),
     ]
 
 
@@ -1806,7 +1805,7 @@ async def test_form_validation_action_async():
     events = await form.run(
         dispatcher=dispatcher,
         tracker=tracker,
-        domain={"forms": {form_name: {"required_slots": {"slot1": [], "slot3": []}}}},
+        domain={"forms": {form_name: {"required_slots": ["slot1", "slot3"]}}},
     )
     assert events == [SlotSet("slot3", "validated_value")]
 
@@ -1839,7 +1838,7 @@ async def test_form_validation_without_validate_function():
             domain={
                 "forms": {
                     form_name: {
-                        "required_slots": {"slot1": [], "slot2": [], "slot3": []}
+                        "required_slots": ["slot1", "slot2", "slot3"]
                     }
                 }
             },
@@ -1886,7 +1885,7 @@ async def test_form_validation_changing_slots_during_validation():
     events = await form.run(
         dispatcher=dispatcher,
         tracker=tracker,
-        domain={"forms": {form_name: {"required_slots": {"my_slot": []}}}},
+        domain={"forms": {form_name: {"required_slots": ["my_slot"]}}},
     )
     assert events == [
         SlotSet("my_slot", None),
@@ -1934,7 +1933,7 @@ async def test_form_validation_dash_slot():
     events = await form.run(
         dispatcher=dispatcher,
         tracker=tracker,
-        domain={"forms": {form_name: {"required_slots": {"slot-with-dash": []}}}},
+        domain={"forms": {form_name: {"required_slots": ["slot-with-dash"]}}},
     )
     assert events == [
         SlotSet("slot-with-dash", "validated_value"),
@@ -1943,26 +1942,26 @@ async def test_form_validation_dash_slot():
 
 @pytest.mark.parametrize(
     "required_slots, next_slot",
-    [([("my_slot", True)], None), ([("my_slot", True), ("other_slot", True)], "other_slot")],
+    [(["my_slot"], None), (["my_slot", "other_slot"], "other_slot")],
 )
 async def test_extract_and_validate_slot(
-    required_slots: List[Tuple[Text, bool]], next_slot: Optional[Text]
+    required_slots: List[Text], next_slot: Optional[Text]
 ):
     custom_slot = "my_slot"
     unvalidated_value = "some value"
     validated_value = "validated value"
 
-    class TestFormValidationWithCustomSlots(SeparateValidationAction):
+    class TestFormValidationWithCustomSlots(ValidationAction):
         def name(self) -> Text:
             return "some_form"
 
         async def required_slots(
             self,
-            slots_mapped_in_domain: List[Tuple[Text, bool]],
+            slots_mapped_in_domain: List[Text],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
-        ) -> List[Tuple[Text, bool]]:
+        ) -> List[Text]:
             return required_slots
 
         async def extract_my_slot(
@@ -2120,12 +2119,12 @@ async def test_extract_slot_only():
 
         async def required_slots(
                 self,
-                slots_mapped_in_domain: List[Tuple[Text, bool]],
+                slots_mapped_in_domain: List[Text],
                 dispatcher: "CollectingDispatcher",
                 tracker: "Tracker",
                 domain: "DomainDict",
-        ) -> List[Tuple[Text, bool]]:
-            return [(custom_slot, True)]
+        ) -> List[Text]:
+            return [custom_slot]
 
         async def extract_my_slot(
             self,
@@ -2162,11 +2161,11 @@ async def test_extract_slot_only():
     "required_slots, domain, next_slot_events",
     [
         # Custom slot mapping but no `extract` method
-        ([("my_slot", True), ("other_slot", True)], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
+        (["my_slot", "other_slot"], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
         # Extract method for slot which is also mapped in domain
         (
-            [("my_slot", True)],
-            {"forms": {"some_form": {"required_slots": {"my_slot": []}}}},
+            ["my_slot"],
+            {"forms": {"some_form": {"required_slots": ["my_slot"]}}},
             [],
         ),
     ],
@@ -2183,11 +2182,11 @@ async def test_warning_for_slot_extractions(
 
         async def required_slots(
             self,
-            domain_slots: List[Tuple[Text, bool]],
+            domain_slots: List[Text],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
-        ) -> List[Tuple[Text, bool]]:
+        ) -> List[Text]:
             return required_slots
 
         async def extract_my_slot(
@@ -2233,22 +2232,16 @@ async def test_warning_for_slot_extractions(
         # Domain slots are ignored in overridden `required_slots`
         (
             [],
-            {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
+            {"forms": {"some_form": {"required_slots": ["another_slot"]}}},
             [SlotSet(REQUESTED_SLOT, None)],
         ),
         # `required_slots` was not overridden - Rasa Open Source will request next slot.
         # slot mappings with the `required_slots` keyword preceding them (new format)
         (
             ["another_slot"],
-            {"forms": {"some_form": {"required_slots": {"another_slot": []}}}},
+            {"forms": {"some_form": {"required_slots": ["another_slot"]}}},
             [],
-        ),
-        # slot mappings without the `required_slots` keyword preceding them (old format)
-        (
-            ["another_slot"],
-            {"forms": {"some_form": {"another_slot": []}}},
-            [],
-        ),
+        )
     ],
 )
 async def test_ask_for_next_slot(
