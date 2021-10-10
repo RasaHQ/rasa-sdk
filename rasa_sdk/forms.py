@@ -766,6 +766,7 @@ class ValidationAction(Action, ABC):
             return False
 
         for mapping in mappings:
+            print(mapping)
             mapping_conditions = mapping.get("conditions", [])
             for condition in mapping_conditions:
                 if condition.get("active_loop"):
@@ -840,4 +841,3 @@ class ValidationAction(Action, ABC):
 
 class FormValidationAction(ValidationAction, ABC):
     pass
-

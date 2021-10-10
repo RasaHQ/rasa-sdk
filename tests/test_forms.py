@@ -994,14 +994,8 @@ def test_extract_other_slots_with_entity(
 
     domain = {
         "slots": {
-            "some_other_slot": {
-                "type": "any",
-                "mappings": some_other_slot_mapping,
-            },
-            "some_slot": {
-                "type": "any",
-                "mappings": some_slot_mapping,
-            },
+            "some_other_slot": {"type": "any", "mappings": some_other_slot_mapping,},
+            "some_slot": {"type": "any", "mappings": some_slot_mapping,},
         },
     }
 
@@ -1689,9 +1683,80 @@ async def test_validation_action_outside_forms():
         [
             UserUttered(
                 "My name is Emily.",
-                parse_data={"intent": {"name": "inform", "confidence": 1.0}, "entities": [{"entity": "name", "value": "Emily"}]}
+                parse_data={
+                    "intent": {"name": "inform", "confidence": 1.0},
+                    "entities": [{"entity": "name", "value": "Emily"}],
+                },
             ),
-            SlotSet("slot2", "Emily")
+            SlotSet("slot2", "Emily"),
+        ],
+        False,
+        None,
+        {},
+        "action_listen",
+    )
+
+    domain = {
+        "slots": {
+            "slot1": {
+                "type": "any",
+                "mappings": [SlotMapping.from_entity(entity="name", intent="test")],
+            },
+            "slot2": {
+                "type": "any",
+                "mappings": [SlotMapping.from_entity(entity="name", intent="inform")],
+            },
+        }
+    }
+
+    dispatcher = CollectingDispatcher()
+    with pytest.warns(None) as warnings:
+        events = await validation_action.run(
+            dispatcher=dispatcher, tracker=tracker, domain=domain,
+        )
+
+    assert not warnings
+    assert events == [
+        SlotSet("slot2", "validated_value"),
+    ]
+
+
+async def test_validation_action_outside_forms_with_form_active_loop():
+    class TestSlotValidationAction(ValidationAction):
+        def global_slot_mappings(self) -> bool:
+            return True
+
+        def validate_slot1(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            if slot_value == "Emily":
+                return {
+                    "slot1": "validated_value",
+                }
+            return {
+                "slot1": None,
+            }
+
+    validation_action = TestSlotValidationAction()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [
+            UserUttered(
+                "My name is Emily.",
+                parse_data={
+                    "intent": {"name": "inform", "confidence": 1.0},
+                    "entities": [{"entity": "name", "value": "Emily"}],
+                },
+            ),
+            SlotSet("slot1", "Emily"),
         ],
         False,
         None,
@@ -1704,15 +1769,12 @@ async def test_validation_action_outside_forms():
             "slot1": {
                 "type": "any",
                 "mappings": [
-                    SlotMapping.from_entity(entity="name", intent="test")
-                ],
-            },
-            "slot2": {
-                "type": "any",
-                "mappings": [
-                    SlotMapping.from_entity(
-                        entity="name", intent="inform"
-                    )
+                    # this mapping means that the mapping should be validated by ValidationAction for `form1`
+                    {
+                        "type": "from_entity",
+                        "entity": "name",
+                        "conditions": [{"active_loop": "form1"}],
+                    }
                 ],
             },
         }
@@ -1721,14 +1783,12 @@ async def test_validation_action_outside_forms():
     dispatcher = CollectingDispatcher()
     with pytest.warns(None) as warnings:
         events = await validation_action.run(
-            dispatcher=dispatcher,
-            tracker=tracker,
-            domain=domain,
+            dispatcher=dispatcher, tracker=tracker, domain=domain,
         )
 
     assert not warnings
     assert events == [
-        SlotSet("slot2", "validated_value"),
+        SlotSet("slot1", "Emily"),
     ]
 
 
@@ -1762,9 +1822,12 @@ async def test_validation_action_for_form_outside_forms():
         [
             UserUttered(
                 "My name is Emily.",
-                parse_data={"intent": {"name": "inform", "confidence": 1.0}, "entities": [{"entity": "name", "value": "Emily"}]}
+                parse_data={
+                    "intent": {"name": "inform", "confidence": 1.0},
+                    "entities": [{"entity": "name", "value": "Emily"}],
+                },
             ),
-            SlotSet("slot1", "Emily")
+            SlotSet("slot1", "Emily"),
         ],
         False,
         None,
@@ -1776,30 +1839,20 @@ async def test_validation_action_for_form_outside_forms():
         "slots": {
             "slot1": {
                 "type": "any",
-                "mappings": [
-                    SlotMapping.from_entity(
-                        entity="name", intent="inform"
-                    )
-                ],
+                "mappings": [SlotMapping.from_entity(entity="name", intent="inform")],
             },
         },
-        "forms": {
-            "form1": {"required_slots": []}
-        }
+        "forms": {"form1": {"required_slots": []}},
     }
 
     dispatcher = CollectingDispatcher()
     with pytest.warns(None) as warnings:
         events = await validation_action.run(
-            dispatcher=dispatcher,
-            tracker=tracker,
-            domain=domain,
+            dispatcher=dispatcher, tracker=tracker, domain=domain,
         )
 
     assert not warnings
-    assert events == [
-        SlotSet("slot1", "Emily") # validation didn't run for this slot
-    ]
+    assert events == [SlotSet("slot1", "Emily")]  # validation didn't run for this slot
 
 
 async def test_form_validation_action():
@@ -1822,31 +1875,19 @@ async def test_form_validation_action():
         "slots": {
             "slot1": {
                 "type": "any",
-                "mappings": [
-                    SlotMapping.from_entity(entity="slot1")
-                ],
+                "mappings": [SlotMapping.from_entity(entity="slot1")],
             },
             "slot2": {
                 "type": "any",
-                "mappings": [
-                    SlotMapping.from_entity(
-                        entity="slot2"
-                    )
-                ],
+                "mappings": [SlotMapping.from_entity(entity="slot2")],
             },
         },
-        "forms": {
-            form_name: {"required_slots": ["slot1", "slot2"]}
-        }
+        "forms": {form_name: {"required_slots": ["slot1", "slot2"]}},
     }
 
     dispatcher = CollectingDispatcher()
     with pytest.warns(None) as warnings:
-        events = await form.run(
-            dispatcher=dispatcher,
-            tracker=tracker,
-            domain=domain,
-        )
+        events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=domain,)
 
     assert not warnings
     assert events == [
@@ -1906,11 +1947,7 @@ async def test_form_validation_without_validate_function():
             dispatcher=dispatcher,
             tracker=tracker,
             domain={
-                "forms": {
-                    form_name: {
-                        "required_slots": ["slot1", "slot2", "slot3"]
-                    }
-                }
+                "forms": {form_name: {"required_slots": ["slot1", "slot2", "slot3"]}}
             },
         )
 
@@ -2109,11 +2146,11 @@ async def test_extract_and_validate_slot_visibility(
             return "some_form"
 
         async def required_slots(
-                self,
-                domain_slots: List[Tuple[Text, bool]],
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            domain_slots: List[Tuple[Text, bool]],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> List[Tuple[Text, bool]]:
             return my_required_slots
 
@@ -2188,11 +2225,11 @@ async def test_extract_slot_only():
             return "some_form"
 
         async def required_slots(
-                self,
-                slots_mapped_in_domain: List[Text],
-                dispatcher: "CollectingDispatcher",
-                tracker: "Tracker",
-                domain: "DomainDict",
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
         ) -> List[Text]:
             return [custom_slot]
 
@@ -2233,11 +2270,7 @@ async def test_extract_slot_only():
         # Custom slot mapping but no `extract` method
         (["my_slot", "other_slot"], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
         # Extract method for slot which is also mapped in domain
-        (
-            ["my_slot"],
-            {"forms": {"some_form": {"required_slots": ["my_slot"]}}},
-            [],
-        ),
+        (["my_slot"], {"forms": {"some_form": {"required_slots": ["my_slot"]}}}, [],),
     ],
 )
 async def test_warning_for_slot_extractions(
@@ -2294,11 +2327,7 @@ async def test_warning_for_slot_extractions(
         # No domain slots, no custom slots
         ([], {}, [SlotSet(REQUESTED_SLOT, None)]),
         # Custom slot - no domain slots
-        (
-            ["some value"],
-            {},
-            [SlotSet(REQUESTED_SLOT, "some value")],
-        ),
+        (["some value"], {}, [SlotSet(REQUESTED_SLOT, "some value")],),
         # Domain slots are ignored in overridden `required_slots`
         (
             [],
@@ -2311,13 +2340,11 @@ async def test_warning_for_slot_extractions(
             ["another_slot"],
             {"forms": {"some_form": {"required_slots": ["another_slot"]}}},
             [],
-        )
+        ),
     ],
 )
 async def test_ask_for_next_slot(
-    custom_slots: List[Text],
-    domain: Dict,
-    expected_return_events: List[EventType],
+    custom_slots: List[Text], domain: Dict, expected_return_events: List[EventType],
 ):
     class TestFormRequestSlot(ValidationAction):
         def name(self) -> Text:
