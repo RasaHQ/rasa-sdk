@@ -1732,7 +1732,7 @@ async def test_validation_action_outside_forms():
     ]
 
 
-async def test_validation_action_outside_forms2():
+async def test_validation_action_for_form_outside_forms():
     class TestSlotValidationAction(ValidationAction):
         def name(self):
             return "validate_form1"
