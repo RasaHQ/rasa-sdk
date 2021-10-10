@@ -1782,6 +1782,9 @@ async def test_validation_action_for_form_outside_forms():
                     )
                 ],
             },
+        },
+        "forms": {
+            "form1": {"required_slots": []}
         }
     }
 
@@ -1794,7 +1797,9 @@ async def test_validation_action_for_form_outside_forms():
         )
 
     assert not warnings
-    assert events[0] == SlotSet("slot1", "Emily") # validation didn't run for this slot
+    assert events == [
+        SlotSet("slot1", "Emily") # validation didn't run for this slot
+    ]
 
 
 async def test_form_validation_action():

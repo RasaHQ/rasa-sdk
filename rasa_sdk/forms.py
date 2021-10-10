@@ -749,13 +749,15 @@ class ValidationAction(Action, ABC):
             # within Rasa Open Source request the next slot.
             return None
 
-        missing_slots = (
+        missing_slots = [
             slot_name
             for slot_name in required_slots
             if tracker.slots.get(slot_name) is None
-        )
+        ]
+        if not missing_slots:
+            return None
 
-        return SlotSet(REQUESTED_SLOT, next(missing_slots, None))
+        return SlotSet(REQUESTED_SLOT, missing_slots[0])
 
     @staticmethod
     def _is_mapped_to_form(slot_value: Dict[Text, Any]) -> bool:
