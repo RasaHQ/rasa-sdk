@@ -1787,9 +1787,7 @@ async def test_validation_action_outside_forms_with_form_active_loop():
         )
 
     assert not warnings
-    assert events == [
-        SlotSet("slot1", "Emily"),
-    ]
+    assert events[0] == SlotSet("slot1", "Emily")
 
 
 async def test_validation_action_for_form_outside_forms():
@@ -1852,7 +1850,7 @@ async def test_validation_action_for_form_outside_forms():
         )
 
     assert not warnings
-    assert events == [SlotSet("slot1", "Emily")]  # validation didn't run for this slot
+    assert events[0] == SlotSet("slot1", "Emily")  # validation didn't run for this slot
 
 
 async def test_form_validation_action():
