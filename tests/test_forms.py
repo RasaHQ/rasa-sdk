@@ -994,8 +994,8 @@ def test_extract_other_slots_with_entity(
 
     domain = {
         "slots": {
-            "some_other_slot": {"type": "any", "mappings": some_other_slot_mapping,},
-            "some_slot": {"type": "any", "mappings": some_slot_mapping,},
+            "some_other_slot": {"type": "any", "mappings": some_other_slot_mapping},
+            "some_slot": {"type": "any", "mappings": some_slot_mapping},
         },
     }
 
