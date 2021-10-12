@@ -607,7 +607,7 @@ class ValidationAction(Action, ABC):
             domain: the bot's domain.
 
         Returns:
-            A dictionary of slot names.
+            A list of slot names.
         """
         return domain_slots
 

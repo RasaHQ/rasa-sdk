@@ -121,10 +121,10 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
   from typing import Text, Dict, Any, List, Optional
 
   from rasa_sdk.forms import (
-      ValidationAction,
+      FormValidationAction,
   )
 
-  class FormWithSlotExtractions(ValidationAction):
+  class FormWithSlotExtractions(FormValidationAction):
       def name(self) -> Text:
           return "some_form"
 
@@ -233,11 +233,11 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 ```python
   from typing import Text, Any, Dict
-  from rasa_sdk import ValidationAction, Tracker
+  from rasa_sdk import FormValidationAction, Tracker
   from rasa_sdk.types import DomainDict
   from rasa_sdk.executor import CollectingDispatcher
 
-  class MyFormValidationAction(ValidationAction):
+  class MyFormValidationAction(FormValidationAction):
       def name(self) -> Text:
           return "some_form"
 
