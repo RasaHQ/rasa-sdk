@@ -563,19 +563,12 @@ class ValidationAction(Action, ABC):
 
     def name(self) -> Text:
         """Unique identifier of this simple action."""
-        if self.global_slot_mappings:
-            return VALIDATE_GLOBAL_SLOT_MAPPINGS_NAME
-
-        raise NotImplementedError("An action must implement a name")
-
-    def form_name(self) -> Text:
-        """Returns the form's name."""
-        return self.name().replace("validate_", "", 1)
+        return VALIDATE_GLOBAL_SLOT_MAPPINGS_NAME
 
     @property
     def global_slot_mappings(self) -> bool:
         """Indicates if action needs to validate mappings outside forms."""
-        return False
+        return True
 
     async def run(
         self,
@@ -785,13 +778,7 @@ class ValidationAction(Action, ABC):
         Returns:
             Slot names mapped in the domain.
         """
-        if self.global_slot_mappings:
-            return self.global_slots(domain)
-
-        form = domain.get("forms", {}).get(self.form_name(), {})
-        if "required_slots" in form:
-            return form.get("required_slots", [])
-        return []
+        return self.global_slots(domain)
 
     async def _extract_slot(
         self,
@@ -837,4 +824,24 @@ class ValidationAction(Action, ABC):
 
 
 class FormValidationAction(ValidationAction, ABC):
-    pass
+    def name(self) -> Text:
+        """Unique identifier of this simple action."""
+        raise NotImplementedError("An action must implement a name")
+
+    def form_name(self) -> Text:
+        """Returns the form's name."""
+        return self.name().replace("validate_", "", 1)
+
+    def domain_slots(self, domain: "DomainDict") -> List[Text]:
+        """Returns slots which were mapped in the domain.
+
+        Args:
+            domain: The current domain.
+
+        Returns:
+            Slot names mapped in the domain.
+        """
+        form = domain.get("forms", {}).get(self.form_name(), {})
+        if "required_slots" in form:
+            return form.get("required_slots", [])
+        return []
