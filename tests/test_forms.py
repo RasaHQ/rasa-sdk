@@ -1,6 +1,6 @@
 import pytest
 import asyncio
-from typing import Type, Text, Tuple, Dict, Any, List, Optional
+from typing import Type, Text, Dict, Any, List, Optional
 
 from rasa_sdk import Tracker, ActionExecutionRejection
 from rasa_sdk.types import DomainDict
@@ -1782,7 +1782,7 @@ async def test_validation_action_outside_forms_with_form_active_loop():
         )
 
     assert not warnings
-    assert events[0] == SlotSet("slot1", "Emily")
+    assert events == []
 
 
 async def test_validation_action_for_form_outside_forms():
@@ -2140,11 +2140,11 @@ async def test_extract_and_validate_slot_visibility(
 
         async def required_slots(
             self,
-            domain_slots: List[Tuple[Text, bool]],
+            domain_slots: List[Text],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
-        ) -> List[Tuple[Text, bool]]:
+        ) -> List[Text]:
             return my_required_slots
 
         async def extract_state(
@@ -2345,11 +2345,11 @@ async def test_ask_for_next_slot(
 
         async def required_slots(
             self,
-            slots_mapped_in_domain: List[Tuple[Text, bool]],
+            slots_mapped_in_domain: List[Text],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
-        ) -> List[Tuple[Text, bool]]:
+        ) -> List[Text, bool]:
             return custom_slots
 
     form = TestFormRequestSlot()
