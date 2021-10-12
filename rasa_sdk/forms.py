@@ -730,7 +730,7 @@ class ValidationAction(Action, ABC):
         required_slots = await self.required_slots(
             self.domain_slots(domain), dispatcher, tracker, domain
         )
-        if required_slots and required_slots == self.domain_slots(domain):
+        if required_slots == self.domain_slots(domain):
             # If users didn't override `required_slots` then we'll let the `FormAction`
             # within Rasa Open Source request the next slot.
             return None
@@ -740,6 +740,8 @@ class ValidationAction(Action, ABC):
             for slot_name in required_slots
             if tracker.slots.get(slot_name) is None
         )
+
+        print(missing_slots)
 
         return SlotSet(REQUESTED_SLOT, next(missing_slots, None))
 

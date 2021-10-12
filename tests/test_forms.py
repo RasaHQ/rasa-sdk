@@ -1782,7 +1782,7 @@ async def test_validation_action_outside_forms_with_form_active_loop():
         )
 
     assert not warnings
-    assert events == []
+    assert events == [SlotSet("slot1", "Emily")]  # validation didn't run for this slot
 
 
 async def test_validation_action_for_form_outside_forms():
@@ -1845,7 +1845,7 @@ async def test_validation_action_for_form_outside_forms():
         )
 
     assert not warnings
-    assert events[0] == SlotSet("slot1", "Emily")  # validation didn't run for this slot
+    assert events == [SlotSet("slot1", "Emily")]  # validation didn't run for this slot
 
 
 async def test_form_validation_action():
@@ -2318,7 +2318,7 @@ async def test_warning_for_slot_extractions(
     "custom_slots, domain, expected_return_events",
     [
         # No domain slots, no custom slots
-        ([], {}, [SlotSet(REQUESTED_SLOT, None)]),
+        ([], {}, []),
         # Custom slot - no domain slots
         (["some value"], {}, [SlotSet(REQUESTED_SLOT, "some value")],),
         # Domain slots are ignored in overridden `required_slots`
@@ -2345,11 +2345,11 @@ async def test_ask_for_next_slot(
 
         async def required_slots(
             self,
-            slots_mapped_in_domain: List[Text],
+            domain_slots: List[Text],
             dispatcher: "CollectingDispatcher",
             tracker: "Tracker",
             domain: "DomainDict",
-        ) -> List[Text, bool]:
+        ) -> List[Text]:
             return custom_slots
 
     form = TestFormRequestSlot()
