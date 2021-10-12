@@ -16,6 +16,7 @@ repository if you discover bugs or have suggestions for improvements.
 
 :::
 
+In the sections below you can learn how to deploy Rasa Action Server by using helm, and how to connect an Action Server deployment to Rasa Open Source.
 
 ## Installation Requirements
 
@@ -98,9 +99,9 @@ repository if you discover bugs or have suggestions for improvements.
    In case you are using a version `<3.5` of Helm, please update to Helm version
    `>=3.5`.
 
-## a. Installation
+## 1. Installation
 
-### 1. Create Namespace
+### a. Create Namespace
 
 We recommend installing Rasa Action Server in a separate
 [namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
@@ -124,7 +125,7 @@ run the following command:
   </TabItem>
 </Tabs>
 
-### 2. Deploy Rasa Action Server
+### b. Deploy Rasa Action Server
 
 Run the following commands:
 
@@ -140,7 +141,7 @@ helm install \
 ```
 
 
-### 3. Access Rasa Action Server
+### c. Access Rasa Action Server
 
 By default the Rasa Action Server deployment is exposed via the `rasa-action-server` (`<release name>`) service and accessible only within a Kubernetes cluster. You can get
 the IP address using this command:
@@ -351,7 +352,7 @@ helm upgrade --namespace <namespace> --reuse-values \
   -f values.yaml <release name> rasa/rasa-action-server
 ```
 
-## b. Connect Rasa Action Server with Rasa Open Source deployment
+## 2. Connect Rasa Action Server with Rasa Open Source deployment
 
 If you have deployed your Rasa Assistant via the Rasa Helm chart, and you have deployed your Rasa Action Server as well.
 Now it's time to connect them together. You can do this easily by following the steps:
