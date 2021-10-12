@@ -565,11 +565,6 @@ class ValidationAction(Action, ABC):
         """Unique identifier of this simple action."""
         return VALIDATE_GLOBAL_SLOT_MAPPINGS_NAME
 
-    @property
-    def global_slot_mappings(self) -> bool:
-        """Indicates if action needs to validate mappings outside forms."""
-        return True
-
     async def run(
         self,
         dispatcher: "CollectingDispatcher",
@@ -601,7 +596,7 @@ class ValidationAction(Action, ABC):
         tracker: "Tracker",
         domain: "DomainDict",
     ) -> List[Text]:
-        """Returns slots which the form should fill.
+        """Returns slots which the validation action should fill.
 
         Args:
             domain_slots: Names of slots of this form which were mapped in
@@ -612,9 +607,7 @@ class ValidationAction(Action, ABC):
             domain: the bot's domain.
 
         Returns:
-            Slot names which should be filled by the form. By default it
-            returns the slot names which are listed for this form in the domain
-            and use predefined mappings.
+            A dictionary of slot names.
         """
         return domain_slots
 
@@ -776,7 +769,8 @@ class ValidationAction(Action, ABC):
             domain: The current domain.
 
         Returns:
-            Slot names mapped in the domain.
+            Slot names mapped in the domain which do not include
+            a mapping with an active loop condition.
         """
         return self.global_slots(domain)
 
@@ -839,7 +833,9 @@ class FormValidationAction(ValidationAction, ABC):
             domain: The current domain.
 
         Returns:
-            Slot names mapped in the domain.
+            Slot names which should be filled by the form. By default it
+            returns the slot names which are listed for this form in the domain
+            and use predefined mappings.
         """
         form = domain.get("forms", {}).get(self.form_name(), {})
         if "required_slots" in form:
