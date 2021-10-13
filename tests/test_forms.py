@@ -1785,7 +1785,7 @@ async def test_validation_action_outside_forms_with_form_active_loop():
     assert events == [SlotSet("slot1", "Emily")]  # validation didn't run for this slot
 
 
-async def test_validation_action_for_form_outside_forms():
+async def test_form_validation_action_doesnt_work_for_global_slots():
     class TestSlotValidationAction(FormValidationAction):
         def name(self):
             return "validate_form1"
@@ -1845,7 +1845,9 @@ async def test_validation_action_for_form_outside_forms():
         )
 
     assert not warnings
-    assert events == [SlotSet("slot1", "Emily")]  # validation didn't run for this slot
+    # validation shoudn't run for this slot because `TestSlotValidationAction` implements
+    # `FormValidationAction` and `slot1` is not assigned to any form
+    assert events == [SlotSet("slot1", "Emily")]
 
 
 async def test_form_validation_action():
@@ -2144,7 +2146,7 @@ async def test_extract_and_validate_global_slot(
             assert slot_value == unvalidated_value
             return {custom_slot: validated_value}
 
-    form = TestFormValidationWithCustomSlots()
+    validation_action = TestFormValidationWithCustomSlots()
 
     # tracker with active form
     tracker = Tracker(
@@ -2154,12 +2156,12 @@ async def test_extract_and_validate_global_slot(
         [],
         False,
         None,
-        {"name": "some_form", "is_interrupted": False, "rejected": False},
+        {},
         "action_listen",
     )
 
     dispatcher = CollectingDispatcher()
-    events = await form.run(dispatcher=dispatcher, tracker=tracker, domain={})
+    events = await validation_action.run(dispatcher=dispatcher, tracker=tracker, domain={})
 
     assert events == [
         SlotSet(custom_slot, validated_value),
