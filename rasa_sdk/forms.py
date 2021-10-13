@@ -675,6 +675,7 @@ class ValidationAction(Action, ABC):
 
         for slot_name, slot_value in list(slots.items()):
             if slot_name not in slots_to_validate:
+                slots.pop(slot_name)
                 continue
 
             method_name = f"validate_{slot_name.replace('-','_')}"

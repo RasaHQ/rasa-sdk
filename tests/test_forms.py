@@ -1782,7 +1782,7 @@ async def test_validation_action_outside_forms_with_form_active_loop():
         )
 
     assert not warnings
-    assert events == [SlotSet("slot1", "Emily")]  # validation didn't run for this slot
+    assert events == []  # validation didn't run for this slot
 
 
 async def test_form_validation_action_doesnt_work_for_global_slots():
@@ -1845,9 +1845,9 @@ async def test_form_validation_action_doesnt_work_for_global_slots():
         )
 
     assert not warnings
-    # validation shoudn't run for this slot because `TestSlotValidationAction` implements
+    # validation shoudn't run because `TestSlotValidationAction` implements
     # `FormValidationAction` and `slot1` is not assigned to any form
-    assert events == [SlotSet("slot1", "Emily")]
+    assert events == []
 
 
 async def test_form_validation_action():
