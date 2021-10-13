@@ -27,6 +27,8 @@ VALIDATE_GLOBAL_SLOT_MAPPINGS_NAME = "validate_global_slot_mappings"
 
 
 class FormAction(Action):
+    """An action which implements and executes the form logic."""
+
     def __init__(self):
         warnings.warn(
             "Using the `FormAction` class is deprecated as of Rasa Open "
@@ -819,6 +821,8 @@ class ValidationAction(Action, ABC):
 
 
 class FormValidationAction(ValidationAction, ABC):
+    """A helper class for slot validations and extractions of custom slots in forms."""
+
     def name(self) -> Text:
         """Unique identifier of this simple action."""
         raise NotImplementedError("An action must implement a name")

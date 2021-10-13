@@ -52,7 +52,6 @@ class SlotMapping(Enum):
             - role if it is not None
             - group if it is not None
         """
-
         intent, not_intent = (
             SlotMapping.to_list(intent),
             SlotMapping.to_list(not_intent),
@@ -84,7 +83,6 @@ class SlotMapping(Enum):
 
         Only used on form activation.
         """
-
         intent, not_intent = (
             SlotMapping.to_list(intent),
             SlotMapping.to_list(not_intent),
@@ -112,7 +110,6 @@ class SlotMapping(Enum):
             - not_intent if it is not None,
                 meaning user intent should not be this intent
         """
-
         intent, not_intent = (
             SlotMapping.to_list(intent),
             SlotMapping.to_list(not_intent),
@@ -139,7 +136,6 @@ class SlotMapping(Enum):
             - not_intent if it is not None,
                 meaning user intent should not be this intent
         """
-
         intent, not_intent = (
             SlotMapping.to_list(intent),
             SlotMapping.to_list(not_intent),
@@ -153,9 +149,11 @@ class SlotMapping(Enum):
 
     @staticmethod
     def intent_is_desired(
-        mapping: Dict[Text, Any], tracker: "Tracker", domain: "DomainDict",
+        mapping: Dict[Text, Any],
+        tracker: "Tracker",
+        domain: "DomainDict",
     ) -> bool:
-        """Check whether user intent matches intent conditions"""
+        """Check whether user intent matches intent conditions."""
         mapping_intents = SlotMapping.to_list(mapping.get("intent", []))
         mapping_not_intents = SlotMapping.to_list(mapping.get("not_intent", []))
 
@@ -173,7 +171,10 @@ class SlotMapping(Enum):
         return intent_not_excluded or intent in mapping_intents
 
     @staticmethod
-    def entity_is_desired(mapping: Dict[Text, Any], tracker: "Tracker",) -> bool:
+    def entity_is_desired(
+        mapping: Dict[Text, Any],
+        tracker: "Tracker",
+    ) -> bool:
         """Checks whether slot should be filled by an entity in the input or not.
 
         Args:
@@ -193,7 +194,9 @@ class SlotMapping(Enum):
                 and mapping.get("group") == entity.get("group")
             ):
                 matching_values = tracker.get_latest_entity_values(
-                    mapping.get("entity"), mapping.get("role"), mapping.get("group"),
+                    mapping.get("entity"),
+                    mapping.get("role"),
+                    mapping.get("group"),
                 )
                 slot_fulfils_entity_mapping = matching_values is not None
                 break
@@ -202,7 +205,9 @@ class SlotMapping(Enum):
 
     @staticmethod
     def _get_ignored_intents(
-        mapping: Dict[Text, Any], domain: "DomainDict", active_loop_name: Text,
+        mapping: Dict[Text, Any],
+        domain: "DomainDict",
+        active_loop_name: Text,
     ) -> List[Text]:
         mapping_conditions = mapping.get("conditions")
         active_loop_match = False

@@ -1710,7 +1710,9 @@ async def test_validation_action_outside_forms():
     dispatcher = CollectingDispatcher()
     with pytest.warns(None) as warnings:
         events = await validation_action.run(
-            dispatcher=dispatcher, tracker=tracker, domain=domain,
+            dispatcher=dispatcher,
+            tracker=tracker,
+            domain=domain,
         )
 
     assert not warnings
@@ -1778,7 +1780,9 @@ async def test_validation_action_outside_forms_with_form_active_loop():
     dispatcher = CollectingDispatcher()
     with pytest.warns(None) as warnings:
         events = await validation_action.run(
-            dispatcher=dispatcher, tracker=tracker, domain=domain,
+            dispatcher=dispatcher,
+            tracker=tracker,
+            domain=domain,
         )
 
     assert not warnings
@@ -1841,7 +1845,9 @@ async def test_form_validation_action_doesnt_work_for_global_slots():
     dispatcher = CollectingDispatcher()
     with pytest.warns(None) as warnings:
         events = await validation_action.run(
-            dispatcher=dispatcher, tracker=tracker, domain=domain,
+            dispatcher=dispatcher,
+            tracker=tracker,
+            domain=domain,
         )
 
     assert not warnings
@@ -1882,7 +1888,11 @@ async def test_form_validation_action():
 
     dispatcher = CollectingDispatcher()
     with pytest.warns(None) as warnings:
-        events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=domain,)
+        events = await form.run(
+            dispatcher=dispatcher,
+            tracker=tracker,
+            domain=domain,
+        )
 
     assert not warnings
     assert events == [
@@ -2161,7 +2171,9 @@ async def test_extract_and_validate_global_slot(
     )
 
     dispatcher = CollectingDispatcher()
-    events = await validation_action.run(dispatcher=dispatcher, tracker=tracker, domain={})
+    events = await validation_action.run(
+        dispatcher=dispatcher, tracker=tracker, domain={}
+    )
 
     assert events == [
         SlotSet(custom_slot, validated_value),
@@ -2327,7 +2339,11 @@ async def test_extract_slot_only():
         # Custom slot mapping but no `extract` method
         (["my_slot", "other_slot"], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
         # Extract method for slot which is also mapped in domain
-        (["my_slot"], {"forms": {"some_form": {"required_slots": ["my_slot"]}}}, [],),
+        (
+            ["my_slot"],
+            {"forms": {"some_form": {"required_slots": ["my_slot"]}}},
+            [],
+        ),
     ],
 )
 async def test_warning_for_slot_extractions(
@@ -2384,7 +2400,11 @@ async def test_warning_for_slot_extractions(
         # No domain slots, no custom slots
         ([], {}, []),
         # Custom slot - no domain slots
-        (["some value"], {}, [SlotSet(REQUESTED_SLOT, "some value")],),
+        (
+            ["some value"],
+            {},
+            [SlotSet(REQUESTED_SLOT, "some value")],
+        ),
         # Domain slots are ignored in overridden `required_slots`
         (
             [],
@@ -2401,7 +2421,9 @@ async def test_warning_for_slot_extractions(
     ],
 )
 async def test_ask_for_next_slot(
-    custom_slots: List[Text], domain: Dict, expected_return_events: List[EventType],
+    custom_slots: List[Text],
+    domain: Dict,
+    expected_return_events: List[EventType],
 ):
     class TestFormRequestSlot(FormValidationAction):
         def name(self) -> Text:
