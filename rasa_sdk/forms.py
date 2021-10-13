@@ -742,8 +742,6 @@ class ValidationAction(Action, ABC):
             if tracker.slots.get(slot_name) is None
         )
 
-        print(missing_slots)
-
         return SlotSet(REQUESTED_SLOT, next(missing_slots, None))
 
     @staticmethod
