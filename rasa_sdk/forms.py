@@ -579,16 +579,24 @@ class ValidationAction(Action, ABC):
         )
         tracker.add_slots(extraction_events)
 
+        validation_events = await self._extract_validation_events(
+            dispatcher, tracker, domain
+        )
+
+        # Validation events include events for extracted slots
+        return validation_events
+
+    async def _extract_validation_events(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
         validation_events = await self.get_validation_events(
             dispatcher, tracker, domain
         )
         tracker.add_slots(validation_events)
 
-        next_slot = await self.next_requested_slot(dispatcher, tracker, domain)
-        if next_slot:
-            validation_events.append(next_slot)
-
-        # Validation events include events for extracted slots
         return validation_events
 
     async def required_slots(
@@ -707,45 +715,6 @@ class ValidationAction(Action, ABC):
 
         return [SlotSet(slot, value) for slot, value in slots.items()]
 
-    async def next_requested_slot(
-        self,
-        dispatcher: "CollectingDispatcher",
-        tracker: "Tracker",
-        domain: "DomainDict",
-    ) -> Optional[EventType]:
-        """Sets the next slot which should be requested.
-
-        Skips setting the next requested slot in case `missing_slots` was not
-        overridden.
-
-        Args:
-            dispatcher: the dispatcher which is used to
-                send messages back to the user.
-            tracker: the conversation tracker for the current user.
-            domain: the bot's domain.
-
-        Returns:
-            `None` in case `missing_slots` was not overridden and returns `None`.
-            Otherwise returns a `SlotSet` event for the next slot to be requested.
-            If the `SlotSet` event sets `requested_slot` to `None`, the form will be
-            deactivated.
-        """
-        required_slots = await self.required_slots(
-            self.domain_slots(domain), dispatcher, tracker, domain
-        )
-        if required_slots == self.domain_slots(domain):
-            # If users didn't override `required_slots` then we'll let the `FormAction`
-            # within Rasa Open Source request the next slot.
-            return None
-
-        missing_slots = (
-            slot_name
-            for slot_name in required_slots
-            if tracker.slots.get(slot_name) is None
-        )
-
-        return SlotSet(REQUESTED_SLOT, next(missing_slots, None))
-
     @staticmethod
     def _is_mapped_to_form(slot_value: Dict[Text, Any]) -> bool:
         mappings = slot_value.get("mappings")
@@ -831,6 +800,23 @@ class FormValidationAction(ValidationAction, ABC):
         """Returns the form's name."""
         return self.name().replace("validate_", "", 1)
 
+    async def _extract_validation_events(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> List[EventType]:
+        validation_events = await self.get_validation_events(
+            dispatcher, tracker, domain
+        )
+        tracker.add_slots(validation_events)
+
+        next_slot = await self.next_requested_slot(dispatcher, tracker, domain)
+        if next_slot:
+            validation_events.append(next_slot)
+
+        return validation_events
+
     def domain_slots(self, domain: "DomainDict") -> List[Text]:
         """Returns slots which were mapped in the domain.
 
@@ -846,3 +832,42 @@ class FormValidationAction(ValidationAction, ABC):
         if "required_slots" in form:
             return form.get("required_slots", [])
         return []
+
+    async def next_requested_slot(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> Optional[EventType]:
+        """Sets the next slot which should be requested.
+
+        Skips setting the next requested slot in case `missing_slots` was not
+        overridden.
+
+        Args:
+            dispatcher: the dispatcher which is used to
+                send messages back to the user.
+            tracker: the conversation tracker for the current user.
+            domain: the bot's domain.
+
+        Returns:
+            `None` in case `missing_slots` was not overridden and returns `None`.
+            Otherwise returns a `SlotSet` event for the next slot to be requested.
+            If the `SlotSet` event sets `requested_slot` to `None`, the form will be
+            deactivated.
+        """
+        required_slots = await self.required_slots(
+            self.domain_slots(domain), dispatcher, tracker, domain
+        )
+        if required_slots == self.domain_slots(domain):
+            # If users didn't override `required_slots` then we'll let the `FormAction`
+            # within Rasa Open Source request the next slot.
+            return None
+
+        missing_slots = (
+            slot_name
+            for slot_name in required_slots
+            if tracker.slots.get(slot_name) is None
+        )
+
+        return SlotSet(REQUESTED_SLOT, next(missing_slots, None))
