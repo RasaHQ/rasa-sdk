@@ -159,7 +159,7 @@ class SlotMapping(Enum):
 
         active_loop_name = tracker.active_loop_name
         if active_loop_name:
-            mapping_not_intents = set(
+            mapping_not_intents = (
                 mapping_not_intents
                 + SlotMapping._get_ignored_intents(mapping, domain, active_loop_name)
             )
@@ -194,7 +194,7 @@ class SlotMapping(Enum):
                 and mapping.get("group") == entity.get("group")
             ):
                 matching_values = tracker.get_latest_entity_values(
-                    mapping.get("entity"),
+                    mapping.get("entity", ""),
                     mapping.get("role"),
                     mapping.get("group"),
                 )
