@@ -135,8 +135,8 @@ class Tracker:
             x.get("value")
             for x in entities
             if x.get("entity") == entity_type
-            and (entity_group is None or x.get("group") == entity_group)
-            and (entity_role is None or x.get("role") == entity_role)
+            and x.get("group") == entity_group
+            and x.get("role") == entity_role
         )
 
     def get_latest_input_channel(self) -> Optional[Text]:
@@ -165,6 +165,17 @@ class Tracker:
     def events_after_latest_restart(self) -> List[dict]:
         """Return a list of events after the most recent restart."""
         return list(self.events)[self.idx_after_latest_restart() :]
+
+    @property
+    def active_loop_name(self) -> Optional[Text]:
+        """Get the name of the currently active loop.
+
+        Returns: `None` if no active loop or the name of the currently active loop.
+        """
+        if not self.active_loop or self.active_loop.get("name") == "should_not_be_set":
+            return None
+
+        return self.active_loop.get("name")
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(self, type(other)):
