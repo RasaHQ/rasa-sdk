@@ -33,14 +33,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "async-generator"
-version = "1.10"
-description = "Async generators and context managers for Python 3.5+"
-category = "dev"
-optional = false
-python-versions = ">=3.5"
-
-[[package]]
 name = "atomicwrites"
 version = "1.4.0"
 description = "Atomic file writes."
@@ -539,20 +531,6 @@ toml = "*"
 testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtualenv"]
 
 [[package]]
-name = "pytest-sanic"
-version = "1.9.1"
-description = "a pytest plugin for Sanic"
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-
-[package.dependencies]
-async_generator = ">=1.10,<2.0"
-httpx = ">=0.18.1"
-pytest = ">=5.2"
-websockets = ">=9.1,<11.0"
-
-[[package]]
 name = "questionary"
 version = "1.8.1"
 description = "Python library to build pretty command line user prompts ⭐️"
@@ -795,7 +773,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "277f3c2280ef687250a9a71822a03afc8f72a89bc302aa7d190ff3e6ed9775f5"
+content-hash = "6b1029fabb06090140be5ecf21086530d366a611af602639583430e96464f55b"
 
 [metadata.files]
 aiofiles = [
@@ -809,10 +787,6 @@ anyio = [
 appdirs = [
     {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
     {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
-]
-async-generator = [
-    {file = "async_generator-1.10-py3-none-any.whl", hash = "sha256:01c7bf666359b4967d2cda0000cc2e4af16a0ae098cbffcb8472fb9e8ad6585b"},
-    {file = "async_generator-1.10.tar.gz", hash = "sha256:6ebb3d106c12920aaae42ccb6f787ef5eefdcdd166ea3d628fa8476abe712144"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
@@ -1178,10 +1152,6 @@ pytest = [
 pytest-cov = [
     {file = "pytest-cov-2.12.1.tar.gz", hash = "sha256:261ceeb8c227b726249b376b8526b600f38667ee314f910353fa318caa01f4d7"},
     {file = "pytest_cov-2.12.1-py2.py3-none-any.whl", hash = "sha256:261bb9e47e65bd099c89c3edf92972865210c36813f80ede5277dceb77a4a62a"},
-]
-pytest-sanic = [
-    {file = "pytest-sanic-1.9.1.tar.gz", hash = "sha256:79daca07acbc0d9c1f9a1f0c7de7df92e159200e729c75e3a040366ff10a186a"},
-    {file = "pytest_sanic-1.9.1-py3-none-any.whl", hash = "sha256:a9a11f61dedbc3738c6a4f3d8ec24c42d48e25314ca1696f00782c7a0b3e1f16"},
 ]
 questionary = [
     {file = "questionary-1.8.1-py3-none-any.whl", hash = "sha256:e03ec1a585b2ff5a1463238fe63c12d82c740834e17e7b8efae9be58393a8fc9"},
