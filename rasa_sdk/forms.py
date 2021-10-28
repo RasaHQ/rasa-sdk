@@ -21,7 +21,7 @@ REQUESTED_SLOT = "requested_slot"
 
 LOOP_INTERRUPTED_KEY = "is_interrupted"
 
-VALIDATE_GLOBAL_SLOT_MAPPINGS_NAME = "validate_global_slot_mappings"
+ACTION_VALIDATE_SLOT_MAPPINGS = "action_validate_slot_mappings"
 
 
 class ValidationAction(Action, ABC):
@@ -29,7 +29,7 @@ class ValidationAction(Action, ABC):
 
     def name(self) -> Text:
         """Unique identifier of this simple action."""
-        return VALIDATE_GLOBAL_SLOT_MAPPINGS_NAME
+        return ACTION_VALIDATE_SLOT_MAPPINGS
 
     async def run(
         self,
