@@ -65,7 +65,7 @@ showcontent = false
 [tool.poetry.dependencies]
 python = ">=3.7,<3.10"
 coloredlogs = ">=10,<16"
-sanic = "^21.9.0"
+sanic = "^21.6.0"
 requests = ">=2.23.0,<2.26.0"
 typing-extensions = "^3.7.4"
 Sanic-Cors = "^1.0.0"
