@@ -231,15 +231,6 @@ class ValidationAction(Action, ABC):
                 )
             return {}
 
-        if extract_method and slot_in_domain:
-            warnings.warn(
-                f"Slot '{slot_name}' is mapped in the domain and your custom "
-                f"action defines '{method_name}'. '{method_name}' will override any "
-                f"extractions of the predefined slot mapping from the domain. It is "
-                f"suggested to define a slot mapping in only one of the two ways for "
-                f"clarity."
-            )
-
         extracted = await utils.call_potential_coroutine(
             extract_method(dispatcher, tracker, domain)
         )
