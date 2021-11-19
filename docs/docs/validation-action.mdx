@@ -1,0 +1,105 @@
+---
+id: validation-action
+sidebar_label: ValidationAction Class
+title: ValidationAction
+abstract: Learn how `ValidationAction` class is implemented in the Rasa SDK.
+---
+
+The `ValidationAction` class is the base class for custom actions specialized on custom extraction and / or validation
+of slots that can be set or updated outside of a form context.
+
+Because `ValidationAction` subclasses the `Action` class, the class implements the `name` and `run` methods inherited
+from `Action`. In addition, `ValidationAction` implements more specialized methods that will be called in the `run` method:
+- `get_extraction_events`: Extracts custom slots using available `extract_<slot name>` methods
+- `get_validation_events`: Validates slots by calling available `validate_<slot name>` methods for each slot
+- `required_slots`: Returns slots which the validation action should fill
+
+## Methods
+
+### ValidationAction.name
+
+Defines the action's name: this must be hardcoded as `action_validate_slot_mappings`.
+
+* **Returns**:
+
+  Name of action
+
+* **Return type**:
+
+  `str`
+
+### ValidationAction.run
+
+```python
+async ValidationAction.run(dispatcher, tracker, domain)
+```
+
+The `run` method executes the custom extraction code defined in `extract_<slot name>` methods by calling the
+`get_extraction_events` method, then updates the tracker with the returned events.
+The `run` method will also execute custom validation code defined in `validate_<slot name>` methods via the
+`get_validation_events` method and add the returned events to the tracker.
+
+#### **Parameters**
+
+  * **dispatcher** – the dispatcher which is used to
+    send messages back to the user. Use
+    `dispatcher.utter_message()` or any other
+    `rasa_sdk.executor.CollectingDispatcher`
+    method. See the [documentation for the dispatcher](sdk-dispatcher.mdx)
+
+  * **tracker** – the state tracker for the current
+    user. You can access slot values using
+    `tracker.get_slot(slot_name)`, the most recent user message
+    is `tracker.latest_message.text` and any other
+    `rasa_sdk.Tracker` property. See the [documentation for the tracker](sdk-tracker.mdx).
+
+  * **domain** – the bot's domain
+
+#### **Returns**
+
+  A list of `rasa_sdk.events.Event` instances. See the [documentation for events](sdk-events.mdx).
+
+#### **Return type**
+
+  `List`[`Dict`[`str`, `Any`]]
+
+### ValidationAction.required_slots
+
+```python
+async ValidationAction.required_slots(domain_slots, dispatcher, tracker, domain)
+```
+
+The `required_slots` method will return the `domain_slots` which is a list of all slot names mapped in the domain which
+do not include any slot mapping with conditions.
+
+#### **Returns**
+
+  A list of slot names of type `Text`.
+
+### ValidationAction.get_extraction_events
+
+```python
+async ValidationAction.get_extraction_events(dispatcher, tracker, domain)
+```
+
+The `get_extraction_events` method will gather the list of slot names via `required_slots` method call and then loop
+through every slot name to run the `extract_<slot name>` method if available.
+
+#### **Returns**
+
+  A list of `rasa_sdk.events.SlotSet` instances. See the [documentation for Slot Set events](sdk-events.mdx#slotset).
+
+### ValidationAction.get_validation_events
+
+```python
+async ValidationAction.get_validation_events(dispatcher, tracker, domain)
+```
+
+The `get_validation_events` method will gather the list of slot names to validate via `required_slots` method call.
+Then it will get a mapping of slots which were recently set and their values via `tracker.slots_to_validate` call.
+Looping through this mapping of recently extracted slots, it will check if the slot is in `required_slots` then run the
+`validate_<slot name>` method if available for that slot.
+
+#### **Returns**
+
+  A list of `rasa_sdk.events.SlotSet` instances. See the [documentation for Slot Set events](sdk-events.mdx#slotset).
