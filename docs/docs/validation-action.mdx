@@ -1,22 +1,28 @@
 ---
 id: validation-action
-sidebar_label: ValidationAction Class
-title: ValidationAction
+sidebar_label: Slot Validation Actions
+title: Slot Validation Actions
 abstract: Learn how `ValidationAction` class is implemented in the Rasa SDK.
 ---
 
-The `ValidationAction` class is the base class for custom actions specialized on custom extraction and / or validation
+There are two helper classes in Rasa SDK with the role of executing custom slot extraction and validation:
+- `ValidationAction`: the base class for custom actions specialized on custom extraction and / or validation
 of slots that can be set or updated outside of a form context.
+- `FormValidationAction`: the base class for custom actions extracting and validating slots that are set only within
+the context of a form.
 
-Because `ValidationAction` subclasses the `Action` class, the class implements the `name` and `run` methods inherited
-from `Action`. In addition, `ValidationAction` implements more specialized methods that will be called in the `run` method:
+## `ValidationAction` class implementation
+
+`ValidationAction` is a subclass of the `Action` Rasa SDK class and the abstract Python `ABC` class.
+Therefore the class implements the `name` and `run` methods inherited from `Action`.
+In addition, `ValidationAction` implements more specialized methods that will be called in the `run` method:
 - `get_extraction_events`: Extracts custom slots using available `extract_<slot name>` methods
 - `get_validation_events`: Validates slots by calling available `validate_<slot name>` methods for each slot
 - `required_slots`: Returns slots which the validation action should fill
 
-## Methods
+### Methods
 
-### ValidationAction.name
+#### ValidationAction.name
 
 Defines the action's name: this must be hardcoded as `action_validate_slot_mappings`.
 
@@ -28,7 +34,7 @@ Defines the action's name: this must be hardcoded as `action_validate_slot_mappi
 
   `str`
 
-### ValidationAction.run
+#### ValidationAction.run
 
 ```python
 async ValidationAction.run(dispatcher, tracker, domain)
@@ -39,7 +45,7 @@ The `run` method executes the custom extraction code defined in `extract_<slot n
 The `run` method will also execute custom validation code defined in `validate_<slot name>` methods via the
 `get_validation_events` method and add the returned events to the tracker.
 
-#### **Parameters**
+##### **Parameters**
 
   * **dispatcher** – the dispatcher which is used to
     send messages back to the user. Use
@@ -55,28 +61,29 @@ The `run` method will also execute custom validation code defined in `validate_<
 
   * **domain** – the bot's domain
 
-#### **Returns**
+##### **Returns**
 
   A list of `rasa_sdk.events.Event` instances. See the [documentation for events](sdk-events.mdx).
 
-#### **Return type**
+##### **Return type**
 
   `List`[`Dict`[`str`, `Any`]]
 
-### ValidationAction.required_slots
+#### ValidationAction.required_slots
 
 ```python
 async ValidationAction.required_slots(domain_slots, dispatcher, tracker, domain)
 ```
 
-The `required_slots` method will return the `domain_slots` which is a list of all slot names mapped in the domain which
-do not include any slot mapping with conditions.
+The `required_slots` method will return the `domain_slots` which is a list of all slot names mapped in the domain that
+do not include any slot mapping with conditions. `domain_slots` is returned by the `domain_slots` method, which only takes
+`Domain` as an argument.
 
-#### **Returns**
+##### **Returns**
 
   A list of slot names of type `Text`.
 
-### ValidationAction.get_extraction_events
+#### ValidationAction.get_extraction_events
 
 ```python
 async ValidationAction.get_extraction_events(dispatcher, tracker, domain)
@@ -85,11 +92,11 @@ async ValidationAction.get_extraction_events(dispatcher, tracker, domain)
 The `get_extraction_events` method will gather the list of slot names via `required_slots` method call and then loop
 through every slot name to run the `extract_<slot name>` method if available.
 
-#### **Returns**
+##### **Returns**
 
   A list of `rasa_sdk.events.SlotSet` instances. See the [documentation for SlotSet events](sdk-events.mdx#slotset).
 
-### ValidationAction.get_validation_events
+#### ValidationAction.get_validation_events
 
 ```python
 async ValidationAction.get_validation_events(dispatcher, tracker, domain)
@@ -100,6 +107,51 @@ Then it will get a mapping of slots which were recently set and their values via
 Looping through this mapping of recently extracted slots, it will check if the slot is in `required_slots` then run the
 `validate_<slot name>` method if available for that slot.
 
-#### **Returns**
+##### **Returns**
 
   A list of `rasa_sdk.events.SlotSet` instances. See the [documentation for SlotSet events](sdk-events.mdx#slotset).
+
+
+## `FormValidationAction` class implementation
+
+`FormValidationAction` is a subclass of the `ValidationAction` Rasa SDK class and the abstract Python `ABC` class.
+`FormValidationAction` inherits most methods from `ValidationAction` class, however it overrides the `name` and
+`domain_slots` methods, implements a new method `next_requested_slot` and extends the implementation of `run` method.
+
+### Methods
+
+#### FormValidationAction.name
+
+The method `name` will raise a `NotImplementedError` exception if the bot custom action subclassing `FormValidationAction`
+does not return a custom name which follows this naming convention: `validate_<form name>`.
+
+#### FormValidationAction.required_slots
+
+The method `required_slots` will return the `domain_slots` which is a list of all slot names included in the form's
+`required_slots`. `domain_slots` is returned by the `domain_slots` method, which only takes
+`Domain` as an argument.
+
+#### FormValidationAction.next_requested_slot
+
+The method `next_requested_slot` will set the value of `REQUESTED_SLOT` to the next unset slot only if the
+`required_slots` method was overriden by the custom action subclassing `FormValidationAction`.
+
+If users didn't override `required_slots` then we'll let the `FormAction` within Rasa Open
+Source request the next slot, and the method will return `None`.
+
+The parameters the method requires are:
+- [dispatcher](sdk-dispatcher.mdx)
+- [tracker](sdk-tracker.mdx)
+- the bot's domain
+
+#### FormValidationAction.run
+
+The original implementation of the `ValidationAction.run` method is extended to add a call to the `next_requested_slot`
+method. The output of the `next_requested_slot` method call (if not `None`) is added to the list of events that `run`
+method returns.
+
+
+## How to subclass slot validation actions
+
+To learn more about how to subclass `ValidationAction` and `FormValidationAction` classes in your custom actions, please
+visit [Slot Validation Actions](https://rasa.com/docs/rasa/next/slot-validation-actions) in the Rasa Open Source docs.
