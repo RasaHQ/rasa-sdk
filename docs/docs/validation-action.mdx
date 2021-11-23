@@ -35,7 +35,7 @@ Note that you do not need to implement the `name` method in the custom action ex
 is already implemented. If you override the `name` method, the custom validation action will not run because the
 original name is hardcoded in the call that the default action `action_extract_slots` makes to the action server.
 
-It is recommended to create only one subclass of `ValidationAction` which should contain all extraction and validation
+You should create only one subclass of `ValidationAction` which should contain all extraction and validation
 methods for different slots according to your use-case.
 
 With this option, you do not need to specify the `action` key in the [custom slot mapping](https://rasa.com/docs/rasa/next/domain#custom-slot-mappings),
