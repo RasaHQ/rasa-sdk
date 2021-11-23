@@ -297,3 +297,10 @@ Your response payload then looks like this:
 When this response is sent back to 
 the Rasa server, Rasa will apply the `slot` event and two responses to the tracker, 
 and return both messages to the user.
+
+## Special Action Types
+
+If you decide to use special action types, such as [slot validation actions](https://rasa.com/docs/rasa/next/slot-validation-actions),
+note that you must follow the naming convention for slot validation actions: `action_validate_slot_mappings` and `validate_<form name>`.
+In addition, these actions will be expected to behave like the Rasa SDK [`ValidationAction` class](./validation-action.mdx#validationaction-class-implementation)
+and [`FormValidationAction` class](./validation-action.mdx#formvalidationaction-class-implementation).
