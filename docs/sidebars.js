@@ -21,7 +21,8 @@ module.exports = {
               label: 'Special Action Types',
               collapsed: true,
               items: [
-                'knowledge-bases'
+                'knowledge-bases',
+                  'validation-action',
               ]
               }
           ],
