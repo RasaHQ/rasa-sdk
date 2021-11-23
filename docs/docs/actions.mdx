@@ -297,3 +297,18 @@ Your response payload then looks like this:
 When this response is sent back to 
 the Rasa server, Rasa will apply the `slot` event and two responses to the tracker, 
 and return both messages to the user.
+
+## Special Action Types
+
+There are special action types that are automatically triggered under certain circumstances, namely [default actions](https://rasa.com/docs/rasa/next/default-actions)
+and  [slot validation actions](https://rasa.com/docs/rasa/next/slot-validation-actions).
+These special action types have predefined naming conventions that must be followed to maintain the automatic triggering behavior.
+
+You can customize a default action by implementing a custom action with exactly the same name.
+Please see the [docs on default actions](https://rasa.com/docs/rasa/next/default-actions) for the expected behavior of each action.
+
+Slot validation actions are run on every user turn, depending on whether a form is active or not.
+A slot validation action that should run when a form is not active must be called `action_validate_slot_mappings`.
+A slot validation action that should run when a form is active must be called `validate_<form name>`.
+These actions are expected to return `SlotSet` events only and to behave like the Rasa SDK [`ValidationAction` class](./validation-action.mdx#validationaction-class-implementation)
+and [`FormValidationAction` class](./validation-action.mdx#formvalidationaction-class-implementation) respectively.

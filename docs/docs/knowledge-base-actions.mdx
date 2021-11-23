@@ -187,11 +187,23 @@ entities:
 
 slots:
   object_type:
-    type: unfeaturized
+    type: any
+    influence_conversation: false
+    mappings:
+    - type: from_entity
+      entity: object_type
   mention:
-    type: unfeaturized
+    type: any
+    influence_conversation: false
+    mappings:
+    - type: from_entity
+      entity: mention
   attribute:
-    type: unfeaturized
+    type: any
+    influence_conversation: false
+    mappings:
+    - type: from_entity
+      entity: attribute
 ```
 
 <a aria-hidden="true" tabIndex="-1" className="anchor enhancedAnchor" id="create-action-query-knowledge-base"></a>
