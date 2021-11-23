@@ -12,7 +12,7 @@ outside of a form context.
 the context of a form.
 
 In order to implement custom slot extraction and validation logic, you have the option of subclassing either
-`ValidationAction` or `FormValidationAction` class, depending on the context in which you prefer to set or update slots.
+`ValidationAction` or `FormValidationAction` class, depending on the context in which you want to set or update slots.
 
 ## `ValidationAction` class
 
@@ -21,15 +21,16 @@ can be set or updated outside of a form context.
 
 :::note
 `ValidationAction` is intended for extracting slots **outside** the context of a form.
-It will ignore extraction and validation methods for any slots that have a form specified under the slot mapping's `conditions`.
+It will ignore extraction and validation methods for any slots that have a form specified under the
+[slot mapping's `conditions`](https://rasa.com/docs/rasa/next/domain#mapping-conditions).
 It will not run these methods when the specified form is active nor when no form is active.
-Please extend the [`FormValidationAction`](./validation-action.mdx#formvalidationaction-class) class for applying
+Please extend the [`FormValidationAction`](./validation-action.mdx#formvalidationaction-class) class to apply
 custom slot mappings only within the context of a form.
 :::
 
 ### How to subclass `ValidationAction`
 
-Firstly, you must add the name of this action to the domain `actions` list: `action_validate_slot_mappings`.
+Firstly, you must add the name of this action, `action_validate_slot_mappings`, to the domain `actions` list.
 Note that you do not need to implement the `name` method in the custom action extending `ValidationAction`, since this
 is already implemented. If you override the `name` method, the custom validation action will not run because the
 original name is hardcoded in the call that the default action `action_extract_slots` makes to the action server.
@@ -71,7 +72,7 @@ class ValidatePredefinedSlots(ValidationAction):
 
 #### Extraction of Custom Slot Mappings
 
-In order to define custom extraction code, you must write an `extract_<slot_name>` method for every slot with a
+To define custom extraction code, write an `extract_<slot_name>` method for every slot with a
 custom slot mapping.
 
 The following example shows the implementation of a custom action that extracts the slot `count_of_insults` to keep
@@ -202,8 +203,9 @@ Looping through this mapping of recently extracted slots, it will check if the s
 A `FormValidationAction` custom action will only run if the form it specifies in its name is activated.
 If certain custom slot mappings should only be extracted and / or validated within the context of a form,
 the custom action should inherit from `FormValidationAction` rather than from `ValidationAction`.
-Since `FormValidationAction` runs on every user turn only as long as the form is active, it is not required to use
-mapping conditions for custom slot mappings defined in a custom action extending `FormValidationAction`.
+
+Since a custom action extending `FormValidationAction` runs on every user turn only as long as the form is active, it is
+not required to use mapping conditions in this case.
 
 To learn more about how to implement this class, see Forms [Advanced Usage](https://rasa.com/docs/rasa/forms#advanced-usage).
 
