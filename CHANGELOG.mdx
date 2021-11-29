@@ -17,6 +17,22 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 <!-- TOWNCRIER -->
 
+## [3.0.0] - 2021-11-23
+### Deprecations and Removals
+- [#501](https://github.com/rasahq/rasa-sdk/issues/501): Removed Python 3.6 support
+
+### Improvements
+- [#529](https://github.com/rasahq/rasa-sdk/issues/529): Support for global slot mappings.
+
+
+## [2.8.2] - 2021-09-02 No significant changes.
+
+
+## [2.8.1] - 2021-07-22
+### Miscellaneous internal changes
+- [#499](https://github.com/rasahq/rasa-sdk/issues/499)
+
+
 ## [2.8.0] - 2021-07-08
 ### Improvements
 - [#441](https://github.com/rasahq/rasa-sdk/issues/441): Slots will be validated in order they are requested. Previously, they were validated in reverse order.
@@ -117,7 +133,7 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
   want to extract an additional slot, add the slot's name to the list of `required_slots`
   and add a method `extract_<slot name>` to your action:
 
-  ```python
+```python
   from typing import Text, Dict, Any, List, Optional
 
   from rasa_sdk.forms import (
@@ -231,7 +247,7 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
   Example:
 
-  ```python
+```python
   from typing import Text, Any, Dict
   from rasa_sdk import FormValidationAction, Tracker
   from rasa_sdk.types import DomainDict

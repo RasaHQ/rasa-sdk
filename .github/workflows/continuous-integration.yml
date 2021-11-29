@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
     - name: Checkout git repository 🕝
@@ -300,10 +300,11 @@ jobs:
       run: poetry build
 
     - name: Publish to PyPI 📦
-      uses: pypa/gh-action-pypi-publish@37e305e7413032d8422456179fee28fac7d25187
+      uses: pypa/gh-action-pypi-publish@bea5cda687c2b79989126d589ef4411bedce0195
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
+        skip_existing: true
 
     - name: Publish Release Notes 🗞
       if: env.IS_TAG_BUILD
