@@ -50,7 +50,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: docs/node_modules
-        key: ${{ runner.os }}-yarn-12.x-${{ hashFiles('docs/yarn.lock') }}
+        key: ${{ runner.os }}-yarn-12.x-${{ hashFiles('docs/yarn.lock') }}-${{ secrets.YARN_CACHE_KEY }}
         restore-keys: ${{ runner.os }}-yarn-12.x
 
     - name: Install Dependencies 📦
