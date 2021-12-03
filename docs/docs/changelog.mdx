@@ -17,8 +17,9 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 <!-- TOWNCRIER -->
 
-## [3.0.1] - 2021-12-03 No significant changes.
+## [3.0.1] - 2021-12-03
 
+No significant changes.
 
 ## [3.0.0] - 2021-11-23
 ### Deprecations and Removals
@@ -44,12 +45,12 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 
 ## [2.7.0] - 2021-06-03
-                       
+
  No significant changes.
 
 
 ## [2.6.0] - 2021-05-06
-                       
+
 
 ### Improvements
 - [#261](https://github.com/rasahq/rasa-sdk/issues/261): Adding support for forms with the `required_slots` key which is introduced as part of Rasa Open Source 2.6.
@@ -58,14 +59,14 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 
 ## [2.5.0] - 2021-04-12
-                       
+
 
 ### Miscellaneous internal changes
 - [#376](https://github.com/rasahq/rasa-sdk/issues/376)
 
 
 ## [2.4.1] - 2021-03-23
-                       
+
 
 ### Bugfixes
 - [#419](https://github.com/rasahq/rasa-sdk/issues/419): Missing `typing_extensions` module added
@@ -75,7 +76,7 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 
 ## [2.4.0] - 2021-03-11
-                       
+
 
 ### Bugfixes
 - [#406](https://github.com/rasahq/rasa-sdk/issues/406): Fix bug where ActionQueryKnowledgeBase incorrectly issues a template message with the string representation of the function for getting the string representation of the knowledge base item and not the actual string representation of the knowledge base item.
@@ -94,7 +95,7 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 
 ## [2.3.1] - 2021-02-11
-                       
+
 
 ### Bugfixes
 - [#404](https://github.com/rasahq/rasa-sdk/issues/1234): Only pin the `uvloop` dependency for non-Windows systems as `uvloop` is not available
@@ -102,34 +103,34 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 
 ## [2.3.0] - 2021-02-11
-                       
+
 
 ### Features
 - [#306](https://github.com/rasahq/rasa-sdk/issues/306): Added command line argument option `--log-file` for the action server to save logs to a log file.
 
-  Usage : 
+  Usage :
   `rasa run actions --log-file log_file.log`
 
 
 ## [2.2.0] - 2020-12-15
-                       
+
  No significant changes.
 
 
 ## [2.1.2] - 2020-11-19
-                       
+
  No significant changes.
 
 
 ## [2.1.1] - 2020-11-17
-                       
+
 
 ### Bugfixes
 - [#344](https://github.com/rasahq/rasa-sdk/issues/344): Fix a bug in the `FormValidationAction` which immediately deactivated the form.
 
 
 ## [2.1.0] - 2020-11-17
-                       
+
 
 ### Features
 - [#329](https://github.com/rasahq/rasa-sdk/issues/329): Extend `FormValidationAction` with support for extracting slots. If you
@@ -166,17 +167,17 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
   ```
 
   If all slots returned by `required_slots` are filled,
-  the action will automatically return an event to disable the form. 
+  the action will automatically return an event to disable the form.
   If not all required slots are filled, the SDK will return an event
   to Rasa Open Source to fill the first missing slot next.
 
 ### Improvements
-- [#7078](https://github.com/rasahq/rasa/issues/7078): Adds the method `get_intent_of_latest_message` to the `Tracker` allowing easier 
+- [#7078](https://github.com/rasahq/rasa/issues/7078): Adds the method `get_intent_of_latest_message` to the `Tracker` allowing easier
   access to the user's latest intent in case of an `nlu_fallback`.
 
 
 ## [2.0.0] - 2020-10-07
-                       
+
 
 ### Deprecations and Removals
 - [#246](https://github.com/rasahq/rasa-sdk/issues/246): Using the `Form` event is
