@@ -1,5 +1,5 @@
 {
-  "version-3.0.0/someSidebar": [
+  "version-3.x/someSidebar": [
     {
       "collapsed": true,
       "type": "category",
@@ -7,7 +7,7 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-3.0.0/index"
+          "id": "version-3.x/index"
         }
       ]
     },
@@ -18,11 +18,11 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-3.0.0/actions"
+          "id": "version-3.x/actions"
         },
         {
           "type": "doc",
-          "id": "version-3.0.0/events"
+          "id": "version-3.x/events"
         }
       ]
     },
@@ -33,7 +33,7 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-3.0.0/running-action-server"
+          "id": "version-3.x/running-action-server"
         },
         {
           "collapsed": true,
@@ -42,19 +42,19 @@
           "items": [
             {
               "type": "doc",
-              "id": "version-3.0.0/sdk-actions"
+              "id": "version-3.x/sdk-actions"
             },
             {
               "type": "doc",
-              "id": "version-3.0.0/sdk-tracker"
+              "id": "version-3.x/sdk-tracker"
             },
             {
               "type": "doc",
-              "id": "version-3.0.0/sdk-dispatcher"
+              "id": "version-3.x/sdk-dispatcher"
             },
             {
               "type": "doc",
-              "id": "version-3.0.0/sdk-events"
+              "id": "version-3.x/sdk-events"
             },
             {
               "collapsed": true,
@@ -63,11 +63,11 @@
               "items": [
                 {
                   "type": "doc",
-                  "id": "version-3.0.0/knowledge-bases"
+                  "id": "version-3.x/knowledge-bases"
                 },
                 {
                   "type": "doc",
-                  "id": "version-3.0.0/validation-action"
+                  "id": "version-3.x/validation-action"
                 }
               ]
             }
@@ -75,7 +75,7 @@
         },
         {
           "type": "doc",
-          "id": "version-3.0.0/rasa-sdk-changelog"
+          "id": "version-3.x/rasa-sdk-changelog"
         }
       ]
     }
