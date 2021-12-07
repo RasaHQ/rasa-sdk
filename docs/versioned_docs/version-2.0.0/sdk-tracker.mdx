@@ -119,3 +119,25 @@ Return a list of events after the most recent restart.
   * **Return type**
 
   `Optional[Any]`
+
+### Tracker.get_intent_of_latest_message
+
+:::info New in 2.1
+The `Tracker.get_intent_of_latest_message` method was added.
+:::
+
+  Retrieves the user's latest intent.
+
+  * **Parameters**
+
+    * `skip_fallback_intent` (default: `True`) – Optionally skip the `nlu_fallback` intent and return the next highest ranked.
+
+
+  * **Returns**
+
+  The intent of the latest message if available.
+
+
+  * **Return type**
+
+  `Optional[Text]`
