@@ -36,24 +36,24 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 
 ## [2.2.0] - 2020-12-15
-                       
+
  No significant changes.
 
 
 ## [2.1.2] - 2020-11-19
-                       
+
  No significant changes.
 
 
 ## [2.1.1] - 2020-11-17
-                       
+
 
 ### Bugfixes
 - [#344](https://github.com/rasahq/rasa/issues/344): Fix a bug in the `FormValidationAction` which immediately deactivated the form.
 
 
 ## [2.1.0] - 2020-11-17
-                       
+
 
 ### Features
 - [#329](https://github.com/rasahq/rasa/issues/329): Extend `FormValidationAction` with support for extracting slots. If you
@@ -90,12 +90,12 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
   ```
 
   If all slots returned by `required_slots` are filled,
-  the action will automatically return an event to disable the form. 
+  the action will automatically return an event to disable the form.
   If not all required slots are filled, the SDK will return an event
   to Rasa Open Source to fill the first missing slot next.
 
 ### Improvements
-- [#7078](https://github.com/rasahq/rasa/issues/7078): Adds the method `get_intent_of_latest_message` to the `Tracker` allowing easier 
+- [#7078](https://github.com/rasahq/rasa/issues/7078): Adds the method `get_intent_of_latest_message` to the `Tracker` allowing easier
   access to the user's latest intent in case of an `nlu_fallback`.
 
 
