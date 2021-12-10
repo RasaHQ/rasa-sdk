@@ -1,5 +1,5 @@
 {
-  "version-2.7.0/someSidebar": [
+  "version-2.x/someSidebar": [
     {
       "collapsed": true,
       "type": "category",
@@ -7,7 +7,7 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7.0/index"
+          "id": "version-2.x/index"
         }
       ]
     },
@@ -18,11 +18,11 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7.0/actions"
+          "id": "version-2.x/actions"
         },
         {
           "type": "doc",
-          "id": "version-2.7.0/events"
+          "id": "version-2.x/events"
         }
       ]
     },
@@ -33,7 +33,7 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7.0/running-action-server"
+          "id": "version-2.x/running-action-server"
         },
         {
           "collapsed": true,
@@ -42,19 +42,19 @@
           "items": [
             {
               "type": "doc",
-              "id": "version-2.7.0/sdk-actions"
+              "id": "version-2.x/sdk-actions"
             },
             {
               "type": "doc",
-              "id": "version-2.7.0/sdk-tracker"
+              "id": "version-2.x/sdk-tracker"
             },
             {
               "type": "doc",
-              "id": "version-2.7.0/sdk-dispatcher"
+              "id": "version-2.x/sdk-dispatcher"
             },
             {
               "type": "doc",
-              "id": "version-2.7.0/sdk-events"
+              "id": "version-2.x/sdk-events"
             },
             {
               "collapsed": true,
@@ -63,7 +63,7 @@
               "items": [
                 {
                   "type": "doc",
-                  "id": "version-2.7.0/knowledge-bases"
+                  "id": "version-2.x/knowledge-bases"
                 }
               ]
             }
@@ -71,7 +71,7 @@
         },
         {
           "type": "doc",
-          "id": "version-2.7.0/rasa-sdk-changelog"
+          "id": "version-2.x/rasa-sdk-changelog"
         }
       ]
     }

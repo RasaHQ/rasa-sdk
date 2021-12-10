@@ -33,6 +33,10 @@ Running the action server directly as a python module allows for `SANIC_HOST` to
 SANIC_HOST=192.168.69.150 python -m rasa_sdk --actions actions
 ```
 
+:::info New in 2.6
+Support for the `SANIC_HOST environment variable was added.`
+:::
+
 Using the command above, `rasa_sdk` will expect to find your actions 
 in a file called `actions.py`
 or in a package directory called `actions`. 
@@ -43,3 +47,7 @@ The full list of options for running the action server with either command is:
 
 ```text [python -m rasa_sdk --help]
 ```
+
+:::info Changed in 2.3.0
+The `--log-file` argument was added.
+:::
