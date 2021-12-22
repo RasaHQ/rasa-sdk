@@ -83,10 +83,6 @@
         {
           "type": "doc",
           "id": "version-2.2.0/about-http-api"
-        },
-        {
-          "type": "doc",
-          "id": "version-2.2.0/http-api-spec"
         }
       ]
     }

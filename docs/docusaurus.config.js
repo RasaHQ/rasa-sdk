@@ -15,8 +15,8 @@ module.exports = configure({
   openApiSpecs: [
     {
       id: 'rasa-sdk-http-api',
-      specPath: '/spec/action-server.yml',
-      pagePath: '/pages/action-server-api',
+      specPath: require.resolve('./static/spec/action-server.yml'),
+      pagePath: '/apis/http/',
     },
   ],
   /**
@@ -28,4 +28,6 @@ module.exports = configure({
    */
   productLogo: '/img/logo-rasa-oss.png',
   staticDirectories: ['static'],
+  // @ts-ignore
+  package: require('./package.json'),
 });
