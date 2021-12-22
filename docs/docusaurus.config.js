@@ -1,18 +1,31 @@
 // @ts-check
 
-const tabula = require('@rasahq/docusaurus-tabula');
+const configure = require('@rasahq/docusaurus-tabula/configure');
 
-module.exports = tabula.use({
+module.exports = configure({
+  /**
+   * site
+   */
   title: 'Rasa Action Server',
   tagline: 'Rasa Action Server',
-  productLogo: '/img/logo-rasa-oss.png',
-  productKey: 'rasa-sdk',
-  staticDirectories: ['static'],
+  projectName: 'rasa-sdk',
+  /**
+   * presets
+   */
   openApiSpecs: [
     {
-      title: 'Rasa Action Server API',
-      specUrl: '/spec/action-server.yml',
-      slug: '/pages/action-server-api',
+      id: 'rasa-sdk-http-api',
+      specPath: '/spec/action-server.yml',
+      pagePath: '/pages/action-server-api',
     },
   ],
+  /**
+   * plugins
+   */
+
+  /**
+   * themes
+   */
+  productLogo: '/img/logo-rasa-oss.png',
+  staticDirectories: ['static'],
 });

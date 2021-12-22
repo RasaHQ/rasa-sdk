@@ -21,7 +21,7 @@
     "update-versioned-sources": "node scripts/update_versioned_sources.js"
   },
   "dependencies": {
-    "@docusaurus/core": "2.0.0-beta.13",
+    "@docusaurus/core": "2.0.0-beta.14",
     "@mdx-js/react": "1.6.22",
     "@rasahq/docusaurus-tabula": "1.0.0-alpha.0",
     "clsx": "^1.1.1",
