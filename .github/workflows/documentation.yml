@@ -20,6 +20,9 @@ on:
 env:
   DOCS_FOLDER: docs
   DOCS_BRANCH: documentation
+  TAG_NAME: ${GITHUB_REF#refs/tags/}
+  IS_TAG_BUILD: ${{ startsWith(github.event.ref, 'refs/tags') }}
+  IS_MAIN_BRANCH: ${{ github.ref == 'refs/heads/main' }}
 
 jobs:
   changes:
