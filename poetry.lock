@@ -539,14 +539,17 @@ testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtuale
 
 [[package]]
 name = "questionary"
-version = "1.8.1"
+version = "1.10.0"
 description = "Python library to build pretty command line user prompts ⭐️"
 category = "dev"
 optional = false
-python-versions = ">=3.6,<3.10"
+python-versions = ">=3.6,<4.0"
 
 [package.dependencies]
 prompt_toolkit = ">=2.0,<4.0"
+
+[package.extras]
+docs = ["Sphinx (>=3.3,<4.0)", "sphinx-rtd-theme (>=0.5.0,<0.6.0)", "sphinx-autobuild (>=2020.9.1,<2021.0.0)", "sphinx-copybutton (>=0.3.1,<0.4.0)", "sphinx-autodoc-typehints (>=1.11.1,<2.0.0)"]
 
 [[package]]
 name = "regex"
@@ -788,7 +791,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "6cb0b5c77942b32f370b046a69e45cff269e010fcd0bca2850f5514d71e008ba"
+content-hash = "e3352ca32b9acc0771ec310cc333e28c8d50b3cbfa0c0f28bc4f18312ea52bb1"
 
 [metadata.files]
 aiofiles = [
@@ -1199,8 +1202,8 @@ pytest-cov = [
     {file = "pytest_cov-2.12.1-py2.py3-none-any.whl", hash = "sha256:261bb9e47e65bd099c89c3edf92972865210c36813f80ede5277dceb77a4a62a"},
 ]
 questionary = [
-    {file = "questionary-1.8.1-py3-none-any.whl", hash = "sha256:e03ec1a585b2ff5a1463238fe63c12d82c740834e17e7b8efae9be58393a8fc9"},
-    {file = "questionary-1.8.1.tar.gz", hash = "sha256:f2999f01735db77a80d6cb119766cb15b84c468cab325168941a3e0d91207437"},
+    {file = "questionary-1.10.0-py3-none-any.whl", hash = "sha256:fecfcc8cca110fda9d561cb83f1e97ecbb93c613ff857f655818839dac74ce90"},
+    {file = "questionary-1.10.0.tar.gz", hash = "sha256:600d3aefecce26d48d97eee936fdb66e4bc27f934c3ab6dd1e292c4f43946d90"},
 ]
 regex = [
     {file = "regex-2021.11.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:897c539f0f3b2c3a715be651322bef2167de1cdc276b3f370ae81a3bda62df71"},
