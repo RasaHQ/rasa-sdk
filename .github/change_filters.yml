@@ -1,0 +1,8 @@
+docs:
+  - 'docs/**/*'
+  - 'changelog/*'
+  - 'CHANGELOG.mdx'
+  - 'tests/docs/*'
+  - 'data/**/*'
+  - 'examples/**/*'
+  - 'Makefile'
