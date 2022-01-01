@@ -590,7 +590,7 @@ idna2008 = ["idna"]
 
 [[package]]
 name = "sanic"
-version = "21.9.1"
+version = "21.12.0"
 description = "A web server and web framework that's written to go fast. Build fast. Run fast."
 category = "main"
 optional = false
@@ -606,10 +606,11 @@ uvloop = {version = ">=0.5.3", markers = "sys_platform != \"win32\" and implemen
 websockets = ">=10.0"
 
 [package.extras]
-all = ["beautifulsoup4", "docutils", "gunicorn (==20.0.4)", "sanic-testing (>=0.7.0)", "m2r2", "chardet (>=3.0.0,<4.0.0)", "black", "flake8", "coverage (==5.3)", "pygments", "pytest-cov", "sphinx-rtd-theme (>=0.4.3)", "uvicorn (<0.15.0)", "pytest-benchmark", "tox", "towncrier", "mypy (>=0.901)", "pytest-sanic", "pytest-sugar", "bandit", "isort (>=5.0.0)", "sphinx (>=2.1.2)", "pytest (==5.2.1)", "types-ujson"]
-dev = ["sanic-testing (>=0.7.0)", "pytest (==5.2.1)", "coverage (==5.3)", "gunicorn (==20.0.4)", "pytest-cov", "beautifulsoup4", "pytest-sanic", "pytest-sugar", "pytest-benchmark", "chardet (>=3.0.0,<4.0.0)", "flake8", "black", "isort (>=5.0.0)", "bandit", "mypy (>=0.901)", "docutils", "pygments", "uvicorn (<0.15.0)", "tox", "towncrier", "types-ujson"]
-docs = ["sphinx (>=2.1.2)", "sphinx-rtd-theme (>=0.4.3)", "docutils", "pygments", "m2r2"]
-test = ["sanic-testing (>=0.7.0)", "pytest (==5.2.1)", "coverage (==5.3)", "gunicorn (==20.0.4)", "pytest-cov", "beautifulsoup4", "pytest-sanic", "pytest-sugar", "pytest-benchmark", "chardet (>=3.0.0,<4.0.0)", "flake8", "black", "isort (>=5.0.0)", "bandit", "mypy (>=0.901)", "docutils", "pygments", "uvicorn (<0.15.0)", "types-ujson"]
+all = ["gunicorn (==20.0.4)", "docutils", "pytest-sugar", "flake8", "pytest (==6.2.5)", "m2r2", "sanic-testing (>=0.7.0)", "uvicorn (<0.15.0)", "pytest-benchmark", "pytest-sanic", "bandit", "chardet (>=3.0.0,<4.0.0)", "black", "coverage (==5.3)", "mistune (<2.0.0)", "cryptography", "sphinx (>=2.1.2)", "pytest-cov", "isort (>=5.0.0)", "mypy (>=0.901,<0.910)", "sphinx-rtd-theme (>=0.4.3)", "beautifulsoup4", "towncrier", "tox", "pygments", "types-ujson"]
+dev = ["sanic-testing (>=0.7.0)", "pytest (==6.2.5)", "coverage (==5.3)", "gunicorn (==20.0.4)", "pytest-cov", "beautifulsoup4", "pytest-sanic", "pytest-sugar", "pytest-benchmark", "chardet (>=3.0.0,<4.0.0)", "flake8", "black", "isort (>=5.0.0)", "bandit", "mypy (>=0.901,<0.910)", "docutils", "pygments", "uvicorn (<0.15.0)", "cryptography", "tox", "towncrier", "types-ujson"]
+docs = ["sphinx (>=2.1.2)", "sphinx-rtd-theme (>=0.4.3)", "docutils", "pygments", "m2r2", "mistune (<2.0.0)"]
+ext = ["sanic-ext"]
+test = ["sanic-testing (>=0.7.0)", "pytest (==6.2.5)", "coverage (==5.3)", "gunicorn (==20.0.4)", "pytest-cov", "beautifulsoup4", "pytest-sanic", "pytest-sugar", "pytest-benchmark", "chardet (>=3.0.0,<4.0.0)", "flake8", "black", "isort (>=5.0.0)", "bandit", "mypy (>=0.901,<0.910)", "docutils", "pygments", "uvicorn (<0.15.0)", "types-ujson"]
 
 [[package]]
 name = "sanic-cors"
@@ -1262,8 +1263,8 @@ rfc3986 = [
     {file = "rfc3986-1.5.0.tar.gz", hash = "sha256:270aaf10d87d0d4e095063c65bf3ddbc6ee3d0b226328ce21e036f946e421835"},
 ]
 sanic = [
-    {file = "sanic-21.9.1-py3-none-any.whl", hash = "sha256:fe4ce0c4296f657ced545066bcff21f8bc24c5d1faa2c08167729f00cd0b42ed"},
-    {file = "sanic-21.9.1.tar.gz", hash = "sha256:7bdb553af2df95b4d07335ad4c545d810ce6c611fbc8e2f78c8afbc12f1739df"},
+    {file = "sanic-21.12.0-py3-none-any.whl", hash = "sha256:92882740bf213c883a272469049751bcfb06ab0e5810f4844615df4854d0232c"},
+    {file = "sanic-21.12.0.tar.gz", hash = "sha256:d01c509c03f526cdde432f54dd791ce247d84bff73f7c1200fd8c2054ad84f35"},
 ]
 sanic-cors = [
     {file = "Sanic-Cors-1.0.1.tar.gz", hash = "sha256:ac5d40bd45022d21296887d2238891d0ad67308ffba55be809df0151d36071b5"},
