@@ -83,7 +83,7 @@ towncrier = "^21.3.0"
 toml = "^0.10.2"
 pep440-version-utils = "^0.3.0"
 semantic_version = "^2.8.5"
-mypy = "^0.910"
+mypy = "^0.930"
 sanic-testing = "^0.7.0"
 
 [tool.poetry.dependencies.uvloop]
