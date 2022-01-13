@@ -614,26 +614,14 @@ test = ["sanic-testing (>=0.7.0)", "pytest (==5.2.1)", "coverage (==5.3)", "guni
 
 [[package]]
 name = "sanic-cors"
-version = "1.0.1"
+version = "2.0.0"
 description = "A Sanic extension adding a decorator for CORS support. Based on flask-cors by Cory Dolphin."
 category = "main"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-sanic = ">=21.3.1,<21.6.0 || >21.6.0,<21.9.0 || >21.9.0,<22"
-sanic-plugin-toolkit = ">=1.2.0,<2"
-
-[[package]]
-name = "sanic-plugin-toolkit"
-version = "1.2.1"
-description = "The all-in-one toolkit for creating powerful Sanic Plugins"
-category = "main"
-optional = false
-python-versions = ">=3.7,<4.0"
-
-[package.dependencies]
-sanic = ">=21.3.1,<21.12.0"
+sanic = ">=21.9.3"
 
 [[package]]
 name = "sanic-routing"
@@ -789,7 +777,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.9"
-content-hash = "7fdd0d82a97aee8a9888d4e52369767f667d16ecac09388fbac5de5b3be133d3"
+content-hash = "b7d66746e9a0e167c5054a50ade2ae18dec95357d76834df31de024d864fa401"
 
 [metadata.files]
 aiofiles = [
@@ -1293,12 +1281,8 @@ sanic = [
     {file = "sanic-21.9.3.tar.gz", hash = "sha256:5edb41d0d30cf47a25cf991b7465f53ea161b43e3cd20d8985e68ecf7fb7ad24"},
 ]
 sanic-cors = [
-    {file = "Sanic-Cors-1.0.1.tar.gz", hash = "sha256:ac5d40bd45022d21296887d2238891d0ad67308ffba55be809df0151d36071b5"},
-    {file = "Sanic_Cors-1.0.1-py2.py3-none-any.whl", hash = "sha256:dc644b0608ebac1bb57586a955c15c53a8bf83e2d0ea248893480c3cd72efdf6"},
-]
-sanic-plugin-toolkit = [
-    {file = "sanic-plugin-toolkit-1.2.1.tar.gz", hash = "sha256:9f6eeca2e28b915dba4be8584ebb5a5f76a3f6895fe34572042ec275b13e41e1"},
-    {file = "sanic_plugin_toolkit-1.2.1-py3-none-any.whl", hash = "sha256:aabea0dc1fd71969567c6a0fa419b55a727c0a5be372f166560e0cdbb9c30abb"},
+    {file = "Sanic-Cors-2.0.0.tar.gz", hash = "sha256:b1438dd7fdab1fe81e327f88b9defd3fe31dd9e3bdfb83f6815021b1833455bf"},
+    {file = "Sanic_Cors-2.0.0-py2.py3-none-any.whl", hash = "sha256:fc8b7dfb23b868b6677b7a0bfff2559b9ba96428573a6f1afc78770da97a4abe"},
 ]
 sanic-routing = [
     {file = "sanic-routing-0.7.2.tar.gz", hash = "sha256:139ce88b3f054e7aa336e2ecc8459837092b103b275d3a97609a34092c55374d"},
