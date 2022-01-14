@@ -103,8 +103,9 @@ class ActionQueryKnowledgeBase(Action):
     async def run(
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
-        """
-        Executes this action. If the user ask a question about an attribute,
+        """Executes this action.
+
+        If the user ask a question about an attribute,
         the knowledge base is queried for that attribute. Otherwise, if no
         attribute was detected in the request or the user is talking about a new
         object type, multiple objects of the requested type are returned from the
