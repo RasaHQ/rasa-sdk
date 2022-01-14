@@ -25,7 +25,6 @@ from typing import Text
 import github3
 from pep440_version_utils import Version
 
-
 def create_github_release(slug: Text, token: Text, tag_name: Text, body: Text):
     """Create a github release."""
 
