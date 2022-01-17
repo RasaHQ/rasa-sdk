@@ -1,3 +1,8 @@
+[build]
+  command = "docusaurus build --out-dir build/docs/rasa-sdk"
+  publish = "build"
+
+
 [[redirects]]
   from = "/docs/action-server/http-api-spec"
   to = "/docs/action-server/pages/action-server-api"

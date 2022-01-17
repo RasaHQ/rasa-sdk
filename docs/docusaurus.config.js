@@ -13,11 +13,11 @@ module.exports = configure({
    * presets
    */
   openApiSpecs: [
-    {
-      id: 'rasa-sdk-http-api',
-      specPath: require.resolve('./static/spec/action-server.yml'),
-      pagePath: '/apis/http/',
-    },
+    // {
+    //   id: 'rasa-sdk-http-api',
+    //   specPath: require.resolve('./static/spec/action-server.yml'),
+    //   pagePath: '/apis/http/',
+    // },
   ],
   /**
    * plugins
