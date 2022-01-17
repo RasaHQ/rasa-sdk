@@ -64,14 +64,6 @@ instance/
 # Scrapy stuff:
 .scrapy
 
-# docs stuff
-docs/.docusaurus
-docs/docs/variables.json
-docs/docs/sources/
-docs/docs/reference/
-docs/docs/changelog.mdx
-node_modules/
-
 # PyBuilder
 target/
 
