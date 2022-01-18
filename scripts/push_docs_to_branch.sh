@@ -14,15 +14,15 @@ set -Eeuo pipefail
 
 TODAY=`date "+%Y%m%d"`
 # we build new versions only for minors and majors
-PATTERN_FOR_NEW_VERSION="^refs/tags/[0-9]+\\.[0-9]+\\.0$"
-PATTERN_FOR_MICRO_VERSION="^refs/tags/[0-9]+\\.[0-9]+\\.[1-9][0-9]*$"
+PATTERN_FOR_NEW_VERSION="^refs/tags/[0-9]+\\.0\\.0$"
+PATTERN_FOR_EXISTING_VERSION="^refs/tags/[0-9]+\\.[0-9]+\\.[0-9]+$"
 MAIN_REF=refs/heads/main
 VARIABLES_JSON=docs/docs/variables.json
 SOURCES_FILES=docs/docs/sources/
 CHANGELOG=docs/docs/changelog.mdx
 
 [[ ! $GITHUB_REF =~ $PATTERN_FOR_NEW_VERSION ]] \
-&& [[ ! $GITHUB_REF =~ $PATTERN_FOR_MICRO_VERSION ]] \
+&& [[ ! $GITHUB_REF =~ $PATTERN_FOR_EXISTING_VERSION ]] \
 && [[ $GITHUB_REF != $MAIN_REF ]] \
 && echo "Not on main or tagged version, skipping." \
 && exit 0
@@ -31,10 +31,12 @@ NEW_VERSION=
 EXISTING_VERSION=
 if [[ "$GITHUB_REF" =~ $PATTERN_FOR_NEW_VERSION ]]
 then
-    NEW_VERSION=${GITHUB_REF/refs\/tags\//}
-elif [[ "$GITHUB_REF" =~ $PATTERN_FOR_MICRO_VERSION ]]
+    NEW_VERSION=$(echo $GITHUB_REF | sed -E "s/^refs\/tags\/([0-9]+)\.([0-9]+)\.0$/\1.x/")
+    if [[ -n ${CI} ]]; then echo "New version: ${NEW_VERSION}"; fi
+elif [[ "$GITHUB_REF" =~ $PATTERN_FOR_EXISTING_VERSION ]]
 then
-    EXISTING_VERSION=$(echo $GITHUB_REF | sed -E "s/^refs\/tags\/([0-9]+)\.([0-9]+)\.[0-9]+$/\1.\2.0/")
+    EXISTING_VERSION=$(echo $GITHUB_REF | sed -E "s/^refs\/tags\/([0-9]+)\.([0-9]+)\.[0-9]+$/\1.x/")
+    if [[ -n ${CI} ]]; then echo "Existing version: ${EXISTING_VERSION}"; fi
 fi
 
 # clone the $DOCS_BRANCH in a temp directory
@@ -45,6 +47,9 @@ then
     echo "Trying to create a new docs version, but the folder already exist. Updating the $NEW_VERSION version instead..."
     EXISTING_VERSION=$NEW_VERSION
 fi
+
+# install yarn dependencies in the temp directory
+cd $TMP_DOCS_FOLDER/docs && yarn install && cd - || exit 1
 
 if [ ! -z "$EXISTING_VERSION" ]
 then
@@ -71,7 +76,7 @@ fi
 CURRENTLY_EDITING_VERSION=${EXISTING_VERSION:-$NEW_VERSION}
 if [ -n "$CURRENTLY_EDITING_VERSION" ]
 then
-    cd $TMP_DOCS_FOLDER/docs && yarn run update-versioned-sources -- $CURRENTLY_EDITING_VERSION && cd -
+    cd $TMP_DOCS_FOLDER/docs && yarn run update-versioned-sources $CURRENTLY_EDITING_VERSION && cd - || exit 1
 fi
 
 cd $TMP_DOCS_FOLDER
