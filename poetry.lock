@@ -424,6 +424,7 @@ testing = ["pytest", "pytest-benchmark"]
 [[package]]
 name = "prompt-toolkit"
 version = "2.0.10"
+
 description = "Library for building powerful interactive command lines in Python"
 category = "main"
 optional = false
