@@ -63,7 +63,7 @@ name = "Miscellaneous internal changes"
 showcontent = false
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.9"
+python = ">=3.7,<3.10"
 coloredlogs = ">=10,<16"
 sanic = "^21.6.0"
 requests = "^2.23"
