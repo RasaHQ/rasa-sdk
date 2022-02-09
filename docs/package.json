@@ -41,7 +41,7 @@
     "@mdx-js/react": "^1.6.16",
     "@rasahq/docusaurus-theme-tabula": "^0.8.0",
     "clsx": "^1.1.1",
-    "core-js": "^3.15.1",
+    "core-js": "^3.21.0",
     "fibers": "^5.0.0",
     "mobx": "^5.15.7",
     "react": "^16.14.0",
