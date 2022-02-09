@@ -74,7 +74,7 @@ def create_app(
     Returns:
         A new Sanic application ready to be run.
     """
-    app = Sanic("rasa_sdk", configure_logging=False)
+    app = Sanic(__name__, configure_logging=False)
 
     configure_cors(app, cors_origins)
 
