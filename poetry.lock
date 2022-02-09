@@ -423,15 +423,13 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "prompt-toolkit"
-version = "2.0.10"
-
+version = "3.0.27"
 description = "Library for building powerful interactive command lines in Python"
 category = "main"
 optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+python-versions = ">=3.6.2"
 
 [package.dependencies]
-six = ">=1.9.0"
 wcwidth = "*"
 
 [[package]]
@@ -666,14 +664,6 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
-name = "six"
-version = "1.16.0"
-description = "Python 2 and 3 compatibility utilities"
-category = "main"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
-
-[[package]]
 name = "sniffio"
 version = "1.2.0"
 description = "Sniff out which async library your code is running under"
@@ -799,7 +789,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "88f8db51dcbc39694f0df13f0e1124345a9e5ae9bd1537ce3c8c79f7cff5ec02"
+content-hash = "ff51d3ea14ffe0425bd4b681b9a945548b946f699a496e06d751cc194872f2f6"
 
 [metadata.files]
 aiofiles = [
@@ -860,9 +850,6 @@ coverage = [
     {file = "coverage-6.3-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:2bc85664b06ba42d14bb74d6ddf19d8bfc520cb660561d2d9ce5786ae72f71b5"},
     {file = "coverage-6.3-cp310-cp310-win32.whl", hash = "sha256:27a94db5dc098c25048b0aca155f5fac674f2cf1b1736c5272ba28ead2fc267e"},
     {file = "coverage-6.3-cp310-cp310-win_amd64.whl", hash = "sha256:bde4aeabc0d1b2e52c4036c54440b1ad05beeca8113f47aceb4998bb7471e2c2"},
-    {file = "coverage-6.3-cp311-cp311-macosx_10_14_x86_64.whl", hash = "sha256:509c68c3e2015022aeda03b003dd68fa19987cdcf64e9d4edc98db41cfc45d30"},
-    {file = "coverage-6.3-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:e4ff163602c5c77e7bb4ea81ba5d3b793b4419f8acd296aae149370902cf4e92"},
-    {file = "coverage-6.3-cp311-cp311-win_amd64.whl", hash = "sha256:d1675db48490e5fa0b300f6329ecb8a9a37c29b9ab64fa9c964d34111788ca2d"},
     {file = "coverage-6.3-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:7eed8459a2b81848cafb3280b39d7d49950d5f98e403677941c752e7e7ee47cb"},
     {file = "coverage-6.3-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1b4285fde5286b946835a1a53bba3ad41ef74285ba9e8013e14b5ea93deaeafc"},
     {file = "coverage-6.3-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:a4748349734110fd32d46ff8897b561e6300d8989a494ad5a0a2e4f0ca974fc7"},
@@ -1167,9 +1154,8 @@ pluggy = [
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
 ]
 prompt-toolkit = [
-    {file = "prompt_toolkit-2.0.10-py2-none-any.whl", hash = "sha256:e7f8af9e3d70f514373bf41aa51bc33af12a6db3f71461ea47fea985defb2c31"},
-    {file = "prompt_toolkit-2.0.10-py3-none-any.whl", hash = "sha256:46642344ce457641f28fc9d1c9ca939b63dadf8df128b86f1b9860e59c73a5e4"},
-    {file = "prompt_toolkit-2.0.10.tar.gz", hash = "sha256:f15af68f66e664eaa559d4ac8a928111eebd5feda0c11738b5998045224829db"},
+    {file = "prompt_toolkit-3.0.27-py3-none-any.whl", hash = "sha256:cb7dae7d2c59188c85a1d6c944fad19aded6a26bd9c8ae115a4e1c20eb90b713"},
+    {file = "prompt_toolkit-3.0.27.tar.gz", hash = "sha256:f2b6a8067a4fb959d3677d1ed764cc4e63e0f6f565b9a4fc7edc2b18bf80217b"},
 ]
 py = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
@@ -1319,10 +1305,6 @@ sanic-testing = [
 semantic-version = [
     {file = "semantic_version-2.8.5-py2.py3-none-any.whl", hash = "sha256:45e4b32ee9d6d70ba5f440ec8cc5221074c7f4b0e8918bdab748cc37912440a9"},
     {file = "semantic_version-2.8.5.tar.gz", hash = "sha256:d2cb2de0558762934679b9a104e82eca7af448c9f4974d1f3eeccff651df8a54"},
-]
-six = [
-    {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
-    {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
 sniffio = [
     {file = "sniffio-1.2.0-py3-none-any.whl", hash = "sha256:471b71698eac1c2112a40ce2752bb2f4a4814c22a54a3eed3676bc0f5ca9f663"},

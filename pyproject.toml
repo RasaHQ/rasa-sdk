@@ -70,7 +70,7 @@ requests = "^2.23"
 typing-extensions = "^3.7.4"
 Sanic-Cors = "^1.0.0"
 urllib3 = "^1.26.5"
-prompt-toolkit = "^2.0"
+prompt-toolkit = ">=2,<4"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^2.10.0"
