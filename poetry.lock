@@ -148,7 +148,7 @@ version = "6.3.2"
 description = "Code coverage measurement for Python"
 category = "dev"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8,<3.11"
 
 [package.extras]
 toml = ["tomli"]
@@ -809,8 +809,8 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 
 [metadata]
 lock-version = "1.1"
-python-versions = ">=3.7,<3.10"
-content-hash = "55b9b47a22b1415ac364a3315d71c5aa49355a6d792a470ad741146b8692021e"
+python-versions = ">=3.7,<3.11"
+content-hash = "3105dd14bf68c2d3326eb9c9314fe1725e1dcf0803f1d1480edc551fd2396765"
 
 [metadata.files]
 aiofiles = [
