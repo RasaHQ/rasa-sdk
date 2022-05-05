@@ -45,7 +45,7 @@
     "fibers": "^5.0.0",
     "mobx": "^5.15.7",
     "react": "^16.14.0",
-    "react-dom": "^16.8.4",
+    "react-dom": "^16.14.0",
     "react-promise": "^3.0.2",
     "react-router-dom": "^5.2.0",
     "redoc": "^2.0.0-rc.41",
