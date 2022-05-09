@@ -9,7 +9,7 @@ updates:
       separator: "-"
     open-pull-requests-limit: 10
     reviewers:
-      - RasaHQ/enable-squad
+      - RasaHQ/atom-squad
     labels:
       - type:dependencies
   - package-ecosystem: npm
@@ -22,6 +22,6 @@ updates:
     # currently disabled because we cannot update the docs theme and its dependencies
     open-pull-requests-limit: 0
     reviewers:
-      - RasaHQ/enable-squad
+      - RasaHQ/atom-squad
     labels:
       - type:dependencies
