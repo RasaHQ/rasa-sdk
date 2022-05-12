@@ -220,7 +220,7 @@ class ActionExecutor:
         if not getattr(package, "__path__", None):
             return
 
-        for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):  # type: ignore  # mypy issue #1422
+        for loader, name, is_pkg in pkgutil.iter_modules(package.__path__):  # type: ignore  # mypy issue #1422
             full_name = package.__name__ + "." + name
             self._import_module(full_name)
 
