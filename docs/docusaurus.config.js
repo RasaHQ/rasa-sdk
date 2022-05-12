@@ -120,6 +120,7 @@ module.exports = {
   themes: [
     '@docusaurus/theme-search-algolia',
     '@rasahq/docusaurus-theme-tabula',
+    path.resolve(__dirname, './themes/theme-custom')
   ],
   plugins: [
     ['@docusaurus/plugin-content-docs', {
