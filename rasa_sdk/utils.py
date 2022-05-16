@@ -227,6 +227,6 @@ async def call_potential_coroutine(
 ) -> Any:
     """Await if its a coroutine."""
     if asyncio.iscoroutine(coroutine_or_return_value):
-        return await coroutine_or_return_value # type: ignore [misc] # https://github.com/python/mypy/issues/7587
+        return await coroutine_or_return_value  # type: ignore [misc] # https://github.com/python/mypy/issues/7587
 
     return coroutine_or_return_value
