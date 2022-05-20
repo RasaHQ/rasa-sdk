@@ -220,7 +220,7 @@ class ActionExecutor:
         if not getattr(package, "__path__", None):
             return
 
-        for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):  # type: ignore  # mypy issue #1422
+        for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
             full_name = package.__name__ + "." + name
             self._import_module(full_name)
 
@@ -369,7 +369,7 @@ class ActionExecutor:
                     "We will try to make this work, but this "
                     "might go wrong!"
                 )
-                validated.append(event.as_dict())  # type: ignore
+                validated.append(event.as_dict())
             else:
                 logger.error(
                     f"Your action's '{action_name}' run method returned an invalid "
