@@ -219,7 +219,7 @@ class ActionQueryKnowledgeBase(Action):
             self.use_last_object_mention,
         )
 
-        if not object_name or not attribute:
+        if object_name is None or not attribute:
             dispatcher.utter_message(response="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 
