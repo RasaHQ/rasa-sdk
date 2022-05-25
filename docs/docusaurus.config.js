@@ -12,9 +12,9 @@ try { existingVersions = require('./versions.json'); } catch (e) { console.info(
 
 const BASE_URL = '/docs/action-server/';
 const SITE_URL = 'https://rasa.com';
-// NOTE: this allows switching between local dev instances of rasa/rasa and rasa/rasa-x
+// NOTE: this allows switching between local dev instances of rasa/rasa and rasa/rasa-enterprise
 const RASA_OPEN_SOURCE_SWAP_URL = isDev ? 'http://localhost:3000' : SITE_URL;
-const RASA_X_SWAP_URL = isDev ? 'http://localhost:3001' : SITE_URL;
+const RASA_ENTERPRISE_SWAP_URL = isDev ? 'http://localhost:3001' : SITE_URL;
 
 const versionLabels = {
   current: 'Main/Unreleased'
@@ -60,9 +60,9 @@ module.exports = {
           position: 'left',
         },
         {
-          label: 'Rasa X',
+          label: 'Rasa Enterprise',
           position: 'left',
-          href: `${RASA_X_SWAP_URL}/docs/rasa-x/`,
+          href: `${RASA_ENTERPRISE_SWAP_URL}/docs/rasa-enterprise/`,
           target: '_self',
         },
         {
