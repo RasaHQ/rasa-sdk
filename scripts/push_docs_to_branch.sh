@@ -89,9 +89,9 @@ else
     echo "Pushing changes to git..."
     git add .
     git add --force $VARIABLES_JSON $SOURCES_FILES $CHANGELOG
-    # git commit -am "AUTO docusaurus $TODAY"
-    # git fetch --unshallow
-    # git push origin $DOCS_BRANCH
+    git commit -am "AUTO docusaurus $TODAY"
+    git fetch --unshallow
+    git push origin $DOCS_BRANCH
 
     echo "Done 👌"
 fi
