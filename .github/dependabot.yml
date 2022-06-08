@@ -8,8 +8,6 @@ updates:
     pull-request-branch-name:
       separator: "-"
     open-pull-requests-limit: 10
-    reviewers:
-      - RasaHQ/atom-squad
     labels:
       - type:dependencies
   - package-ecosystem: npm
@@ -19,7 +17,8 @@ updates:
       time: '13:00'
     pull-request-branch-name:
       separator: "-"
-    open-pull-requests-limit: 10
+    # currently disabled because we cannot update the docs theme and its dependencies
+    open-pull-requests-limit: 0
     reviewers:
       - RasaHQ/atom-squad
     labels:
