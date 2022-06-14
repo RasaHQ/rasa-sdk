@@ -646,7 +646,7 @@ httpx = ">=0.18,<0.23"
 
 [[package]]
 name = "semantic-version"
-version = "2.9.0"
+version = "2.10.0"
 description = "A library implementing the 'SemVer' scheme."
 category = "dev"
 optional = false
@@ -787,7 +787,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "acadf55bce91e543ffa43e5c41bfcb3f8f48c3bca7b62440ef3dae7e3f0f0b3a"
+content-hash = "af0d548f310771212e957c37759b12daf35b187709d00f21d05a684aeff07c4b"
 
 [metadata.files]
 aiofiles = [
@@ -1223,8 +1223,8 @@ sanic-testing = [
     {file = "sanic_testing-22.3.0-py3-none-any.whl", hash = "sha256:68a74d36818d52edfd5dde92f3827f58fd31dad91b02b261c4f23a80b80bab91"},
 ]
 semantic-version = [
-    {file = "semantic_version-2.9.0-py2.py3-none-any.whl", hash = "sha256:db2504ab37902dd2c9876ece53567aa43a5b2a417fbe188097b2048fff46da3d"},
-    {file = "semantic_version-2.9.0.tar.gz", hash = "sha256:abf54873553e5e07a6fd4d5f653b781f5ae41297a493666b59dcf214006a12b2"},
+    {file = "semantic_version-2.10.0-py2.py3-none-any.whl", hash = "sha256:de78a3b8e0feda74cabc54aab2da702113e33ac9d9eb9d2389bcf1f58b7d9177"},
+    {file = "semantic_version-2.10.0.tar.gz", hash = "sha256:bdabb6d336998cbb378d4b9db3a4b56a1e3235701dc05ea2690d9a997ed5041c"},
 ]
 sniffio = [
     {file = "sniffio-1.2.0-py3-none-any.whl", hash = "sha256:471b71698eac1c2112a40ce2752bb2f4a4814c22a54a3eed3676bc0f5ca9f663"},
