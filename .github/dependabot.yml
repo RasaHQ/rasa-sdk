@@ -19,7 +19,5 @@ updates:
       separator: "-"
     # currently disabled because we cannot update the docs theme and its dependencies
     open-pull-requests-limit: 0
-    reviewers:
-      - RasaHQ/atom-squad
     labels:
       - type:dependencies
