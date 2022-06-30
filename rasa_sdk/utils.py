@@ -72,7 +72,10 @@ def add_logging_level_option_arguments(parser):
 def add_logging_file_arguments(parser):
     """Add options to an argument parser to configure logging to a file."""
     parser.add_argument(
-        "--log-file", type=str, default=None, help="Store logs in specified file.",
+        "--log-file",
+        type=str,
+        default=None,
+        help="Store logs in specified file.",
     )
 
 

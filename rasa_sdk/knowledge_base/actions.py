@@ -101,7 +101,10 @@ class ActionQueryKnowledgeBase(Action):
             )
 
     async def run(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: "DomainDict",
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
         """Executes this action.
 

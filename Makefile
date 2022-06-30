@@ -36,6 +36,9 @@ clean:
 types:
 	poetry run mypy rasa_sdk
 
+formatter:
+	poetry run black rasa_sdk tests
+
 lint:
 	poetry run flake8 rasa_sdk tests --extend-ignore D
 	poetry run black --check rasa_sdk tests
