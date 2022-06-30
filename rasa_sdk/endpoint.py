@@ -134,6 +134,7 @@ def run(
     ssl_password: Optional[Text] = None,
     auto_reload: bool = False,
 ) -> None:
+    """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
     app = create_app(
         action_package_name, cors_origins=cors_origins, auto_reload=auto_reload
