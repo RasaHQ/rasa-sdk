@@ -635,14 +635,14 @@ python-versions = "*"
 
 [[package]]
 name = "sanic-testing"
-version = "22.3.0"
+version = "22.6.0"
 description = "Core testing clients for Sanic"
 category = "dev"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-httpx = ">=0.18,<0.23"
+httpx = ">=0.18,<0.24"
 
 [[package]]
 name = "semantic-version"
@@ -787,7 +787,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "acadf55bce91e543ffa43e5c41bfcb3f8f48c3bca7b62440ef3dae7e3f0f0b3a"
+content-hash = "e4415c7d00c31f53eaaf3a12aac6eb01b28abc79443e7a2f5407e0cf9acb7b41"
 
 [metadata.files]
 aiofiles = [
@@ -1219,8 +1219,8 @@ sanic-routing = [
     {file = "sanic_routing-0.7.2-py3-none-any.whl", hash = "sha256:523034ffd07aca056040e08de438269c9a880722eee1ace3a32e4f74b394d9aa"},
 ]
 sanic-testing = [
-    {file = "sanic-testing-22.3.0.tar.gz", hash = "sha256:774729b98169aba0d4f0a50936fa8301d159c9d1c94b220f2833fa3e5a8a6fee"},
-    {file = "sanic_testing-22.3.0-py3-none-any.whl", hash = "sha256:68a74d36818d52edfd5dde92f3827f58fd31dad91b02b261c4f23a80b80bab91"},
+    {file = "sanic-testing-22.6.0.tar.gz", hash = "sha256:8f006d2332106539cd6f3da8a5c0d1f31472261f3293e43e2c9bbad605e72c5b"},
+    {file = "sanic_testing-22.6.0-py3-none-any.whl", hash = "sha256:d84303e83066de7f18e8c3a0cd04512ba1517dbc31123f14e8aec318b22c008c"},
 ]
 semantic-version = [
     {file = "semantic_version-2.9.0-py2.py3-none-any.whl", hash = "sha256:db2504ab37902dd2c9876ece53567aa43a5b2a417fbe188097b2048fff46da3d"},
