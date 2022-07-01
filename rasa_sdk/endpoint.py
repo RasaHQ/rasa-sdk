@@ -74,7 +74,7 @@ def create_app(
     Returns:
         A new Sanic application ready to be run.
     """
-    app = Sanic(__name__, configure_logging=False)
+    app = Sanic("rasa_sdk", configure_logging=False, register=False)
 
     configure_cors(app, cors_origins)
 
@@ -127,13 +127,14 @@ def create_app(
 
 def run(
     action_package_name: Union[Text, types.ModuleType],
-    port: Union[Text, int] = DEFAULT_SERVER_PORT,
+    port: int = DEFAULT_SERVER_PORT,
     cors_origins: Union[Text, List[Text], None] = "*",
     ssl_certificate: Optional[Text] = None,
     ssl_keyfile: Optional[Text] = None,
     ssl_password: Optional[Text] = None,
     auto_reload: bool = False,
 ) -> None:
+    """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
     app = create_app(
         action_package_name, cors_origins=cors_origins, auto_reload=auto_reload
