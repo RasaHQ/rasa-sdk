@@ -88,5 +88,5 @@ mypy = "^0.910"
 sanic-testing = "^22.3.0"
 
 [tool.poetry.dependencies.uvloop]
-version = "<0.15.0"
+version = "^0.16.0"
 markers = "sys_platform != 'win32'"
