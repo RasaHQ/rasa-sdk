@@ -1,4 +1,5 @@
 import argparse
+from contextlib import AsyncContextDecorator
 import logging
 import os
 import types
@@ -62,6 +63,7 @@ def create_app(
     action_package_name: Union[Text, types.ModuleType],
     cors_origins: Union[Text, List[Text], None] = "*",
     auto_reload: bool = False,
+    token: Optional[Text] = None,
 ) -> Sanic:
     """Create a Sanic application and return it.
 
@@ -80,6 +82,16 @@ def create_app(
 
     executor = ActionExecutor()
     executor.register_package(action_package_name)
+
+    @app.middleware("request")
+    async def check_token(request: Request) -> HTTPResponse:
+        if token:
+            if not request.args:
+                body = {"error": "No token found in query parameters"}
+                return response.json(body, status=401)
+            elif request.args.get("token") != token:
+                body = {"error": "Invalid token"}
+                return response.json(body, status=401)
 
     @app.get("/health")
     async def health(_) -> HTTPResponse:
@@ -133,6 +145,7 @@ def run(
     ssl_keyfile: Optional[Text] = None,
     ssl_password: Optional[Text] = None,
     auto_reload: bool = False,
+    token: Optional[Text] = None,
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")

@@ -1,4 +1,5 @@
 import argparse
+from email.policy import default
 
 from rasa_sdk.constants import DEFAULT_SERVER_PORT
 
@@ -53,4 +54,9 @@ def add_endpoint_arguments(parser):
         "--auto-reload",
         help="Enable auto-reloading of modules containing Action subclasses.",
         action="store_true",
+    )
+    parser.add_argument(
+        "--token",
+        default=None,
+        help="Plaintext token. rejects requests with non-matching 'token' query parameter.",
     )
