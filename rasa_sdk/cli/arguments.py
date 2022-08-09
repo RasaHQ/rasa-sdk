@@ -55,7 +55,7 @@ def add_endpoint_arguments(parser):
         action="store_true",
     )
     parser.add_argument(
-        "--token",
+        "--auth-token",
         default=None,
         help="Plaintext token. Rejects requests with non-matching 'token' query parameter.",
     )

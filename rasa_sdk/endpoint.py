@@ -62,7 +62,7 @@ def create_app(
     action_package_name: Union[Text, types.ModuleType],
     cors_origins: Union[Text, List[Text], None] = "*",
     auto_reload: bool = False,
-    token: Optional[Text] = None,
+    auth_token: Optional[Text] = None,
 ) -> Sanic:
     """Create a Sanic application and return it.
 
@@ -84,11 +84,11 @@ def create_app(
 
     @app.middleware("request")
     async def check_token(request: Request) -> HTTPResponse:
-        if token:
+        if auth_token:
             if not request.args:
                 body = {"error": "No token found in query parameters"}
                 return response.json(body, status=401)
-            elif request.args.get("token") != token:
+            elif request.args.get("token") != auth_token:
                 body = {"error": "Invalid token"}
                 return response.json(body, status=401)
 
@@ -144,12 +144,12 @@ def run(
     ssl_keyfile: Optional[Text] = None,
     ssl_password: Optional[Text] = None,
     auto_reload: bool = False,
-    token: Optional[Text] = None,
+    auth_token: Optional[Text] = None,
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
     app = create_app(
-        action_package_name, cors_origins=cors_origins, auto_reload=auto_reload
+        action_package_name, cors_origins=cors_origins, auto_reload=auto_reload, auth_token=auth_token
     )
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
     protocol = "https" if ssl_context else "http"
