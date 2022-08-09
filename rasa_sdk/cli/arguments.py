@@ -1,5 +1,4 @@
 import argparse
-from email.policy import default
 
 from rasa_sdk.constants import DEFAULT_SERVER_PORT
 
