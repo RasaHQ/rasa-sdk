@@ -57,5 +57,5 @@ def add_endpoint_arguments(parser):
     parser.add_argument(
         "--token",
         default=None,
-        help="Plaintext token. rejects requests with non-matching 'token' query parameter.",
+        help="Plaintext token. Rejects requests with non-matching 'token' query parameter.",
     )
