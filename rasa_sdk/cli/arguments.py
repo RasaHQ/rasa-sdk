@@ -47,7 +47,7 @@ def add_endpoint_arguments(parser):
         "--ssl-password",
         default=None,
         help="If your ssl-keyfile is protected by a password, you can specify it "
-        "using this paramer.",
+        "using this parameter.",
     )
     parser.add_argument(
         "--auto-reload",

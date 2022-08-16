@@ -88,7 +88,7 @@ async function getIncludedSources(options) {
        contained in `versioned_docs/version-xxx/sources/...`. This is what this function
        does.
     Options:
-    - docsDir:                the directory containing the versionned docs files
+    - docsDir:                the directory containing the versioned docs files
     - relativeSourceDir:      the directory that will contain the included sources
     - include:                list of patterns to look for doc files
 */

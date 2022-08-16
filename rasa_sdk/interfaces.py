@@ -70,7 +70,7 @@ class Tracker:
     @property
     def active_form(self) -> Dict[Text, Any]:
         warnings.warn(
-            "Use of `active_form` is deprecated. Please use `active_loop insteaad.",
+            "Use of `active_form` is deprecated. Please use `active_loop instead.",
             DeprecationWarning,
         )
         return self.active_loop
