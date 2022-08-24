@@ -117,8 +117,10 @@ def create_app(
         return response.json(body, status=200)
 
     @app.exception(Exception)
-    async def something_bad_happened(request, exception: Exception):
-        logger.error(msg=f"{exception=}", exc_info=exception)
+    async def exception_handler(request, exception: Exception):
+        logger.error(
+            msg=f"Exception occurred during execution of request {request}", exc_info=exception
+        )
         body = {"error": exception, "request": request}
         return response.json(body, status=500)
 
