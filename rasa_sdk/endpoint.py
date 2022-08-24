@@ -19,14 +19,10 @@ from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundExceptio
 logger = logging.getLogger(__name__)
 
 
-def configure_cors(
-    app: Sanic, cors_origins: Union[Text, List[Text], None] = ""
-) -> None:
+def configure_cors(app: Sanic, cors_origins: Union[Text, List[Text], None] = "") -> None:
     """Configure CORS origins for the given app."""
 
-    CORS(
-        app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True
-    )
+    CORS(app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True)
 
 
 def create_ssl_context(
@@ -40,9 +36,7 @@ def create_ssl_context(
         import ssl
 
         ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
-        ssl_context.load_cert_chain(
-            ssl_certificate, keyfile=ssl_keyfile, password=ssl_password
-        )
+        ssl_context.load_cert_chain(ssl_certificate, keyfile=ssl_keyfile, password=ssl_password)
         return ssl_context
     else:
         return None
@@ -122,6 +116,12 @@ def create_app(
         body = [{"name": k} for k in executor.actions.keys()]
         return response.json(body, status=200)
 
+    @app.exception(Exception)
+    async def something_bad_happened(request, exception: Exception):
+        logger.error(msg=f"{exception=}", exc_info=exception)
+        body = {"error": exception, "request": request}
+        return response.json(body, status=500)
+
     return app
 
 
@@ -136,9 +136,7 @@ def run(
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
-    app = create_app(
-        action_package_name, cors_origins=cors_origins, auto_reload=auto_reload
-    )
+    app = create_app(action_package_name, cors_origins=cors_origins, auto_reload=auto_reload)
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
     protocol = "https" if ssl_context else "http"
     host = os.environ.get("SANIC_HOST", "0.0.0.0")

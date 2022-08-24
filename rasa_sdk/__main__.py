@@ -1,18 +1,37 @@
 import logging
+from importlib import import_module, invalidate_caches
+from os import environ
 
 from rasa_sdk import utils
-from rasa_sdk.endpoint import create_argument_parser, run
 from rasa_sdk.constants import APPLICATION_ROOT_LOGGER_NAME
+from rasa_sdk.endpoint import create_argument_parser, run
+
+RASA_LOGGER_PYMODULE = "RASA_LOGGER_PYMODULE"
+
+
+def default_logging(args):
+    utils.configure_colored_logging(args.loglevel)
+    utils.configure_file_logging(
+        logging.getLogger(APPLICATION_ROOT_LOGGER_NAME), args.log_file, args.loglevel
+    )
 
 
 def main_from_args(args):
     """Run with arguments."""
     logging.getLogger("matplotlib").setLevel(logging.WARN)
 
-    utils.configure_colored_logging(args.loglevel)
-    utils.configure_file_logging(
-        logging.getLogger(APPLICATION_ROOT_LOGGER_NAME), args.log_file, args.loglevel
-    )
+    logger_path = environ.get(RASA_LOGGER_PYMODULE, "")
+    if logger_path:
+        try:
+            invalidate_caches()
+            import_module(name=logger_path)
+            # update root level
+            logging.root.level = args.loglevel
+        except Exception:
+            default_logging(args)
+    else:
+        default_logging(args)
+
     utils.update_sanic_log_level()
 
     run(
