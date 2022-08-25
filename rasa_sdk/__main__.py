@@ -26,14 +26,11 @@ def main_from_args(args):
             invalidate_caches()
             import_module(name=logger_path)
             # update root level
-            logging.getLogger(__name__).warning(f"set root level to {args.loglevel}")
+            logging.getLogger(__name__).debug(f"set root level to {args.loglevel}")
             logging.basicConfig(level=args.loglevel, force=True)
-
-            print("===CATCHME======")
         except Exception as e:
             default_logging(args)
             logging.getLogger(__name__).exception("custom logger import failed", exc_info=e)
-            print("===CAUGHT++++++++")
     else:
         default_logging(args)
 
