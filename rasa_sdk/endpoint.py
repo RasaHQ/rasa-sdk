@@ -122,6 +122,15 @@ def create_app(
         body = [{"name": k} for k in executor.actions.keys()]
         return response.json(body, status=200)
 
+    @app.exception(Exception)
+    async def exception_handler(request, exception: Exception):
+        logger.error(
+            msg=f"Exception occurred during execution of request {request}",
+            exc_info=exception,
+        )
+        body = {"error": str(exception), "request_body": request.json}
+        return response.json(body, status=500)
+
     return app
 
 
