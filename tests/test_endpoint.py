@@ -48,6 +48,7 @@ def test_server_webhook_handles_action_exception():
     assert response.json.get("error") == "test exception"
     assert response.json.get("request_body") == data
 
+
 def test_server_webhook_custom_action_returns_200():
     data = {
         "next_action": "custom_action",

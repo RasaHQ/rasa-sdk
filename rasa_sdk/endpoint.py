@@ -129,7 +129,7 @@ def create_app(
         )
         body = {"error": str(exception), "request_body": request.json}
         return response.json(body, status=500)
-    
+
     return app
 
 
