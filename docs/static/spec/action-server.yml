@@ -77,18 +77,30 @@ paths:
         500:
           description: >-
             The action server encountered an exception while running the action.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request_body:
+                    type: object
+                    description: >-
+                      Json body of the incoming request that resulted in the error.
+                  error:
+                    type: string
+                    description: The error message.
 components:
   schemas:
     Response:
       allOf:
-        - $ref: '#/components/schemas/TextResponse'
-        - $ref: '#/components/schemas/ButtonResponse'
-        - $ref: '#/components/schemas/ElementResponse'
-        - $ref: '#/components/schemas/CustomResponse'
-        - $ref: '#/components/schemas/ImageResponse'
-        - $ref: '#/components/schemas/AttachmentResponse'
-        - $ref: '#/components/schemas/TemplateResponse'
-        - $ref: '#/components/schemas/ResponseResponse'
+        - $ref: "#/components/schemas/TextResponse"
+        - $ref: "#/components/schemas/ButtonResponse"
+        - $ref: "#/components/schemas/ElementResponse"
+        - $ref: "#/components/schemas/CustomResponse"
+        - $ref: "#/components/schemas/ImageResponse"
+        - $ref: "#/components/schemas/AttachmentResponse"
+        - $ref: "#/components/schemas/TemplateResponse"
+        - $ref: "#/components/schemas/ResponseResponse"
 
     TextResponse:
       description: Text which the bot should utter.
@@ -126,7 +138,7 @@ components:
         buttons:
           type: array
           items:
-            $ref: '#/components/schemas/Button'
+            $ref: "#/components/schemas/Button"
     ElementResponse:
       description: Custom elements which should be sent to the user.
       type: object
