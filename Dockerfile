@@ -29,7 +29,7 @@ RUN apt-get update -qq \
 ENV POETRY_VERSION 1.1.13
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sSL https://install.python-poetry.org | python
-ENV PATH "/root/.poetry/bin:/opt/venv/bin:${PATH}"
+ENV PATH "/root/.local/bin:/opt/venv/bin:${PATH}"
 
 # install dependencies
 COPY . /app/
