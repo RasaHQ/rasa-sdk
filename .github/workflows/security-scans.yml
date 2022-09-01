@@ -16,14 +16,40 @@ jobs:
         with:
           access_token: "${{ secrets.GITHUB_TOKEN }}"
 
-  gitleaks:
+  trivy:
     name: Detecting hardcoded secrets
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         # Fetch all history for all tags and branches
         fetch-depth: '0'
-
-    - name: Gitleaks - detecting hardcoded secrets
-      uses: zricethezav/gitleaks-action@v1.3.0
+    - name: Run Trivy vulnerability scanner
+      id: trivy
+      uses: aquasecurity/trivy-action@d63413b0a4a4482237085319f7f4a1ce99a8f2ac
+      continue-on-error: true
+      with:
+        format: 'table'
+        scan-type: 'fs'
+        exit-code: '1'
+        security-checks: 'secret'
+    - name: Alert on secret finding
+      if: steps.trivy.outcome == 'failure'
+      uses: slackapi/slack-github-action@936158bbe252e9a6062e793ea4609642c966e302
+      with:
+        payload: |
+          {
+            "text": "*A secret was detected in a GitHub commit in the repo ${{ github.repository }}.*\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*A secret was detected in a GitHub commit in the repo ${{ github.repository }}.*\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+                }
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_CODESECURITY_WEBHOOK_URL }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
