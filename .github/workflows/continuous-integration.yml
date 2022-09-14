@@ -3,9 +3,9 @@ name: Continuous Integration
 on:
   push:
     branches:
-    - main
+      - main
     tags:
-    - '*'
+      - "*"
   pull_request:
 
 env:
@@ -21,67 +21,67 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout git repository 🕝
-      uses: actions/checkout@v2
+      - name: Checkout git repository 🕝
+        uses: actions/checkout@v2
 
-    - name: Set up Python 3.7 🐍
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.7
+      - name: Set up Python 3.7 🐍
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
 
-    - name: Set up Node 12.x 🦙
-      uses: actions/setup-node@v2
-      with:
-        node-version: '12.x'
+      - name: Set up Node 12.x 🦙
+        uses: actions/setup-node@v2
+        with:
+          node-version: "12.x"
 
-    - name: Read Poetry Version 🔢
-      run: |
-           echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
-      shell: bash
+      - name: Read Poetry Version 🔢
+        run: |
+          echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
+        shell: bash
 
-    - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v4
-      with:
-        poetry-version: ${{ env.POETRY_VERSION }}
+      - name: Install poetry 🦄
+        uses: Gr1N/setup-poetry@v4
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
 
-    - name: Load Poetry Cached Libraries ⬇
-      uses: actions/cache@v1
-      with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
-        restore-keys: ${{ runner.os }}-poetry-
+      - name: Load Poetry Cached Libraries ⬇
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: ${{ runner.os }}-poetry-
 
-    - name: Load Yarn Cached Packages ⬇
-      uses: actions/cache@v1
-      with:
-        path: docs/node_modules
-        key: ${{ runner.os }}-yarn-12.x-${{ hashFiles('docs/yarn.lock') }}-${{ secrets.YARN_CACHE_KEY }}
+      - name: Load Yarn Cached Packages ⬇
+        uses: actions/cache@v1
+        with:
+          path: docs/node_modules
+          key: ${{ runner.os }}-yarn-12.x-${{ hashFiles('docs/yarn.lock') }}-${{ secrets.YARN_CACHE_KEY }}
 
-    - name: Install Dependencies 📦
-      run: make install install-docs
+      - name: Install Dependencies 📦
+        run: make install install-docs
 
-    - name: Checkout target branch to be able to diff
-      if: github.event_name == 'pull_request'
-      run: |
-        git fetch origin "${{ github.base_ref }}"
-        echo "DOCSTRING_DIFF_BRANCH=origin/${{ github.base_ref }}" >> $GITHUB_ENV
+      - name: Checkout target branch to be able to diff
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin "${{ github.base_ref }}"
+          echo "DOCSTRING_DIFF_BRANCH=origin/${{ github.base_ref }}" >> $GITHUB_ENV
 
-        # Fetch entire history for current branch so that `make lint-docstrings`
-        # can calculate the proper diff between the branches
-        git fetch --unshallow origin "${{ github.ref }}"
+          # Fetch entire history for current branch so that `make lint-docstrings`
+          # can calculate the proper diff between the branches
+          git fetch --unshallow origin "${{ github.ref }}"
 
-    - name: Lint Code 🎎
-      run: |
-        # If it's not a pull request, $DOCSTRING_DIFF_BRANCH is unset.
-        # This will result in an empty diff, which effictively means that
-        # make lint-docstrings will be skipped for other events than `pull_request`
-        make lint BRANCH=$DOCSTRING_DIFF_BRANCH
+      - name: Lint Code 🎎
+        run: |
+          # If it's not a pull request, $DOCSTRING_DIFF_BRANCH is unset.
+          # This will result in an empty diff, which effictively means that
+          # make lint-docstrings will be skipped for other events than `pull_request`
+          make lint BRANCH=$DOCSTRING_DIFF_BRANCH
 
-    - name: Check Types 📚
-      run: make types
+      - name: Check Types 📚
+        run: make types
 
-    - name: Test Docs 🕸
-      run: make test-docs
+      - name: Test Docs 🕸
+        run: make test-docs
 
   test:
     name: Run Tests
@@ -91,43 +91,43 @@ jobs:
         python-version: [3.7, 3.8, 3.9]
 
     steps:
-    - name: Checkout git repository 🕝
-      uses: actions/checkout@v2
+      - name: Checkout git repository 🕝
+        uses: actions/checkout@v2
 
-    - name: Set up Python ${{ matrix.python-version }} 🐍
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }} 🐍
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Read Poetry Version 🔢
-      run: |
-           echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
-      shell: bash
+      - name: Read Poetry Version 🔢
+        run: |
+          echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
+        shell: bash
 
-    - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v4
-      with:
-        poetry-version: ${{ env.POETRY_VERSION }}
+      - name: Install poetry 🦄
+        uses: Gr1N/setup-poetry@v4
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
 
-    - name: Load Poetry Cached Libraries ⬇
-      uses: actions/cache@v1
-      with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
-        restore-keys: ${{ runner.os }}-poetry-
+      - name: Load Poetry Cached Libraries ⬇
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: ${{ runner.os }}-poetry-
 
-    - name: Install Dependencies 📦
-      run: make install
+      - name: Install Dependencies 📦
+        run: make install
 
-    - name: Test Code 🔍
-      run: make test
+      - name: Test Code 🔍
+        run: make test
 
-    - name: Send Coverage Report 📊
-      if: matrix.python-version == 3.7
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        COVERALLS_SERVICE_NAME: github
-      run: poetry run coveralls
+      - name: Send Coverage Report 📊
+        if: matrix.python-version == 3.7
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_SERVICE_NAME: github
+        run: poetry run coveralls
 
   docker_linter:
     name: Lint Dockerfile
@@ -151,76 +151,76 @@ jobs:
       # Due to an issue with checking out a wrong commit, we make sure
       # to checkout HEAD commit for a pull request.
       # More details: https://github.com/actions/checkout/issues/299
-    - name: Checkout pull request HEAD commit instead of merge commit 🕝
-      uses: actions/checkout@v2
-      if: github.event_name == 'pull_request'
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
+      - name: Checkout pull request HEAD commit instead of merge commit 🕝
+        uses: actions/checkout@v2
+        if: github.event_name == 'pull_request'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
-    - name: Checkout git repository 🕝
-      uses: actions/checkout@v2
-      if: github.event_name != 'pull_request'
+      - name: Checkout git repository 🕝
+        uses: actions/checkout@v2
+        if: github.event_name != 'pull_request'
 
-    # Set environment variables for a pull request
-    #
-    # In this scenario, we've created a PR #1234
-    #
-    # Example output:
-    # IMAGE_TAG=1234
-    - name: Set environment variables - pull_request
-      if: github.event_name == 'pull_request' && env.IS_TAG_BUILD == 'false'
-      run: |
-        echo "IMAGE_TAG=${{ github.event.number }}" >> $GITHUB_ENV
+      # Set environment variables for a pull request
+      #
+      # In this scenario, we've created a PR #1234
+      #
+      # Example output:
+      # IMAGE_TAG=1234
+      - name: Set environment variables - pull_request
+        if: github.event_name == 'pull_request' && env.IS_TAG_BUILD == 'false'
+        run: |
+          echo "IMAGE_TAG=${{ github.event.number }}" >> $GITHUB_ENV
 
-    # Set environment variables for a tag
-    #
-    # In this scenario, we've pushed the '2.4.1' tag
-    #
-    # Example output:
-    # IMAGE_TAG=2.4.1
-    - name: Set environment variables - push - tag
-      if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true'
-      run: |
-        TAG_NAME=${GITHUB_REF#refs/tags/}
-        echo "IMAGE_TAG=${TAG_NAME}" >> $GITHUB_ENV
+      # Set environment variables for a tag
+      #
+      # In this scenario, we've pushed the '2.4.1' tag
+      #
+      # Example output:
+      # IMAGE_TAG=2.4.1
+      - name: Set environment variables - push - tag
+        if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true'
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "IMAGE_TAG=${TAG_NAME}" >> $GITHUB_ENV
 
-    # Set environment variables for a branch
-    #
-    # In this scenario, we've pushed changes into the main branch
-    #
-    # Example output:
-    # IMAGE_TAG=main
-    - name: Set environment variables - push - branch
-      if: github.event_name == 'push' && env.IS_TAG_BUILD == 'false'
-      run: |
-        BRANCH_NAME=${GITHUB_REF#refs/heads/}
-        echo "IMAGE_TAG=${BRANCH_NAME}" >> $GITHUB_ENV
+      # Set environment variables for a branch
+      #
+      # In this scenario, we've pushed changes into the main branch
+      #
+      # Example output:
+      # IMAGE_TAG=main
+      - name: Set environment variables - push - branch
+        if: github.event_name == 'push' && env.IS_TAG_BUILD == 'false'
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          echo "IMAGE_TAG=${BRANCH_NAME}" >> $GITHUB_ENV
 
-    - name: Set output
-      id: set_output
-      run: |
-        echo "::set-output name=image_tag::${{ env.IMAGE_TAG }}"
+      - name: Set output
+        id: set_output
+        run: |
+          echo "::set-output name=image_tag::${{ env.IMAGE_TAG }}"
 
-    - name: Check if tag version is equal or higher than the latest tagged rasa-sdk version
-      id: rasa_sdk_get_version
-      if: env.IS_TAG_BUILD == 'true'
-      run: |
-        # Get latest tagged rasa-sdk version
-        git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
-        # Fetch branch history
-        git fetch --prune --unshallow
-        LATEST_TAGGED_NON_ALPHA_RASA_SDK_VERSION=$(git tag | sort -r -V | grep -E "^[0-9.]+$" | head -n1)
-        CURRENT_TAG=${GITHUB_REF#refs/tags/}
-        # Return 'true' if tag version is equal or higher than the latest tagged rasa-sdk version
-        IS_NEWEST_VERSION=$((printf '%s\n%s\n' "${LATEST_TAGGED_NON_ALPHA_RASA_SDK_VERSION}" "$CURRENT_TAG" \
-          | sort -V -C && echo true || echo false) || true)
+      - name: Check if tag version is equal or higher than the latest tagged rasa-sdk version
+        id: rasa_sdk_get_version
+        if: env.IS_TAG_BUILD == 'true'
+        run: |
+          # Get latest tagged rasa-sdk version
+          git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
+          # Fetch branch history
+          git fetch --prune --unshallow
+          LATEST_TAGGED_NON_ALPHA_RASA_SDK_VERSION=$(git tag | sort -r -V | grep -E "^[0-9.]+$" | head -n1)
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          # Return 'true' if tag version is equal or higher than the latest tagged rasa-sdk version
+          IS_NEWEST_VERSION=$((printf '%s\n%s\n' "${LATEST_TAGGED_NON_ALPHA_RASA_SDK_VERSION}" "$CURRENT_TAG" \
+            | sort -V -C && echo true || echo false) || true)
 
 
-        if [[ "${IS_NEWEST_VERSION}" == "true" && "$CURRENT_TAG" =~ ^[0-9.]+$ ]]; then
-          echo "::set-output name=is_newest_version::true"
-        else
-          echo "::set-output name=is_newest_version::false"
-        fi
+          if [[ "${IS_NEWEST_VERSION}" == "true" && "$CURRENT_TAG" =~ ^[0-9.]+$ ]]; then
+            echo "::set-output name=is_newest_version::true"
+          else
+            echo "::set-output name=is_newest_version::false"
+          fi
 
   build_docker_image:
     name: Build Docker image
@@ -231,47 +231,47 @@ jobs:
       # Due to an issue with checking out a wrong commit, we make sure
       # to checkout HEAD commit for a pull request.
       # More details: https://github.com/actions/checkout/issues/299
-    - name: Checkout pull request HEAD commit instead of merge commit 🕝
-      uses: actions/checkout@v2
-      if: github.event_name == 'pull_request'
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
+      - name: Checkout pull request HEAD commit instead of merge commit 🕝
+        uses: actions/checkout@v2
+        if: github.event_name == 'pull_request'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
-    - name: Checkout git repository 🕝
-      uses: actions/checkout@v2
-      if: github.event_name != 'pull_request'
+      - name: Checkout git repository 🕝
+        uses: actions/checkout@v2
+        if: github.event_name != 'pull_request'
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@154c24e1f33dbb5865a021c99f1318cfebf27b32
-      with:
-        version: v0.5.1
-        driver: docker
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@154c24e1f33dbb5865a021c99f1318cfebf27b32
+        with:
+          version: v0.5.1
+          driver: docker
 
-    - name: Set environment variables
-      run: |
-        echo "IMAGE_TAG=${{ needs.build_docker_image_set_env.outputs.image_tag }}" >> $GITHUB_ENV
+      - name: Set environment variables
+        run: |
+          echo "IMAGE_TAG=${{ needs.build_docker_image_set_env.outputs.image_tag }}" >> $GITHUB_ENV
 
-    - name: Build Docker image
-      run: |
-        docker buildx bake --load
+      - name: Build Docker image
+        run: |
+          docker buildx bake --load
 
-    - name: Login to Docker Hub Registry 🔢
-      if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true' && github.repository == 'RasaHQ/rasa-sdk'
-      run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin || true
+      - name: Login to Docker Hub Registry 🔢
+        if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true' && github.repository == 'RasaHQ/rasa-sdk'
+        run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin || true
 
-    - name: Push Docker image 📦
-      if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true' && github.repository == 'RasaHQ/rasa-sdk'
-      run: |
-        IS_NEWEST_VERSION=${{ needs.build_docker_image_set_env.outputs.is_newest_version }}
+      - name: Push Docker image 📦
+        if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true' && github.repository == 'RasaHQ/rasa-sdk'
+        run: |
+          IS_NEWEST_VERSION=${{ needs.build_docker_image_set_env.outputs.is_newest_version }}
 
-        # Push image
-        docker push rasa/rasa-sdk:${IMAGE_TAG}
+          # Push image
+          docker push rasa/rasa-sdk:${IMAGE_TAG}
 
-        # Tag the image as latest
-        if [[ "${IS_NEWEST_VERSION}" == "true" ]]; then
-          docker tag rasa/rasa-sdk:${IMAGE_TAG} rasa/rasa-sdk:latest
-          docker push rasa/rasa-sdk:latest
-        fi
+          # Tag the image as latest
+          if [[ "${IS_NEWEST_VERSION}" == "true" ]]; then
+            docker tag rasa/rasa-sdk:${IMAGE_TAG} rasa/rasa-sdk:latest
+            docker push rasa/rasa-sdk:latest
+          fi
 
   deploy:
     name: Deploy to PyPI
@@ -279,68 +279,68 @@ jobs:
 
     # deploy will only be run when there is a tag available
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-    needs: [quality, test, build_docker_image]     # only run after all other stages succeeded
+    needs: [quality, test, build_docker_image] # only run after all other stages succeeded
 
     steps:
-    - name: Checkout git repository 🕝
-      uses: actions/checkout@v2
+      - name: Checkout git repository 🕝
+        uses: actions/checkout@v2
 
-    - name: Set up Python 3.7 🐍
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.7
+      - name: Set up Python 3.7 🐍
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
 
-    - name: Read Poetry Version 🔢
-      run: |
-           echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
-      shell: bash
+      - name: Read Poetry Version 🔢
+        run: |
+          echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
+        shell: bash
 
-    - name: Install poetry 🦄
-      uses: Gr1N/setup-poetry@v4
-      with:
-        poetry-version: ${{ env.POETRY_VERSION }}
+      - name: Install poetry 🦄
+        uses: Gr1N/setup-poetry@v4
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
 
-    - name: Build ⚒️ Distributions
-      run: poetry build
+      - name: Build ⚒️ Distributions
+        run: poetry build
 
-    - name: Publish to PyPI 📦
-      uses: pypa/gh-action-pypi-publish@bea5cda687c2b79989126d589ef4411bedce0195
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_TOKEN }}
-        skip_existing: true
+      - name: Publish to PyPI 📦
+        uses: pypa/gh-action-pypi-publish@bea5cda687c2b79989126d589ef4411bedce0195
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          skip_existing: true
 
-    - name: Publish Release Notes 🗞
-      if: env.IS_TAG_BUILD
-      env:
-        GITHUB_TAG: ${{ github.ref }}
-        GITHUB_REPO_SLUG: ${{ github.repository }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        GITHUB_TAG=${GITHUB_TAG/refs\/tags\//}
-        sudo apt-get update
-        sudo apt-get -y install pandoc
-        pip install -U github3.py pep440_version_utils
-        python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py
+      - name: Publish Release Notes 🗞
+        if: env.IS_TAG_BUILD
+        env:
+          GITHUB_TAG: ${{ github.ref }}
+          GITHUB_REPO_SLUG: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          GITHUB_TAG=${GITHUB_TAG/refs\/tags\//}
+          sudo apt-get update
+          sudo apt-get -y install pandoc
+          pip install -U github3.py pep440_version_utils
+          python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py
 
-    - name: Get RASA SDK Version
-      env:
-        RASA_SDK_VERSION: ${{ github.ref }}
-      run: |
-        echo "RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//}" >> $GITHUB_ENV
+      - name: Get RASA SDK Version
+        env:
+          RASA_SDK_VERSION: ${{ github.ref }}
+        run: |
+          echo "RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//}" >> $GITHUB_ENV
 
-    - name: Notify Slack 💬
-      if: env.IS_TAG_BUILD && success()
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-      uses: Ilshidur/action-slack@2.1.0
-      with:
-        args: "⚡ New *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/${{ env.RASA_SDK_VERSION }}/CHANGELOG.mdx"
+      - name: Notify Slack 💬
+        if: env.IS_TAG_BUILD && success()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        uses: Ilshidur/action-slack@2.1.0
+        with:
+          args: "⚡ New *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/${{ env.RASA_SDK_VERSION }}/CHANGELOG.mdx"
 
-    - name: Notify Slack of Failure ⛔
-      if: env.IS_TAG_BUILD && failure()
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-      uses: Ilshidur/action-slack@2.1.0
-      with:
-        args: "⛔️ *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} could not be released 😱 GitHub Actions: https://github.com/RasaHQ/rasa-sdk/actions?query=branch%3A${{ env.RASA_SDK_VERSION }}"
+      - name: Notify Slack of Failure ⛔
+        if: env.IS_TAG_BUILD && failure()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        uses: Ilshidur/action-slack@2.1.0
+        with:
+          args: "⛔️ *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} could not be released 😱 GitHub Actions: https://github.com/RasaHQ/rasa-sdk/actions?query=branch%3A${{ env.RASA_SDK_VERSION }}"
