@@ -70,7 +70,10 @@ requests = "^2.23"
 typing-extensions = ">=3.7.4,<5.0.0"
 Sanic-Cors = "^2.0.0"
 urllib3 = "^1.26.5"
-prompt-toolkit = ">=2,<4"
+# there is currently an issue with 3.0.29 as it changes the unit test
+# interface for testing CLI interactions. this change breaks our unit
+# tests in rasa-oss.
+prompt-toolkit = "^3.0,<3.0.29"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^3.0.0"
