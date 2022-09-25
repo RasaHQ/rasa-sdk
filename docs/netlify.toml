@@ -1,0 +1,9 @@
+[[redirects]]
+  from = "/docs/action-server/http-api-spec"
+  to = "/docs/action-server/pages/action-server-api"
+
+# FIXME: this requires some feedback as to the 404, like in the website
+[[redirects]]
+  from = "/docs/action-server/*"
+  to = "/docs/action-server/index.html"
+  status = 404
