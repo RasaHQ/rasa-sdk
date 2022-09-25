@@ -1,9 +1,43 @@
 [[redirects]]
-  from = "/docs/action-server/http-api-spec"
-  to = "/docs/action-server/pages/action-server-api"
+  from = "/docs/action-server"
+  to = "/docs/rasa/action-server"
 
-# FIXME: this requires some feedback as to the 404, like in the website
 [[redirects]]
-  from = "/docs/action-server/*"
-  to = "/docs/action-server/index.html"
-  status = 404
+  from = "/docs/action-server/actions"
+  to = "/docs/rasa/action-server/actions"
+
+[[redirects]]
+  from = "/docs/action-server/events"
+  to = "/docs/rasa/action-server/events"
+
+[[redirects]]
+  from = "/docs/action-server/running-action-server"
+  to = "/docs/rasa/action-server/running-action-server"
+
+[[redirects]]
+  from = "/docs/action-server/sdk-actions"
+  to = "/docs/rasa/action-server/sdk-actions"
+
+[[redirects]]
+  from = "/docs/action-server/sdk-tracker"
+  to = "/docs/rasa/action-server/sdk-tracker"
+
+[[redirects]]
+  from = "/docs/action-server/sdk-dispatcher"
+  to = "/docs/rasa/action-server/sdk-dispatche/"
+
+[[redirects]]
+  from = "/docs/action-server/sdk-events"
+  to = "/docs/rasa/action-server/sdk-events"
+
+[[redirects]]
+  from = "/docs/action-server/knowledge-bases"
+  to = "/docs/rasa/action-server/knowledge-bases"
+
+[[redirects]]
+  from = "/docs/action-server/validation-action"
+  to = "/docs/rasa/action-server/validation-action"
+
+[[redirects]]
+  from = "/docs/action-server/deploy-action-server"
+  to = "/docs/rasa/action-server/deploy-action-server"
