@@ -51,6 +51,15 @@ jobs:
           key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
           restore-keys: ${{ runner.os }}-poetry-
 
+      - name: Load Yarn Cached Packages ⬇
+        uses: actions/cache@v1
+        with:
+          path: docs/node_modules
+          key: ${{ runner.os }}-yarn-12.x-${{ hashFiles('docs/yarn.lock') }}-${{ secrets.YARN_CACHE_KEY }}
+
+      - name: Install Dependencies 📦
+        run: make install install-docs
+
       - name: Checkout target branch to be able to diff
         if: github.event_name == 'pull_request'
         run: |
@@ -70,6 +79,9 @@ jobs:
 
       - name: Check Types 📚
         run: make types
+
+      - name: Test Docs 🕸
+        run: make test-docs
 
   test:
     name: Run Tests

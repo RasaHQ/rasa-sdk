@@ -73,6 +73,20 @@ cleanup-generated-changelog:
 prepare-docs:
 	cd docs/ && poetry run yarn pre-build
 
+docs: prepare-docs
+	cd docs/ && yarn build
+
+test-docs: generate-pending-changelog docs
+
+livedocs:
+	cd docs/ && poetry run yarn start
+
+preview-docs:
+	cd docs/ && yarn build && yarn deploy-preview --alias=${PULL_REQUEST_NUMBER} --message="Preview for Pull Request #${PULL_REQUEST_NUMBER}"
+
+publish-docs:
+	cd docs/ && yarn build && yarn deploy
+
 release:
 	poetry run python scripts/release.py
 
