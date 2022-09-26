@@ -24,7 +24,7 @@
 
 [[redirects]]
   from = "/docs/action-server/sdk-dispatcher"
-  to = "/docs/rasa/action-server/sdk-dispatche/"
+  to = "/docs/rasa/action-server/sdk-dispatcher/"
 
 [[redirects]]
   from = "/docs/action-server/sdk-events"
