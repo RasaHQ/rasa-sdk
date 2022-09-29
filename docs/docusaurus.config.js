@@ -55,7 +55,7 @@ module.exports = {
       title: 'Rasa Action Server',
       items: [
         {
-          label: 'Rasa Open Source',
+          label: 'Rasa',
           href: `${RASA_OPEN_SOURCE_SWAP_URL}/docs/rasa/`,
           position: 'left',
         },
@@ -64,11 +64,6 @@ module.exports = {
           position: 'left',
           href: `${RASA_ENTERPRISE_SWAP_URL}/docs/rasa-enterprise/`,
           target: '_self',
-        },
-        {
-          label: 'Rasa Action Server',
-          position: 'left',
-          to: path.join('/', BASE_URL),
         },
         {
           href: 'https://github.com/rasahq/rasa',
