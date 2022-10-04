@@ -7,3 +7,47 @@
   from = "/docs/action-server/*"
   to = "/docs/action-server/index.html"
   status = 404
+
+[[redirects]]
+  from = "/docs/action-server"
+  to = "https://rasa.com/docs/rasa/action-server"
+
+[[redirects]]
+  from = "/docs/action-server/actions"
+  to = "https://rasa.com/docs/rasa/action-server/actions"
+
+[[redirects]]
+  from = "/docs/action-server/events"
+  to = "https://rasa.com/docs/rasa/action-server/events"
+
+[[redirects]]
+  from = "/docs/action-server/running-action-server"
+  to = "https://rasa.com/docs/rasa/action-server/running-action-server"
+
+[[redirects]]
+  from = "/docs/action-server/sdk-actions"
+  to = "https://rasa.com/docs/rasa/action-server/sdk-actions"
+
+[[redirects]]
+  from = "/docs/action-server/sdk-tracker"
+  to = "https://rasa.com/docs/rasa/action-server/sdk-tracker"
+
+[[redirects]]
+  from = "/docs/action-server/sdk-dispatcher"
+  to = "https://rasa.com/docs/rasa/action-server/sdk-dispatcher/"
+
+[[redirects]]
+  from = "/docs/action-server/sdk-events"
+  to = "https://rasa.com/docs/rasa/action-server/sdk-events"
+
+[[redirects]]
+  from = "/docs/action-server/knowledge-bases"
+  to = "https://rasa.com/docs/rasa/action-server/knowledge-bases"
+
+[[redirects]]
+  from = "/docs/action-server/validation-action"
+  to = "https://rasa.com/docs/rasa/action-server/validation-action"
+
+[[redirects]]
+  from = "/docs/action-server/deploy-action-server"
+  to = "https://rasa.com/docs/rasa/action-server/deploy-action-server"
