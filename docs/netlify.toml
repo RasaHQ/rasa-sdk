@@ -2,62 +2,8 @@
   from = "/docs/action-server/http-api-spec"
   to = "/docs/action-server/pages/action-server-api"
 
+# FIXME: this requires some feedback as to the 404, like in the website
 [[redirects]]
-  from = "/docs/action-server/pages/action-server-api"
-  to = "https://rasa.com/docs/rasa/pages/action-server-api"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server"
-  to = "https://rasa.com/docs/rasa/action-server"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server/actions"
-  to = "https://rasa.com/docs/rasa/action-server/actions"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server/events"
-  to = "https://rasa.com/docs/rasa/action-server/events"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server/running-action-server"
-  to = "https://rasa.com/docs/rasa/action-server/running-action-server"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server/sdk-actions"
-  to = "https://rasa.com/docs/rasa/action-server/sdk-actions"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server/sdk-tracker"
-  to = "https://rasa.com/docs/rasa/action-server/sdk-tracker"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server/sdk-dispatcher"
-  to = "https://rasa.com/docs/rasa/action-server/sdk-dispatcher/"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server/sdk-events"
-  to = "https://rasa.com/docs/rasa/action-server/sdk-events"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server/knowledge-bases"
-  to = "https://rasa.com/docs/rasa/action-server/knowledge-bases"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server/validation-action"
-  to = "https://rasa.com/docs/rasa/action-server/validation-action"
-  force = true
-
-[[redirects]]
-  from = "/docs/action-server/deploy-action-server"
-  to = "https://rasa.com/docs/rasa/action-server/deploy-action-server"
-  force = true
+  from = "/docs/action-server/*"
+  to = "/docs/action-server/index.html"
+  status = 404
