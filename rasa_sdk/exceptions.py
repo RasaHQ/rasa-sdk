@@ -24,6 +24,7 @@ class YamlSyntaxException(Exception):
         filename: Optional[Union[Text, Path]] = None,
         underlying_yaml_exception: Optional[Exception] = None,
     ) -> None:
+        """Represents the exception constructor."""
         self.filename = filename
 
         self.underlying_yaml_exception = underlying_yaml_exception
