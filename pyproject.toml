@@ -72,6 +72,7 @@ Sanic-Cors = "^2.0.0"
 # interface for testing CLI interactions. this change breaks our unit
 # tests in rasa-oss.
 prompt-toolkit = "^3.0,<3.0.29"
+"ruamel.yaml" = ">=0.16.5,<0.18.0"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^3.0.0"
