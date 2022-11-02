@@ -237,7 +237,7 @@ def test_configure_default_logging():
     rasa_sdk.utils.configure_file_logging(
         logging.getLogger(APPLICATION_ROOT_LOGGER_NAME),
         output_file,
-        logging.NOTSET,
+        logging.INFO,
         None,
     )
     rasa_sdk_logger = logging.getLogger("rasa_sdk")
@@ -253,3 +253,7 @@ def test_configure_default_logging():
     handler_filename = handler.baseFilename
     assert Path(handler_filename).exists()
     assert Path(handler_filename).name == output_file
+
+    with open(handler_filename, "r") as logs:
+        data = logs.readlines()
+        assert "[INFO ]  rasa_sdk  -  Testing info log." in data[-1]

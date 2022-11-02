@@ -153,6 +153,8 @@ def set_default_logging(
     if not loglevel:
         loglevel = logging.INFO
 
+    logger_obj.setLevel(loglevel)
+
     formatter = logging.Formatter(
         "%(asctime)s [%(levelname)-5.5s]  %(name)s  -  %(message)s"
     )
