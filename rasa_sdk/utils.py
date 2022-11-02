@@ -116,7 +116,7 @@ def configure_colored_logging(loglevel):
     )
 
 
-def configure_logging_from_input_file(logging_config_file: Text) -> None:
+def configure_logging_from_input_file(logging_config_file: Union[Path, Text]) -> None:
     """Parses YAML file content to configure logging.
 
     Args:
