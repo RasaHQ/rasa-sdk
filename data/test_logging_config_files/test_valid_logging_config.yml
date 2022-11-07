@@ -1,0 +1,19 @@
+version: 1
+disable_existing_loggers: false
+formatters:
+    customFormatter:
+        format: "{\"time\": \"%(asctime)s\", \"name\": \"[%(name)s]\", \"levelname\": \"%(levelname)s\", \"message\": \"%(message)s\"}"
+handlers:
+    test_handler:
+        level: INFO
+        formatter: customFormatter
+        class: logging.FileHandler
+        filename: "logging_test.log"
+loggers:
+    root:
+      handlers: [test_handler]
+      level: INFO
+    rasa_sdk:
+      handlers: [test_handler]
+      level: INFO
+      propagate: 0
