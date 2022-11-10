@@ -87,7 +87,7 @@ Rasa SDK uses Poetry for packaging and dependency management. If you want to bui
 you have to install Poetry first. This is how it can be done:
 
 ```
-curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3
+curl -sSL https://install.python-poetry.org | python3 -
 ```
 
 There are several other ways to install Poetry. Please, follow 
