@@ -66,7 +66,7 @@ showcontent = false
 python = ">=3.7,<3.10"
 coloredlogs = ">=10,<16"
 sanic = "^21.12.0"
-typing-extensions = ">=3.7.4,<5.0.0"
+typing-extensions = ">=4.1.1,<5.0.0"
 Sanic-Cors = "^2.0.0"
 # there is currently an issue with 3.0.29 as it changes the unit test
 # interface for testing CLI interactions. this change breaks our unit
