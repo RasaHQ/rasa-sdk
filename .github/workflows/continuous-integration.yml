@@ -24,10 +24,10 @@ jobs:
       - name: Checkout git repository 🕝
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.10 🐍
+      - name: Set up Python 3.10.0 🐍
         uses: actions/setup-python@v1
         with:
-          python-version: 3.10
+          python-version: 3.10.0
 
       - name: Set up Node 12.x 🦙
         uses: actions/setup-node@v2
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, 3.10]
+        python-version: [3.7, 3.8, 3.9, 3.10.0]
 
     steps:
       - name: Checkout git repository 🕝
@@ -285,10 +285,10 @@ jobs:
       - name: Checkout git repository 🕝
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.10 🐍
+      - name: Set up Python 3.10.0 🐍
         uses: actions/setup-python@v1
         with:
-          python-version: 3.10
+          python-version: 3.10.0
 
       - name: Read Poetry Version 🔢
         run: |
