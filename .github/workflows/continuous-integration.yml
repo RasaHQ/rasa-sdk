@@ -27,7 +27,7 @@ jobs:
       - name: Set up Python 3.10 🐍
         uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5
         with:
-          python-version: 3.10
+          python-version: 3.10.8
 
       - name: Set up Node 12.x 🦙
         uses: actions/setup-node@v2
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, 3.10]
+        python-version: [3.7, 3.8, 3.9, 3.10.8]
 
     steps:
       - name: Checkout git repository 🕝
@@ -288,7 +288,7 @@ jobs:
       - name: Set up Python 3.10 🐍
         uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5
         with:
-          python-version: 3.10
+          python-version: 3.10.8
 
       - name: Read Poetry Version 🔢
         run: |
