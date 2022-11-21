@@ -11,7 +11,10 @@ def main_from_args(args):
 
     utils.configure_colored_logging(args.loglevel)
     utils.configure_file_logging(
-        logging.getLogger(APPLICATION_ROOT_LOGGER_NAME), args.log_file, args.loglevel
+        logging.getLogger(APPLICATION_ROOT_LOGGER_NAME),
+        args.log_file,
+        args.loglevel,
+        args.logging_config_file,
     )
     utils.update_sanic_log_level()
 
