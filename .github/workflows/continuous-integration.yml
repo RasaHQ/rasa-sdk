@@ -29,11 +29,6 @@ jobs:
         with:
           python-version: 3.7
 
-      - name: Set up Node 12.x 🦙
-        uses: actions/setup-node@v2
-        with:
-          node-version: "12.x"
-
       - name: Read Poetry Version 🔢
         run: |
           echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
@@ -50,15 +45,6 @@ jobs:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
           restore-keys: ${{ runner.os }}-poetry-
-
-      - name: Load Yarn Cached Packages ⬇
-        uses: actions/cache@v1
-        with:
-          path: docs/node_modules
-          key: ${{ runner.os }}-yarn-12.x-${{ hashFiles('docs/yarn.lock') }}-${{ secrets.YARN_CACHE_KEY }}
-
-      - name: Install Dependencies 📦
-        run: make install install-docs
 
       - name: Checkout target branch to be able to diff
         if: github.event_name == 'pull_request'
@@ -79,9 +65,6 @@ jobs:
 
       - name: Check Types 📚
         run: make types
-
-      - name: Test Docs 🕸
-        run: make test-docs
 
   test:
     name: Run Tests
