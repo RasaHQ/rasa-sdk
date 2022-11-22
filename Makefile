@@ -38,7 +38,8 @@ formatter:
 lint:
 	poetry run flake8 rasa_sdk tests --extend-ignore D
 	poetry run black --check rasa_sdk tests
-
+	make lint-docstrings
+	
  # Compare against `main` if no branch was provided
 BRANCH ?= main
 lint-docstrings:
