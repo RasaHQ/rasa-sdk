@@ -292,7 +292,7 @@ async def call_potential_coroutine(
 ) -> Any:
     """Await if it's a coroutine."""
     if asyncio.iscoroutine(coroutine_or_return_value):
-        return await coroutine_or_return_value 
+        return await coroutine_or_return_value
 
     return coroutine_or_return_value
 
