@@ -1,6 +1,0 @@
-docs:
-  - 'docs/**/*'
-  - 'changelog/*'
-  - 'CHANGELOG.mdx'
-  - 'Makefile'
-  - '.github/workflows/documentation.yml'
