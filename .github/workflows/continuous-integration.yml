@@ -56,6 +56,9 @@ jobs:
           # can calculate the proper diff between the branches
           git fetch --unshallow origin "${{ github.ref }}"
 
+      - name: Install Dependencies 📦
+        run: make install
+
       - name: Lint Code 🎎
         run: |
           # If it's not a pull request, $DOCSTRING_DIFF_BRANCH is unset.
