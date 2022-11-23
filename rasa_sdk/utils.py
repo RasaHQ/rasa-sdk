@@ -1,17 +1,30 @@
 import asyncio
 import inspect
 import logging
+import logging.config
 import warnings
 import os
+from pathlib import Path
+from ruamel import yaml as yaml
+from ruamel.yaml import YAMLError
+from ruamel.yaml.constructor import DuplicateKeyError
 
-from typing import AbstractSet, Any, List, Text, Optional, Coroutine, Union
+from typing import AbstractSet, Any, Dict, List, Text, Optional, Coroutine, Union
 
 import rasa_sdk
 from rasa_sdk.constants import (
+    DEFAULT_ENCODING,
     DEFAULT_SANIC_WORKERS,
     ENV_SANIC_WORKERS,
     DEFAULT_LOG_LEVEL_LIBRARIES,
     ENV_LOG_LEVEL_LIBRARIES,
+    PYTHON_LOGGING_SCHEMA_DOCS,
+    YAML_VERSION,
+)
+from rasa_sdk.exceptions import (
+    FileIOException,
+    FileNotFoundException,
+    YamlSyntaxException,
 )
 
 logger = logging.getLogger(__name__)
@@ -77,6 +90,13 @@ def add_logging_file_arguments(parser):
         default=None,
         help="Store logs in specified file.",
     )
+    parser.add_argument(
+        "--logging-config_file",
+        type=str,
+        default=None,
+        help="If set, the name of the logging configuration file will be set "
+        "to the given name.",
+    )
 
 
 def configure_colored_logging(loglevel):
@@ -96,29 +116,74 @@ def configure_colored_logging(loglevel):
     )
 
 
-def configure_file_logging(
-    logger_obj: logging.Logger, log_file: Optional[Text], loglevel: int
+def configure_logging_from_input_file(logging_config_file: Union[Path, Text]) -> None:
+    """Parses YAML file content to configure logging.
+
+    Args:
+        logging_config_file: YAML file containing logging configuration to handle
+            custom formatting
+    """
+    logging_config_dict = read_yaml_file(logging_config_file)
+
+    try:
+        logging.config.dictConfig(logging_config_dict)
+    except (ValueError, TypeError, AttributeError, ImportError) as e:
+        logging.debug(
+            f"The logging config file {logging_config_file} could not "
+            f"be applied because it failed validation against "
+            f"the built-in Python logging schema. "
+            f"More info at {PYTHON_LOGGING_SCHEMA_DOCS}.",
+            exc_info=e,
+        )
+
+
+def set_default_logging(
+    logger_obj: logging.Logger, output_log_file: Optional[Text], loglevel: int
 ) -> None:
-    """Configure logging to a file.
+    """Configure default logging to a file.
 
     :param logger_obj: Logger object to configure.
-    :param log_file: Path of log file to write to.
-    :param loglevel: Log Level
-    :return:
+    :param output_log_file: Path of log file to write to.
+    :param loglevel: Log Level.
+    :return: None.
     """
-    if not log_file:
+    if not output_log_file:
         return
 
     if not loglevel:
         loglevel = logging.INFO
 
+    logger_obj.setLevel(loglevel)
+
     formatter = logging.Formatter(
         "%(asctime)s [%(levelname)-5.5s]  %(name)s  -  %(message)s"
     )
-    file_handler = logging.FileHandler(log_file, encoding="utf-8")
+    file_handler = logging.FileHandler(output_log_file, encoding=DEFAULT_ENCODING)
     file_handler.setLevel(loglevel)
     file_handler.setFormatter(formatter)
     logger_obj.addHandler(file_handler)
+
+
+def configure_file_logging(
+    logger_obj: logging.Logger,
+    output_log_file: Optional[Text],
+    loglevel: int,
+    logging_config_file: Optional[Text],
+) -> None:
+    """Configure logging configuration.
+
+    :param logger_obj: Logger object to configure.
+    :param output_log_file: Path of log file to write to.
+    :param loglevel: Log Level.
+    :param logging_config_file: YAML file containing logging configuration to handle
+            custom formatting
+    :return: None.
+    """
+    if logging_config_file is not None:
+        configure_logging_from_input_file(logging_config_file)
+        return
+
+    set_default_logging(logger_obj, output_log_file, loglevel)
 
 
 def arguments_of(func) -> AbstractSet[Text]:
@@ -225,8 +290,73 @@ def update_sanic_log_level() -> None:
 async def call_potential_coroutine(
     coroutine_or_return_value: Union[Any, Coroutine]
 ) -> Any:
-    """Await if its a coroutine."""
+    """Await if it's a coroutine."""
     if asyncio.iscoroutine(coroutine_or_return_value):
-        return await coroutine_or_return_value  # type: ignore [misc] # https://github.com/python/mypy/issues/7587
+        return await coroutine_or_return_value
 
     return coroutine_or_return_value
+
+
+def read_file(filename: Union[Text, Path], encoding: Text = DEFAULT_ENCODING) -> Any:
+    """Read text from a file."""
+    try:
+        with open(filename, encoding=encoding) as f:
+            return f.read()
+    except FileNotFoundError:
+        raise FileNotFoundException(
+            f"Failed to read file, " f"'{os.path.abspath(filename)}' does not exist."
+        )
+    except UnicodeDecodeError:
+        raise FileIOException(
+            f"Failed to read file '{os.path.abspath(filename)}', "
+            f"could not read the file using {encoding} to decode "
+            f"it. Please make sure the file is stored with this "
+            f"encoding."
+        )
+
+
+def read_yaml(content: Text, reader_type: Text = "safe") -> Any:
+    """Parses yaml from a text.
+
+    Args:
+        content: A text containing yaml content.
+        reader_type: Reader type to use. By default, "safe" will be used.
+
+    Raises:
+        ruamel.yaml.parser.ParserError: If there was an error when parsing the YAML.
+    """
+    if _is_ascii(content):
+        # Required to make sure emojis are correctly parsed
+        content = (
+            content.encode("utf-8")
+            .decode("raw_unicode_escape")
+            .encode("utf-16", "surrogatepass")
+            .decode("utf-16")
+        )
+
+    yaml_parser = yaml.YAML(typ=reader_type)
+    yaml_parser.version = YAML_VERSION  # type: ignore[assignment]
+    yaml_parser.preserve_quotes = True  # type: ignore[assignment]
+
+    return yaml_parser.load(content) or {}
+
+
+def _is_ascii(text: Text) -> bool:
+    return all(ord(character) < 128 for character in text)
+
+
+def read_yaml_file(filename: Union[Text, Path]) -> Dict[Text, Any]:
+    """Parses a yaml file.
+
+    Raises an exception if the content of the file can not be parsed as YAML.
+
+    Args:
+        filename: The path to the file which should be read.
+
+    Returns:
+        Parsed content of the file.
+    """
+    try:
+        return read_yaml(read_file(filename, DEFAULT_ENCODING))
+    except (YAMLError, DuplicateKeyError) as e:
+        raise YamlSyntaxException(filename, e)
