@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 88
-target-version = [ "py37", "py38", "py39",]
+target-version = [ "py37", "py38", "py39", "py310"]
 exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist))"
 
 [tool.poetry]
@@ -63,12 +63,12 @@ name = "Miscellaneous internal changes"
 showcontent = false
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.10"
+python = ">=3.7,<3.11"
 coloredlogs = ">=10,<16"
 sanic = "^21.12.0"
 typing-extensions = ">=4.1.1,<5.0.0"
 Sanic-Cors = "^2.0.0"
-prompt-toolkit = "^3.0,<3.0.29"
+prompt-toolkit = ">=3,<4"
 "ruamel.yaml" = ">=0.16.5,<0.18.0"
 
 [tool.poetry.dev-dependencies]
