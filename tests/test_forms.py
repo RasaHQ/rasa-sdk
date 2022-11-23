@@ -275,7 +275,7 @@ async def test_form_validation_action_doesnt_work_for_global_slots():
         )
 
     assert not warnings
-    # validation shoudn't run because `TestSlotValidationAction` implements
+    # validation shouldn't run because `TestSlotValidationAction` implements
     # `FormValidationAction` and `slot1` is not assigned to any form
     assert events == []
 
