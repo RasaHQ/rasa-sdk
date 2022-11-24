@@ -57,6 +57,9 @@ def parse_changelog(tag_name: Text) -> Text:
         if consuming_version:
             version_lines.append(line)
 
+    # return default value as github release body
+    if not version_lines:
+        return "No significant changes."
     # drop the first lines (version headline, not needed for GH)
     return "\n".join(version_lines[2:]).strip()
 
