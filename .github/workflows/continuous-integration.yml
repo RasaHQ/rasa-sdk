@@ -18,7 +18,7 @@ env:
 jobs:
   quality:
     name: Code Quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
     - name: Checkout git repository 🕝
@@ -85,7 +85,7 @@ jobs:
 
   test:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9]
@@ -131,7 +131,7 @@ jobs:
 
   docker_linter:
     name: Lint Dockerfile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Lint Dockerfile
@@ -141,7 +141,7 @@ jobs:
 
   build_docker_image_set_env:
     name: Prepare environment for Docker build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     outputs:
       # Tag name used for intermediate images created during Docker image builds, e.g. 3886 - a PR number
       image_tag: ${{ steps.set_output.outputs.image_tag }}
@@ -224,7 +224,7 @@ jobs:
 
   build_docker_image:
     name: Build Docker image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [quality, test, docker_linter, build_docker_image_set_env]
 
     steps:
@@ -275,7 +275,7 @@ jobs:
 
   deploy:
     name: Deploy to PyPI
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     # deploy will only be run when there is a tag available
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
