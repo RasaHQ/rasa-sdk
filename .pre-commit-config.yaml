@@ -1,5 +1,5 @@
 repos:
 -   repo: https://github.com/ambv/black
-    rev: 22.6.0
+    rev: 22.10.0
     hooks:
     - id: black
