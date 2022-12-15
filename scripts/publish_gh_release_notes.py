@@ -57,11 +57,11 @@ def parse_changelog(tag_name: Text) -> Text:
         if consuming_version:
             version_lines.append(line)
 
-    # return default value as github release body
-    if not version_lines:
-        return "No significant changes."
-    # drop the first lines (version headline, not needed for GH)
-    return "\n".join(version_lines[2:]).strip()
+    if consuming_version:
+        # drop the first lines (version headline, not needed for GH)
+        return "\n".join(version_lines[2:]).strip()
+    else:
+        return None
 
 
 def main():
@@ -86,7 +86,7 @@ def main():
     else:
         md_body = parse_changelog(tag_name)
 
-    if not md_body:
+    if md_body is None:
         print("Failed to extract changelog entries for version from changelog.")
         return 2
 
