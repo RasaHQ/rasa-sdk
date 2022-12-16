@@ -6,6 +6,16 @@
 
 Python SDK for the development of custom actions for Rasa.
 
+<hr />
+
+💡 **We're migrating issues to Jira** 💡
+
+Starting January 2023, issues for Rasa Open Source are located in
+[this Jira board](https://rasa-open-source.atlassian.net/browse/OSS). You can browse issues without being logged in;
+if you want to create issues, you'll need to create a Jira account.
+
+<hr />
+
 ## Installation
 
 To install the SDK run
@@ -89,7 +99,7 @@ you have to install Poetry first. This is how it can be done:
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-There are several other ways to install Poetry. Please, follow 
+There are several other ways to install Poetry. Please, follow
 [the official guide](https://python-poetry.org/docs/#installation) to see all possible options.
 
 To install dependencies and `rasa-sdk` itself in editable mode execute
@@ -111,24 +121,24 @@ make lint
 ```
 
 ## Steps to release a new version
-Releasing a new version is quite simple, as the packages are build and distributed 
+Releasing a new version is quite simple, as the packages are build and distributed
 by GitHub Actions.
 
 *Release steps*:
-1. Switch to the branch you want to cut the release from (`main` in case of a 
+1. Switch to the branch you want to cut the release from (`main` in case of a
   major / minor, the current release branch for patch releases).
 2. Run `make release`
 3. Create a PR against main or the release branch (e.g. `1.2.x`)
-4. Once your PR is merged, tag a new release (this SHOULD always happen on 
+4. Once your PR is merged, tag a new release (this SHOULD always happen on
   `main` or release branches), e.g. using
     ```bash
     git tag 1.2.0 -m "next release"
     git push origin 1.2.0
     ```
-    GitHub Actions will build this tag and push a package to 
+    GitHub Actions will build this tag and push a package to
     [pypi](https://pypi.python.org/pypi/rasa-sdk).
-5. **If this is a minor release**, a new release branch should be created 
-  pointing to the same commit as the tag to allow for future patch releases, 
+5. **If this is a minor release**, a new release branch should be created
+  pointing to the same commit as the tag to allow for future patch releases,
   e.g.
     ```bash
     git checkout -b 1.2.x
