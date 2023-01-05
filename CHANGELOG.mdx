@@ -19,9 +19,8 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 ## [2.8.11] - 2022-12-22
 ### Improvements
-- [#912](https://github.com/rasahq/rasa-sdk/issues/912): Added the ability to decompress deflate encoded
-  json payloads for the webhook endpoint of the 
-  action server.
+- [#912](https://github.com/rasahq/rasa-sdk/issues/912): With this release, the http payload must be compressed.
+  You must use Rasa 2.8.34 or later, prior release are incompatible since they do not compress the payload.
 
 
 ## [2.8.10] - 2022-08-30
