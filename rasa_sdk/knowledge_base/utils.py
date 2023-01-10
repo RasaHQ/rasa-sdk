@@ -15,6 +15,7 @@ if typing.TYPE_CHECKING:  # pragma: no cover
 
 def get_object_name(
     tracker: "Tracker",
+    object_type: Text,
     ordinal_mention_mapping: Dict[Text, Callable],
     use_last_object_mention: bool = True,
 ) -> Optional[Text]:
@@ -34,11 +35,10 @@ def get_object_name(
     knowledge base)
     """
     mention = tracker.get_slot(SLOT_MENTION)
-    object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
 
     # the user referred to the object by a mention, such as "first one"
     if mention:
-        return resolve_mention(tracker, ordinal_mention_mapping)
+        return resolve_mention(tracker, ordinal_mention_mapping, object_type)
 
     # check whether the user referred to the objet by its name
     object_name = tracker.get_slot(object_type)
@@ -54,7 +54,7 @@ def get_object_name(
 
 
 def resolve_mention(
-    tracker: "Tracker", ordinal_mention_mapping: Dict[Text, Callable]
+    tracker: "Tracker", ordinal_mention_mapping: Dict[Text, Callable], object_type: Text
 ) -> Optional[Text]:
     """
     Resolve the given mention to the name of the actual object.
@@ -80,7 +80,7 @@ def resolve_mention(
     listed_items = tracker.get_slot(SLOT_LISTED_OBJECTS)
     last_object = tracker.get_slot(SLOT_LAST_OBJECT)
     last_object_type = tracker.get_slot(SLOT_LAST_OBJECT_TYPE)
-    current_object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
+    current_object_type = object_type
 
     if not mention:
         return None
@@ -142,6 +142,7 @@ def reset_attribute_slots(
     what attributes are detected by the NER. We take all attributes that are set,
     e.g. cuisine = Italian. If we don't reset the attribute slots after the request
     is done and the next utterance of the user would be, for example, "List all
+    is done and the next utterance of the user would be, for example, "List all
     restaurants that have wifi.", we would have two attribute slots set: "wifi" and
     "cuisine". Thus, we would filter all restaurants for two attributes now:
     wifi = True and cuisine = Italian. However, the user did not specify any
@@ -162,3 +163,29 @@ def reset_attribute_slots(
             slots.append(SlotSet(attr, None))
 
     return slots
+
+
+async def get_object_type_dynamic(
+    tracker: "Tracker",
+    object_types: List,
+) -> Optional[Text]:
+    """
+    If the user ask a question about an attribute using an object name and
+    without specifying the object type, then this function searches the
+    corresponding object type. (e.g: when user asks'price range of B&B', this
+    function detects the object type as 'hotel')
+
+    Args:
+        tracker: the tracker
+        object_types: list of object types in the knowledge base
+
+    Returns: the name of the object type
+    """
+    entities = tracker.latest_message["entities"]
+    entities_values = [entities[i]["entity"] for i in range(len(entities))]
+    for entity in entities_values:
+        if entity in object_types:
+            object_type_dynamic = entity
+            return object_type_dynamic
+
+    return None
