@@ -13,6 +13,7 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LISTED_OBJECTS,
     get_object_name,
     get_attribute_slots,
+    get_object_type_dynamic,
 )
 from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
@@ -106,9 +107,8 @@ class ActionQueryKnowledgeBase(Action):
         tracker: Tracker,
         domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
-        """Executes this action.
-
-        If the user ask a question about an attribute,
+        """
+        Executes this action. If the user ask a question about an attribute,
         the knowledge base is queried for that attribute. Otherwise, if no
         attribute was detected in the request or the user is talking about a new
         object type, multiple objects of the requested type are returned from the
@@ -125,20 +125,35 @@ class ActionQueryKnowledgeBase(Action):
         object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
         last_object_type = tracker.get_slot(SLOT_LAST_OBJECT_TYPE)
         attribute = tracker.get_slot(SLOT_ATTRIBUTE)
+        has_mention = tracker.get_slot(SLOT_MENTION) is not None
 
         new_request = object_type != last_object_type
 
         if not object_type:
-            # object type always needs to be set as this is needed to query the
-            # knowledge base
-            dispatcher.utter_message(response="utter_ask_rephrase")
-            return []
+            # sets the object type dynamically from entities if object_type is not found
+            # in user query
+            object_types = await utils.call_potential_coroutine(
+                self.knowledge_base.get_object_types()
+            )
+            object_type_dynamic = await get_object_type_dynamic(tracker, object_types)
 
-        if not attribute or new_request:
-            return await self._query_objects(dispatcher, object_type, tracker)
-        elif attribute:
+        if object_type:
+            if not attribute or new_request:
+                return await self._query_objects(dispatcher, object_type, tracker)
+
+            elif attribute:
+                return await self._query_attribute(
+                    dispatcher, object_type, attribute, tracker
+                )
+
+        if object_type_dynamic and attribute:
             return await self._query_attribute(
-                dispatcher, object_type, attribute, tracker
+                dispatcher, object_type_dynamic, attribute, tracker
+            )
+
+        if last_object_type and has_mention and attribute:
+            return await self._query_attribute(
+                dispatcher, last_object_type, attribute, tracker
             )
 
         dispatcher.utter_message(response="utter_ask_rephrase")
@@ -161,7 +176,6 @@ class ActionQueryKnowledgeBase(Action):
         object_attributes = await utils.call_potential_coroutine(
             self.knowledge_base.get_attributes_of_object(object_type)
         )
-
         # get all set attribute slots of the object type to be able to filter the
         # list of objects
         attributes = get_attribute_slots(tracker, object_attributes)
@@ -169,7 +183,6 @@ class ActionQueryKnowledgeBase(Action):
         objects = await utils.call_potential_coroutine(
             self.knowledge_base.get_objects(object_type, attributes)
         )
-
         await utils.call_potential_coroutine(
             self.utter_objects(dispatcher, object_type, objects)
         )
@@ -182,9 +195,8 @@ class ActionQueryKnowledgeBase(Action):
         )
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
-
         slots = [
-            SlotSet(SLOT_OBJECT_TYPE, object_type),
+            SlotSet(SLOT_OBJECT_TYPE, None),
             SlotSet(SLOT_MENTION, None),
             SlotSet(SLOT_ATTRIBUTE, None),
             SlotSet(SLOT_LAST_OBJECT, last_object),
@@ -213,14 +225,14 @@ class ActionQueryKnowledgeBase(Action):
 
         Returns: list of slots
         """
-
         object_name = get_object_name(
             tracker,
+            object_type,
             self.knowledge_base.ordinal_mention_mapping,
             self.use_last_object_mention,
         )
 
-        if object_name is None or not attribute:
+        if not object_name or not attribute:
             dispatcher.utter_message(response="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 
@@ -253,7 +265,7 @@ class ActionQueryKnowledgeBase(Action):
         )
 
         slots = [
-            SlotSet(SLOT_OBJECT_TYPE, object_type),
+            SlotSet(SLOT_OBJECT_TYPE, None),
             SlotSet(SLOT_ATTRIBUTE, None),
             SlotSet(SLOT_MENTION, None),
             SlotSet(SLOT_LAST_OBJECT, object_identifier),
