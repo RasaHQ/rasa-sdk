@@ -218,8 +218,8 @@ if DOMAIN_ENDPOINT:
         parts = parse.urlparse(DOMAIN_ENDPOINT)
         query = parts.query
         query_params = {k:(v[0] if len(v)==1 else v) for k,v in parse.parse_qs(query)}
-        parts.query = None
-        parts.fragment = None
+        parts.query = ''
+        parts.fragment = ''
         url = parse.urlunparse(parts)
         token = {}
         if t:=query_params.get("token"):
@@ -255,7 +255,7 @@ async def get_domain()->dict:
 
 
 
- ########## END BLOCK INSERTION
+########## END BLOCK INSERTION
 def configure_cors(
     app: Sanic, cors_origins: Union[Text, List[Text], None] = ""
 ) -> None:
