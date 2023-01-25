@@ -218,10 +218,9 @@ def concat_url(base: Text, subpath: Optional[Text]) -> Text:
 local_domain = dict()
 domain_endpoint = None
 
-logger.debug(f"{DOMAIN_ENDPOINT=}")
+logger.debug(f"Domain Endpoint is {DOMAIN_ENDPOINT}")
 
 if DOMAIN_ENDPOINT:
-    logger.debug(f"{DOMAIN_ENDPOINT=}")
     # TODO that could be a file URL to be loaded, like in rasa.utils.endpoints.read_endpoint_config()
     if isinstance(DOMAIN_ENDPOINT, str) and DOMAIN_ENDPOINT.startswith("http"):
         parts = parse.urlparse(DOMAIN_ENDPOINT)
@@ -238,7 +237,7 @@ if DOMAIN_ENDPOINT:
             token["token_name"] = "token"
             token["token"] = t
             del query_params["token"]
-        logger.debug(f"{url=} {query_params=} {token=}")
+        logger.debug(f"url={url} params={query_params} token={token}")
         domain_endpoint = EndpointConfig(url=url, params=query_params, **token)
 
 
@@ -266,12 +265,14 @@ async def get_domain() -> dict:
                 return local_domain
         except ClientResponseError as ex:
             logger.error(
-                f"Retrieval of domain was unsuccessful, {ex.message=} {ex.status=} {ex.text=}",
+                f"Retrieval of domain was unsuccessful, message={ex.message} status={ex.status} text={ex.text}",
                 exc_info=ex,
             )
             return {}
         except Exception as e:
-            logger.error(f"Retrieval of domain was unsuccessful, {e.args=}", exc_info=e)
+            logger.error(
+                f"Retrieval of domain was unsuccessful, args={e.args}", exc_info=e
+            )
             return {}
     return {}
 
