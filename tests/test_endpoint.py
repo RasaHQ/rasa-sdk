@@ -1,5 +1,6 @@
 import pytest
 import json
+import zlib
 
 import rasa_sdk.endpoint as ep
 from rasa_sdk.events import SlotSet
@@ -90,3 +91,21 @@ def test_arg_parser_actions_params_module_style():
     args = ["--actions", "actions.act"]
     cmdline_args = parser.parse_args(args)
     assert cmdline_args.actions == "actions.act"
+
+
+def test_server_webhook_custom_action_encoded_data_returns_200():
+    data = {
+        "next_action": "custom_action",
+        "tracker": {"sender_id": "1", "conversation_id": "default"},
+        "domain": {"intents": ["greet", "goodbye"]},
+    }
+
+    request, response = app.test_client.post(
+        "/webhook",
+        data=zlib.compress(json.dumps(data).encode()),
+        headers={"Content-encoding": "deflate"},
+    )
+    events = response.json.get("events")
+
+    assert events == [SlotSet("test", "bar")]
+    assert response.status == 200

@@ -2,6 +2,8 @@ import argparse
 import logging
 import os
 import types
+import zlib
+import json
 from typing import List, Text, Union, Optional, Any
 from ssl import SSLContext
 
@@ -90,7 +92,13 @@ def create_app(
     @app.post("/webhook")
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
-        action_call = request.json
+        if request.headers.get("Content-Encoding") == "deflate":
+            # Decompress the request data using zlib
+            decompressed_data = zlib.decompress(request.body)
+            # Load the JSON data from the decompressed request data
+            action_call = json.loads(decompressed_data)
+        else:
+            action_call = request.json
         if action_call is None:
             body = {"error": "Invalid body request"}
             return response.json(body, status=400)
