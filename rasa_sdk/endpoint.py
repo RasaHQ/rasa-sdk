@@ -12,7 +12,7 @@ from sanic import Sanic, response
 from sanic.response import HTTPResponse
 from sanic.request import Request
 from sanic_cors import CORS
-import aiohttp 
+import aiohttp
 from aiohttp.client_exceptions import ContentTypeError
 
 from rasa_sdk import utils
@@ -28,8 +28,10 @@ logger = logging.getLogger(__name__)
 
 ######### BLOCK INSERTION
 
-DOMAIN_ENDPOINT: str = os.environ.get("DOMAIN_ENDPOINT", "") # DOMAIN_ENDPOINT=http://rasa.server:5005/domain?token=TOKEN
-DEFAULT_REQUEST_TIMEOUT: int = 7 # give 7 seconds respone time for a domain API answer
+DOMAIN_ENDPOINT: str = os.environ.get(
+    "DOMAIN_ENDPOINT", ""
+)  # DOMAIN_ENDPOINT=http://rasa.server:5005/domain?token=TOKEN
+DEFAULT_REQUEST_TIMEOUT: int = 7  # give 7 seconds respone time for a domain API answer
 
 # copied from rasa.utils.endpoints
 class EndpointConfig:
@@ -61,9 +63,7 @@ class EndpointConfig:
         """Creates and returns a configured aiohttp client session."""
         # create authentication parameters
         if self.basic_auth:
-            auth = aiohttp.BasicAuth(
-                self.basic_auth["username"], self.basic_auth["password"]
-            )
+            auth = aiohttp.BasicAuth(self.basic_auth["username"], self.basic_auth["password"])
         else:
             auth = None
 
@@ -73,9 +73,7 @@ class EndpointConfig:
             timeout=aiohttp.ClientTimeout(total=DEFAULT_REQUEST_TIMEOUT),
         )
 
-    def combine_parameters(
-        self, kwargs: Optional[Dict[Text, Any]] = None
-    ) -> Dict[Text, Any]:
+    def combine_parameters(self, kwargs: Optional[Dict[Text, Any]] = None) -> Dict[Text, Any]:
         # construct GET parameters
         params = self.params.copy()
 
@@ -170,6 +168,7 @@ class EndpointConfig:
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
+
 # copied from rasa.utils.endpoints
 class ClientResponseError(aiohttp.ClientError):
     def __init__(self, status: int, message: Text, text: Text) -> None:
@@ -177,6 +176,7 @@ class ClientResponseError(aiohttp.ClientError):
         self.message = message
         self.text = text
         super().__init__(f"{status}, {message}, body='{text}'")
+
 
 # copied from rasa.utils.endpoints
 def concat_url(base: Text, subpath: Optional[Text]) -> Text:
@@ -209,26 +209,34 @@ def concat_url(base: Text, subpath: Optional[Text]) -> Text:
         subpath = subpath[1:]
     return url + subpath
 
+
 local_domain = dict()
 domain_endpoint = None
 
-if DOMAIN_ENDPOINT: 
+logger.debug(f"{DOMAIN_ENDPOINT}")
+
+if DOMAIN_ENDPOINT:
+    logger.debug(f"{DOMAIN_ENDPOINT}")
     # TODO that could be a file URL to be loaded, like in rasa.utils.endpoints.read_endpoint_config()
     if isinstance(DOMAIN_ENDPOINT, str) and DOMAIN_ENDPOINT.startswith("http"):
         parts = parse.urlparse(DOMAIN_ENDPOINT)
         query = parts.query
-        query_params = {k:(v[0] if len(v)==1 else v) for k,v in parse.parse_qs(query)}
-        url = parse.urlunparse(components=(parts.scheme, parts.netloc, parts.path, parts.params, '', ''))
+        query_params = {k: (v[0] if len(v) == 1 else v) for k, v in parse.parse_qs(query)}
+        url = parse.urlunparse(
+            components=(parts.scheme, parts.netloc, parts.path, parts.params, "", "")
+        )
         token = {}
-        if t:=query_params.get("token"):
+        if t := query_params.get("token"):
             # special case for token
-            token["token_name"]="token"
-            token["token"]=t
+            token["token_name"] = "token"
+            token["token"] = t
             del query_params["token"]
         logger.debug(f"{url=} {query_params=} {token=}")
-        domain_endpoint = EndpointConfig(url=url,  params=query_params, **token)
+        domain_endpoint = EndpointConfig(url=url, params=query_params, **token)
 
-async def get_domain()->dict:
+
+async def get_domain() -> dict:
+    logger.debug(f"Getting Domain")
     if local_domain:
         # use cached
         return local_domain
@@ -238,30 +246,27 @@ async def get_domain()->dict:
             logger.debug(f"Accessing domain endpoint at {DOMAIN_ENDPOINT}")
             response: Any = await domain_endpoint.request(
                 method="get", timeout=DEFAULT_REQUEST_TIMEOUT
-            )            
+            )
             if "intents" in response:
                 # very simple check if it is a domain objects
-                local_domain = response # put in cache
+                local_domain = response  # put in cache
                 return local_domain
         except ClientResponseError as ex:
-                logger.error(f"Retrieval of domain was unsuccessful, {ex.message=} {ex.status=} {ex.text=}", exc_info=ex)
-                return 
+            logger.error(
+                f"Retrieval of domain was unsuccessful, {ex.message=} {ex.status=} {ex.text=}",
+                exc_info=ex,
+            )
+            return
         except Exception as e:
-                logger.error(f"Retrieval of domain was unsuccessful, {e.args=}", exc_info=ex)
-                return             
-
-
+            logger.error(f"Retrieval of domain was unsuccessful, {e.args=}", exc_info=ex)
+            return
 
 
 ########## END BLOCK INSERTION
-def configure_cors(
-    app: Sanic, cors_origins: Union[Text, List[Text], None] = ""
-) -> None:
+def configure_cors(app: Sanic, cors_origins: Union[Text, List[Text], None] = "") -> None:
     """Configure CORS origins for the given app."""
 
-    CORS(
-        app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True
-    )
+    CORS(app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True)
 
 
 def create_ssl_context(
@@ -275,9 +280,7 @@ def create_ssl_context(
         import ssl
 
         ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
-        ssl_context.load_cert_chain(
-            ssl_certificate, keyfile=ssl_keyfile, password=ssl_password
-        )
+        ssl_context.load_cert_chain(ssl_certificate, keyfile=ssl_keyfile, password=ssl_password)
         return ssl_context
     else:
         return None
@@ -332,7 +335,6 @@ def create_app(
             action_call = json.loads(decompressed_data)
         else:
             action_call = request.json
-            
 
         if action_call is None:
             body = {"error": "Invalid body request"}
@@ -394,9 +396,7 @@ def run(
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
-    app = create_app(
-        action_package_name, cors_origins=cors_origins, auto_reload=auto_reload
-    )
+    app = create_app(action_package_name, cors_origins=cors_origins, auto_reload=auto_reload)
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
     protocol = "https" if ssl_context else "http"
     host = os.environ.get("SANIC_HOST", "0.0.0.0")
