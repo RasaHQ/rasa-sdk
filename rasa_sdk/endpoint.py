@@ -213,10 +213,10 @@ def concat_url(base: Text, subpath: Optional[Text]) -> Text:
 local_domain = dict()
 domain_endpoint = None
 
-print(f"{DOMAIN_ENDPOINT}")
+logger.debug(f"{DOMAIN_ENDPOINT=}")
 
 if DOMAIN_ENDPOINT:
-    logger.debug(f"{DOMAIN_ENDPOINT}")
+    logger.debug(f"{DOMAIN_ENDPOINT=}")
     # TODO that could be a file URL to be loaded, like in rasa.utils.endpoints.read_endpoint_config()
     if isinstance(DOMAIN_ENDPOINT, str) and DOMAIN_ENDPOINT.startswith("http"):
         parts = parse.urlparse(DOMAIN_ENDPOINT)
