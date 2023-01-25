@@ -26,12 +26,13 @@ from urllib import parse
 
 logger = logging.getLogger(__name__)
 
-######### BLOCK INSERTION
+# BLOCK INSERTION
 
 DOMAIN_ENDPOINT: str = os.environ.get(
     "DOMAIN_ENDPOINT", ""
 )  # DOMAIN_ENDPOINT=http://rasa.server:5005/domain?token=TOKEN
 DEFAULT_REQUEST_TIMEOUT: int = 7  # give 7 seconds respone time for a domain API answer
+
 
 # copied from rasa.utils.endpoints
 class EndpointConfig:
@@ -63,7 +64,9 @@ class EndpointConfig:
         """Creates and returns a configured aiohttp client session."""
         # create authentication parameters
         if self.basic_auth:
-            auth = aiohttp.BasicAuth(self.basic_auth["username"], self.basic_auth["password"])
+            auth = aiohttp.BasicAuth(
+                self.basic_auth["username"], self.basic_auth["password"]
+            )
         else:
             auth = None
 
@@ -73,7 +76,9 @@ class EndpointConfig:
             timeout=aiohttp.ClientTimeout(total=DEFAULT_REQUEST_TIMEOUT),
         )
 
-    def combine_parameters(self, kwargs: Optional[Dict[Text, Any]] = None) -> Dict[Text, Any]:
+    def combine_parameters(
+        self, kwargs: Optional[Dict[Text, Any]] = None
+    ) -> Dict[Text, Any]:
         # construct GET parameters
         params = self.params.copy()
 
@@ -221,7 +226,9 @@ if DOMAIN_ENDPOINT:
     if isinstance(DOMAIN_ENDPOINT, str) and DOMAIN_ENDPOINT.startswith("http"):
         parts = parse.urlparse(DOMAIN_ENDPOINT)
         query = parts.query
-        query_params = {k: (v[0] if len(v) == 1 else v) for k, v in parse.parse_qs(query).items()}
+        query_params = {
+            k: (v[0] if len(v) == 1 else v) for k, v in parse.parse_qs(query).items()
+        }
         url = parse.urlunparse(
             components=(parts.scheme, parts.netloc, parts.path, parts.params, "", "")
         )
@@ -238,14 +245,16 @@ if DOMAIN_ENDPOINT:
 async def get_domain() -> dict:
     global local_domain
 
-    logger.debug(f"Getting Domain, attempting chache")
+    logger.debug("Getting Domain, attempting chache")
     if local_domain:
         # use cached
         return local_domain
     if domain_endpoint:
         # create a request towards the endpoint which can deliver a domain JSON
         try:
-            logger.debug(f"no cached domain, accessing domain endpoint at {DOMAIN_ENDPOINT}")
+            logger.debug(
+                f"no cached domain, accessing domain endpoint at {DOMAIN_ENDPOINT}"
+            )
             response: Any = await domain_endpoint.request(
                 method="get",
                 timeout=DEFAULT_REQUEST_TIMEOUT,
@@ -267,11 +276,15 @@ async def get_domain() -> dict:
     return {}
 
 
-########## END BLOCK INSERTION
-def configure_cors(app: Sanic, cors_origins: Union[Text, List[Text], None] = "") -> None:
+# END BLOCK INSERTION
+def configure_cors(
+    app: Sanic, cors_origins: Union[Text, List[Text], None] = ""
+) -> None:
     """Configure CORS origins for the given app."""
 
-    CORS(app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True)
+    CORS(
+        app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True
+    )
 
 
 def create_ssl_context(
@@ -285,7 +298,9 @@ def create_ssl_context(
         import ssl
 
         ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
-        ssl_context.load_cert_chain(ssl_certificate, keyfile=ssl_keyfile, password=ssl_password)
+        ssl_context.load_cert_chain(
+            ssl_certificate, keyfile=ssl_keyfile, password=ssl_password
+        )
         return ssl_context
     else:
         return None
@@ -401,7 +416,9 @@ def run(
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
-    app = create_app(action_package_name, cors_origins=cors_origins, auto_reload=auto_reload)
+    app = create_app(
+        action_package_name, cors_origins=cors_origins, auto_reload=auto_reload
+    )
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
     protocol = "https" if ssl_context else "http"
     host = os.environ.get("SANIC_HOST", "0.0.0.0")
