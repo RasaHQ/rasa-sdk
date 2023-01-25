@@ -221,7 +221,7 @@ if DOMAIN_ENDPOINT:
     if isinstance(DOMAIN_ENDPOINT, str) and DOMAIN_ENDPOINT.startswith("http"):
         parts = parse.urlparse(DOMAIN_ENDPOINT)
         query = parts.query
-        query_params = {k: (v[0] if len(v) == 1 else v) for k, v in parse.parse_qs(query)}
+        query_params = {k: (v[0] if len(v) == 1 else v) for k, v in parse.parse_qs(query).items()}
         url = parse.urlunparse(
             components=(parts.scheme, parts.netloc, parts.path, parts.params, "", "")
         )
