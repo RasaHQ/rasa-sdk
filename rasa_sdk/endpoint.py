@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 ######### BLOCK INSERTION
 
-DOMAIN_ENDPOINT: str = os.environ("DOMAIN_ENDPOINT", "") # DOMAIN_ENDPOINT=http://rasa.server/domain:5055?token=TOKEN
+DOMAIN_ENDPOINT: str = os.environ.get("DOMAIN_ENDPOINT", "") # DOMAIN_ENDPOINT=http://rasa.server:5005/domain?token=TOKEN
 DEFAULT_REQUEST_TIMEOUT: int = 7 # give 7 seconds respone time for a domain API answer
 
 # copied from rasa.utils.endpoints
@@ -218,9 +218,7 @@ if DOMAIN_ENDPOINT:
         parts = parse.urlparse(DOMAIN_ENDPOINT)
         query = parts.query
         query_params = {k:(v[0] if len(v)==1 else v) for k,v in parse.parse_qs(query)}
-        parts.query = ''
-        parts.fragment = ''
-        url = parse.urlunparse(parts)
+        url = parse.urlunparse(components=(parts.scheme, parts.netloc, parts.path, parts.params, '', ''))
         token = {}
         if t:=query_params.get("token"):
             # special case for token
