@@ -213,7 +213,7 @@ def concat_url(base: Text, subpath: Optional[Text]) -> Text:
 local_domain = dict()
 domain_endpoint = None
 
-logger.debug(f"{DOMAIN_ENDPOINT}")
+print(f"{DOMAIN_ENDPOINT}")
 
 if DOMAIN_ENDPOINT:
     logger.debug(f"{DOMAIN_ENDPOINT}")
@@ -236,16 +236,20 @@ if DOMAIN_ENDPOINT:
 
 
 async def get_domain() -> dict:
-    logger.debug(f"Getting Domain")
+    global local_domain
+
+    logger.debug(f"Getting Domain, attempting chache")
     if local_domain:
         # use cached
         return local_domain
     if domain_endpoint:
         # create a request towards the endpoint which can deliver a domain JSON
         try:
-            logger.debug(f"Accessing domain endpoint at {DOMAIN_ENDPOINT}")
+            logger.debug(f"no cached domain, accessing domain endpoint at {DOMAIN_ENDPOINT}")
             response: Any = await domain_endpoint.request(
-                method="get", timeout=DEFAULT_REQUEST_TIMEOUT
+                method="get",
+                timeout=DEFAULT_REQUEST_TIMEOUT,
+                headers={"Accept": "application/json"},
             )
             if "intents" in response:
                 # very simple check if it is a domain objects
@@ -256,10 +260,11 @@ async def get_domain() -> dict:
                 f"Retrieval of domain was unsuccessful, {ex.message=} {ex.status=} {ex.text=}",
                 exc_info=ex,
             )
-            return
+            return {}
         except Exception as e:
-            logger.error(f"Retrieval of domain was unsuccessful, {e.args=}", exc_info=ex)
-            return
+            logger.error(f"Retrieval of domain was unsuccessful, {e.args=}", exc_info=e)
+            return {}
+    return {}
 
 
 ########## END BLOCK INSERTION
