@@ -165,7 +165,7 @@ def reset_attribute_slots(
     return slots
 
 
-async def get_object_type_dynamic(
+async def match_extracted_entities_to_object_types(
     tracker: "Tracker",
     object_types: List,
 ) -> Optional[Text]:
