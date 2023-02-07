@@ -243,11 +243,11 @@ class InMemoryKnowledgeBase(KnowledgeBase):
                 )
             )
 
-        # if not objects_of_interest or len(objects_of_interest) > 1:
-        #     # TODO:
-        #     #  if multiple objects are found, the objects could be shown
-        #     #  to the user. the user then needs to clarify what object he meant.
-        #     return None
+        if not objects_of_interest or len(objects_of_interest) > 1:
+            # TODO:
+            #  if multiple objects are found, the objects could be shown
+            #  to the user. the user then needs to clarify what object he meant.
+            return None
 
         return objects_of_interest[0]
 
