@@ -59,17 +59,6 @@ endif
 test: clean
 	poetry run py.test tests --cov rasa_sdk -v
 
-generate-pending-changelog:
-	poetry run python -c "from scripts import release; release.generate_changelog('major.minor.patch')"
-
-cleanup-generated-changelog:
-	# this is a helper to cleanup your git status locally after running "make test-docs"
-	# it's not run on CI at the moment
-	git status --porcelain | sed -n '/^D */s///p' | xargs git reset HEAD
-	git reset HEAD CHANGELOG.mdx
-	git ls-files --deleted | xargs git checkout
-	git checkout CHANGELOG.mdx
-
 prepare-docs:
 	cd docs/ && poetry run yarn pre-build
 
