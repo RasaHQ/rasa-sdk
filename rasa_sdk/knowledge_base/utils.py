@@ -167,7 +167,7 @@ def reset_attribute_slots(
 
 async def get_object_type_dynamic(
     tracker: "Tracker",
-    object_types: List,
+    object_types: List[Text],
 ) -> Optional[Text]:
     """
     If the user ask a question about an attribute using an object name and
