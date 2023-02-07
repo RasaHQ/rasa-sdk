@@ -185,7 +185,6 @@ async def get_object_type_dynamic(
     entities_values = [entities[i]["entity"] for i in range(len(entities))]
     for entity in entities_values:
         if entity in object_types:
-            object_type_dynamic = entity
-            return object_type_dynamic
+            return entity
 
     return None
