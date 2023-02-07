@@ -14,7 +14,7 @@ from sanic_cors import CORS
 
 from rasa_sdk import utils
 from rasa_sdk.cli.arguments import add_endpoint_arguments
-from rasa_sdk.constants import DEFAULT_SERVER_PORT
+from rasa_sdk.constants import DEFAULT_SERVER_PORT, DEFLATED_REQUEST_BODY_HEADER
 from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
 
@@ -92,7 +92,7 @@ def create_app(
     @app.post("/webhook")
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
-        if request.headers.get("Content-Encoding") == "deflate":
+        if request.headers.get("Content-Encoding") == DEFLATED_REQUEST_BODY_HEADER:
             # Decompress the request data using zlib
             decompressed_data = zlib.decompress(request.body)
             # Load the JSON data from the decompressed request data
