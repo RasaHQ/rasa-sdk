@@ -4,6 +4,7 @@ import os
 import types
 import zlib
 import json
+from json import JSONDecodeError
 from typing import List, Text, Union, Optional, Any
 from ssl import SSLContext
 
@@ -101,6 +102,10 @@ def create_app(
             except zlib.error as e:
                 logger.debug(e)
                 body = {"error": "Error while decompressing body of HTTP request"}
+                return response.json(body, status=400)
+            except JSONDecodeError as e:
+                logger.debug(e)
+                body = {"error": e.msg}
                 return response.json(body, status=400)
 
         else:
