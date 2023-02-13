@@ -19,6 +19,7 @@ from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.interfaces import Tracker
 from rasa_sdk.knowledge_base.storage import KnowledgeBase
+from rasa_sdk.knowledge_base.tracker import TrackerKnowledgeBase
 
 if typing.TYPE_CHECKING:  # pragma: no cover
     from rasa_sdk.types import DomainDict
@@ -135,7 +136,10 @@ class ActionQueryKnowledgeBase(Action):
             object_types = await utils.call_potential_coroutine(
                 self.knowledge_base.get_object_types()
             )
-            object_type_dynamic = await get_object_type_dynamic(tracker, object_types)
+            object_type = await get_object_type_dynamic(tracker, object_types)
+            set_object_type_slot_event = [SlotSet(SLOT_OBJECT_TYPE, object_type)]
+            my_tracker = TrackerKnowledgeBase(tracker)
+            my_tracker.add_object_type_slot(set_object_type_slot_event, object_type)
 
         if object_type:
             if not attribute or new_request:
@@ -145,11 +149,6 @@ class ActionQueryKnowledgeBase(Action):
                 return await self._query_attribute(
                     dispatcher, object_type, attribute, tracker
                 )
-
-        if object_type_dynamic and attribute:
-            return await self._query_attribute(
-                dispatcher, object_type_dynamic, attribute, tracker
-            )
 
         if last_object_type and has_mention and attribute:
             return await self._query_attribute(
@@ -227,7 +226,6 @@ class ActionQueryKnowledgeBase(Action):
         """
         object_name = get_object_name(
             tracker,
-            object_type,
             self.knowledge_base.ordinal_mention_mapping,
             self.use_last_object_mention,
         )
