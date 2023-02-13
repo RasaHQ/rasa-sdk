@@ -181,11 +181,10 @@ async def get_object_type_dynamic(
 
     Returns: the name of the object type
     """
-    entities = tracker.latest_message["entities"]
-    entities_values = [entities[i]["entity"] for i in range(len(entities))]
+    entities = tracker.latest_message.get("entities", [])
+    entities_values = [entity.get("entity") for entity in entities]
     for entity in entities_values:
         if entity in object_types:
-            object_type_dynamic = entity
-            return object_type_dynamic
+            return entity
 
     return None
