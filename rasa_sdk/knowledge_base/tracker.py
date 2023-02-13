@@ -9,7 +9,7 @@ if typing.TYPE_CHECKING:  # pragma: no cover
     from rasa_sdk.types import DomainDict, TrackerState
 
 
-class MyTracker(Tracker):
+class TrackerKnowledgeBase(Tracker):
     def __init__(
         self,
         tracker: Tracker,
