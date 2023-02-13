@@ -13,7 +13,7 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LISTED_OBJECTS,
     get_object_name,
     get_attribute_slots,
-    get_object_type_dynamic,
+    match_extracted_entities_to_object_types,
 )
 from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
@@ -136,7 +136,7 @@ class ActionQueryKnowledgeBase(Action):
             object_types = await utils.call_potential_coroutine(
                 self.knowledge_base.get_object_types()
             )
-            object_type = await get_object_type_dynamic(tracker, object_types)
+            object_type = await match_extracted_entities_to_object_types(tracker, object_types)
             set_object_type_slot_event = [SlotSet(SLOT_OBJECT_TYPE, object_type)]
             my_tracker = TrackerKnowledgeBase(tracker)
             my_tracker.add_object_type_slot(set_object_type_slot_event, object_type)

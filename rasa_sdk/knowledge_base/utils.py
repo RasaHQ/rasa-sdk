@@ -167,7 +167,7 @@ def reset_attribute_slots(
     return slots
 
 
-async def get_object_type_dynamic(
+async def match_extracted_entities_to_object_types(
     tracker: "Tracker",
     object_types: List[Text],
 ) -> Optional[Text]:
@@ -183,11 +183,10 @@ async def get_object_type_dynamic(
 
     Returns: the name of the object type
     """
-    entities = tracker.latest_message["entities"]
-    entities_values = [entities[i]["entity"] for i in range(len(entities))]
+    entities = tracker.latest_message.get("entities", [])
+    entities_values = [entity.get("entity") for entity in entities]
     for entity in entities_values:
         if entity in object_types:
-            object_type_dynamic = entity
-            return object_type_dynamic
+            return entity
 
     return None
