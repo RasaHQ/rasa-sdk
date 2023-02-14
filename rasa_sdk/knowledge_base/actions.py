@@ -13,7 +13,7 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LISTED_OBJECTS,
     get_object_name,
     get_attribute_slots,
-    get_object_type_dynamic,
+    match_extracted_entities_to_object_types,
 )
 from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
@@ -135,7 +135,7 @@ class ActionQueryKnowledgeBase(Action):
             object_types = await utils.call_potential_coroutine(
                 self.knowledge_base.get_object_types()
             )
-            object_type_dynamic = await get_object_type_dynamic(tracker, object_types)
+            object_type_dynamic = await match_extracted_entities_to_object_types(tracker, object_types)
 
         if object_type:
             if not attribute or new_request:
