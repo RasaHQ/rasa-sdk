@@ -2,6 +2,9 @@ import argparse
 import logging
 import os
 import types
+import zlib
+import json
+from json import JSONDecodeError
 from typing import List, Text, Union, Optional, Any
 from ssl import SSLContext
 
@@ -12,7 +15,7 @@ from sanic_cors import CORS
 
 from rasa_sdk import utils
 from rasa_sdk.cli.arguments import add_endpoint_arguments
-from rasa_sdk.constants import DEFAULT_SERVER_PORT
+from rasa_sdk.constants import DEFAULT_SERVER_PORT, DEFLATED_REQUEST_BODY_HEADER
 from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
 
@@ -90,7 +93,23 @@ def create_app(
     @app.post("/webhook")
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
-        action_call = request.json
+        if request.headers.get("Content-Encoding") == DEFLATED_REQUEST_BODY_HEADER:
+            try:
+                # Decompress the request data using zlib
+                decompressed_data = zlib.decompress(request.body)
+                # Load the JSON data from the decompressed request data
+                action_call = json.loads(decompressed_data)
+            except zlib.error as e:
+                logger.debug(e)
+                body = {"error": "Error while decompressing body of HTTP request"}
+                return response.json(body, status=400)
+            except JSONDecodeError as e:
+                logger.debug(e)
+                body = {"error": e.msg}
+                return response.json(body, status=400)
+
+        else:
+            action_call = request.json
         if action_call is None:
             body = {"error": "Invalid body request"}
             return response.json(body, status=400)

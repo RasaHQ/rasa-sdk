@@ -9,3 +9,5 @@ YAML_VERSION = (1, 2)
 PYTHON_LOGGING_SCHEMA_DOCS = (
     "https://docs.python.org/3/library/logging.config.html#dictionary-schema-details"
 )
+
+DEFLATED_REQUEST_BODY_HEADER = "deflate"
