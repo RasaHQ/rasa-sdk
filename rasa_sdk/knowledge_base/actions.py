@@ -133,7 +133,7 @@ class ActionQueryKnowledgeBase(Action):
             # sets the object type dynamically from entities if object_type is not found
             # in user query
             object_types = self.knowledge_base.get_object_types()
-            object_type = await match_extracted_entities_to_object_types(tracker, object_types)
+            object_type = match_extracted_entities_to_object_types(tracker, object_types)
             set_object_type_slot_event = [SlotSet(SLOT_OBJECT_TYPE, object_type)]
             tracker.add_slots(set_object_type_slot_event) # temporarily set the `object_type_slot` to extracted value
 
