@@ -19,7 +19,6 @@ from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.interfaces import Tracker
 from rasa_sdk.knowledge_base.storage import KnowledgeBase
-from rasa_sdk.knowledge_base.tracker import TrackerKnowledgeBase
 
 if typing.TYPE_CHECKING:  # pragma: no cover
     from rasa_sdk.types import DomainDict
