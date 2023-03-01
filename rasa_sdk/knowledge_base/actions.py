@@ -132,24 +132,17 @@ class ActionQueryKnowledgeBase(Action):
         if not object_type:
             # sets the object type dynamically from entities if object_type is not found
             # in user query
-            object_types = await utils.call_potential_coroutine(
-                self.knowledge_base.get_object_types()
-            )
-            object_type_dynamic = await match_extracted_entities_to_object_types(tracker, object_types)
-
-        if object_type:
-            if not attribute or new_request:
-                return await self._query_objects(dispatcher, object_type, tracker)
-
-            elif attribute:
-                return await self._query_attribute(
-                    dispatcher, object_type, attribute, tracker
-                )
-
-        if object_type_dynamic and attribute:
+            object_types = self.knowledge_base.get_object_types()
+            object_type = match_extracted_entities_to_object_types(tracker, object_types)
+            set_object_type_slot_event = [SlotSet(SLOT_OBJECT_TYPE, object_type)]
+            tracker.add_slots(set_object_type_slot_event) # temporarily set the `object_type_slot` to extracted value
+        
+        if object_type and attribute:
             return await self._query_attribute(
-                dispatcher, object_type_dynamic, attribute, tracker
+                dispatcher, object_type, attribute, tracker
             )
+        elif (object_type and not attribute) or (object_type and new_request):
+            return await self._query_objects(dispatcher, object_type, tracker)
 
         if last_object_type and has_mention and attribute:
             return await self._query_attribute(
@@ -227,7 +220,6 @@ class ActionQueryKnowledgeBase(Action):
         """
         object_name = get_object_name(
             tracker,
-            object_type,
             self.knowledge_base.ordinal_mention_mapping,
             self.use_last_object_mention,
         )
