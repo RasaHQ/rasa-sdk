@@ -80,7 +80,6 @@ def resolve_mention(
     listed_items = tracker.get_slot(SLOT_LISTED_OBJECTS)
     last_object = tracker.get_slot(SLOT_LAST_OBJECT)
     last_object_type = tracker.get_slot(SLOT_LAST_OBJECT_TYPE)
-    current_object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
 
     if not mention:
         return None
@@ -167,7 +166,7 @@ def reset_attribute_slots(
     return slots
 
 
-async def match_extracted_entities_to_object_types(
+def match_extracted_entities_to_object_types(
     tracker: "Tracker",
     object_types: List[Text],
 ) -> Optional[Text]:

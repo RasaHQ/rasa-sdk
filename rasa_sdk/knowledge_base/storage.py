@@ -110,15 +110,6 @@ class KnowledgeBase:
         """
         raise NotImplementedError("Method is not implemented.")
 
-    async def get_object_types(self) -> List[Text]:
-        """
-        Returns a list of all object types that belong to the knowledge base.
-
-        Returns: list of object types
-        """
-        raise NotImplementedError("Method is not implemented.")
-
-
 class InMemoryKnowledgeBase(KnowledgeBase):
     def __init__(self, data_file: Text) -> None:
         """
@@ -251,5 +242,5 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
         return objects_of_interest[0]
 
-    async def get_object_types(self) -> List[Text]:
+    def get_object_types(self) -> List[Text]:
         return list(self.data.keys())
