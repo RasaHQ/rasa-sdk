@@ -28,9 +28,10 @@ def compare_slots(slot_list_1, slot_list_2):
 
 
 @pytest.mark.parametrize(
-    "slots,expected_slots",
+    "latest_message,slots,expected_slots",
     [
-        (
+        (   
+            {},
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: None,
@@ -42,37 +43,51 @@ def compare_slots(slot_list_1, slot_list_2):
             [
                 SlotSet(SLOT_MENTION, None),
                 SlotSet(SLOT_ATTRIBUTE, None),
-                SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
+                SlotSet(SLOT_OBJECT_TYPE, None),
                 SlotSet(SLOT_LAST_OBJECT, None),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
                 SlotSet(SLOT_LISTED_OBJECTS, [3, 2, 1]),
             ],
         ),
         (
+            {},
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: None,
                 SLOT_OBJECT_TYPE: "restaurant",
                 SLOT_LISTED_OBJECTS: None,
                 SLOT_LAST_OBJECT: None,
-                SLOT_LAST_OBJECT_TYPE: "restaurant",
+                SLOT_LAST_OBJECT_TYPE: None,
                 "cuisine": "Italian",
             },
             [
                 SlotSet(SLOT_MENTION, None),
                 SlotSet(SLOT_ATTRIBUTE, None),
-                SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
+                SlotSet(SLOT_OBJECT_TYPE, None),
                 SlotSet(SLOT_LAST_OBJECT, None),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
                 SlotSet(SLOT_LISTED_OBJECTS, [3, 1]),
                 SlotSet("cuisine", None),
             ],
         ),
-        (
+        (   
+            {
+                    
+                "entities":[
+                    {
+                        "entity":"attribute",
+        
+                    },
+                    {
+                        "entity":"mention",
+                    }
+                ],
+                    
+            },
             {
                 SLOT_MENTION: "2",
                 SLOT_ATTRIBUTE: "cuisine",
-                SLOT_OBJECT_TYPE: "restaurant",
+                SLOT_OBJECT_TYPE: None,
                 SLOT_LISTED_OBJECTS: [1, 2, 3],
                 SLOT_LAST_OBJECT: None,
                 SLOT_LAST_OBJECT_TYPE: "restaurant",
@@ -80,16 +95,29 @@ def compare_slots(slot_list_1, slot_list_2):
             [
                 SlotSet(SLOT_MENTION, None),
                 SlotSet(SLOT_ATTRIBUTE, None),
-                SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
+                SlotSet(SLOT_OBJECT_TYPE, None),
                 SlotSet(SLOT_LAST_OBJECT, 2),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
             ],
         ),
         (
+             {
+                    
+                "entities":[
+                    {
+                        "entity":"attribute",
+        
+                    },
+                    {
+                        "entity":"restaurant",
+                    }
+                ],
+                    
+            },
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: "cuisine",
-                SLOT_OBJECT_TYPE: "restaurant",
+                SLOT_OBJECT_TYPE: None,
                 SLOT_LISTED_OBJECTS: [1, 2, 3],
                 SLOT_LAST_OBJECT: None,
                 SLOT_LAST_OBJECT_TYPE: "restaurant",
@@ -98,12 +126,17 @@ def compare_slots(slot_list_1, slot_list_2):
             [
                 SlotSet(SLOT_MENTION, None),
                 SlotSet(SLOT_ATTRIBUTE, None),
-                SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
+                SlotSet(SLOT_OBJECT_TYPE, None),
                 SlotSet(SLOT_LAST_OBJECT, 1),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
             ],
         ),
         (
+            {
+                    
+                "entities":[],
+                    
+            },
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: None,
@@ -116,15 +149,15 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
     ],
 )
-async def test_action_run(data_file, slots, expected_slots):
+async def test_action_run(data_file, latest_message,slots, expected_slots):
     knowledge_base = InMemoryKnowledgeBase(data_file)
     action = ActionQueryKnowledgeBase(knowledge_base)
 
     dispatcher = CollectingDispatcher()
-    tracker = Tracker("default", slots, {}, [], False, None, {}, "action_listen")
-
+    
+    tracker = Tracker("default", slots, latest_message, [], False, None, {}, "action_listen")
     actual_slots = await action.run(dispatcher, tracker, {})
-
+    print(f"actual slots: {actual_slots}\nexpected slots:{expected_slots}")   
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)
 
