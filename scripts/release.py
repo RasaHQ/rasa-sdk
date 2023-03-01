@@ -161,7 +161,8 @@ def ask_version() -> Text:
                 str(current_version.next_release_candidate("major")),
             ]
         version = questionary.select(
-            f"Which {version} do you want to release?", choices=choices,
+            f"Which {version} do you want to release?",
+            choices=choices,
         ).ask()
 
     if version:
@@ -255,8 +256,8 @@ def next_version(args: argparse.Namespace) -> Version:
 def generate_changelog(version: Version) -> None:
     """Call towncrier and create a changelog from all available changelog entries."""
     check_call(
-        ["towncrier", "build", "--yes", "--version", str(version)], cwd=str(project_root())
-
+        ["towncrier", "build", "--yes", "--version", str(version)],
+        cwd=str(project_root()),
     )
 
 

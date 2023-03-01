@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 class KnowledgeBase:
     def __init__(self) -> None:
-
         self.ordinal_mention_mapping = {
             "1": lambda l: l[0],
             "2": lambda l: l[1],
@@ -110,6 +109,7 @@ class KnowledgeBase:
         """
         raise NotImplementedError("Method is not implemented.")
 
+
 class InMemoryKnowledgeBase(KnowledgeBase):
     def __init__(self, data_file: Text) -> None:
         """
@@ -201,7 +201,6 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         self, object_type: Text, object_identifier: Text
     ) -> Optional[Dict[Text, Any]]:
         if object_type not in self.data:
-
             return None
 
         objects = self.data[object_type]
@@ -221,7 +220,6 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         # if the object was referred to directly, we need to compare the representation
         # of each object with the given object identifier
         if not objects_of_interest:
-
             repr_function = await utils.call_potential_coroutine(
                 self.get_representation_function_of_object(object_type)
             )

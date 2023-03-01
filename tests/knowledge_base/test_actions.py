@@ -30,7 +30,7 @@ def compare_slots(slot_list_1, slot_list_2):
 @pytest.mark.parametrize(
     "latest_message,slots,expected_slots",
     [
-        (   
+        (
             {},
             {
                 SLOT_MENTION: None,
@@ -70,19 +70,16 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet("cuisine", None),
             ],
         ),
-        (   
+        (
             {
-                    
-                "entities":[
+                "entities": [
                     {
-                        "entity":"attribute",
-        
+                        "entity": "attribute",
                     },
                     {
-                        "entity":"mention",
-                    }
+                        "entity": "mention",
+                    },
                 ],
-                    
             },
             {
                 SLOT_MENTION: "2",
@@ -101,18 +98,15 @@ def compare_slots(slot_list_1, slot_list_2):
             ],
         ),
         (
-             {
-                    
-                "entities":[
+            {
+                "entities": [
                     {
-                        "entity":"attribute",
-        
+                        "entity": "attribute",
                     },
                     {
-                        "entity":"restaurant",
-                    }
+                        "entity": "restaurant",
+                    },
                 ],
-                    
             },
             {
                 SLOT_MENTION: None,
@@ -133,9 +127,7 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
         (
             {
-                    
-                "entities":[],
-                    
+                "entities": [],
             },
             {
                 SLOT_MENTION: None,
@@ -149,22 +141,23 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
     ],
 )
-async def test_action_run(data_file, latest_message,slots, expected_slots):
+async def test_action_run(data_file, latest_message, slots, expected_slots):
     knowledge_base = InMemoryKnowledgeBase(data_file)
     action = ActionQueryKnowledgeBase(knowledge_base)
 
     dispatcher = CollectingDispatcher()
-    
-    tracker = Tracker("default", slots, latest_message, [], False, None, {}, "action_listen")
+
+    tracker = Tracker(
+        "default", slots, latest_message, [], False, None, {}, "action_listen"
+    )
     actual_slots = await action.run(dispatcher, tracker, {})
-    print(f"actual slots: {actual_slots}\nexpected slots:{expected_slots}")   
+    print(f"actual slots: {actual_slots}\nexpected slots:{expected_slots}")
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)
 
     # Check that utterances produced by action are correct.
     if slots[SLOT_ATTRIBUTE]:
         if slots.get("restaurant") is not None:
-
             name = slots["restaurant"]
             attr = slots[SLOT_ATTRIBUTE]
             obj = await knowledge_base.get_object("restaurant", name)

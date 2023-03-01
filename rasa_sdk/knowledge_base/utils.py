@@ -91,7 +91,7 @@ def resolve_mention(
     # NOTE:
     # for now we just assume that if the user refers to an object, for
     # example via "it" or "that restaurant", they are actually referring to the last
-    # object that was detected. 
+    # object that was detected.
     # Since object type slot is reset to 'None' value, it is sufficient to only check
     # whether the last_object_type is not None.
     if last_object_type:
