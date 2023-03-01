@@ -15,7 +15,6 @@ if typing.TYPE_CHECKING:  # pragma: no cover
 
 def get_object_name(
     tracker: "Tracker",
-    object_type: Text,
     ordinal_mention_mapping: Dict[Text, Callable],
     use_last_object_mention: bool = True,
 ) -> Optional[Text]:
@@ -35,10 +34,11 @@ def get_object_name(
     knowledge base)
     """
     mention = tracker.get_slot(SLOT_MENTION)
+    object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
 
     # the user referred to the object by a mention, such as "first one"
     if mention:
-        return resolve_mention(tracker, ordinal_mention_mapping, object_type)
+        return resolve_mention(tracker, ordinal_mention_mapping)
 
     # check whether the user referred to the objet by its name
     object_name = tracker.get_slot(object_type)
@@ -54,7 +54,7 @@ def get_object_name(
 
 
 def resolve_mention(
-    tracker: "Tracker", ordinal_mention_mapping: Dict[Text, Callable], object_type: Text
+    tracker: "Tracker", ordinal_mention_mapping: Dict[Text, Callable]
 ) -> Optional[Text]:
     """
     Resolve the given mention to the name of the actual object.
@@ -80,7 +80,6 @@ def resolve_mention(
     listed_items = tracker.get_slot(SLOT_LISTED_OBJECTS)
     last_object = tracker.get_slot(SLOT_LAST_OBJECT)
     last_object_type = tracker.get_slot(SLOT_LAST_OBJECT_TYPE)
-    current_object_type = object_type
 
     if not mention:
         return None
@@ -92,8 +91,10 @@ def resolve_mention(
     # NOTE:
     # for now we just assume that if the user refers to an object, for
     # example via "it" or "that restaurant", they are actually referring to the last
-    # object that was detected.
-    if current_object_type == last_object_type:
+    # object that was detected. 
+    # Since object type slot is reset to 'None' value, it is sufficient to only check
+    # whether the last_object_type is not None.
+    if last_object_type:
         return last_object
 
     return None
@@ -165,9 +166,9 @@ def reset_attribute_slots(
     return slots
 
 
-async def get_object_type_dynamic(
+def match_extracted_entities_to_object_types(
     tracker: "Tracker",
-    object_types: List,
+    object_types: List[Text],
 ) -> Optional[Text]:
     """
     If the user ask a question about an attribute using an object name and
@@ -181,11 +182,10 @@ async def get_object_type_dynamic(
 
     Returns: the name of the object type
     """
-    entities = tracker.latest_message["entities"]
-    entities_values = [entities[i]["entity"] for i in range(len(entities))]
+    entities = tracker.latest_message.get("entities", [])
+    entities_values = [entity.get("entity") for entity in entities]
     for entity in entities_values:
         if entity in object_types:
-            object_type_dynamic = entity
-            return object_type_dynamic
+            return entity
 
     return None

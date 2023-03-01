@@ -5,16 +5,18 @@ on:
     types: [opened, synchronize, labeled]
 
 jobs:
-  cleanup_runs:
-    name: Cancel old branch builds
-    runs-on: ubuntu-latest
-    if: "!startsWith(github.ref, 'refs/tags/') && github.ref != 'refs/heads/main'"
-
+  snyk:
+    runs-on: ubuntu-20.04
     steps:
-      - name: Find and cancel old builds of this branch
-        uses: styfle/cancel-workflow-action@0.6.0
+      - uses: actions/checkout@v3
+      - name: Run Snyk to check for package vulnerabilities
+        uses: snyk/actions/python-3.8@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          access_token: "${{ secrets.GITHUB_TOKEN }}"
+          command: monitor
+          args: --all-projects --org=rasa --skip-unresolved
 
   trivy:
     name: Detecting hardcoded secrets
