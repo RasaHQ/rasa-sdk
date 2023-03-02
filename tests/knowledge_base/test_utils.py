@@ -138,6 +138,7 @@ def test_get_object_name(slots, use_last_object_mention, expected_object_name):
         (
             {
                 "entities": [
+                "entities": [
                     {
                         "entity": "attribute",
                         "start": 0,
@@ -162,8 +163,7 @@ def test_get_object_name(slots, use_last_object_mention, expected_object_name):
             ['hotel', 'restaurant'],
             'restaurant'
         ),
-
-    ]
+    ],
 )
 def test_match_extracted_entities_to_object_types(latest_message, object_types, expected_object_name):
 
@@ -172,3 +172,4 @@ def test_match_extracted_entities_to_object_types(latest_message, object_types, 
         tracker, object_types
     )
     assert actual_object_name == expected_object_name
+
