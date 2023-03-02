@@ -135,8 +135,8 @@ class ActionQueryKnowledgeBase(Action):
             object_types = self.knowledge_base.get_object_types()
             object_type = match_extracted_entities_to_object_types(tracker, object_types)
             set_object_type_slot_event = [SlotSet(SLOT_OBJECT_TYPE, object_type)]
-            tracker.add_slots(set_object_type_slot_event) # temporarily set the `object_type_slot` to extracted value
-        
+            tracker.add_slots(set_object_type_slot_event)  # temporarily set the `object_type_slot` to extracted value
+
         if object_type and attribute:
             return await self._query_attribute(
                 dispatcher, object_type, attribute, tracker
