@@ -31,7 +31,6 @@ def compare_slots(slot_list_1, slot_list_2):
     "latest_message,slots,expected_slots",
     [
         (
-        (
             {},
             {
                 SLOT_MENTION: None,
@@ -71,7 +70,7 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet("cuisine", None),
             ],
         ),
-        (
+
         (
             {
                 "entities" : [
@@ -103,8 +102,7 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
         (
             {
-                "entities": [
-            {
+
                 "entities": [
                     {
                         "entity": "attribute",
@@ -136,7 +134,6 @@ def compare_slots(slot_list_1, slot_list_2):
         (
             {
                 "entities": [],
-                "entities": [],
             },
             {
                 SLOT_MENTION: None,
@@ -150,7 +147,6 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
     ],
 )
-async def test_action_run(data_file, latest_message, slots, expected_slots):
 async def test_action_run(data_file, latest_message, slots, expected_slots):
     knowledge_base = InMemoryKnowledgeBase(data_file)
     action = ActionQueryKnowledgeBase(knowledge_base)
