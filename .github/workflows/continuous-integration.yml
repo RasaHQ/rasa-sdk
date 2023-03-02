@@ -18,11 +18,11 @@ env:
 jobs:
   quality:
     name: Code Quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout git repository 🕝
-        uses: actions/checkout@v2
+        uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6
 
       - name: Set up Python 3.10 🐍
         uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5
@@ -40,7 +40,7 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
 
       - name: Load Poetry Cached Libraries ⬇
-        uses: actions/cache@v1
+        uses: actions/cache@70655ec8323daeeaa7ef06d7c56e1b9191396cbe
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-3.10-${{ hashFiles('**/poetry.lock') }}
@@ -71,14 +71,14 @@ jobs:
 
   test:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9, '3.10']
 
     steps:
       - name: Checkout git repository 🕝
-        uses: actions/checkout@v2
+        uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6
 
       - name: Set up Python ${{ matrix.python-version }} 🐍
         uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5
@@ -96,7 +96,7 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
 
       - name: Load Poetry Cached Libraries ⬇
-        uses: actions/cache@v1
+        uses: actions/cache@70655ec8323daeeaa7ef06d7c56e1b9191396cbe
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
@@ -117,9 +117,9 @@ jobs:
 
   docker_linter:
     name: Lint Dockerfile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6
       - name: Lint Dockerfile
         uses: brpaz/hadolint-action@1623ba61710b974b55ba455930e6f2c8ef919778
         with:
@@ -127,7 +127,7 @@ jobs:
 
   build_docker_image_set_env:
     name: Prepare environment for Docker build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       # Tag name used for intermediate images created during Docker image builds, e.g. 3886 - a PR number
       image_tag: ${{ steps.set_output.outputs.image_tag }}
@@ -138,13 +138,13 @@ jobs:
       # to checkout HEAD commit for a pull request.
       # More details: https://github.com/actions/checkout/issues/299
       - name: Checkout pull request HEAD commit instead of merge commit 🕝
-        uses: actions/checkout@v2
+        uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6
         if: github.event_name == 'pull_request'
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Checkout git repository 🕝
-        uses: actions/checkout@v2
+        uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6
         if: github.event_name != 'pull_request'
 
       # Set environment variables for a pull request
@@ -185,7 +185,7 @@ jobs:
       - name: Set output
         id: set_output
         run: |
-          echo "::set-output name=image_tag::${{ env.IMAGE_TAG }}"
+          echo "image_tag=${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
 
       - name: Check if tag version is equal or higher than the latest tagged rasa-sdk version
         id: rasa_sdk_get_version
@@ -203,14 +203,14 @@ jobs:
 
 
           if [[ "${IS_NEWEST_VERSION}" == "true" && "$CURRENT_TAG" =~ ^[0-9.]+$ ]]; then
-            echo "::set-output name=is_newest_version::true"
+            echo "is_newest_version=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=is_newest_version::false"
+            echo "is_newest_version=false" >> $GITHUB_OUTPUT
           fi
 
   build_docker_image:
     name: Build Docker image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [quality, test, docker_linter, build_docker_image_set_env]
 
     steps:
@@ -218,13 +218,13 @@ jobs:
       # to checkout HEAD commit for a pull request.
       # More details: https://github.com/actions/checkout/issues/299
       - name: Checkout pull request HEAD commit instead of merge commit 🕝
-        uses: actions/checkout@v2
+        uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6
         if: github.event_name == 'pull_request'
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Checkout git repository 🕝
-        uses: actions/checkout@v2
+        uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6
         if: github.event_name != 'pull_request'
 
       - name: Set up Docker Buildx
@@ -261,7 +261,7 @@ jobs:
 
   deploy:
     name: Deploy to PyPI
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     # deploy will only be run when there is a tag available
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
@@ -269,7 +269,7 @@ jobs:
 
     steps:
       - name: Checkout git repository 🕝
-        uses: actions/checkout@v2
+        uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6
 
       - name: Set up Python 3.10 🐍
         uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5
