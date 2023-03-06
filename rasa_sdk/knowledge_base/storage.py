@@ -111,6 +111,7 @@ class KnowledgeBase:
 
 
 class InMemoryKnowledgeBase(KnowledgeBase):
+
     def __init__(self, data_file: Text) -> None:
         """
         Initialize the in-memory knowledge base.
