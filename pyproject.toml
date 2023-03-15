@@ -104,6 +104,16 @@ semantic_version = "^2.8.5"
 mypy = "^0.991"
 sanic-testing = "^22.3.0, <22.9.0"
 
+[tool.pytest.ini_options]
+# Function starting with the following pattern are considered for test cases.
+python_functions = "test_"
+
+[tool.mypy]
+ignore_missing_imports = true
+show_error_codes = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
 [tool.ruff]
 ignore = ["D100", "D104", "D105", "E402", "E501", "F401", "F811"]
 line-length = 88
