@@ -2,6 +2,8 @@ import logging
 
 import rasa_sdk.cli
 import rasa_sdk.version
+from rasa_sdk.interfaces import Tracker, Action, ActionExecutionRejection  # noqa: F401
+from rasa_sdk.forms import ValidationAction, FormValidationAction  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
