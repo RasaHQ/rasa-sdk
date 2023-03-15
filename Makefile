@@ -6,7 +6,7 @@ help:
 	@echo "    clean"
 	@echo "        Remove python artifacts and build artifacts."
 	@echo "    lint"
-	@echo "        Check style with flake8."
+	@echo "        Lint with ruff."
 	@echo "    lint-docstrings"
 	@echo "        Check docstring conventions in changed files."
 	@echo "    test"
@@ -36,10 +36,10 @@ formatter:
 	poetry run black rasa_sdk tests
 
 lint:
-	poetry run flake8 rasa_sdk tests --extend-ignore D
+	poetry run ruff check rasa_sdk tests --ignore D
 	poetry run black --check rasa_sdk tests
 	make lint-docstrings
-	
+
  # Compare against `main` if no branch was provided
 BRANCH ?= main
 lint-docstrings:

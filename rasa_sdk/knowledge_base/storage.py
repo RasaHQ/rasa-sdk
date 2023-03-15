@@ -14,18 +14,18 @@ class KnowledgeBase:
     def __init__(self) -> None:
 
         self.ordinal_mention_mapping = {
-            "1": lambda l: l[0],
-            "2": lambda l: l[1],
-            "3": lambda l: l[2],
-            "4": lambda l: l[3],
-            "5": lambda l: l[4],
-            "6": lambda l: l[5],
-            "7": lambda l: l[6],
-            "8": lambda l: l[7],
-            "9": lambda l: l[8],
-            "10": lambda l: l[9],
-            "ANY": lambda l: random.choice(l),
-            "LAST": lambda l: l[-1],
+            "1": lambda lst: lst[0],
+            "2": lambda lst: lst[1],
+            "3": lambda lst: lst[2],
+            "4": lambda lst: lst[3],
+            "5": lambda lst: lst[4],
+            "6": lambda lst: lst[5],
+            "7": lambda lst: lst[6],
+            "8": lambda lst: lst[7],
+            "9": lambda lst: lst[8],
+            "10": lambda lst: lst[9],
+            "ANY": lambda lst: random.choice(lst),
+            "LAST": lambda lst: lst[-1],
         }
 
         self.key_attribute: DefaultDict[Text, Text] = defaultdict(lambda: "id")
