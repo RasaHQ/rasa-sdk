@@ -4,7 +4,7 @@ import os
 import types
 import zlib
 import json
-from typing import List, Text, Union, Optional, Any
+from typing import List, Text, Union, Optional
 from ssl import SSLContext
 
 from sanic import Sanic, response

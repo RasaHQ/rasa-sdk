@@ -115,9 +115,13 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 
 [tool.ruff]
-ignore = ["D100", "D104", "D105", "E402", "E501", "F401", "F811"]
+ignore = [
+    "D100", # ignore missing docstrings in public module
+    "D104", # ignore missing docstrings in public package
+    "D105", # ignore missing docstrings in magic methods
+]
 line-length = 88
-select = ["D", "E", "F", "W"]
+select = ["D", "E", "F", "W", "RUF"]
 
 [tool.ruff.pydocstyle]
 convention = "google"
