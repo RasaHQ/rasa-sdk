@@ -758,9 +758,9 @@ async def test_extract_slot_only():
         (["my_slot", "other_slot"], {}, [SlotSet(REQUESTED_SLOT, "other_slot")]),
         # Extract method for slot which is also mapped in domain
         (
-            ["my_slot", "other_slot"],
+            ["my_slot"],
             {"forms": {"some_form": {"required_slots": ["my_slot"]}}},
-            [SlotSet(REQUESTED_SLOT, "other_slot")],
+            [],
         ),
     ],
 )
@@ -874,7 +874,7 @@ async def test_ask_for_next_slot(
     events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=domain)
     assert events == expected_return_events
 
-
+@pytest.mark.asyncio
 async def test_form_validation_space_slot():
     form_name = "some_form"
 
