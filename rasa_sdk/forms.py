@@ -153,7 +153,7 @@ class ValidationAction(Action, ABC):
                 slots.pop(slot_name)
                 continue
 
-            method_name = f"validate_{slot_name.replace('-','_')}"
+            method_name = f"validate_{slot_name.replace('-','_').replace('.', '_')}"
             validate_method = getattr(self, method_name, None)
 
             if not validate_method:

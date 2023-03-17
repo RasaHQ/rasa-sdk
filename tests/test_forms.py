@@ -12,7 +12,6 @@ from rasa_sdk.forms import (
 )
 from rasa_sdk.slots import SlotMapping
 
-
 DEFAULT_DOMAIN = {
     "slots": {
         "some_other_slot": {
@@ -874,3 +873,51 @@ async def test_ask_for_next_slot(
     dispatcher = CollectingDispatcher()
     events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=domain)
     assert events == expected_return_events
+
+
+@pytest.mark.asyncio
+async def test_form_validation_space_slot():
+    form_name = "some_form"
+
+    class TestFormValidationSpaceSlotAction(FormValidationAction):
+        def name(self) -> Text:
+            return form_name
+
+        def validate_space_slot(
+            self,
+            slot_value: Any,
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+        ) -> Dict[Text, Any]:
+            if slot_value == "correct_value":
+                return {
+                    "space.slot": "validated_value",
+                }
+            return {
+                "space.slot": None,
+            }
+
+    form = TestFormValidationSpaceSlotAction()
+
+    # tracker with active form
+    tracker = Tracker(
+        "default",
+        {},
+        {},
+        [SlotSet("space.slot", "correct_value")],
+        False,
+        None,
+        {"name": form_name, "is_interrupted": False, "rejected": False},
+        "action_listen",
+    )
+
+    dispatcher = CollectingDispatcher()
+    events = await form.run(
+        dispatcher=dispatcher,
+        tracker=tracker,
+        domain={"forms": {form_name: {"required_slots": ["space.slot"]}}},
+    )
+    assert events == [
+        SlotSet("space.slot", "validated_value"),
+    ]
