@@ -113,7 +113,8 @@ class CollectingDispatcher:
         """Sends a message template with buttons to the output channel."""
         warnings.warn(
             "Use of `utter_button_template` is deprecated. "
-            "Use `utter_message(template=<template name>, buttons=<list of buttons>)` instead.",
+            "Use `utter_message(template=<template name>, buttons=<list of buttons>)`"
+            " instead.",
             FutureWarning,
         )
 
