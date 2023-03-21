@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Lint docstrings only against the the diff to avoid too many errors.
-# Check only production code. Ignore other other errors which are captured by `lint`
+# Check only runtime code. Ignore other other errors which are captured by `lint`
 
 # Compare against `main` if no branch was provided
 BRANCH="${1:-main}"
