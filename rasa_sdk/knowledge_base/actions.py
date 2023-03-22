@@ -64,11 +64,17 @@ class ActionQueryKnowledgeBase(Action):
         """
         if attribute_value:
             dispatcher.utter_message(
-                text=f"'{object_name}' has the value '{attribute_value}' for attribute '{attribute_name}'."
+                text=(
+                    f"'{object_name}' has the value '{attribute_value}' "
+                    f"for attribute '{attribute_name}'."
+                )
             )
         else:
             dispatcher.utter_message(
-                text=f"Did not find a valid value for attribute '{attribute_name}' for object '{object_name}'."
+                text=(
+                    f"Did not find a valid value for attribute '{attribute_name}' "
+                    f"for object '{object_name}'."
+                )
             )
 
     async def utter_objects(

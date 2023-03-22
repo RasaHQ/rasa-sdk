@@ -117,10 +117,10 @@ def test_reset_attribute_slots():
 )
 def test_get_object_name(slots, use_last_object_mention, expected_object_name):
     ordinal_mention_mapping = {
-        "1": lambda l: l[0],
-        "2": lambda l: l[1],
-        "3": lambda l: l[2],
-        "LAST": lambda l: l[-1],
+        "1": lambda lst: lst[0],
+        "2": lambda lst: lst[1],
+        "3": lambda lst: lst[2],
+        "LAST": lambda lst: lst[-1],
     }
 
     tracker = Tracker("default", slots, {}, [], False, None, {}, "action_listen")

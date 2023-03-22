@@ -85,7 +85,8 @@ def ReminderScheduled(
     if _is_probably_action_name(intent_name):
         warnings.warn(
             f"ReminderScheduled intent starts with 'utter_' or 'action_'. "
-            f"If '{intent_name}' is indeed an intent, then you can ignore this warning.",
+            f"If '{intent_name}' is indeed an intent, "
+            f"then you can ignore this warning.",
             FutureWarning,
         )
     return {
@@ -109,7 +110,8 @@ def ReminderCancelled(
     if _is_probably_action_name(intent_name):
         warnings.warn(
             f"ReminderCancelled intent starts with 'utter_' or 'action_'. "
-            f"If '{intent_name}' is indeed an intent, then you can ignore this warning.",
+            f"If '{intent_name}' is indeed an intent, "
+            f"then you can ignore this warning.",
             FutureWarning,
         )
     return {
