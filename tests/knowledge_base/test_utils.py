@@ -164,10 +164,7 @@ def test_get_object_name(slots, use_last_object_mention, expected_object_name):
         ),
     ],
 )
-def test_match_extracted_entities_to_object_types(latest_message,
-                                                  object_types,
-                                                  expected_object_name
-                                                  ):
+def test_match_extracted_entities_to_object_types(latest_message, object_types, expected_object_name):
 
     tracker = Tracker("default", {}, latest_message, [], False, None, {}, "action_listen")
     actual_object_name = match_extracted_entities_to_object_types(
