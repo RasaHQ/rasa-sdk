@@ -76,7 +76,6 @@ def compare_slots(slot_list_1, slot_list_2):
                 "entities" : [
                     {
                         "entity": "attribute",
-                        "entity": "attribute",
                     },
                     {
                         "entity": " mention",
@@ -105,7 +104,6 @@ def compare_slots(slot_list_1, slot_list_2):
 
                 "entities": [
                     {
-                        "entity": "attribute",
                         "entity": "attribute",
                     },
                     {
