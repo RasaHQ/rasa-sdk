@@ -190,7 +190,8 @@ async def test_validation_action_outside_forms_with_form_active_loop():
             "slot1": {
                 "type": "any",
                 "mappings": [
-                    # this mapping means that the mapping should be validated by ValidationAction for `form1`
+                    # this mapping means that the mapping should
+                    # be validated by ValidationAction for `form1`
                     {
                         "type": "from_entity",
                         "entity": "name",
@@ -609,7 +610,8 @@ async def test_extract_and_validate_global_slot():
             # both are extracted as follow
             {"state": "california", "city": "san francisco"},
             # validate_state turns "california" to "CA"
-            # validate_city sees "state" == "CA" and turns "san francisco" to "San Francisco"
+            # validate_city sees "state" == "CA" and
+            # turns "san francisco" to "San Francisco"
             [["state", "CA"], ["city", "San Francisco"], [REQUESTED_SLOT, None]],
         ),
         (

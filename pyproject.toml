@@ -1,26 +1,46 @@
 [build-system]
-requires = [ "poetry-core>=1.0.4",]
+requires = ["poetry-core>=1.0.4"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 88
-target-version = [ "py37", "py38", "py39", "py310",]
+target-version = ["py37", "py38", "py39", "py310"]
 exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist))"
 
 [tool.poetry]
 name = "rasa-sdk"
-version = "3.5.0b1"
+version = "3.5.0"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
-authors = [ "Rasa Technologies GmbH <hi@rasa.com>",]
-maintainers = [ "Tom Bocklisch <tom@rasa.com>",]
+authors = ["Rasa Technologies GmbH <hi@rasa.com>"]
+maintainers = ["Tom Bocklisch <tom@rasa.com>"]
 homepage = "https://rasa.com"
 repository = "https://github.com/rasahq/rasa-sdk"
 documentation = "https://rasa.com/docs"
-classifiers = [ "Development Status :: 5 - Production/Stable", "Intended Audience :: Developers", "License :: OSI Approved :: Apache Software License", "Topic :: Software Development :: Libraries",]
-keywords = [ "nlp", "machine-learning", "machine-learning-library", "bot", "bots", "botkit", "rasa conversational-agents", "conversational-ai", "chatbot", "chatbot-framework", "bot-framework",]
-include = [ "LICENSE.txt", "README.md",]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Topic :: Software Development :: Libraries",
+]
+keywords = [
+    "nlp",
+    "machine-learning",
+    "machine-learning-library",
+    "bot",
+    "bots",
+    "botkit",
+    "rasa conversational-agents",
+    "conversational-ai",
+    "chatbot",
+    "chatbot-framework",
+    "bot-framework",
+]
+include = ["LICENSE.txt", "README.md"]
 readme = "README.md"
 license = "Apache-2.0"
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.0.256"
+
 
 [tool.towncrier]
 package = "rasa_sdk"
@@ -76,8 +96,6 @@ pytest-cov = "^4.0.0"
 coveralls = "^3.0.1"
 pytest = "^7.2.1"
 black = "22.12.0"
-flake8 = "^5.0.4"
-flake8-docstrings = "^1.5.0"
 questionary = ">=1.5.1,<1.11.0"
 towncrier = "^22.8.0"
 toml = "^0.10.0"
@@ -85,3 +103,26 @@ pep440-version-utils = "^0.3.0"
 semantic_version = "^2.8.5"
 mypy = "^0.991"
 sanic-testing = "^22.3.0, <22.9.0"
+
+[tool.pytest.ini_options]
+# Function starting with the following pattern are considered for test cases.
+python_functions = "test_"
+
+[tool.mypy]
+ignore_missing_imports = true
+show_error_codes = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.ruff]
+ignore = [
+    "D100",   # ignore missing docstrings in public module
+    "D104",   # ignore missing docstrings in public package
+    "D105",   # ignore missing docstrings in magic methods
+    "RUF005", # admittedly an optimization of code rather than a fail
+]
+line-length = 88
+select = ["D", "E", "F", "W", "RUF"]
+
+[tool.ruff.pydocstyle]
+convention = "google"

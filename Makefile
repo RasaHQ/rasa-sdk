@@ -6,7 +6,7 @@ help:
 	@echo "    clean"
 	@echo "        Remove python artifacts and build artifacts."
 	@echo "    lint"
-	@echo "        Check style with flake8."
+	@echo "        Lint with ruff."
 	@echo "    lint-docstrings"
 	@echo "        Check docstring conventions in changed files."
 	@echo "    test"
@@ -36,21 +36,14 @@ formatter:
 	poetry run black rasa_sdk tests
 
 lint:
-	poetry run flake8 rasa_sdk tests --extend-ignore D
+	poetry run ruff check rasa_sdk tests --ignore D
 	poetry run black --check rasa_sdk tests
 	make lint-docstrings
-	
+
  # Compare against `main` if no branch was provided
 BRANCH ?= main
 lint-docstrings:
-# Lint docstrings only against the the diff to avoid too many errors.
-# Check only production code. Ignore other flake errors which are captured by `lint`
-# Diff of committed changes (shows only changes introduced by your branch)
-ifneq ($(strip $(BRANCH)),)
-	git diff $(BRANCH)...HEAD -- rasa_sdk | poetry run flake8 --select D --diff
-endif
-	# Diff of uncommitted changes for running locally
-	git diff HEAD -- rasa_sdk | poetry run flake8 --select D --diff
+	./scripts/lint_python_docstrings.sh $(BRANCH)
 
 test: clean
 	poetry run py.test tests --cov rasa_sdk -v
