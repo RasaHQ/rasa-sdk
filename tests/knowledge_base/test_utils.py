@@ -145,9 +145,7 @@ def test_get_object_name(slots, use_last_object_mention, expected_object_name):
                         "confidence_entity": 0.9997496008872986,
                         "value": "price-range",
                         "extractor": "DIETClassifier",
-                        "processors": [
-                            "EntitySynonymMapper"
-                        ]
+                        "processors": ["EntitySynonymMapper"],
                     },
                     {
                         "entity": "restaurant",
@@ -155,19 +153,20 @@ def test_get_object_name(slots, use_last_object_mention, expected_object_name):
                         "end": 21,
                         "confidence_entity": 0.9953670501708984,
                         "value": "Donath",
-                        "extractor": "DIETClassifier"
-                    }
+                        "extractor": "DIETClassifier",
+                    },
                 ],
             },
-            ['hotel', 'restaurant'],
-            'restaurant'
+            ["hotel", "restaurant"],
+            "restaurant",
         ),
     ],
 )
-def test_match_extracted_entities_to_object_types(latest_message, object_types, expected_object_name):
-
-    tracker = Tracker("default", {}, latest_message, [], False, None, {}, "action_listen")
-    actual_object_name = match_extracted_entities_to_object_types(
-        tracker, object_types
+def test_match_extracted_entities_to_object_types(
+    latest_message, object_types, expected_object_name
+):
+    tracker = Tracker(
+        "default", {}, latest_message, [], False, None, {}, "action_listen"
     )
+    actual_object_name = match_extracted_entities_to_object_types(tracker, object_types)
     assert actual_object_name == expected_object_name

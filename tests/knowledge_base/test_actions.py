@@ -70,19 +70,17 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet("cuisine", None),
             ],
         ),
-
         (
             {
-                "entities" : [
+                "entities": [
                     {
                         "entity": "attribute",
                     },
                     {
                         "entity": " mention",
-                    }
+                    },
                 ],
             },
-
             {
                 SLOT_MENTION: "2",
                 SLOT_ATTRIBUTE: "cuisine",
@@ -101,17 +99,15 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
         (
             {
-
                 "entities": [
                     {
                         "entity": "attribute",
                     },
                     {
                         "entity": "restaurant",
-                    }
+                    },
                 ],
             },
-
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: "cuisine",
@@ -151,7 +147,9 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
 
     dispatcher = CollectingDispatcher()
 
-    tracker = Tracker("default", slots, latest_message, [], False, None, {}, "action_listen")
+    tracker = Tracker(
+        "default", slots, latest_message, [], False, None, {}, "action_listen"
+    )
     actual_slots = await action.run(dispatcher, tracker, {})
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)
