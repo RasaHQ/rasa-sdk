@@ -151,9 +151,8 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
 
     dispatcher = CollectingDispatcher()
 
-    tracker = Tracker("default",slots,latest_message,[],False,None,{},"action_listen")
+    tracker = Tracker("default", slots, latest_message, [], False, None, {}, "action_listen")
     actual_slots = await action.run(dispatcher, tracker, {})
-    print(f"actual slots: {actual_slots}\nexpected slots:{expected_slots}")
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)
 
