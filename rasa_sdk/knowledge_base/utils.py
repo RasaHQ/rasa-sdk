@@ -181,7 +181,7 @@ def match_extracted_entities_to_object_types(
         tracker: the tracker
         object_types: list of object types in the knowledge base
 
-    Returns: the name of the object type
+    Returns: the name of the object type if found, otherwise `None`.
     """
     entities = tracker.latest_message.get("entities", [])
     entity_names = [entity.get("entity") for entity in entities]
