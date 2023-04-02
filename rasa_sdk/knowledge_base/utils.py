@@ -175,7 +175,8 @@ def match_extracted_entities_to_object_types(
     If the user ask a question about an attribute using an object name and
     without specifying the object type, then this function searches the
     corresponding object type. (e.g: when user asks'price range of B&B', this
-    function detects the object type as 'hotel')
+    function extracts the object type as 'hotel'). Here we assume that the user message contains reference only to one
+    object type in the knowledge base. 
 
     Args:
         tracker: the tracker
