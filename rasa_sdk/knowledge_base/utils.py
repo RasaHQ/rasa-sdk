@@ -145,7 +145,6 @@ def reset_attribute_slots(
     what attributes are detected by the NER. We take all attributes that are set,
     e.g. cuisine = Italian. If we don't reset the attribute slots after the request
     is done and the next utterance of the user would be, for example, "List all
-    is done and the next utterance of the user would be, for example, "List all
     restaurants that have wifi.", we would have two attribute slots set: "wifi" and
     "cuisine". Thus, we would filter all restaurants for two attributes now:
     wifi = True and cuisine = Italian. However, the user did not specify any
