@@ -111,7 +111,7 @@ class KnowledgeBase:
 
     def get_object_types(self) -> List[Text]:
         """
-        Returns a list of object types from In Memory Data.
+        Returns a list of object types from knowledge base data.
 
         Returns: the list of object types
 
