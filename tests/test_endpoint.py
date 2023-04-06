@@ -1,6 +1,8 @@
-import pytest
 import json
+import logging
 import zlib
+
+import pytest
 
 import rasa_sdk.endpoint as ep
 from rasa_sdk.events import SlotSet
@@ -8,7 +10,6 @@ from rasa_sdk.events import SlotSet
 # noinspection PyTypeChecker
 app = ep.create_app(None)
 
-import logging
 
 logger = logging.getLogger(__name__)
 

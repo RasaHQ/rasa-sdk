@@ -1,5 +1,5 @@
 from rasa_sdk.events import SlotSet
-from typing import Text, Callable, Dict, List, Any, Optional
+from typing import Text, Callable, Dict, List, Optional
 import typing
 
 SLOT_MENTION = "mention"
@@ -26,7 +26,8 @@ def get_object_name(
 
     Args:
         tracker: the tracker
-        ordinal_mention_mapping: mapping that maps an ordinal mention to an object in a list
+        ordinal_mention_mapping: mapping that maps
+                                 an ordinal mention to an object in a list
         use_last_object_mention: if true the last mentioned object is returned if
         no other mention could be detected
 
@@ -71,7 +72,8 @@ def resolve_mention(
 
     Args:
         tracker: the tracker
-        ordinal_mention_mapping: mapping that maps an ordinal mention to an object in a list
+        ordinal_mention_mapping: mapping that maps an ordinal mention
+                                 to an object in a list
 
     Returns: name of the actually object
     """

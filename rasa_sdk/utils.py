@@ -193,7 +193,9 @@ def arguments_of(func) -> AbstractSet[Text]:
 
 def number_of_sanic_workers() -> int:
     """Get the number of Sanic workers to use in `app.run()`.
-    If the environment variable `constants.ENV_SANIC_WORKERS` is set and is not equal to 1.
+
+    If the environment variable `constants.ENV_SANIC_WORKERS`
+    is set and is not equal to 1.
     """
 
     def _log_and_get_default_number_of_workers():
