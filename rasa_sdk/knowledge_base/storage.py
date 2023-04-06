@@ -109,6 +109,15 @@ class KnowledgeBase:
         """
         raise NotImplementedError("Method is not implemented.")
 
+    def get_object_types(self) -> List[Text]:
+        """
+        Returns a list of object types from knowledge base data.
+
+        Returns: the list of object types
+
+        """
+        raise NotImplementedError("Method is not implemented.")
+
 
 class InMemoryKnowledgeBase(KnowledgeBase):
     def __init__(self, data_file: Text) -> None:

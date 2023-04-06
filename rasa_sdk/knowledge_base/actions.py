@@ -13,7 +13,7 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LISTED_OBJECTS,
     get_object_name,
     get_attribute_slots,
-    match_extracted_entities_to_object_types,
+    match_extracted_entities_to_object_type,
 )
 from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
@@ -139,7 +139,7 @@ class ActionQueryKnowledgeBase(Action):
             # sets the object type dynamically from entities if object_type is not found
             # in user query
             object_types = self.knowledge_base.get_object_types()
-            object_type = match_extracted_entities_to_object_types(
+            object_type = match_extracted_entities_to_object_type(
                 tracker, object_types
             )
             set_object_type_slot_event = [SlotSet(SLOT_OBJECT_TYPE, object_type)]
@@ -234,7 +234,7 @@ class ActionQueryKnowledgeBase(Action):
             self.use_last_object_mention,
         )
 
-        if not object_name or not attribute:
+        if object_name is None or not attribute:
             dispatcher.utter_message(response="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 

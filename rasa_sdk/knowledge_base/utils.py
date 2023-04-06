@@ -167,7 +167,7 @@ def reset_attribute_slots(
     return slots
 
 
-def match_extracted_entities_to_object_types(
+def match_extracted_entities_to_object_type(
     tracker: "Tracker",
     object_types: List[Text],
 ) -> Optional[Text]:
