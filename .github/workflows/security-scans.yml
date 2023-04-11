@@ -8,7 +8,7 @@ jobs:
   snyk:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
       - name: Run Snyk to check for package vulnerabilities
         uses: snyk/actions/python-3.8@master
         continue-on-error: true
@@ -22,7 +22,7 @@ jobs:
     name: Detecting hardcoded secrets
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+    - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
       with:
         # Fetch all history for all tags and branches
         fetch-depth: '0'
