@@ -198,8 +198,10 @@ class ActionQueryKnowledgeBase(Action):
         )
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
+        # reset the SLOT_OBJECT_TYPE to None. This ensures that the 
+        # list of objects
         slots = [
-            SlotSet(SLOT_OBJECT_TYPE, None),
+            SlotSet(SLOT_OBJECT_TYPE, None), 
             SlotSet(SLOT_MENTION, None),
             SlotSet(SLOT_ATTRIBUTE, None),
             SlotSet(SLOT_LAST_OBJECT, last_object),
@@ -234,7 +236,7 @@ class ActionQueryKnowledgeBase(Action):
             self.use_last_object_mention,
         )
 
-        if not object_name or not attribute:
+        if object_name is None or not attribute:
             dispatcher.utter_message(response="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 
