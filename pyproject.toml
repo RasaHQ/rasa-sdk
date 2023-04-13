@@ -88,7 +88,7 @@ coloredlogs = ">=10,<16"
 sanic = "^21.12.0"
 typing-extensions = ">=4.1.1,<5.0.0"
 Sanic-Cors = "^2.0.0"
-prompt-toolkit = "^3.0,<3.0.29"
+prompt-toolkit = ">=3,<4"
 "ruamel.yaml" = ">=0.16.5,<0.18.0"
 websockets = ">=10.0,<11.0"
 
