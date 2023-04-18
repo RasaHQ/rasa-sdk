@@ -1,4 +1,7 @@
+import logging
+
 import pytest
+from pytest import LogCaptureFixture
 from typing import Text, Dict, Any, List, Optional
 
 from rasa_sdk import Tracker
@@ -768,7 +771,10 @@ async def test_extract_slot_only():
     ],
 )
 async def test_warning_for_slot_extractions(
-    required_slots: List[Text], domain: DomainDict, next_slot_events: List[EventType]
+    required_slots: List[Text],
+    domain: DomainDict,
+    next_slot_events: List[EventType],
+    caplog: LogCaptureFixture,
 ):
     custom_slot = "my_slot"
     unvalidated_value = "some value"
@@ -809,8 +815,14 @@ async def test_warning_for_slot_extractions(
     )
 
     dispatcher = CollectingDispatcher()
-    with pytest.warns(UserWarning):
+    with caplog.at_level(logging.WARNING):
         events = await form.run(dispatcher=dispatcher, tracker=tracker, domain=domain)
+
+        warning_msg = (
+            f"Skipping validation for `{custom_slot}`: "
+            f"there is no validation method specified."
+        )
+        assert warning_msg in caplog.records[0].message
 
     assert events == [SlotSet(custom_slot, unvalidated_value), *next_slot_events]
 
