@@ -9,7 +9,7 @@ exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist))"
 
 [tool.poetry]
 name = "rasa-sdk"
-version = "3.5.0"
+version = "3.5.1"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
 authors = ["Rasa Technologies GmbH <hi@rasa.com>"]
 maintainers = ["Tom Bocklisch <tom@rasa.com>"]
@@ -40,6 +40,7 @@ readme = "README.md"
 license = "Apache-2.0"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.256"
+pytest-asyncio = "^0.21.0"
 
 
 [tool.towncrier]
@@ -90,6 +91,7 @@ typing-extensions = ">=4.1.1,<5.0.0"
 Sanic-Cors = "^2.0.0"
 prompt-toolkit = "^3.0,<3.0.29"
 "ruamel.yaml" = ">=0.16.5,<0.18.0"
+websockets = ">=10.0,<11.0"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^4.0.0"
@@ -107,6 +109,7 @@ sanic-testing = "^22.3.0, <22.9.0"
 [tool.pytest.ini_options]
 # Function starting with the following pattern are considered for test cases.
 python_functions = "test_"
+asyncio_mode = "auto"
 
 [tool.mypy]
 ignore_missing_imports = true
