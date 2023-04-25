@@ -1,6 +1,6 @@
 import functools
 import sys
-from typing import List, Text, Tuple
+from typing import Text, Tuple
 import logging
 import pluggy
 
