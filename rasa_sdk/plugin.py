@@ -29,11 +29,11 @@ def _discover_plugins(manager: pluggy.PluginManager) -> None:
         pass
 
 
-@hookspec  # type: ignore[misc]
+@hookspec  # type: ignore[empty-body]
 def get_version_info() -> Tuple[Text, Text]:
     """Hook specification for getting plugin version info."""
 
 
-@hookspec  # type: ignore[misc]
+@hookspec # type: ignore[empty-body]
 def attach_sanic_app_extensions(app) -> bool:
     """Hook specification for attaching sanic listeners, routes and middlewares."""
