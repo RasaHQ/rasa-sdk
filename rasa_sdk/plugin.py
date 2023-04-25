@@ -26,7 +26,6 @@ def _discover_plugins(manager: pluggy.PluginManager) -> None:
 
         rasa_sdk_plugins.init_hooks(manager)
     except ModuleNotFoundError as e:
-        logger.info("Module cannot be found", exc_info=e)
         pass
 
 
