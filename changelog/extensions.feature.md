@@ -1,0 +1,1 @@
+Add pluggy to provide ability to create sanic extensions in rasa-sdk

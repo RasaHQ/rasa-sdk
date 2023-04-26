@@ -1,8 +1,9 @@
 import functools
 import sys
-from typing import Text, Tuple
 import logging
 import pluggy
+
+from sanic import Sanic
 
 hookspec = pluggy.HookspecMarker("rasa_sdk")
 logger = logging.getLogger(__name__)
@@ -25,15 +26,11 @@ def _discover_plugins(manager: pluggy.PluginManager) -> None:
         import rasa_sdk_plugins
 
         rasa_sdk_plugins.init_hooks(manager)
-    except ModuleNotFoundError:
+    except ModuleNotFoundError as e:
+        logger.info("No plugins found", exc_info=e)
         pass
 
 
-@hookspec  # type: ignore[empty-body]
-def get_version_info() -> Tuple[Text, Text]:
-    """Hook specification for getting plugin version info."""
-
-
-@hookspec # type: ignore[empty-body]
-def attach_sanic_app_extensions(app) -> bool:
+@hookspec
+def attach_sanic_app_extensions(app: Sanic) -> None:
     """Hook specification for attaching sanic listeners, routes and middlewares."""
