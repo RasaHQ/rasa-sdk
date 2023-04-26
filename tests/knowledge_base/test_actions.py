@@ -31,7 +31,13 @@ def compare_slots(slot_list_1, slot_list_2):
     "latest_message,slots,expected_slots",
     [
         (
-            {},
+            {
+                "entities": [
+                    {
+                        "entity": "object_type",
+                    }
+                ],
+            },
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: None,
@@ -50,7 +56,16 @@ def compare_slots(slot_list_1, slot_list_2):
             ],
         ),
         (
-            {},
+            {
+                "entities": [
+                    {
+                        "entity": "object_type",
+                    },
+                    {
+                        "entity": "cuisine",
+                    }
+                ],
+            },
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: None,
