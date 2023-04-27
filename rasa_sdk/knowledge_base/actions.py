@@ -134,12 +134,10 @@ class ActionQueryKnowledgeBase(Action):
         has_mention = tracker.get_slot(SLOT_MENTION) is not None
         entities_in_latest_message = [entity.get("entity") for entity in tracker.latest_message["entities"]]
         has_attribute_in_latest = True if 'attribute' in entities_in_latest_message else False
-        
-        # new_request = object_type != last_object_type
 
         if not object_type:
-            # sets the object type dynamically from entities if object_type is not found
-            # in user query
+            # sets the object type dynamically from entities if object_type is not
+            # found in user query
             object_types = self.knowledge_base.get_object_types()
             object_type = match_extracted_entities_to_object_type(
                 tracker, object_types
