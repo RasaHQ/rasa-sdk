@@ -13,6 +13,7 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LAST_OBJECT,
     SLOT_LAST_OBJECT_TYPE,
 )
+from rasa_sdk.knowledge_base.utils import match_extracted_entities_to_object_type
 
 
 def compare_slots(slot_list_1, slot_list_2):
@@ -31,7 +32,13 @@ def compare_slots(slot_list_1, slot_list_2):
     "latest_message,slots,expected_slots",
     [
         (
-            {},
+            {
+                "entities": [
+                    {
+                        "entity": "object_type",
+                    },
+                ],
+            },
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: None,
@@ -50,7 +57,16 @@ def compare_slots(slot_list_1, slot_list_2):
             ],
         ),
         (
-            {},
+            {
+                "entities": [
+                    {
+                        "entity": "object_type",
+                    },
+                    {
+                        "entity": "cuisine",
+                    },
+                ],
+            },
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: None,
@@ -97,6 +113,7 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
             ],
         ),
+
         (
             {
                 "entities": [
@@ -125,6 +142,7 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
             ],
         ),
+
         (
             {
                 "entities": [],
@@ -139,6 +157,7 @@ def compare_slots(slot_list_1, slot_list_2):
             },
             [],
         ),
+
     ],
 )
 async def test_action_run(data_file, latest_message, slots, expected_slots):
@@ -177,3 +196,24 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
             actual_msg = dispatcher.messages[0]["text"]
 
             assert actual_msg == expected_msg
+
+    # Check that temporary slot setting by action is correct.
+    if not any(slots):
+        object_types = knowledge_base.get_object_types()
+        object_type = match_extracted_entities_to_object_type(
+            tracker, object_types
+        )
+        set_object_type_slot_event = [SlotSet(SLOT_OBJECT_TYPE, object_type)]
+        tracker.add_slots(
+            set_object_type_slot_event
+        )
+        if slots.get(SLOT_MENTION) is None:
+            expected_temp_object_type_value = 'restaurant'
+            actual_temp_object_type_value = tracker.slots[SLOT_OBJECT_TYPE]
+
+            assert actual_temp_object_type_value == expected_temp_object_type_value
+        else:
+            expected_temp_object_type_value = None
+            actual_temp_object_type_value = tracker.slots[SLOT_OBJECT_TYPE]
+
+            assert actual_temp_object_type_value == expected_temp_object_type_value

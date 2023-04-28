@@ -130,8 +130,8 @@ by GitHub Actions.
 2. If this is a minor / major release: Make sure all fixes from currently supported minor versions have been merged from their respective release branches (e.g. 3.3.x) back into main.
 3. Run `make release`
 4. Create a PR against main or the release branch (e.g. `1.2.x`)
-5. Once your PR is merged, tag a new release (this SHOULD always happen on
-  `main` or release branches), e.g. using
+5. Once your PR is merged, pull the release branch locally.
+6. Create a tag for a new release (this SHOULD always happen on `main` or release branches), e.g. using
     ```bash
     git tag 1.2.0 -m "next release"
     git push origin 1.2.0
