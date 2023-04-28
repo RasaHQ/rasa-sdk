@@ -132,22 +132,23 @@ class ActionQueryKnowledgeBase(Action):
         last_object_type = tracker.get_slot(SLOT_LAST_OBJECT_TYPE)
         attribute = tracker.get_slot(SLOT_ATTRIBUTE)
         has_mention = tracker.get_slot(SLOT_MENTION) is not None
-        
-        has_attribute_in_latest = any(entity.get("entity") == 'attribute' for entity in tracker.latest_message["entities"])
+
+        has_attribute_in_latest = any(
+            entity.get("entity") == "attribute"
+            for entity in tracker.latest_message["entities"]
+        )
 
         if not object_type:
             # sets the object type dynamically from entities if object_type is not
             # found in user query
             object_types = self.knowledge_base.get_object_types()
-            object_type = match_extracted_entities_to_object_type(
-                tracker, object_types
-            )
+            object_type = match_extracted_entities_to_object_type(tracker, object_types)
             set_object_type_slot_event = [SlotSet(SLOT_OBJECT_TYPE, object_type)]
             tracker.add_slots(
                 set_object_type_slot_event
             )  # temporarily set the `object_type_slot` to extracted value
 
-        if (object_type and not has_attribute_in_latest):
+        if object_type and not has_attribute_in_latest:
             return await self._query_objects(dispatcher, object_type, tracker)
         elif object_type and attribute:
             return await self._query_attribute(
