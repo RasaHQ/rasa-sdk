@@ -39,7 +39,7 @@ include = ["LICENSE.txt", "README.md"]
 readme = "README.md"
 license = "Apache-2.0"
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.0.256"
+ruff = ">=0.0.256,<0.0.264"
 pytest-asyncio = "^0.21.0"
 
 
