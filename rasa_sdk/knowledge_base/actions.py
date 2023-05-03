@@ -199,8 +199,10 @@ class ActionQueryKnowledgeBase(Action):
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
         
-        # reset the SLOT_OBJECT_TYPE to None. This enables the user to ask about an object attribute
-        # without first asking to list the objects for an object type in order to set this slot. 
+        # There can be instances where the object type has to be extracted while the action is executed.
+        # (E.g: ‘what is the price range of Berlin Burrito Company?’). Therefore we need to reset the 
+        # SLOT_OBJECT_TYPE to None to enable this functionality.
+
         slots = [
             SlotSet(SLOT_OBJECT_TYPE, None), 
             SlotSet(SLOT_MENTION, None),
@@ -268,8 +270,9 @@ class ActionQueryKnowledgeBase(Action):
                 dispatcher, object_representation, attribute, value
             )
         )
-        # reset the SLOT_OBJECT_TYPE to None. This enables the user to ask about an object attribute
-        # without first asking to list the objects for an object type in order to set this slot. 
+        # There can be instances where the object type has to be extracted while the action is executed.
+        # (E.g: ‘what is the price range of Berlin Burrito Company?’). Therefore we need to reset the 
+        # SLOT_OBJECT_TYPE to None to enable this functionality.
         slots = [
             SlotSet(SLOT_OBJECT_TYPE, None),
             SlotSet(SLOT_ATTRIBUTE, None),
