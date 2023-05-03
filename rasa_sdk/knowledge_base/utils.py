@@ -145,7 +145,6 @@ def reset_attribute_slots(
     what attributes are detected by the NER. We take all attributes that are set,
     e.g. cuisine = Italian. If we don't reset the attribute slots after the request
     is done and the next utterance of the user would be, for example, "List all
-    is done and the next utterance of the user would be, for example, "List all
     restaurants that have wifi.", we would have two attribute slots set: "wifi" and
     "cuisine". Thus, we would filter all restaurants for two attributes now:
     wifi = True and cuisine = Italian. However, the user did not specify any
@@ -168,7 +167,7 @@ def reset_attribute_slots(
     return slots
 
 
-def match_extracted_entities_to_object_types(
+def match_extracted_entities_to_object_type(
     tracker: "Tracker",
     object_types: List[Text],
 ) -> Optional[Text]:
@@ -176,17 +175,18 @@ def match_extracted_entities_to_object_types(
     If the user ask a question about an attribute using an object name and
     without specifying the object type, then this function searches the
     corresponding object type. (e.g: when user asks'price range of B&B', this
-    function detects the object type as 'hotel')
+    function extracts the object type as 'hotel'). Here we assume that the user message contains reference only to one
+    object type in the knowledge base. 
 
     Args:
         tracker: the tracker
         object_types: list of object types in the knowledge base
 
-    Returns: the name of the object type
+    Returns: the name of the object type if found, otherwise `None`.
     """
     entities = tracker.latest_message.get("entities", [])
-    entities_values = [entity.get("entity") for entity in entities]
-    for entity in entities_values:
+    entity_names = [entity.get("entity") for entity in entities]
+    for entity in entity_names:
         if entity in object_types:
             return entity
 

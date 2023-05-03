@@ -13,7 +13,7 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LISTED_OBJECTS,
     get_object_name,
     get_attribute_slots,
-    match_extracted_entities_to_object_types,
+    match_extracted_entities_to_object_type,
 )
 from rasa_sdk import utils
 from rasa_sdk.executor import CollectingDispatcher
@@ -133,26 +133,27 @@ class ActionQueryKnowledgeBase(Action):
         attribute = tracker.get_slot(SLOT_ATTRIBUTE)
         has_mention = tracker.get_slot(SLOT_MENTION) is not None
 
-        new_request = object_type != last_object_type
+        has_attribute_in_latest = any(
+            entity.get("entity") == "attribute"
+            for entity in tracker.latest_message["entities"]
+        )
 
         if not object_type:
-            # sets the object type dynamically from entities if object_type is not found
-            # in user query
+            # sets the object type dynamically from entities if object_type is not
+            # found in user query
             object_types = self.knowledge_base.get_object_types()
-            object_type = match_extracted_entities_to_object_types(
-                tracker, object_types
-            )
+            object_type = match_extracted_entities_to_object_type(tracker, object_types)
             set_object_type_slot_event = [SlotSet(SLOT_OBJECT_TYPE, object_type)]
             tracker.add_slots(
                 set_object_type_slot_event
             )  # temporarily set the `object_type_slot` to extracted value
 
-        if object_type and attribute:
+        if object_type and not has_attribute_in_latest:
+            return await self._query_objects(dispatcher, object_type, tracker)
+        elif object_type and attribute:
             return await self._query_attribute(
                 dispatcher, object_type, attribute, tracker
             )
-        elif (object_type and not attribute) or (object_type and new_request):
-            return await self._query_objects(dispatcher, object_type, tracker)
 
         if last_object_type and has_mention and attribute:
             return await self._query_attribute(
@@ -234,7 +235,7 @@ class ActionQueryKnowledgeBase(Action):
             self.use_last_object_mention,
         )
 
-        if not object_name or not attribute:
+        if object_name is None or not attribute:
             dispatcher.utter_message(response="utter_ask_rephrase")
             return [SlotSet(SLOT_MENTION, None)]
 
