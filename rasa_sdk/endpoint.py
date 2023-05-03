@@ -17,6 +17,7 @@ from rasa_sdk.cli.arguments import add_endpoint_arguments
 from rasa_sdk.constants import DEFAULT_SERVER_PORT
 from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
+from rasa_sdk.plugin import plugin_manager
 
 logger = logging.getLogger(__name__)
 
@@ -156,6 +157,9 @@ def run(
     app = create_app(
         action_package_name, cors_origins=cors_origins, auto_reload=auto_reload
     )
+    ## Attach additional sanic extensions: listeners, middleware and routing
+    logger.info("Starting plugins...")
+    plugin_manager().hook.attach_sanic_app_extensions(app=app)
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
     protocol = "https" if ssl_context else "http"
     host = os.environ.get("SANIC_HOST", "0.0.0.0")

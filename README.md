@@ -89,7 +89,6 @@ RUN pip install --no-cache-dir <A_REQUIRED_PACKAGE_ON_PYPI>
 USER 1001
 ```
 
-
 ## Building from source
 
 Rasa SDK uses Poetry for packaging and dependency management. If you want to build it from source,
