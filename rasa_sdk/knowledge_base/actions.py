@@ -199,8 +199,13 @@ class ActionQueryKnowledgeBase(Action):
         )
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
+        
+        # There can be instances where the object type has to be extracted while the action is executed.
+        # (E.g: ‘what is the price range of Berlin Burrito Company?’). Therefore we need to reset the 
+        # SLOT_OBJECT_TYPE to None to enable this functionality.
+
         slots = [
-            SlotSet(SLOT_OBJECT_TYPE, None),
+            SlotSet(SLOT_OBJECT_TYPE, None), 
             SlotSet(SLOT_MENTION, None),
             SlotSet(SLOT_ATTRIBUTE, None),
             SlotSet(SLOT_LAST_OBJECT, last_object),
@@ -266,7 +271,9 @@ class ActionQueryKnowledgeBase(Action):
                 dispatcher, object_representation, attribute, value
             )
         )
-
+        # There can be instances where the object type has to be extracted while the action is executed.
+        # (E.g: ‘what is the price range of Berlin Burrito Company?’). Therefore we need to reset the 
+        # SLOT_OBJECT_TYPE to None to enable this functionality.
         slots = [
             SlotSet(SLOT_OBJECT_TYPE, None),
             SlotSet(SLOT_ATTRIBUTE, None),
