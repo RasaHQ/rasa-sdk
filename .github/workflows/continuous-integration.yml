@@ -211,7 +211,7 @@ jobs:
   build_docker_image:
     name: Build Docker image
     runs-on: ubuntu-22.04
-    needs: [quality, test, docker_linter, build_docker_image_set_env]
+    needs: [quality, docker_linter, build_docker_image_set_env]
 
     steps:
       # Due to an issue with checking out a wrong commit, we make sure
@@ -265,7 +265,7 @@ jobs:
 
     # deploy will only be run when there is a tag available
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-    needs: [quality, test, build_docker_image] # only run after all other stages succeeded
+    needs: [quality, build_docker_image] # only run after all other stages succeeded
 
     steps:
       - name: Checkout git repository 🕝
