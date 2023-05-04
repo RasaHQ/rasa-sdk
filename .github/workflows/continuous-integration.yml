@@ -70,7 +70,7 @@ jobs:
         run: make types
 
   test:
-    name: Run Testcases
+    name: Run Tests
     runs-on: ubuntu-22.04
     strategy:
       matrix:
