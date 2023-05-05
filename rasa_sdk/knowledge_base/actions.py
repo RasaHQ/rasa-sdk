@@ -133,6 +133,8 @@ class ActionQueryKnowledgeBase(Action):
         attribute = tracker.get_slot(SLOT_ATTRIBUTE)
         has_mention = tracker.get_slot(SLOT_MENTION) is not None
 
+        # check if attribute entity is found in latest user message. This is used
+        # to track whether the request is to query objects or query attributes
         has_attribute_in_latest = any(
             entity.get("entity") == "attribute"
             for entity in tracker.latest_message["entities"]
