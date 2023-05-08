@@ -117,7 +117,7 @@ class ActionQueryKnowledgeBase(Action):
         Executes this action. If the user ask a question about an attribute,
         the knowledge base is queried for that attribute. Otherwise, if no
         attribute was detected in the latest request it assumes user is talking
-        about a new object type and, multiple objects of the requested type are 
+        about a new object type and, multiple objects of the requested type are
         returned from the knowledge base.
 
         Args:
