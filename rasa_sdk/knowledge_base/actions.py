@@ -135,7 +135,7 @@ class ActionQueryKnowledgeBase(Action):
 
         # check if attribute entity is found in latest user message. This is used
         # to track whether the request is to query objects or query attributes
-        has_attribute_in_latest = any(
+        has_attribute_in_latest_message = any(
             entity.get("entity") == "attribute"
             for entity in tracker.latest_message["entities"]
         )
@@ -150,7 +150,7 @@ class ActionQueryKnowledgeBase(Action):
                 set_object_type_slot_event
             )  # temporarily set the `object_type_slot` to extracted value
 
-        if object_type and not has_attribute_in_latest:
+        if object_type and not has_attribute_in_latest_message:
             return await self._query_objects(dispatcher, object_type, tracker)
         elif object_type and attribute:
             return await self._query_attribute(
