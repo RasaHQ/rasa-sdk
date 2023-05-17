@@ -202,9 +202,9 @@ class ActionQueryKnowledgeBase(Action):
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
 
-        # There can be instances where the object type has to be extracted
-        # while the action is executed.(for example "what is the price range of Berlin
-        # Burrito Company?").Therefore we need to reset the SLOT_OBJECT_TYPE to
+        # To prevent the user to first ask to list the objects for an object type, 
+        # the object type has to be extracted while the action is executed.
+        # Therefore we need to reset the SLOT_OBJECT_TYPE to
         # None to enable this functionality.
 
         slots = [
@@ -275,9 +275,9 @@ class ActionQueryKnowledgeBase(Action):
             )
         )
 
-        # There can be instances where the object type has to be extracted
-        # while the action is executed.(for example "what is the price range of Berlin
-        # Burrito Company?").Therefore we need to reset the SLOT_OBJECT_TYPE to
+        # To prevent the user to first ask to list the objects for an object type, 
+        # the object type has to be extracted while the action is executed.
+        # Therefore we need to reset the SLOT_OBJECT_TYPE to
         # None to enable this functionality.
 
         slots = [
