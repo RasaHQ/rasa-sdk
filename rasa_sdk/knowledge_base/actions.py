@@ -202,7 +202,7 @@ class ActionQueryKnowledgeBase(Action):
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
 
-        # To prevent the user to first ask to list the objects for an object type, 
+        # To prevent the user to first ask to list the objects for an object type,
         # the object type has to be extracted while the action is executed.
         # Therefore we need to reset the SLOT_OBJECT_TYPE to
         # None to enable this functionality.
@@ -275,7 +275,7 @@ class ActionQueryKnowledgeBase(Action):
             )
         )
 
-        # To prevent the user to first ask to list the objects for an object type, 
+        # To prevent the user to first ask to list the objects for an object type,
         # the object type has to be extracted while the action is executed.
         # Therefore we need to reset the SLOT_OBJECT_TYPE to
         # None to enable this functionality.
