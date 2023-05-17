@@ -14,7 +14,7 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LAST_OBJECT_TYPE,
 )
 from rasa_sdk.knowledge_base.utils import match_extracted_entities_to_object_type
-
+import logging
 
 def compare_slots(slot_list_1, slot_list_2):
     assert len(slot_list_2) == len(slot_list_1)
@@ -154,7 +154,7 @@ def compare_slots(slot_list_1, slot_list_2):
                 SLOT_LAST_OBJECT_TYPE: None,
             },
             [],
-        ),
+        ),    
     ],
 )
 async def test_action_run(data_file, latest_message, slots, expected_slots):
@@ -166,7 +166,9 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
     tracker = Tracker(
         "default", slots, latest_message, [], False, None, {}, "action_listen"
     )
+    # print(f"Before run actions:{tracker.events}")
     actual_slots = await action.run(dispatcher, tracker, {})
+
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)
 
@@ -195,18 +197,20 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
             assert actual_msg == expected_msg
 
     # Check that temporary slot setting by action is correct.
-    if not any(slots):
-        object_types = knowledge_base.get_object_types()
-        object_type = match_extracted_entities_to_object_type(tracker, object_types)
-        set_object_type_slot_event = [SlotSet(SLOT_OBJECT_TYPE, object_type)]
-        tracker.add_slots(set_object_type_slot_event)
-        if slots.get(SLOT_MENTION) is None:
-            expected_temp_object_type_value = "restaurant"
-            actual_temp_object_type_value = tracker.slots[SLOT_OBJECT_TYPE]
-
-            assert actual_temp_object_type_value == expected_temp_object_type_value
-        else:
-            expected_temp_object_type_value = None
-            actual_temp_object_type_value = tracker.slots[SLOT_OBJECT_TYPE]
-
-            assert actual_temp_object_type_value == expected_temp_object_type_value
+    print(f"slots:{slots}")
+    # if not any(slots):
+    if any(value is not None for value in slots.values()):
+        print("=========================== LINE 204 ======================================")
+        if slots.get(SLOT_OBJECT_TYPE) is None and slots.get(SLOT_MENTION) is None:
+            print("=========================== LINE 206 ======================================")
+            expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': 'restaurant'}]
+            actual_tracker_event = tracker.events
+            assert actual_tracker_event==expected_tracker_event
+        elif slots.get(SLOT_OBJECT_TYPE) is None and slots.get(SLOT_MENTION) is not None:
+            print("=========================== LINE 210 ======================================")
+            expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': None}]
+            actual_tracker_event = tracker.events
+            # print(f"expected_slots:{expected_slots}")
+            # print(f"actual_tracker_event:{actual_tracker_event}")
+            # print(f"expected_tracker_event:{expected_tracker_event}")
+            assert actual_tracker_event==expected_tracker_event
