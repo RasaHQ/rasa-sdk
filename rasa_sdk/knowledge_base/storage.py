@@ -251,4 +251,5 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         return objects_of_interest[0]
 
     def get_object_types(self) -> List[Text]:
+        """See parent class docstring."""
         return list(self.data.keys())
