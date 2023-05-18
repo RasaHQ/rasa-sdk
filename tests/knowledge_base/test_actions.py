@@ -14,7 +14,6 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LAST_OBJECT_TYPE,
 )
 from rasa_sdk.knowledge_base.utils import match_extracted_entities_to_object_type
-import logging
 
 def compare_slots(slot_list_1, slot_list_2):
     assert len(slot_list_2) == len(slot_list_1)
@@ -141,6 +140,34 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
             ],
         ),
+        # (
+        #     {
+        #         "entities": [
+        #             {
+        #                 "entity": "attribute",
+        #             },
+        #             {
+        #                 "entity": "restaurant",
+        #             },
+        #         ],
+        #     },
+        #     {
+        #         SLOT_MENTION: None,
+        #         SLOT_ATTRIBUTE: "cuisine",
+        #         SLOT_OBJECT_TYPE: None,
+        #         SLOT_LISTED_OBJECTS: [1, 2, 3],
+        #         SLOT_LAST_OBJECT: None,
+        #         SLOT_LAST_OBJECT_TYPE: "restaurant",
+        #         "restaurant": "PastaBar",
+        #     },
+        #     [
+        #         SlotSet(SLOT_MENTION, None),
+        #         SlotSet(SLOT_ATTRIBUTE, None),
+        #         SlotSet(SLOT_OBJECT_TYPE, None),
+        #         SlotSet(SLOT_LAST_OBJECT, 1),
+        #         SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
+        #     ],
+        # ),
         (
             {
                 "entities": [],
@@ -166,11 +193,12 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
     tracker = Tracker(
         "default", slots, latest_message, [], False, None, {}, "action_listen"
     )
-    # print(f"Before run actions:{tracker.events}")
+    print(f"\ntest_slots:{slots}")
     actual_slots = await action.run(dispatcher, tracker, {})
 
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)
+
 
     # Check that utterances produced by action are correct.
     if slots[SLOT_ATTRIBUTE]:
@@ -197,10 +225,9 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
             assert actual_msg == expected_msg
 
     # Check that temporary slot setting by action is correct.
-    print(f"slots:{slots}")
     # if not any(slots):
     if any(value is not None for value in slots.values()):
-        print("=========================== LINE 204 ======================================")
+        # print(f"\ntest_slots:{slots}")
         if slots.get(SLOT_OBJECT_TYPE) is None and slots.get(SLOT_MENTION) is None:
             print("=========================== LINE 206 ======================================")
             expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': 'restaurant'}]
