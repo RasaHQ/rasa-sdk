@@ -140,34 +140,6 @@ def compare_slots(slot_list_1, slot_list_2):
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
             ],
         ),
-        # (
-        #     {
-        #         "entities": [
-        #             {
-        #                 "entity": "attribute",
-        #             },
-        #             {
-        #                 "entity": "restaurant",
-        #             },
-        #         ],
-        #     },
-        #     {
-        #         SLOT_MENTION: None,
-        #         SLOT_ATTRIBUTE: "cuisine",
-        #         SLOT_OBJECT_TYPE: None,
-        #         SLOT_LISTED_OBJECTS: [1, 2, 3],
-        #         SLOT_LAST_OBJECT: None,
-        #         SLOT_LAST_OBJECT_TYPE: "restaurant",
-        #         "restaurant": "PastaBar",
-        #     },
-        #     [
-        #         SlotSet(SLOT_MENTION, None),
-        #         SlotSet(SLOT_ATTRIBUTE, None),
-        #         SlotSet(SLOT_OBJECT_TYPE, None),
-        #         SlotSet(SLOT_LAST_OBJECT, 1),
-        #         SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
-        #     ],
-        # ),
         (
             {
                 "entities": [],
@@ -193,7 +165,7 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
     tracker = Tracker(
         "default", slots, latest_message, [], False, None, {}, "action_listen"
     )
-    print(f"\ntest_slots:{slots}")
+
     actual_slots = await action.run(dispatcher, tracker, {})
 
     compare_slots(expected_slots, actual_slots)
@@ -227,7 +199,7 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
     # Check that temporary slot setting by action is correct.
     # if not any(slots):
     if any(value is not None for value in slots.values()):
-        # print(f"\ntest_slots:{slots}")
+        print(f"\ntest_slots:{slots}")
         if slots.get(SLOT_OBJECT_TYPE) is None and slots.get(SLOT_MENTION) is None:
             print("=========================== LINE 206 ======================================")
             expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': 'restaurant'}]
