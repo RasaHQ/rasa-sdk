@@ -203,15 +203,12 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
             assert actual_msg == expected_msg
 
     # Check that temporary slot setting by action is correct.
-    # if not any(initial_slots):
-    if any(value is not None for value in initial_slots.values()):
+    if any(initial_slots.values()):
         if initial_slots.get(SLOT_OBJECT_TYPE) is None and initial_slots.get(SLOT_MENTION) is None:
-            print("=========================== LINE 206 ======================================")
             expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': 'restaurant'}]
             actual_tracker_event = tracker.events
             assert actual_tracker_event==expected_tracker_event
         elif initial_slots.get(SLOT_OBJECT_TYPE) is None and initial_slots.get(SLOT_MENTION) is not None:
-            print("=========================== LINE 210 ======================================")
             expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': None}]
             actual_tracker_event = tracker.events
             assert actual_tracker_event==expected_tracker_event
