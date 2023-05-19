@@ -13,7 +13,6 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LAST_OBJECT,
     SLOT_LAST_OBJECT_TYPE,
 )
-from rasa_sdk.knowledge_base.utils import match_extracted_entities_to_object_type
 
 
 def compare_slots(slot_list_1, slot_list_2):
@@ -167,8 +166,8 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
         "default", slots, latest_message, [], False, None, {}, "action_listen"
     )
 
-    # To prevent unintended modifications, create a copy of the slots dictionary 
-    # before passing it to the Tracker object, as dictionaries in 
+    # To prevent unintended modifications, create a copy of the slots dictionary
+    # before passing it to the Tracker object, as dictionaries in
     # Python are mutable and passed by reference.
     initial_slots = dict(slots)
 
@@ -176,7 +175,6 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
 
     compare_slots(expected_slots, actual_slots)
     compare_slots(actual_slots, expected_slots)
-
 
     # Check that utterances produced by action are correct.
     if slots[SLOT_ATTRIBUTE]:
@@ -204,14 +202,34 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
 
     # Check that temporary slot setting by action is correct.
     if any(initial_slots.values()):
-        if initial_slots.get(SLOT_OBJECT_TYPE) is None and initial_slots.get(SLOT_MENTION) is None:
-            expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': 'restaurant'}]
+        if (
+            initial_slots.get(SLOT_OBJECT_TYPE) is None
+            and initial_slots.get(SLOT_MENTION) is None
+        ):
+            expected_tracker_event = [
+                {
+                    "event": "slot",
+                    "timestamp": None,
+                    "name": "object_type",
+                    "value": "restaurant",
+                }
+            ]
             actual_tracker_event = tracker.events
 
-            assert actual_tracker_event==expected_tracker_event
-            
-        elif initial_slots.get(SLOT_OBJECT_TYPE) is None and initial_slots.get(SLOT_MENTION) is not None:
-            expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': None}]
+            assert actual_tracker_event == expected_tracker_event
+
+        elif (
+            initial_slots.get(SLOT_OBJECT_TYPE) is None
+            and initial_slots.get(SLOT_MENTION) is not None
+        ):
+            expected_tracker_event = [
+                {
+                    "event": "slot",
+                    "timestamp": None,
+                    "name": "object_type",
+                    "value": None,
+                }
+            ]
             actual_tracker_event = tracker.events
 
-            assert actual_tracker_event==expected_tracker_event
+            assert actual_tracker_event == expected_tracker_event
