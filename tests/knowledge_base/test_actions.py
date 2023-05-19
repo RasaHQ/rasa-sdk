@@ -14,7 +14,7 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LAST_OBJECT_TYPE,
 )
 from rasa_sdk.knowledge_base.utils import match_extracted_entities_to_object_type
-import copy
+
 
 def compare_slots(slot_list_1, slot_list_2):
     assert len(slot_list_2) == len(slot_list_1)
