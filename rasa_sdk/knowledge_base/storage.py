@@ -112,9 +112,6 @@ class KnowledgeBase:
     def get_object_types(self) -> List[Text]:
         """
         Returns a list of object types from knowledge base data.
-
-        Returns: the list of object types
-
         """
         raise NotImplementedError("Method is not implemented.")
 
@@ -251,4 +248,5 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         return objects_of_interest[0]
 
     def get_object_types(self) -> List[Text]:
+        """See parent class docstring."""
         return list(self.data.keys())

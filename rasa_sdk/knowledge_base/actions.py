@@ -135,7 +135,7 @@ class ActionQueryKnowledgeBase(Action):
 
         # check if attribute entity is found in latest user message. This is used
         # to track whether the request is to query objects or query attributes
-        has_attribute_in_latest = any(
+        has_attribute_in_latest_message = any(
             entity.get("entity") == "attribute"
             for entity in tracker.latest_message["entities"]
         )
@@ -150,7 +150,7 @@ class ActionQueryKnowledgeBase(Action):
                 set_object_type_slot_event
             )  # temporarily set the `object_type_slot` to extracted value
 
-        if object_type and not has_attribute_in_latest:
+        if object_type and not has_attribute_in_latest_message:
             return await self._query_objects(dispatcher, object_type, tracker)
         elif object_type and attribute:
             return await self._query_attribute(
@@ -202,9 +202,9 @@ class ActionQueryKnowledgeBase(Action):
 
         last_object = None if len(objects) > 1 else objects[0][key_attribute]
 
-        # There can be instances where the object type has to be extracted
-        # while the action is executed.(for example "what is the price range of Berlin
-        # Burrito Company?").Therefore we need to reset the SLOT_OBJECT_TYPE to
+        # To prevent the user to first ask to list the objects for an object type,
+        # the object type has to be extracted while the action is executed.
+        # Therefore we need to reset the SLOT_OBJECT_TYPE to
         # None to enable this functionality.
 
         slots = [
@@ -275,9 +275,9 @@ class ActionQueryKnowledgeBase(Action):
             )
         )
 
-        # There can be instances where the object type has to be extracted
-        # while the action is executed.(for example "what is the price range of Berlin
-        # Burrito Company?").Therefore we need to reset the SLOT_OBJECT_TYPE to
+        # To prevent the user to first ask to list the objects for an object type,
+        # the object type has to be extracted while the action is executed.
+        # Therefore we need to reset the SLOT_OBJECT_TYPE to
         # None to enable this functionality.
 
         slots = [
