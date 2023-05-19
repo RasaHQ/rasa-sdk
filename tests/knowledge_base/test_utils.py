@@ -138,8 +138,12 @@ def test_get_object_name(slots, use_last_object_mention, expected_object_name):
         (
             {
                 "entities": [
-                    {"entity": "attribute"},
-                    {"entity": "restaurant"},
+                    {
+                        "entity": "attribute"
+                    },
+                    {
+                        "entity": "restaurant"
+                    },
                 ],
             },
             ["hotel", "restaurant"],
