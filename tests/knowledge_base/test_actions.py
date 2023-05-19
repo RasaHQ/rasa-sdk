@@ -207,8 +207,10 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
         if initial_slots.get(SLOT_OBJECT_TYPE) is None and initial_slots.get(SLOT_MENTION) is None:
             expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': 'restaurant'}]
             actual_tracker_event = tracker.events
+
             assert actual_tracker_event==expected_tracker_event
         elif initial_slots.get(SLOT_OBJECT_TYPE) is None and initial_slots.get(SLOT_MENTION) is not None:
             expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': None}]
             actual_tracker_event = tracker.events
+            
             assert actual_tracker_event==expected_tracker_event
