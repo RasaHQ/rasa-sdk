@@ -154,7 +154,7 @@ def compare_slots(slot_list_1, slot_list_2):
                 SLOT_LAST_OBJECT_TYPE: None,
             },
             [],
-        ),  
+        ),
     ],
 )
 async def test_action_run(data_file, latest_message, slots, expected_slots):
