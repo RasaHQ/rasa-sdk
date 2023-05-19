@@ -14,6 +14,7 @@ from rasa_sdk.knowledge_base.utils import (
     SLOT_LAST_OBJECT_TYPE,
 )
 from rasa_sdk.knowledge_base.utils import match_extracted_entities_to_object_type
+import copy
 
 def compare_slots(slot_list_1, slot_list_2):
     assert len(slot_list_2) == len(slot_list_1)
@@ -166,6 +167,11 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
         "default", slots, latest_message, [], False, None, {}, "action_listen"
     )
 
+    # To prevent unintended modifications, create a copy of the slots dictionary 
+    # before passing it to the Tracker object, as dictionaries in 
+    # Python are mutable and passed by reference.
+    initial_slots = dict(slots)
+
     actual_slots = await action.run(dispatcher, tracker, {})
 
     compare_slots(expected_slots, actual_slots)
@@ -197,19 +203,15 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
             assert actual_msg == expected_msg
 
     # Check that temporary slot setting by action is correct.
-    # if not any(slots):
-    if any(value is not None for value in slots.values()):
-        print(f"\ntest_slots:{slots}")
-        if slots.get(SLOT_OBJECT_TYPE) is None and slots.get(SLOT_MENTION) is None:
+    # if not any(initial_slots):
+    if any(value is not None for value in initial_slots.values()):
+        if initial_slots.get(SLOT_OBJECT_TYPE) is None and initial_slots.get(SLOT_MENTION) is None:
             print("=========================== LINE 206 ======================================")
             expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': 'restaurant'}]
             actual_tracker_event = tracker.events
             assert actual_tracker_event==expected_tracker_event
-        elif slots.get(SLOT_OBJECT_TYPE) is None and slots.get(SLOT_MENTION) is not None:
+        elif initial_slots.get(SLOT_OBJECT_TYPE) is None and initial_slots.get(SLOT_MENTION) is not None:
             print("=========================== LINE 210 ======================================")
             expected_tracker_event = [{'event': 'slot', 'timestamp': None, 'name': 'object_type', 'value': None}]
             actual_tracker_event = tracker.events
-            # print(f"expected_slots:{expected_slots}")
-            # print(f"actual_tracker_event:{actual_tracker_event}")
-            # print(f"expected_tracker_event:{expected_tracker_event}")
             assert actual_tracker_event==expected_tracker_event
