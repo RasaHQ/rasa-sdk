@@ -105,5 +105,5 @@ asyncio_mode = "auto"
 convention = "google"
 
 [tool.poetry.group.dev.dependencies]
-ruff = ">=0.0.256,<0.0.268"
+ruff = ">=0.0.256,<0.0.271"
 pytest-asyncio = "^0.21.0"
