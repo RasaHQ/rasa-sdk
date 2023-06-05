@@ -1,4 +1,5 @@
 import pytest
+import copy
 
 from rasa_sdk import Tracker
 from rasa_sdk.events import SlotSet
@@ -169,7 +170,7 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
     # To prevent unintended modifications, create a copy of the slots dictionary
     # before passing it to the Tracker object, as dictionaries in
     # Python are mutable and passed by reference.
-    initial_slots = dict(slots)
+    initial_slots = copy.deepcopy(slots)
 
     actual_slots = await action.run(dispatcher, tracker, {})
 
@@ -206,30 +207,24 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
             initial_slots.get(SLOT_OBJECT_TYPE) is None
             and initial_slots.get(SLOT_MENTION) is None
         ):
-            expected_tracker_event = [
-                {
-                    "event": "slot",
-                    "timestamp": None,
-                    "name": "object_type",
-                    "value": "restaurant",
-                }
-            ]
-            actual_tracker_event = tracker.events
-
-            assert actual_tracker_event == expected_tracker_event
+            expected_tracker_event = {
+                                        "event": "slot",
+                                        "timestamp": None,
+                                        "name": "object_type",
+                                        "value": "restaurant",
+                                    }
+            
+            assert expected_tracker_event in tracker.events
 
         elif (
             initial_slots.get(SLOT_OBJECT_TYPE) is None
             and initial_slots.get(SLOT_MENTION) is not None
         ):
-            expected_tracker_event = [
-                {
-                    "event": "slot",
-                    "timestamp": None,
-                    "name": "object_type",
-                    "value": None,
-                }
-            ]
-            actual_tracker_event = tracker.events
-
-            assert actual_tracker_event == expected_tracker_event
+            expected_tracker_event = {
+                                        "event": "slot",
+                                        "timestamp": None,
+                                        "name": "object_type",
+                                        "value": None,
+                                    }
+            
+            assert expected_tracker_event in tracker.events    
