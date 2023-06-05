@@ -208,12 +208,12 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
             and initial_slots.get(SLOT_MENTION) is None
         ):
             expected_tracker_event = {
-                                        "event": "slot",
-                                        "timestamp": None,
-                                        "name": "object_type",
-                                        "value": "restaurant",
-                                    }
-            
+                "event": "slot",
+                "timestamp": None,
+                "name": "object_type",
+                "value": "restaurant",
+            }
+
             assert expected_tracker_event in tracker.events
 
         elif (
@@ -221,10 +221,10 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
             and initial_slots.get(SLOT_MENTION) is not None
         ):
             expected_tracker_event = {
-                                        "event": "slot",
-                                        "timestamp": None,
-                                        "name": "object_type",
-                                        "value": None,
-                                    }
-            
-            assert expected_tracker_event in tracker.events    
+                "event": "slot",
+                "timestamp": None,
+                "name": "object_type",
+                "value": None,
+            }
+
+            assert expected_tracker_event in tracker.events
