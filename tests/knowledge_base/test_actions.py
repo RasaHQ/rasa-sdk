@@ -212,7 +212,7 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
         ):
             # Since Pasta Bar belongs to `restaurant` object type
             # the tracker event passed to set the slot temporarily
-            # should look like this. 
+            # should look like this.
             expected_tracker_event = {
                 "event": "slot",
                 "timestamp": None,
@@ -221,7 +221,7 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
             }
 
             assert expected_tracker_event in tracker.events
-            
+
         # The condition block below checks for user message
         # such as "what is the cuisine of second one?".
         # This user message example is denoted by test case `3`.
@@ -230,9 +230,9 @@ async def test_action_run(data_file, latest_message, slots, expected_slots):
             and initial_slots.get(SLOT_MENTION) is not None
         ):
             # Since there is no `restaurant` entity in the user message,
-            # the `object_type` will be None. 
+            # the `object_type` will be `None`.
             # Therefore, the tracker event passed to set the slot temporarily
-            # should look like this. 
+            # should look like this.
             expected_tracker_event = {
                 "event": "slot",
                 "timestamp": None,
