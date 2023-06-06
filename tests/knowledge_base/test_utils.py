@@ -3,6 +3,7 @@ import pytest
 from rasa_sdk import Tracker
 from rasa_sdk.events import SlotSet
 from rasa_sdk.knowledge_base.utils import (
+    match_extracted_entities_to_object_type,
     get_attribute_slots,
     reset_attribute_slots,
     get_object_name,
@@ -128,4 +129,29 @@ def test_get_object_name(slots, use_last_object_mention, expected_object_name):
         tracker, ordinal_mention_mapping, use_last_object_mention
     )
 
+    assert actual_object_name == expected_object_name
+
+
+@pytest.mark.parametrize(
+    "latest_message,object_types,expected_object_name",
+    [
+        (
+            {
+                "entities": [
+                    {"entity": "attribute"},
+                    {"entity": "restaurant"},
+                ],
+            },
+            ["hotel", "restaurant"],
+            "restaurant",
+        ),
+    ],
+)
+def test_match_extracted_entities_to_object_type(
+    latest_message, object_types, expected_object_name
+):
+    tracker = Tracker(
+        "default", {}, latest_message, [], False, None, {}, "action_listen"
+    )
+    actual_object_name = match_extracted_entities_to_object_type(tracker, object_types)
     assert actual_object_name == expected_object_name

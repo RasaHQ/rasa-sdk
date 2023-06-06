@@ -1,4 +1,5 @@
 import pytest
+import copy
 
 from rasa_sdk import Tracker
 from rasa_sdk.events import SlotSet
@@ -28,9 +29,16 @@ def compare_slots(slot_list_1, slot_list_2):
 
 
 @pytest.mark.parametrize(
-    "slots,expected_slots",
+    "latest_message,slots,expected_slots",
     [
         (
+            {
+                "entities": [
+                    {
+                        "entity": "object_type",
+                    },
+                ],
+            },
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: None,
@@ -42,7 +50,7 @@ def compare_slots(slot_list_1, slot_list_2):
             [
                 SlotSet(SLOT_MENTION, None),
                 SlotSet(SLOT_ATTRIBUTE, None),
-                SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
+                SlotSet(SLOT_OBJECT_TYPE, None),
                 SlotSet(SLOT_LAST_OBJECT, None),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
                 SlotSet(SLOT_LISTED_OBJECTS, [3, 2, 1]),
@@ -50,18 +58,28 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
         (
             {
+                "entities": [
+                    {
+                        "entity": "object_type",
+                    },
+                    {
+                        "entity": "cuisine",
+                    },
+                ],
+            },
+            {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: None,
                 SLOT_OBJECT_TYPE: "restaurant",
                 SLOT_LISTED_OBJECTS: None,
                 SLOT_LAST_OBJECT: None,
-                SLOT_LAST_OBJECT_TYPE: "restaurant",
+                SLOT_LAST_OBJECT_TYPE: None,
                 "cuisine": "Italian",
             },
             [
                 SlotSet(SLOT_MENTION, None),
                 SlotSet(SLOT_ATTRIBUTE, None),
-                SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
+                SlotSet(SLOT_OBJECT_TYPE, None),
                 SlotSet(SLOT_LAST_OBJECT, None),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
                 SlotSet(SLOT_LISTED_OBJECTS, [3, 1]),
@@ -70,9 +88,19 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
         (
             {
+                "entities": [
+                    {
+                        "entity": "attribute",
+                    },
+                    {
+                        "entity": " mention",
+                    },
+                ],
+            },
+            {
                 SLOT_MENTION: "2",
                 SLOT_ATTRIBUTE: "cuisine",
-                SLOT_OBJECT_TYPE: "restaurant",
+                SLOT_OBJECT_TYPE: None,
                 SLOT_LISTED_OBJECTS: [1, 2, 3],
                 SLOT_LAST_OBJECT: None,
                 SLOT_LAST_OBJECT_TYPE: "restaurant",
@@ -80,16 +108,26 @@ def compare_slots(slot_list_1, slot_list_2):
             [
                 SlotSet(SLOT_MENTION, None),
                 SlotSet(SLOT_ATTRIBUTE, None),
-                SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
+                SlotSet(SLOT_OBJECT_TYPE, None),
                 SlotSet(SLOT_LAST_OBJECT, 2),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
             ],
         ),
         (
             {
+                "entities": [
+                    {
+                        "entity": "attribute",
+                    },
+                    {
+                        "entity": "restaurant",
+                    },
+                ],
+            },
+            {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: "cuisine",
-                SLOT_OBJECT_TYPE: "restaurant",
+                SLOT_OBJECT_TYPE: None,
                 SLOT_LISTED_OBJECTS: [1, 2, 3],
                 SLOT_LAST_OBJECT: None,
                 SLOT_LAST_OBJECT_TYPE: "restaurant",
@@ -98,12 +136,15 @@ def compare_slots(slot_list_1, slot_list_2):
             [
                 SlotSet(SLOT_MENTION, None),
                 SlotSet(SLOT_ATTRIBUTE, None),
-                SlotSet(SLOT_OBJECT_TYPE, "restaurant"),
+                SlotSet(SLOT_OBJECT_TYPE, None),
                 SlotSet(SLOT_LAST_OBJECT, 1),
                 SlotSet(SLOT_LAST_OBJECT_TYPE, "restaurant"),
             ],
         ),
         (
+            {
+                "entities": [],
+            },
             {
                 SLOT_MENTION: None,
                 SLOT_ATTRIBUTE: None,
@@ -116,12 +157,20 @@ def compare_slots(slot_list_1, slot_list_2):
         ),
     ],
 )
-async def test_action_run(data_file, slots, expected_slots):
+async def test_action_run(data_file, latest_message, slots, expected_slots):
     knowledge_base = InMemoryKnowledgeBase(data_file)
     action = ActionQueryKnowledgeBase(knowledge_base)
 
     dispatcher = CollectingDispatcher()
-    tracker = Tracker("default", slots, {}, [], False, None, {}, "action_listen")
+
+    tracker = Tracker(
+        "default", slots, latest_message, [], False, None, {}, "action_listen"
+    )
+
+    # To prevent unintended modifications, create a copy of the slots dictionary
+    # before passing it to the Tracker object, as dictionaries in
+    # Python are mutable and passed by reference.
+    initial_slots = copy.deepcopy(slots)
 
     actual_slots = await action.run(dispatcher, tracker, {})
 
@@ -131,7 +180,6 @@ async def test_action_run(data_file, slots, expected_slots):
     # Check that utterances produced by action are correct.
     if slots[SLOT_ATTRIBUTE]:
         if slots.get("restaurant") is not None:
-
             name = slots["restaurant"]
             attr = slots[SLOT_ATTRIBUTE]
             obj = await knowledge_base.get_object("restaurant", name)
@@ -152,3 +200,44 @@ async def test_action_run(data_file, slots, expected_slots):
             actual_msg = dispatcher.messages[0]["text"]
 
             assert actual_msg == expected_msg
+
+    # Check that temporary slot setting by action is correct.
+    if any(initial_slots.values()):
+        # The condition block below checks for user message
+        # such as "what is the price range of Pasta Bar?".
+        # This user message example is denoted by test case `4`.
+        if (
+            initial_slots.get(SLOT_OBJECT_TYPE) is None
+            and initial_slots.get(SLOT_MENTION) is None
+        ):
+            # Since Pasta Bar belongs to `restaurant` object type
+            # the tracker event passed to set the slot temporarily
+            # should look like this.
+            expected_tracker_event = {
+                "event": "slot",
+                "timestamp": None,
+                "name": "object_type",
+                "value": "restaurant",
+            }
+
+            assert expected_tracker_event in tracker.events
+
+        # The condition block below checks for user message
+        # such as "what is the cuisine of second one?".
+        # This user message example is denoted by test case `3`.
+        elif (
+            initial_slots.get(SLOT_OBJECT_TYPE) is None
+            and initial_slots.get(SLOT_MENTION) is not None
+        ):
+            # Since there is no `restaurant` entity in the user message,
+            # the `object_type` will be `None`.
+            # Therefore, the tracker event passed to set the slot temporarily
+            # should look like this.
+            expected_tracker_event = {
+                "event": "slot",
+                "timestamp": None,
+                "name": "object_type",
+                "value": None,
+            }
+
+            assert expected_tracker_event in tracker.events

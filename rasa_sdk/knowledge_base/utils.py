@@ -82,7 +82,6 @@ def resolve_mention(
     listed_items = tracker.get_slot(SLOT_LISTED_OBJECTS)
     last_object = tracker.get_slot(SLOT_LAST_OBJECT)
     last_object_type = tracker.get_slot(SLOT_LAST_OBJECT_TYPE)
-    current_object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
 
     if not mention:
         return None
@@ -95,7 +94,9 @@ def resolve_mention(
     # for now we just assume that if the user refers to an object, for
     # example via "it" or "that restaurant", they are actually referring to the last
     # object that was detected.
-    if current_object_type == last_object_type:
+    # Since object type slot is reset to 'None' value, it is sufficient to only check
+    # whether the last_object_type is not None.
+    if last_object_type:
         return last_object
 
     return None
@@ -164,3 +165,29 @@ def reset_attribute_slots(
             slots.append(SlotSet(attr, None))
 
     return slots
+
+
+def match_extracted_entities_to_object_type(
+    tracker: "Tracker",
+    object_types: List[Text],
+) -> Optional[Text]:
+    """
+    If the user ask a question about an attribute using an object name and
+    without specifying the object type, then this function searches the
+    corresponding object type. (e.g: when user asks'price range of B&B', this
+    function extracts the object type as 'hotel'). Here we assume that the user
+    message contains reference only to one object type in the knowledge base.
+
+    Args:
+        tracker: the tracker
+        object_types: list of object types in the knowledge base
+
+    Returns: the name of the object type if found, otherwise `None`.
+    """
+    entities = tracker.latest_message.get("entities", [])
+    entity_names = [entity.get("entity") for entity in entities]
+    for entity in entity_names:
+        if entity in object_types:
+            return entity
+
+    return None

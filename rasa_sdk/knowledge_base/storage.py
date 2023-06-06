@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 class KnowledgeBase:
     def __init__(self) -> None:
-
         self.ordinal_mention_mapping = {
             "1": lambda lst: lst[0],
             "2": lambda lst: lst[1],
@@ -107,6 +106,12 @@ class KnowledgeBase:
             representation of the object
 
         Returns: the object of interest
+        """
+        raise NotImplementedError("Method is not implemented.")
+
+    def get_object_types(self) -> List[Text]:
+        """
+        Returns a list of object types from knowledge base data.
         """
         raise NotImplementedError("Method is not implemented.")
 
@@ -206,7 +211,6 @@ class InMemoryKnowledgeBase(KnowledgeBase):
             return None
 
         objects = self.data[object_type]
-
         key_attribute = await utils.call_potential_coroutine(
             self.get_key_attribute_of_object(object_type)
         )
@@ -242,3 +246,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
             return None
 
         return objects_of_interest[0]
+
+    def get_object_types(self) -> List[Text]:
+        """See parent class docstring."""
+        return list(self.data.keys())
