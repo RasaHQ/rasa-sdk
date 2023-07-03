@@ -1,13 +1,12 @@
 import warnings
-import logging
-import pytest 
+
 from pytest import MonkeyPatch
 from pluggy import PluginManager
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from rasa_sdk import endpoint
-from rasa_sdk.plugin import plugin_manager, _discover_plugins
-logger = logging.getLogger(__name__)
+from rasa_sdk.plugin import plugin_manager
+
 
 def test_plugin_manager() -> None:
     manager = plugin_manager()
@@ -42,7 +41,8 @@ def test_plugin_attach_sanic_app_extension(
 
 def test_plugins_not_found(monkeypatch):
     # Mock the import statement to raise ModuleNotFoundError
-    monkeypatch.setitem(__builtins__, 'import', MagicMock(side_effect=ModuleNotFoundError))
+    monkeypatch.setitem(__builtins__, 'import',
+                        MagicMock(side_effect=ModuleNotFoundError))
 
     # Call the method under test
     try:
