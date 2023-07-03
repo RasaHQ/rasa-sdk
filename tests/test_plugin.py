@@ -39,10 +39,12 @@ def test_plugin_attach_sanic_app_extension(
         endpoint.run("actions")
     manager.hook.attach_sanic_app_extensions.assert_called_once_with(app=app_mock)
 
+
 def test_plugins_not_found(monkeypatch):
     # Mock the import statement to raise ModuleNotFoundError
-    monkeypatch.setitem(__builtins__, 'import',
-                        MagicMock(side_effect=ModuleNotFoundError))
+    monkeypatch.setitem(
+        __builtins__, "import", MagicMock(side_effect=ModuleNotFoundError)
+    )
 
     # Call the method under test
     try:
