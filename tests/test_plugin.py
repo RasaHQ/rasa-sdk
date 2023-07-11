@@ -1,11 +1,22 @@
+import logging
 import warnings
 
-from pytest import MonkeyPatch
+from pytest import MonkeyPatch, LogCaptureFixture
 from pluggy import PluginManager
 from unittest.mock import MagicMock
 
 from rasa_sdk import endpoint
 from rasa_sdk.plugin import plugin_manager
+
+
+def test_plugins_not_found(caplog: LogCaptureFixture) -> None:
+    """Test that a debug message is logged when no plugins are found.
+
+    This test must be run first because the plugin manager is cached.
+    """
+    with caplog.at_level(logging.DEBUG):
+        plugin_manager()
+        assert "No plugins found: No module named 'rasa_sdk_plugins'" in caplog.text
 
 
 def test_plugin_manager() -> None:
@@ -38,17 +49,3 @@ def test_plugin_attach_sanic_app_extension(
         warnings.simplefilter("error")
         endpoint.run("actions")
     manager.hook.attach_sanic_app_extensions.assert_called_once_with(app=app_mock)
-
-
-def test_plugins_not_found(monkeypatch):
-    # Mock the import statement to raise ModuleNotFoundError
-    monkeypatch.setitem(
-        __builtins__, "import", MagicMock(side_effect=ModuleNotFoundError)
-    )
-
-    # Call the method under test
-    try:
-        import rasa_sdk_plugins
-    except ModuleNotFoundError as e:
-        # Assert the expected exception message or other details if needed
-        assert str(e) == "No module named 'rasa_sdk_plugins'"
