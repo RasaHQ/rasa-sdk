@@ -1,11 +1,22 @@
+import logging
 import warnings
 
-from pytest import MonkeyPatch
+from pytest import MonkeyPatch, LogCaptureFixture
 from pluggy import PluginManager
 from unittest.mock import MagicMock
 
 from rasa_sdk import endpoint
 from rasa_sdk.plugin import plugin_manager
+
+
+def test_plugins_not_found(caplog: LogCaptureFixture) -> None:
+    """Test that a debug message is logged when no plugins are found.
+
+    This test must be run first because the plugin manager is cached.
+    """
+    with caplog.at_level(logging.DEBUG):
+        plugin_manager()
+        assert "No plugins found: No module named 'rasa_sdk_plugins'" in caplog.text
 
 
 def test_plugin_manager() -> None:
