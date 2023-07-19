@@ -47,7 +47,6 @@ class Button(dict):
 
 def all_subclasses(cls: Any) -> List[Any]:
     """Returns all known (imported) subclasses of a class."""
-
     return cls.__subclasses__() + [
         g for s in cls.__subclasses__() for g in all_subclasses(s)
     ]
@@ -233,9 +232,11 @@ def check_version_compatibility(rasa_version: Optional[Text]) -> None:
     The version check relies on the version string being formatted as
     'x.y.z' and compares whether the numbers x and y are the same for both
     rasa and rasa_sdk.
+
     Args:
         rasa_version - A string containing the version of rasa that
         is making the call to the action server.
+
     Raises:
         Warning - The version of rasa version unknown or not compatible with
         this version of rasa_sdk.
@@ -337,8 +338,8 @@ def read_yaml(content: Text, reader_type: Text = "safe") -> Any:
         )
 
     yaml_parser = yaml.YAML(typ=reader_type)
-    yaml_parser.version = YAML_VERSION  # type: ignore[assignment]
-    yaml_parser.preserve_quotes = True  # type: ignore[assignment]
+    yaml_parser.version = YAML_VERSION
+    yaml_parser.preserve_quotes = True
 
     return yaml_parser.load(content) or {}
 
