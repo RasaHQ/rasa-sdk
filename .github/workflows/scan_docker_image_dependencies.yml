@@ -1,8 +1,6 @@
 name: Scan Rasa SDK App Dependencies
 
 on:
-  schedule:
-    - cron: '0 8 * * MON'
   workflow_dispatch:
 
 jobs:
