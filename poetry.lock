@@ -627,7 +627,7 @@ multidict = ">=5.0,<6.0"
 sanic-routing = ">=0.7,<1.0"
 ujson = {version = ">=1.35", markers = "sys_platform != \"win32\" and implementation_name == \"cpython\""}
 uvloop = {version = ">=0.5.3", markers = "sys_platform != \"win32\" and implementation_name == \"cpython\""}
-websockets = ">=10.0"
+websockets = ">=10.0,<11.0"
 
 [package.extras]
 all = ["bandit", "beautifulsoup4", "black", "chardet (>=3.0.0,<4.0.0)", "coverage (==5.3)", "cryptography", "docutils", "flake8", "gunicorn (==20.0.4)", "isort (>=5.0.0)", "m2r2", "mistune (<2.0.0)", "mypy (>=0.901,<0.910)", "pygments", "pytest (==6.2.5)", "pytest-benchmark", "pytest-cov", "pytest-sanic", "pytest-sugar", "sanic-testing (>=0.7.0)", "sphinx (>=2.1.2)", "sphinx-rtd-theme (>=0.4.3)", "towncrier", "tox", "types-ujson", "uvicorn (<0.15.0)"]
@@ -823,7 +823,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.11"
-content-hash = "ecaaddd846986cc9be9cf3c00740e39532065eddaee4571739f287f95ef89e70"
+content-hash = "bc04e725af0d2807a99fa62fa886c94d2a5b4fd61a76f60f8dc3e6f331a06f43"
 
 [metadata.files]
 aiofiles = [
