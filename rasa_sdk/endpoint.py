@@ -4,6 +4,9 @@ import os
 import types
 import zlib
 import json
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 from typing import List, Text, Union, Optional
 from ssl import SSLContext
 
@@ -65,6 +68,7 @@ def create_app(
     action_package_name: Union[Text, types.ModuleType],
     cors_origins: Union[Text, List[Text], None] = "*",
     auto_reload: bool = False,
+    tracer_provider: Optional[TracerProvider] = None,
 ) -> Sanic:
     """Create a Sanic application and return it.
 
@@ -93,34 +97,50 @@ def create_app(
     @app.post("/webhook")
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
-        if request.headers.get("Content-Encoding") == "deflate":
-            # Decompress the request data using zlib
-            decompressed_data = zlib.decompress(request.body)
-            # Load the JSON data from the decompressed request data
-            action_call = json.loads(decompressed_data)
+        span_name = "rasa_sdk.create_app.webhook"
+        if tracer_provider is None:
+            tracer = trace.get_tracer(span_name)
+            context = None
         else:
-            action_call = request.json
-        if action_call is None:
-            body = {"error": "Invalid body request"}
-            return response.json(body, status=400)
+            tracer = tracer_provider.get_tracer(span_name)
+            context = TraceContextTextMapPropagator().extract(request.headers)
 
-        utils.check_version_compatibility(action_call.get("version"))
+        with tracer.start_as_current_span(span_name, context=context) as span:
+            if request.headers.get("Content-Encoding") == "deflate":
+                # Decompress the request data using zlib
+                decompressed_data = zlib.decompress(request.body)
+                # Load the JSON data from the decompressed request data
+                action_call = json.loads(decompressed_data)
+            else:
+                action_call = request.json
+            if action_call is None:
+                body = {"error": "Invalid body request"}
+                return response.json(body, status=400)
 
-        if auto_reload:
-            executor.reload()
+            utils.check_version_compatibility(action_call.get("version"))
 
-        try:
-            result = await executor.run(action_call)
-        except ActionExecutionRejection as e:
-            logger.debug(e)
-            body = {"error": e.message, "action_name": e.action_name}
-            return response.json(body, status=400)
-        except ActionNotFoundException as e:
-            logger.error(e)
-            body = {"error": e.message, "action_name": e.action_name}
-            return response.json(body, status=404)
+            if auto_reload:
+                executor.reload()
+            try:
+                result = await executor.run(action_call)
+            except ActionExecutionRejection as e:
+                logger.debug(e)
+                body = {"error": e.message, "action_name": e.action_name}
+                return response.json(body, status=400)
+            except ActionNotFoundException as e:
+                logger.error(e)
+                body = {"error": e.message, "action_name": e.action_name}
+                return response.json(body, status=404)
 
-        return response.json(result, status=200)
+            if span.is_recording():
+                span.set_attribute("http.method", "POST")
+                span.set_attribute("http.route", "/webhook")
+                span.set_attribute("next_action", action_call.get("next_action"))
+                span.set_attribute("version", action_call.get("version"))
+                span.set_attribute("sender_id", action_call.get("tracker")["sender_id"])
+                span.set_attribute("message_id", action_call.get("tracker")["latest_message"]["message_id"])   
+            
+            return response.json(result, status=200)
 
     @app.get("/actions")
     async def actions(_) -> HTTPResponse:
@@ -151,11 +171,12 @@ def run(
     ssl_keyfile: Optional[Text] = None,
     ssl_password: Optional[Text] = None,
     auto_reload: bool = False,
+    tracer_provider: Optional[TracerProvider] = None,
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
     app = create_app(
-        action_package_name, cors_origins=cors_origins, auto_reload=auto_reload
+        action_package_name, cors_origins=cors_origins, auto_reload=auto_reload, tracer_provider=tracer_provider,
     )
     ## Attach additional sanic extensions: listeners, middleware and routing
     logger.info("Starting plugins...")

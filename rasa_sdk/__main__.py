@@ -17,6 +17,7 @@ def main_from_args(args):
         args.logging_config_file,
     )
     utils.update_sanic_log_level()
+    tracer_provider = utils.get_tracer_provider(args)
 
     run(
         args.actions,
@@ -26,6 +27,7 @@ def main_from_args(args):
         args.ssl_keyfile,
         args.ssl_password,
         args.auto_reload,
+        tracer_provider,
     )
 
 

@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import inspect
 import logging
@@ -12,6 +13,9 @@ from ruamel.yaml.constructor import DuplicateKeyError
 from typing import AbstractSet, Any, Dict, List, Text, Optional, Coroutine, Union
 
 import rasa_sdk
+from rasa_sdk.tracing import config
+from opentelemetry.sdk.trace import TracerProvider
+
 from rasa_sdk.constants import (
     DEFAULT_ENCODING,
     DEFAULT_SANIC_WORKERS,
@@ -363,3 +367,13 @@ def read_yaml_file(filename: Union[Text, Path]) -> Dict[Text, Any]:
         return read_yaml(read_file(filename, DEFAULT_ENCODING))
     except (YAMLError, DuplicateKeyError) as e:
         raise YamlSyntaxException(filename, e)
+
+
+def get_tracer_provider(cmdline_arguments: argparse.Namespace) -> Optional[TracerProvider]:
+    tracer_provider = None
+    if "endpoints" in cmdline_arguments:
+        endpoints_file = cmdline_arguments.endpoints
+
+    if endpoints_file is not None:
+        tracer_provider = config.get_tracer_provider(endpoints_file)
+    return tracer_provider
