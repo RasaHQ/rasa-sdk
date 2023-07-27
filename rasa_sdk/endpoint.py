@@ -138,8 +138,11 @@ def create_app(
                 span.set_attribute("next_action", action_call.get("next_action"))
                 span.set_attribute("version", action_call.get("version"))
                 span.set_attribute("sender_id", action_call.get("tracker")["sender_id"])
-                span.set_attribute("message_id", action_call.get("tracker")["latest_message"]["message_id"])   
-            
+                span.set_attribute(
+                    "message_id",
+                    action_call.get("tracker")["latest_message"]["message_id"],
+                )
+
             return response.json(result, status=200)
 
     @app.get("/actions")
@@ -176,7 +179,10 @@ def run(
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
     app = create_app(
-        action_package_name, cors_origins=cors_origins, auto_reload=auto_reload, tracer_provider=tracer_provider,
+        action_package_name,
+        cors_origins=cors_origins,
+        auto_reload=auto_reload,
+        tracer_provider=tracer_provider,
     )
     ## Attach additional sanic extensions: listeners, middleware and routing
     logger.info("Starting plugins...")

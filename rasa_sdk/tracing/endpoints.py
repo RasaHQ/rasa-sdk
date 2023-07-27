@@ -20,7 +20,7 @@ def read_endpoint_config(
 
     try:
         content = rasa_sdk.utils.read_file(filename)
-        content =  rasa_sdk.utils.read_yaml(content)
+        content = rasa_sdk.utils.read_yaml(content)
 
         if content.get(endpoint_type) is None:
             return None
@@ -32,7 +32,7 @@ def read_endpoint_config(
             "from {}. No such file.".format(os.path.abspath(filename))
         )
         return None
-    
+
 
 class EndpointConfig:
     """Configuration for an external HTTP endpoint."""
@@ -59,7 +59,6 @@ class EndpointConfig:
         self.cafile = cafile
         self.kwargs = kwargs
 
-    
     @classmethod
     def from_dict(cls, data: Dict[Text, Any]) -> "EndpointConfig":
         return EndpointConfig(**data)

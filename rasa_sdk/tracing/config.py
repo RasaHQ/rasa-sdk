@@ -139,7 +139,7 @@ class OTLPCollectorConfigurer(TracerConfigurer):
 
         insecure = cfg.kwargs.get("insecure")
 
-        credentials = cls._get_credentials(cfg, insecure)
+        credentials = cls._get_credentials(cfg, insecure)  # type: ignore
 
         otlp_exporter = OTLPSpanExporter(
             endpoint=cfg.kwargs["endpoint"],
@@ -160,7 +160,7 @@ class OTLPCollectorConfigurer(TracerConfigurer):
     ) -> Optional[grpc.ChannelCredentials]:
         credentials = None
         if not insecure and "root_certificates" in cfg.kwargs:
-            with open(cfg.kwargs.get("root_certificates"), "rb") as f:
+            with open(cfg.kwargs.get("root_certificates"), "rb") as f:  # type: ignore
                 root_cert = f.read()
             credentials = grpc.ssl_channel_credentials(root_certificates=root_cert)
         return credentials

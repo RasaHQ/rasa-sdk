@@ -369,7 +369,9 @@ def read_yaml_file(filename: Union[Text, Path]) -> Dict[Text, Any]:
         raise YamlSyntaxException(filename, e)
 
 
-def get_tracer_provider(cmdline_arguments: argparse.Namespace) -> Optional[TracerProvider]:
+def get_tracer_provider(
+    cmdline_arguments: argparse.Namespace,
+) -> Optional[TracerProvider]:
     tracer_provider = None
     if "endpoints" in cmdline_arguments:
         endpoints_file = cmdline_arguments.endpoints
