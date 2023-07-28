@@ -1,0 +1,4 @@
+tracing:
+  type: otlp
+  endpoint: localhost:4317
+  insecure: true

@@ -76,6 +76,7 @@ def create_app(
             from.
         cors_origins: CORS origins to allow.
         auto_reload: When `True`, auto-reloading of actions is enabled.
+        tracer_provider: Tracer provider to use for tracing.
 
     Returns:
         A new Sanic application ready to be run.
