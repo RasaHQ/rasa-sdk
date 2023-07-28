@@ -4,9 +4,7 @@ import os
 import types
 import zlib
 import json
-from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 from typing import List, Text, Union, Optional
 from ssl import SSLContext
 
@@ -21,6 +19,7 @@ from rasa_sdk.constants import DEFAULT_SERVER_PORT
 from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
 from rasa_sdk.plugin import plugin_manager
+from rasa_sdk.tracing.utils import get_tracer_and_context, set_span_attributes
 
 logger = logging.getLogger(__name__)
 
@@ -97,13 +96,7 @@ def create_app(
     @app.post("/webhook")
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
-        span_name = "rasa_sdk.create_app.webhook"
-        if tracer_provider is None:
-            tracer = trace.get_tracer(span_name)
-            context = None
-        else:
-            tracer = tracer_provider.get_tracer(span_name)
-            context = TraceContextTextMapPropagator().extract(request.headers)
+        tracer, context, span_name = get_tracer_and_context(tracer_provider, request)
 
         with tracer.start_as_current_span(span_name, context=context) as span:
             if request.headers.get("Content-Encoding") == "deflate":
@@ -132,16 +125,7 @@ def create_app(
                 body = {"error": e.message, "action_name": e.action_name}
                 return response.json(body, status=404)
 
-            if span.is_recording():
-                span.set_attribute("http.method", "POST")
-                span.set_attribute("http.route", "/webhook")
-                span.set_attribute("next_action", action_call.get("next_action"))
-                span.set_attribute("version", action_call.get("version"))
-                span.set_attribute("sender_id", action_call.get("tracker")["sender_id"])
-                span.set_attribute(
-                    "message_id",
-                    action_call.get("tracker")["latest_message"]["message_id"],
-                )
+            set_span_attributes(span, action_call)
 
             return response.json(result, status=200)
 
