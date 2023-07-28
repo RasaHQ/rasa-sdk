@@ -14,6 +14,7 @@ def get_tracer_provider(
 ) -> Optional[TracerProvider]:
     """Gets the tracer provider from the command line arguments."""
     tracer_provider = None
+    endpoints_file = ""
     if "endpoints" in cmdline_arguments:
         endpoints_file = cmdline_arguments.endpoints
 

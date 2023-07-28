@@ -13,6 +13,7 @@ UDP_BUFFER_SIZE = 2048
 
 
 def test_jaeger_config_correctly_extracted() -> None:
+    """Tests that the Jaeger config is correctly extracted from the endpoint config."""
     cfg = EndpointConfig(
         host="hostname",
         port=1234,
@@ -29,6 +30,7 @@ def test_jaeger_config_correctly_extracted() -> None:
 
 
 def test_jaeger_config_sets_defaults() -> None:
+    """Tests that the Jaeger config sets default config."""
     extracted = JaegerTracerConfigurer._extract_config(EndpointConfig())
 
     assert extracted["agent_host_name"] == "localhost"
@@ -38,6 +40,7 @@ def test_jaeger_config_sets_defaults() -> None:
 
 
 def test_get_tracer_provider_jaeger(udp_server: socket.socket) -> None:
+    """Tests that the tracer provider is correctly configured for Jaeger."""
     endpoints_file = str(TRACING_TESTS_FIXTURES_DIRECTORY / "jaeger_endpoints.yml")
 
     tracer_provider = config.get_tracer_provider(endpoints_file)
