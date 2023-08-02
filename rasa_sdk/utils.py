@@ -12,6 +12,7 @@ from ruamel.yaml.constructor import DuplicateKeyError
 from typing import AbstractSet, Any, Dict, List, Text, Optional, Coroutine, Union
 
 import rasa_sdk
+
 from rasa_sdk.constants import (
     DEFAULT_ENCODING,
     DEFAULT_SANIC_WORKERS,

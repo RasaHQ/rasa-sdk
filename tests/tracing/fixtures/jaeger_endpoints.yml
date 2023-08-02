@@ -1,0 +1,4 @@
+tracing:
+  type: jaeger
+  host: localhost
+  port: 6832
