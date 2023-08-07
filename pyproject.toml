@@ -85,7 +85,7 @@ websockets = ">=10.0,<12.0"
 pluggy = "^1.0.0"
 opentelemetry-api = "~1.15.0"
 opentelemetry-sdk = "~1.15.0"
-opentelemetry-exporter-jaeger = "~1.15.0"
+opentelemetry-exporter-jaeger = ">=1.15,<1.20"
 opentelemetry-exporter-otlp = "~1.15.0"
 
 [tool.poetry.dev-dependencies]
