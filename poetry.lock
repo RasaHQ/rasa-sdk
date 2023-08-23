@@ -1466,7 +1466,22 @@ files = [
     {file = "websockets-10.4.tar.gz", hash = "sha256:eef610b23933c54d5d921c92578ae5f89813438fded840c2e9809d378dc765d3"},
 ]
 
+[[package]]
+name = "wheel"
+version = "0.41.2"
+description = "A built-package format for Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "wheel-0.41.2-py3-none-any.whl", hash = "sha256:75909db2664838d015e3d9139004ee16711748a52c8f336b52882266540215d8"},
+    {file = "wheel-0.41.2.tar.gz", hash = "sha256:0c5ac5ff2afb79ac23ab82bab027a0be7b5dbcf2e54dc50efe4bf507de1f7985"},
+]
+
+[package.extras]
+test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "d4bf3f8d27212446797a3929dddd7b88e53b4d9528dedcdccf14f3b320f14945"
+content-hash = "c02a84a8d0a00ab72995b3cc1102c6c8fd8fe21f8cb9033b0f35358b02bab9b9"
