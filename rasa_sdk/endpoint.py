@@ -116,7 +116,7 @@ def create_app(
             if auto_reload:
                 executor.reload()
             try:
-                result = await executor.run(action_call)
+                result = await executor.run(action_call, tracer, context)
             except ActionExecutionRejection as e:
                 logger.debug(e)
                 body = {"error": e.message, "action_name": e.action_name}

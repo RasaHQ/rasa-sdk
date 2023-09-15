@@ -9,10 +9,11 @@ from collections import namedtuple
 import types
 import sys
 import os
-
+from opentelemetry.sdk.trace import TracerProvider
 from rasa_sdk.interfaces import Tracker, ActionNotFoundException, Action
 
 from rasa_sdk import utils
+from rasa_sdk.tracing.utils import get_tracer_and_context, set_span_attributes
 
 if typing.TYPE_CHECKING:  # pragma: no cover
     from rasa_sdk.types import ActionCall
@@ -380,7 +381,7 @@ class ActionExecutor:
                 # we won't append this to validated events -> will be ignored
         return validated
 
-    async def run(self, action_call: "ActionCall") -> Optional[Dict[Text, Any]]:
+    async def run(self, action_call: "ActionCall", tracer: Optional[Any] = None, context: Optional[Any] = None) -> Optional[Dict[Text, Any]]:
         from rasa_sdk.interfaces import Tracker
 
         action_name = action_call.get("next_action")
@@ -396,7 +397,7 @@ class ActionExecutor:
             dispatcher = CollectingDispatcher()
 
             events = await utils.call_potential_coroutine(
-                action(dispatcher, tracker, domain)
+                action(dispatcher, tracker, domain, tracer, context)
             )
 
             if not events:
