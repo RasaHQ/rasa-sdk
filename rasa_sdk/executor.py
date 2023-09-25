@@ -9,7 +9,6 @@ from collections import namedtuple
 import types
 import sys
 import os
-from opentelemetry.sdk.trace import TracerProvider
 from rasa_sdk.interfaces import Tracker, ActionNotFoundException, Action
 
 from rasa_sdk import utils
@@ -393,8 +392,6 @@ class ActionExecutor:
 
             tracker_json = action_call["tracker"]
             domain = action_call.get("domain", {})
-            tracer = domain.get("tracer", None)
-            context = domain.get("context", None)
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
 

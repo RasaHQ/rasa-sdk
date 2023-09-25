@@ -10,7 +10,7 @@ from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from rasa_sdk.tracing.endpoints import EndpointConfig, read_endpoint_config
 
 
@@ -33,52 +33,22 @@ def get_tracer_provider(endpoints_file: Text) -> Optional[TracerProvider]:
     :return: The `TracingProvider` to be used for all subsequent tracing.
     """
     cfg = read_endpoint_config(endpoints_file, ENDPOINTS_TRACING_KEY)
-    tracer_provider = None
 
     if not cfg:
-        # set from env vars if no endpoints.yml
-        OTEL_EXPORTERS = os.environ.get("OTEL_EXPORTERS")
-        OTEL_EXPORTER_OTLP_ENDPOINT = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT")
-        OTEL_JAEGER_HOSTNAME = os.environ.get("OTEL_JAEGER_HOSTNAME", "localhost")
-        OTEL_JAEGER_PORT = os.environ.get("OTEL_JAEGER_PORT", "4317")
-        OTEL_SERVICE_NAME = os.environ.get("OTEL_SERVICE_NAME", "action_server")
-        insecure = os.environ.get("OTEL_EXPORTER_OTLP_INSECURE", True)
-        if OTEL_EXPORTERS:
-            resource = Resource(attributes={"service.name": OTEL_SERVICE_NAME})
-            tracer_provider = TracerProvider(resource=resource)
-            for t in OTEL_EXPORTERS.split(','):
-                if t == 'console':
-                    logger.info(f"Starting Console Exporter")
-                    tracer_provider.add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
-                if t == 'otlp':
-                    logger.info(f"Starting OTLP Exporter: {OTEL_EXPORTER_OTLP_ENDPOINT}, service: {OTEL_SERVICE_NAME}")
-                    otlp_exporter = OTLPSpanExporter(endpoint=OTEL_EXPORTER_OTLP_ENDPOINT, insecure=insecure)
-                    processor = BatchSpanProcessor(otlp_exporter)
-                    tracer_provider.add_span_processor(processor)
-                if t == 'jaeger':
-                    logger.info(f"Starting Jaeger Exporter: {OTEL_JAEGER_HOSTNAME}:{OTEL_JAEGER_PORT}, service: {OTEL_SERVICE_NAME}")
-                    jaeger_exporter = JaegerExporter(
-                        agent_host_name=OTEL_JAEGER_HOSTNAME,
-                        agent_port=OTEL_JAEGER_PORT,
-                    )
-                    processor = BatchSpanProcessor(jaeger_exporter)
-                    tracer_provider.add_span_processor(processor)
-            else:
-                logger.info(
-                    f"No endpoint for tracing type available in {endpoints_file}, "
-                    f"tracing will not be configured."
-                )
-                return None
+        logger.info(
+            f"No endpoint for tracing type available in {endpoints_file},"
+            f"tracing will not be configured."
+        )
+        return None
+    if cfg.type == "jaeger":
+        tracer_provider = JaegerTracerConfigurer.configure_from_endpoint_config(cfg)
+    elif cfg.type == "otlp":
+        tracer_provider = OTLPCollectorConfigurer.configure_from_endpoint_config(cfg)
     else:
-        if cfg.type == "jaeger":
-            tracer_provider = JaegerTracerConfigurer.configure_from_endpoint_config(cfg)
-        elif cfg.type == "otlp":
-            tracer_provider = OTLPCollectorConfigurer.configure_from_endpoint_config(cfg)
-        else:
-            logger.warning(
-                f"Unknown tracing type {cfg.type} read from {endpoints_file}, ignoring."
-            )
-            return None
+        logger.warning(
+            f"Unknown tracing type {cfg.type} read from {endpoints_file}, ignoring."
+        )
+        return None
 
     return tracer_provider
 
@@ -177,7 +147,7 @@ class OTLPCollectorConfigurer(TracerConfigurer):
             credentials=credentials,
         )
         logger.info(
-            f"Registered {cfg.type} endpoint for tracing."
+            f"Registered {cfg.type} endpoint for tracing. "
             f"Traces will be exported to {cfg.kwargs['endpoint']}"
         )
         provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
