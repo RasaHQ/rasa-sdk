@@ -110,13 +110,14 @@ def create_app(
             if action_call is None:
                 body = {"error": "Invalid body request"}
                 return response.json(body, status=400)
-
+            action_call["tracker"]["tracer"] = tracer
+            action_call["tracker"]["context"] = context
             utils.check_version_compatibility(action_call.get("version"))
 
             if auto_reload:
                 executor.reload()
             try:
-                result = await executor.run(action_call, tracer, context)
+                result = await executor.run(action_call)
             except ActionExecutionRejection as e:
                 logger.debug(e)
                 body = {"error": e.message, "action_name": e.action_name}

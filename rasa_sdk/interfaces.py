@@ -333,9 +333,7 @@ class Action:
         self,
         dispatcher: "CollectingDispatcher",
         tracker: Tracker,
-        domain: "DomainDict",
-        tracer: Optional[Any] = None,
-        context: Optional[Any] = None
+        domain: "DomainDict"
     ) -> List[Dict[Text, Any]]:
         """Execute the side effects of this action.
 
