@@ -116,3 +116,5 @@ examples/moodbot/models/
 *.DS_Store
 tests/executor_test_packages
 .pytype/
+.history/
+.vscode/

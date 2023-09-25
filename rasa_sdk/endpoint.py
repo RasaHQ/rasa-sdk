@@ -107,6 +107,8 @@ def create_app(
                 action_call = json.loads(decompressed_data)
             else:
                 action_call = request.json
+            action_call["domain"]["tracer"] = tracer
+            action_call["domain"]["context"] = context
             if action_call is None:
                 body = {"error": "Invalid body request"}
                 return response.json(body, status=400)
@@ -116,7 +118,7 @@ def create_app(
             if auto_reload:
                 executor.reload()
             try:
-                result = await executor.run(action_call, tracer, context)
+                result = await executor.run(action_call)
             except ActionExecutionRejection as e:
                 logger.debug(e)
                 body = {"error": e.message, "action_name": e.action_name}
