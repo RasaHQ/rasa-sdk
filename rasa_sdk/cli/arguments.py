@@ -54,3 +54,8 @@ def add_endpoint_arguments(parser):
         help="Enable auto-reloading of modules containing Action subclasses.",
         action="store_true",
     )
+    parser.add_argument(
+        "--endpoints",
+        help="Provide endpoints file.",
+    )
+
