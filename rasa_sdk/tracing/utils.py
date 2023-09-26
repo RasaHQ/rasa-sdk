@@ -1,6 +1,8 @@
 import argparse
+import logging
 from rasa_sdk.tracing import config
 from opentelemetry import trace
+from opentelemetry.sdk.resources import Resource
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 from opentelemetry.sdk.trace import TracerProvider
@@ -8,6 +10,7 @@ from sanic.request import Request
 
 from typing import Optional, Tuple, Any, Text
 
+logger = logging.getLogger(__name__)
 
 def get_tracer_provider(
     cmdline_arguments: argparse.Namespace,
@@ -27,12 +30,18 @@ def get_tracer_and_context(
     tracer_provider: Optional[TracerProvider], request: Request
 ) -> Tuple[Any, Any, Text]:
     """Gets tracer and context"""
-    span_name = "rasa_sdk.create_app.webhook"
+    span_name = "/webhook"
+    trace.set_tracer_provider(
+        TracerProvider(
+            resource=Resource.create({"service.name": "action_server"})
+        )
+    )
     if tracer_provider is None:
         tracer = trace.get_tracer(span_name)
         context = None
     else:
-        tracer = tracer_provider.get_tracer(span_name)
+        # logger.debug(f"Using existing tracer_provider #3, span_name: {span_name}, headers: {request.headers}")
+        tracer = trace.get_tracer(span_name)
         context = TraceContextTextMapPropagator().extract(request.headers)
     return (tracer, context, span_name)
 

@@ -6,6 +6,7 @@ import os
 from typing import Any, Dict, Optional, Text
 
 import grpc
+from opentelemetry import trace
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
@@ -14,7 +15,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from rasa_sdk.tracing.endpoints import EndpointConfig, read_endpoint_config
 
 
-TRACING_SERVICE_NAME = os.environ.get("TRACING_SERVICE_NAME", "rasa_sdk")
+TRACING_SERVICE_NAME = os.environ.get("RASA_SDK_TRACING_SERVICE_NAME", "action_server")
 
 ENDPOINTS_TRACING_KEY = "tracing"
 
@@ -36,7 +37,7 @@ def get_tracer_provider(endpoints_file: Text) -> Optional[TracerProvider]:
 
     if not cfg:
         logger.info(
-            f"No endpoint for tracing type available in {endpoints_file},"
+            f"No endpoint for tracing type available in {endpoints_file}, "
             f"tracing will not be configured."
         )
         return None
@@ -131,11 +132,8 @@ class OTLPCollectorConfigurer(TracerConfigurer):
         :param cfg: The configuration to be read for configuring tracing.
         :return: The configured `TracerProvider`.
         """
-        provider = TracerProvider(
-            resource=Resource.create(
-                {SERVICE_NAME: cfg.kwargs.get("service_name", TRACING_SERVICE_NAME)}
-            )
-        )
+        resource = Resource(attributes={"service.name": TRACING_SERVICE_NAME})
+        trace.set_tracer_provider(TracerProvider(resource=resource))
 
         insecure = cfg.kwargs.get("insecure")
 
@@ -150,9 +148,12 @@ class OTLPCollectorConfigurer(TracerConfigurer):
             f"Registered {cfg.type} endpoint for tracing. "
             f"Traces will be exported to {cfg.kwargs['endpoint']}"
         )
-        provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+        trace.get_tracer_provider().add_span_processor(
+            BatchSpanProcessor(otlp_exporter)
+        )
+        tracer = trace.get_tracer(__name__)  # returns opentelemetry.sdk.trace.Tracer object
 
-        return provider
+        return tracer
 
     @classmethod
     def _get_credentials(
