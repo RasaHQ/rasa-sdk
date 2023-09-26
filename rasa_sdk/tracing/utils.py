@@ -19,6 +19,8 @@ def get_tracer_provider(
     tracer_provider = None
     endpoints_file = ""
     if "endpoints" in cmdline_arguments:
+        logger.debug(f"Processing cmdline endpoints file: {cmdline_arguments.endpoints}")
+        logger.debug(f"cmdline_arguments: {cmdline_arguments}")
         endpoints_file = cmdline_arguments.endpoints
 
     if endpoints_file is not None:

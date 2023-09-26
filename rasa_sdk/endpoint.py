@@ -67,6 +67,7 @@ def create_app(
     action_package_name: Union[Text, types.ModuleType],
     cors_origins: Union[Text, List[Text], None] = "*",
     auto_reload: bool = False,
+    endpoints: Optional[Text] = None,
     tracer_provider: Optional[TracerProvider] = None,
 ) -> Sanic:
     """Create a Sanic application and return it.
@@ -107,8 +108,9 @@ def create_app(
                 action_call = json.loads(decompressed_data)
             else:
                 action_call = request.json
-            action_call["domain"]["tracer"] = tracer
-            action_call["domain"]["context"] = context
+            if "domain" in action_call:
+                action_call["domain"]["tracer"] = tracer
+                action_call["domain"]["context"] = context
             if action_call is None:
                 body = {"error": "Invalid body request"}
                 return response.json(body, status=400)
@@ -161,6 +163,7 @@ def run(
     ssl_keyfile: Optional[Text] = None,
     ssl_password: Optional[Text] = None,
     auto_reload: bool = False,
+    endpoints: Optional[Text] = None,
     tracer_provider: Optional[TracerProvider] = None,
 ) -> None:
     """Starts the action endpoint server with given config values."""
@@ -169,6 +172,7 @@ def run(
         action_package_name,
         cors_origins=cors_origins,
         auto_reload=auto_reload,
+        endpoints=endpoints,
         tracer_provider=tracer_provider,
     )
     ## Attach additional sanic extensions: listeners, middleware and routing
