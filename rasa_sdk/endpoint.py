@@ -108,9 +108,10 @@ def create_app(
                 action_call = json.loads(decompressed_data)
             else:
                 action_call = request.json
-            if "domain" in action_call:
-                action_call["domain"]["tracer"] = tracer
-                action_call["domain"]["context"] = context
+            if not "domain" in action_call:
+                action_call["domain"] = {} # initialize a domain if it doesn't come from rasa pod
+            action_call["domain"]["tracer"] = tracer
+            action_call["domain"]["context"] = context
             if action_call is None:
                 body = {"error": "Invalid body request"}
                 return response.json(body, status=400)
