@@ -54,3 +54,8 @@ def add_endpoint_arguments(parser):
         help="Enable auto-reloading of modules containing Action subclasses.",
         action="store_true",
     )
+    parser.add_argument(
+        "--grpc",
+        help="starts grpc server instead of http",
+        action="store_true"
+    )

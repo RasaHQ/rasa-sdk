@@ -1,7 +1,8 @@
 import logging
-
+import asyncio
 from rasa_sdk import utils
 from rasa_sdk.endpoint import create_argument_parser, run
+from rasa_sdk.grpc_serve import run_grpc
 from rasa_sdk.constants import APPLICATION_ROOT_LOGGER_NAME
 from rasa_sdk.tracing.utils import get_tracer_provider
 
@@ -19,17 +20,26 @@ def main_from_args(args):
     )
     utils.update_sanic_log_level()
     tracer_provider = get_tracer_provider(args)
-
-    run(
-        args.actions,
-        args.port,
-        args.cors,
-        args.ssl_certificate,
-        args.ssl_keyfile,
-        args.ssl_password,
-        args.auto_reload,
-        tracer_provider,
-    )
+    if args.grpc:
+        asyncio.run(run_grpc(
+            args.actions,
+            args.port,
+            tracer_provider,
+            args.ssl_certificate,
+            args.ssl_keyfile,
+            args.ssl_password,
+        ))
+    else:
+        run(
+            args.actions,
+            args.port,
+            args.cors,
+            args.ssl_certificate,
+            args.ssl_keyfile,
+            args.ssl_password,
+            args.auto_reload,
+            tracer_provider,
+        )
 
 
 def main():
