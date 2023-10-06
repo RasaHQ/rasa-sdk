@@ -1,16 +1,16 @@
 
 import grpc 
-import utils
+
 import logging
 import ssl
 import types
 from typing import List, Text, Union, Optional
 from concurrent import futures
-from proto import action_webhook_pb2
-from proto import action_webhook_pb2_grpc
 from grpc import aio
 from google.protobuf.json_format import MessageToDict, ParseDict
-
+from rasa_sdk import utils
+from rasa_sdk.proto import action_webhook_pb2
+from rasa_sdk.proto import action_webhook_pb2_grpc
 from rasa_sdk.constants import DEFAULT_SERVER_PORT
 from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
@@ -33,8 +33,9 @@ class ActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookServicer):
         with tracer.start_as_current_span(span_name, context=context) as span:
             utils.check_version_compatibility(request.version)
             try:
-                action_call = MessageToDict(request)
-                result = await executor.run(action_call)
+                
+                action_call = MessageToDict(request, preserving_proto_field_name=True)
+                result = await self.executor.run(action_call)
             except ActionExecutionRejection as e:
                 logger.debug(e)
                 body = {"error": e.message, "action_name": e.action_name}

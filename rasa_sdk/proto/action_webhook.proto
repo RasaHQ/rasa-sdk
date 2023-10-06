@@ -1,35 +1,50 @@
 syntax = "proto3";
 
 package action_server_webhook;
-import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
 
 service ActionServerWebhook {
     rpc webhook (WebhookRequest) returns (WebhookResponse);
 }
 
 message Tracker {
-    string conversation_id = 1;
-    map<string, string> slots = 2;
-    map<string, string> latest_message = 3;
+    string sender_id = 1;
+    google.protobuf.Struct slots = 2;
+    google.protobuf.Struct latest_message = 3;
     double latest_event_time = 4;
     string followup_action = 5;
     bool paused = 6;
-    repeated string events = 7;
+    repeated google.protobuf.Struct events = 7;
     string latest_input_channel = 8;
     map<string, string> active_loop = 9;
     map<string, string> latest_action = 10;
 }
 
+message Intent {
+    string string_value = 1;
+    google.protobuf.Struct dict_value = 2;
+}
+
+message Entity {
+    string string_value = 1;
+    google.protobuf.Struct dict_value = 2;
+}
+
+message Action {
+    string string_value = 1;
+    google.protobuf.Struct dict_value = 2;
+}
+
 message Domain {
-    map<string, string> config = 1;
-    map<string, string> session_config = 2;
-    repeated string intents = 3;
-    repeated string entities = 4;
-    map<string, string> slots = 5;
-    map<string, string> responses = 6;
-    repeated string actions = 7;
-    map<string, string> forms = 8;
-    repeated string e2e_actions = 9;
+    google.protobuf.Struct config = 1;
+    google.protobuf.Struct session_config = 2;
+    repeated Intent intents = 3;
+    repeated Entity entities = 4;
+    google.protobuf.Struct slots = 5;
+    google.protobuf.Struct responses = 6;
+    repeated Action actions = 7;
+    google.protobuf.Struct forms = 8;
+    repeated google.protobuf.Struct e2e_actions = 9;
 }
 
 message WebhookRequest {
@@ -41,6 +56,6 @@ message WebhookRequest {
 }
 
 message WebhookResponse {
-    repeated google.protobuf.Any events = 1;
-    repeated google.protobuf.Any responses = 2;
+    repeated google.protobuf.Struct events = 1;
+    repeated google.protobuf.Struct responses = 2;
 }
