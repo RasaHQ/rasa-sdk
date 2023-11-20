@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import types
+import warnings
 import zlib
 import json
 from opentelemetry.sdk.trace import TracerProvider
@@ -11,7 +12,9 @@ from ssl import SSLContext
 from sanic import Sanic, response
 from sanic.response import HTTPResponse
 from sanic.request import Request
-from sanic_cors import CORS
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    from sanic_cors import CORS
 
 from rasa_sdk import utils
 from rasa_sdk.cli.arguments import add_endpoint_arguments
