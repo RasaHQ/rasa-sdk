@@ -12,8 +12,9 @@ from ssl import SSLContext
 from sanic import Sanic, response
 from sanic.response import HTTPResponse
 from sanic.request import Request
+
 with warnings.catch_warnings():
-    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
     from sanic_cors import CORS
 
 from rasa_sdk import utils
