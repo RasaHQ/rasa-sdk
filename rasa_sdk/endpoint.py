@@ -160,7 +160,7 @@ def run(
     ssl_password: Optional[Text] = None,
     auto_reload: bool = False,
     tracer_provider: Optional[TracerProvider] = None,
-    keep_alive_timeout: Optional[int] = DEFAULT_KEEP_ALIVE_TIMEOUT,
+    keep_alive_timeout: int = DEFAULT_KEEP_ALIVE_TIMEOUT,
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
