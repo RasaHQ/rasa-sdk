@@ -5,25 +5,31 @@ import types
 import warnings
 import zlib
 import json
-from opentelemetry.sdk.trace import TracerProvider
 from typing import List, Text, Union, Optional
 from ssl import SSLContext
-
 from sanic import Sanic, response
 from sanic.response import HTTPResponse
-from sanic.request import Request
-
+# catching:
+# - all `pkg_resources` deprecation warning from multiple dependencies
+# - google rcp warnings (`pkg_resources.namespaces`)
+# - open telemetry (`pkg_resources`)
+# - sanic-cors (`distutils Version classes...`)
 with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings(
+        "ignore", category=DeprecationWarning, message=".*pkg_resources.*")
+    warnings.filterwarnings(
+        "ignore", category=DeprecationWarning,
+        message="distutils Version classes are deprecated")
+    from opentelemetry.sdk.trace import TracerProvider
     from sanic_cors import CORS
-
-from rasa_sdk import utils
-from rasa_sdk.cli.arguments import add_endpoint_arguments
-from rasa_sdk.constants import DEFAULT_KEEP_ALIVE_TIMEOUT, DEFAULT_SERVER_PORT
-from rasa_sdk.executor import ActionExecutor
-from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
-from rasa_sdk.plugin import plugin_manager
-from rasa_sdk.tracing.utils import get_tracer_and_context, set_span_attributes
+    from sanic.request import Request
+    from rasa_sdk import utils
+    from rasa_sdk.cli.arguments import add_endpoint_arguments
+    from rasa_sdk.constants import DEFAULT_KEEP_ALIVE_TIMEOUT, DEFAULT_SERVER_PORT
+    from rasa_sdk.executor import ActionExecutor
+    from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
+    from rasa_sdk.plugin import plugin_manager
+    from rasa_sdk.tracing.utils import get_tracer_and_context, set_span_attributes
 
 logger = logging.getLogger(__name__)
 
