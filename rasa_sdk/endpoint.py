@@ -9,6 +9,7 @@ from typing import List, Text, Union, Optional
 from ssl import SSLContext
 from sanic import Sanic, response
 from sanic.response import HTTPResponse
+
 # catching:
 # - all `pkg_resources` deprecation warning from multiple dependencies
 # - google rcp warnings (`pkg_resources.namespaces`)
@@ -16,10 +17,13 @@ from sanic.response import HTTPResponse
 # - sanic-cors (`distutils Version classes...`)
 with warnings.catch_warnings():
     warnings.filterwarnings(
-        "ignore", category=DeprecationWarning, message=".*pkg_resources.*")
+        "ignore", category=DeprecationWarning, message=".*pkg_resources.*"
+    )
     warnings.filterwarnings(
-        "ignore", category=DeprecationWarning,
-        message="distutils Version classes are deprecated")
+        "ignore",
+        category=DeprecationWarning,
+        message="distutils Version classes are deprecated",
+    )
     from opentelemetry.sdk.trace import TracerProvider
     from sanic_cors import CORS
     from sanic.request import Request
