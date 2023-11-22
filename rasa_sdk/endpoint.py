@@ -15,7 +15,7 @@ from sanic_cors import CORS
 
 from rasa_sdk import utils
 from rasa_sdk.cli.arguments import add_endpoint_arguments
-from rasa_sdk.constants import DEFAULT_SERVER_PORT
+from rasa_sdk.constants import DEFAULT_KEEP_ALIVE_TIMEOUT, DEFAULT_SERVER_PORT
 from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
 from rasa_sdk.plugin import plugin_manager
@@ -160,6 +160,7 @@ def run(
     ssl_password: Optional[Text] = None,
     auto_reload: bool = False,
     tracer_provider: Optional[TracerProvider] = None,
+    keep_alive_timeout: int = DEFAULT_KEEP_ALIVE_TIMEOUT,
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
@@ -169,6 +170,7 @@ def run(
         auto_reload=auto_reload,
         tracer_provider=tracer_provider,
     )
+    app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
     ## Attach additional sanic extensions: listeners, middleware and routing
     logger.info("Starting plugins...")
     plugin_manager().hook.attach_sanic_app_extensions(app=app)
