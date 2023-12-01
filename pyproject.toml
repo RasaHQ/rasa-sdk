@@ -79,13 +79,13 @@ coloredlogs = ">=10,<16"
 sanic = "^21.12.0"
 typing-extensions = ">=4.1.1,<5.0.0"
 Sanic-Cors = "^2.0.0"
-prompt-toolkit = "^3.0,<3.0.29"
+prompt-toolkit = ">=3,<4"
 "ruamel.yaml" = ">=0.16.5,<0.18.0"
 websockets = ">=10.0,<12.0"
 pluggy = "^1.0.0"
 opentelemetry-api = "~1.15.0"
 opentelemetry-sdk = "~1.15.0"
-opentelemetry-exporter-jaeger = "~1.15.0"
+opentelemetry-exporter-jaeger = ">=1.15,<1.21"
 opentelemetry-exporter-otlp = "~1.15.0"
 
 [tool.poetry.dev-dependencies]
@@ -109,5 +109,5 @@ python_functions = "test_"
 asyncio_mode = "auto"
 
 [tool.poetry.group.dev.dependencies]
-ruff = ">=0.0.256,<0.0.286"
+ruff = ">=0.0.256,<0.0.292"
 pytest-asyncio = "^0.21.0"
