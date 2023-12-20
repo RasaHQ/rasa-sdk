@@ -28,21 +28,13 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Run action to get records
-        uses: RasaHQ/get-release-records-from-datocms-gha@main
-        id: get_branches
-        with:
-          dato-cms-api-key: ${{ secrets.DATO_CMS_API_KEY }}
-          product-name: Rasa Plus
-          status: supported
-
       - name: Fetch all tags
         run: git fetch --tags
 
       - name: Run Python script
         id: tags
         run: |
-          python scripts/get_tags_from_branch.py '${{ steps.get_branches.outputs.records }}' '3.3.x'
+          python scripts/get_tags_from_branch.py '["3.3.x","3.4.x","3.5.x","3.6.x","3.7.x","3.8.x"]' '3.3.x'
 
       - name: Show tags
         run: |
