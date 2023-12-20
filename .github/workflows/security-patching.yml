@@ -12,6 +12,10 @@ env:
   RELEASE_REGISTRY_SDK: "europe-west3-docker.pkg.dev/rasa-releases/rasa-sdk"
   GITHUB_WORKFLOW_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
+permissions:
+    id-token: write # This is required for requesting the JWT
+    contents: read # This is required for actions/checkout
+
 jobs:
   get_tags:
     runs-on: ubuntu-22.04
