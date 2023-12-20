@@ -1,0 +1,121 @@
+name: Security Patching - SDK
+
+on:
+  schedule:
+    # Run cron job at 8AM Monday to Sunday.
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+env:
+  # Registry used to store Docker images used for release purposes.
+  RELEASE_REGISTRY_SDK: "europe-west3-docker.pkg.dev/rasa-releases/rasa-sdk"
+  GITHUB_WORKFLOW_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+jobs:
+  get_tags:
+    runs-on: ubuntu-22.04
+    continue-on-error: true
+    outputs:
+      tags: ${{ steps.tags.outputs.tags }}
+    steps:
+      # We have to check out the repo to be able to list the tags.
+      - name: Checkout repository to check tags
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+      
+      - name: Set up Python 
+        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0
+        with:
+          python-version: '3.9'
+
+      - name: Run action to get records
+        uses: RasaHQ/get-release-records-from-datocms-gha@main
+        id: get_branches
+        with:
+          dato-cms-api-key: ${{ secrets.DATO_CMS_API_KEY }}
+          product-name: Rasa Plus
+          status: supported
+
+      - name: Fetch all tags
+        run: git fetch --tags
+
+      - name: Run Python script
+        id: tags
+        run: |
+          python scripts/get_tags_from_branch.py '${{ steps.get_branches.outputs.records }}' '3.3.x'
+
+      - name: Show tags
+        run: |
+          echo "Tags: ${{ steps.tags.outputs.tags }}"
+      
+
+  build:
+    runs-on: ubuntu-22.04
+    needs: get_tags
+    # Don't allow a single image failure to block all the image builds.
+    continue-on-error: true
+
+    strategy:
+      matrix:
+        supported_versions: ${{ fromJson(needs.get_tags.outputs.tags) }}
+
+    steps:
+      # We have to check out the repo to be able to list the tags.
+      - name: Checkout repository to check tags
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+
+      # Determine the date in the right format for us to tag the image.
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+      # Authenticate with Gcloud.
+      - name: Authenticate with gcloud for release registry 🎫
+        id: 'auth-release'
+        uses: 'google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d'
+        with:
+            workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+            service_account: '${{ secrets.RASA_SDK_RELEASE_ACCOUNT_NAME }}'
+
+      # Authenticate with artifact registry where the images are stored.
+      - name: Authenticate docker for release registry 🎫
+        run: gcloud auth configure-docker europe-west3-docker.pkg.dev
+
+      # Rebuild the Docker image for this micro. A line contained in the Dockerfile ensures that the latest OS patches are applied.
+      # VERSION_NUMBER is passed into the build command to determine which Rasa OSS container image is used as the base for the Rasa Pro container.
+      - name: Build and tag security patched image
+        id: build
+        continue-on-error: true
+        run: |
+          docker build . -t ${{env.RELEASE_REGISTRY_SDK}}/rasa-sdk:${{ matrix.supported_versions }}-${{ steps.date.outputs.date }} -t ${{env.RELEASE_REGISTRY_SDK}}/rasa-sdk:${{ matrix.supported_versions }}-latest --build-arg VERSION_NUMBER=${{ matrix.supported_versions }} -f Dockerfile.patch
+
+      - name: Fail pushing the patch if the build is not a success
+        if: steps.build.outcome == 'failure'
+        run: exit 1
+
+      # Push patched images to the release registry with patched tag.
+      - name: Push image to release registry
+        id: push
+        run: |
+          docker push ${{env.RELEASE_REGISTRY_SDK}}/rasa-sdk:${{ matrix.supported_versions }}-${{ steps.date.outputs.date }}
+          docker push ${{env.RELEASE_REGISTRY_SDK}}/rasa-sdk:${{ matrix.supported_versions }}-latest
+ 
+      - name: Alert Slack if build fails
+        if: steps.build.outcome == 'failure' || steps.push.outcome == 'failure'
+        uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Docker image security patch for Rasa SDK version `${{ matrix.supported_versions }}` failed. Please check the <${{ env.GITHUB_WORKFLOW_URL }}|workflow log> for more information."
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_CODESECURITY_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+  

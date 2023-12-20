@@ -7,3 +7,5 @@ Dockerfile
 CHANGELOG.txt
 .pre-commit-config.yaml
 changelog/*
+gha-creds-*.json
+**/gha-creds-*.json

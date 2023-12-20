@@ -1,0 +1,8 @@
+ARG VERSION_NUMBER
+
+FROM rasa/rasa-sdk:${VERSION_NUMBER}
+
+USER root
+RUN apt-get update && apt-get -y upgrade
+
+USER 1001
