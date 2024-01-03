@@ -76,7 +76,7 @@ select = [ "D", "E", "F", "W", "RUF",]
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
 coloredlogs = ">=10,<16"
-sanic = "^21.12.0"
+sanic = ">=22.9.1,<22.12"
 typing-extensions = ">=4.1.1,<5.0.0"
 Sanic-Cors = "^2.0.0"
 prompt-toolkit = "^3.0,<3.0.29"
