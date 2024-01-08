@@ -1121,14 +1121,14 @@ files = [
 
 [[package]]
 name = "sanic-testing"
-version = "22.6.0"
+version = "22.12.0"
 description = "Core testing clients for Sanic"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "sanic-testing-22.6.0.tar.gz", hash = "sha256:8f006d2332106539cd6f3da8a5c0d1f31472261f3293e43e2c9bbad605e72c5b"},
-    {file = "sanic_testing-22.6.0-py3-none-any.whl", hash = "sha256:d84303e83066de7f18e8c3a0cd04512ba1517dbc31123f14e8aec318b22c008c"},
+    {file = "sanic-testing-22.12.0.tar.gz", hash = "sha256:c9582c9bb9aabd82d3bf9fba2514a0274d0d741d84ce600e3ba2bef7b6c87aed"},
+    {file = "sanic_testing-22.12.0-py3-none-any.whl", hash = "sha256:2cc3338207c6aab4cdc6b89264744a3d51ea66685fe1f30f81f9c376f3ee93a3"},
 ]
 
 [package.dependencies]
@@ -1484,4 +1484,4 @@ test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "c02a84a8d0a00ab72995b3cc1102c6c8fd8fe21f8cb9033b0f35358b02bab9b9"
+content-hash = "7d8e21630a57e266e01922b83a087c1211030b75c1ba85433ef38dfe890df40d"
