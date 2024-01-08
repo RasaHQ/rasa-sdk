@@ -1397,14 +1397,14 @@ files = [
 
 [[package]]
 name = "sanic"
-version = "22.9.1"
+version = "22.12.0"
 description = "A web server and web framework that's written to go fast. Build fast. Run fast."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "sanic-22.9.1-py3-none-any.whl", hash = "sha256:d8905ee1c72759c7b37b1638c3b2b6656573d38156a82a85fd020532749029c1"},
-    {file = "sanic-22.9.1.tar.gz", hash = "sha256:9793919827f3753fd16433c8750625472f1a08e2147d6870bb7ff94ab12caaea"},
+    {file = "sanic-22.12.0-py3-none-any.whl", hash = "sha256:84edf46cc17d13264ccec0ae6622e43087498f95644dc336ade74a2d5e6c88cb"},
+    {file = "sanic-22.12.0.tar.gz", hash = "sha256:e5f81115f838956957046b6c52e7a08c1bd6e8ff530ee1376471eaf1579bfffa"},
 ]
 
 [package.dependencies]
@@ -1413,7 +1413,7 @@ httptools = ">=0.0.10"
 multidict = ">=5.0,<7.0"
 sanic-routing = ">=22.8.0"
 ujson = {version = ">=1.35", markers = "sys_platform != \"win32\" and implementation_name == \"cpython\""}
-uvloop = {version = ">=0.5.3", markers = "sys_platform != \"win32\" and implementation_name == \"cpython\""}
+uvloop = {version = ">=0.15.0", markers = "sys_platform != \"win32\" and implementation_name == \"cpython\""}
 websockets = ">=10.0"
 
 [package.extras]
@@ -1933,4 +1933,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "80f74bacd4454b1f09f2b128762c7571cd29a6064c4dd1725dec8c0866e0f89f"
+content-hash = "0c854c620eb789aa7b5697a6430b0af5b2c5d9f29a2f045adfe71be21b35ed48"
