@@ -9,6 +9,8 @@ from typing import List, Text, Union, Optional
 from ssl import SSLContext
 from sanic import Sanic, response
 from sanic.response import HTTPResponse
+from functools import partial
+from sanic.worker.loader import AppLoader
 
 # catching:
 # - all `pkg_resources` deprecation warning from multiple dependencies
@@ -77,27 +79,21 @@ def create_argument_parser():
     return parser
 
 
-def create_app(
+def attach_endpoints(
+    app: Sanic,
     action_package_name: Union[Text, types.ModuleType],
-    cors_origins: Union[Text, List[Text], None] = "*",
     auto_reload: bool = False,
     tracer_provider: Optional[TracerProvider] = None,
-) -> Sanic:
-    """Create a Sanic application and return it.
+) -> None:
+    """Attach endpoints to a Sanic application.
 
     Args:
+        app: The sanic application on which to attach endpoints.
         action_package_name: Name of the package or module to load actions
             from.
-        cors_origins: CORS origins to allow.
         auto_reload: When `True`, auto-reloading of actions is enabled.
         tracer_provider: Tracer provider to use for tracing.
-
-    Returns:
-        A new Sanic application ready to be run.
     """
-    app = Sanic("rasa_sdk", configure_logging=False)
-
-    configure_cors(app, cors_origins)
 
     executor = ActionExecutor()
     executor.register_package(action_package_name)
@@ -162,6 +158,35 @@ def create_app(
         body = {"error": str(exception), "request_body": request.json}
         return response.json(body, status=500)
 
+
+def create_app(
+    action_package_name: Union[Text, types.ModuleType],
+    cors_origins: Union[Text, List[Text], None] = "*",
+    auto_reload: bool = False,
+    tracer_provider: Optional[TracerProvider] = None,
+) -> Sanic:
+    """Create a Sanic application and return it.
+
+    Args:
+        action_package_name: Name of the package or module to load actions
+            from.
+        cors_origins: CORS origins to allow.
+        auto_reload: When `True`, auto-reloading of actions is enabled.
+        tracer_provider: Tracer provider to use for tracing.
+
+    Returns:
+        A new Sanic application.
+    """
+    app = Sanic("rasa_sdk", configure_logging=False)
+
+    configure_cors(app, cors_origins)
+
+    attach_endpoints(
+        app,
+        action_package_name,
+        auto_reload=auto_reload,
+        tracer_provider=tracer_provider,
+    )
     return app
 
 
@@ -178,12 +203,16 @@ def run(
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
-    app = create_app(
-        action_package_name,
-        cors_origins=cors_origins,
-        auto_reload=auto_reload,
-        tracer_provider=tracer_provider,
+    loader = AppLoader(
+        factory=partial(
+            create_app,
+            action_package_name,
+            cors_origins=cors_origins,
+            auto_reload=auto_reload,
+            tracer_provider=tracer_provider,
+        )
     )
+    app = loader.load()
     app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
     ## Attach additional sanic extensions: listeners, middleware and routing
     logger.info("Starting plugins...")
@@ -193,7 +222,10 @@ def run(
     host = os.environ.get("SANIC_HOST", "0.0.0.0")
 
     logger.info(f"Action endpoint is up and running on {protocol}://{host}:{port}")
-    app.run(host, port, ssl=ssl_context, workers=utils.number_of_sanic_workers())
+    app.prepare(
+        host=host, port=port, ssl=ssl_context, workers=utils.number_of_sanic_workers()
+    )
+    Sanic.serve(primary=app, app_loader=loader)
 
 
 if __name__ == "__main__":
