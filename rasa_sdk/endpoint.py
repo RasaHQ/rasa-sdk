@@ -79,21 +79,27 @@ def create_argument_parser():
     return parser
 
 
-def attach_endpoints(
-    app: Sanic,
+def create_app(
     action_package_name: Union[Text, types.ModuleType],
+    cors_origins: Union[Text, List[Text], None] = "*",
     auto_reload: bool = False,
     tracer_provider: Optional[TracerProvider] = None,
-) -> None:
-    """Attach endpoints to a Sanic application.
+) -> Sanic:
+    """Create a Sanic application and return it.
 
     Args:
-        app: The sanic application on which to attach endpoints.
         action_package_name: Name of the package or module to load actions
             from.
+        cors_origins: CORS origins to allow.
         auto_reload: When `True`, auto-reloading of actions is enabled.
         tracer_provider: Tracer provider to use for tracing.
+
+    Returns:
+        A new Sanic application ready to be run.
     """
+    app = Sanic("rasa_sdk", configure_logging=False)
+
+    configure_cors(app, cors_origins)
 
     executor = ActionExecutor()
     executor.register_package(action_package_name)
@@ -158,35 +164,6 @@ def attach_endpoints(
         body = {"error": str(exception), "request_body": request.json}
         return response.json(body, status=500)
 
-
-def create_app(
-    action_package_name: Union[Text, types.ModuleType],
-    cors_origins: Union[Text, List[Text], None] = "*",
-    auto_reload: bool = False,
-    tracer_provider: Optional[TracerProvider] = None,
-) -> Sanic:
-    """Create a Sanic application and return it.
-
-    Args:
-        action_package_name: Name of the package or module to load actions
-            from.
-        cors_origins: CORS origins to allow.
-        auto_reload: When `True`, auto-reloading of actions is enabled.
-        tracer_provider: Tracer provider to use for tracing.
-
-    Returns:
-        A new Sanic application.
-    """
-    app = Sanic("rasa_sdk", configure_logging=False)
-
-    configure_cors(app, cors_origins)
-
-    attach_endpoints(
-        app,
-        action_package_name,
-        auto_reload=auto_reload,
-        tracer_provider=tracer_provider,
-    )
     return app
 
 
