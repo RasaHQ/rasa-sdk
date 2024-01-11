@@ -42,6 +42,10 @@ def test_plugin_attach_sanic_app_extension(
     # Set the create_app() method to return create_app_mock
     monkeypatch.setattr("rasa_sdk.endpoint.create_app", create_app_mock)
 
+    # mock sanic.serve
+    sanic_serve_mock = MagicMock()
+    monkeypatch.setattr("rasa_sdk.endpoint.Sanic.serve", sanic_serve_mock)
+
     # Set the return value of app_mock.run() to None
     app_mock.run.return_value = None
 
