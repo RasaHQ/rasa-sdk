@@ -9,6 +9,8 @@ from typing import List, Text, Union, Optional
 from ssl import SSLContext
 from sanic import Sanic, response
 from sanic.response import HTTPResponse
+from functools import partial
+from sanic.worker.loader import AppLoader
 
 # catching:
 # - all `pkg_resources` deprecation warning from multiple dependencies
@@ -178,12 +180,18 @@ def run(
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
-    app = create_app(
-        action_package_name,
-        cors_origins=cors_origins,
-        auto_reload=auto_reload,
-        tracer_provider=tracer_provider,
+    # as recommended by Sanic in their documentation
+    # https://sanic.dev/en/guide/running/app-loader.html#dynamic-applications
+    loader = AppLoader(
+        factory=partial(
+            create_app,
+            action_package_name,
+            cors_origins=cors_origins,
+            auto_reload=auto_reload,
+            tracer_provider=tracer_provider,
+        )
     )
+    app = loader.load()
     app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
     ## Attach additional sanic extensions: listeners, middleware and routing
     logger.info("Starting plugins...")
@@ -193,7 +201,10 @@ def run(
     host = os.environ.get("SANIC_HOST", "0.0.0.0")
 
     logger.info(f"Action endpoint is up and running on {protocol}://{host}:{port}")
-    app.run(host, port, ssl=ssl_context, workers=utils.number_of_sanic_workers())
+    app.prepare(
+        host=host, port=port, ssl=ssl_context, workers=utils.number_of_sanic_workers()
+    )
+    Sanic.serve(primary=app, app_loader=loader)
 
 
 if __name__ == "__main__":
