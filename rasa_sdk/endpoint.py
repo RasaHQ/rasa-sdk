@@ -180,6 +180,8 @@ def run(
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
+    # as recommended by Sanic in their documentation
+    # https://sanic.dev/en/guide/running/app-loader.html#dynamic-applications
     loader = AppLoader(
         factory=partial(
             create_app,
