@@ -33,6 +33,7 @@ class Tracker:
             state.get("followup_action"),
             state.get("active_loop", state.get("active_form", {})),
             state.get("latest_action_name"),
+            state.get("stack"),
         )
 
     def __init__(
@@ -45,6 +46,7 @@ class Tracker:
         followup_action: Optional[Text],
         active_loop: Dict[Text, Any],
         latest_action_name: Optional[Text],
+        stack: Dict[Text, Any]
     ) -> None:
         """Initialize the tracker."""
 
@@ -66,6 +68,7 @@ class Tracker:
         self.latest_message = latest_message if latest_message else {}
         self.active_loop = active_loop
         self.latest_action_name = latest_action_name
+        self.stack = stack
 
     @property
     def active_form(self) -> Dict[Text, Any]:
@@ -93,6 +96,7 @@ class Tracker:
             "latest_input_channel": self.get_latest_input_channel(),
             "active_loop": self.active_loop,
             "latest_action_name": self.latest_action_name,
+            "stack": self.stack,
         }
 
     def current_slot_values(self) -> Dict[Text, Any]:
@@ -196,6 +200,7 @@ class Tracker:
             self.followup_action,
             self.active_loop,
             self.latest_action_name,
+            self.stack,
         )
 
     def last_executed_action_has(self, name: Text, skip: int = 0) -> bool:
