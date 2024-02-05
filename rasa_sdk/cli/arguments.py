@@ -1,6 +1,6 @@
 import argparse
 
-from rasa_sdk.constants import DEFAULT_SERVER_PORT
+from rasa_sdk.constants import DEFAULT_SERVER_PORT, DEFAULT_ENDPOINTS_PATH
 
 
 def action_arg(action):
@@ -53,4 +53,9 @@ def add_endpoint_arguments(parser):
         "--auto-reload",
         help="Enable auto-reloading of modules containing Action subclasses.",
         action="store_true",
+    )
+    parser.add_argument(
+        "--endpoints",
+        default=DEFAULT_ENDPOINTS_PATH,
+        help="Configuration file for the assistant as a yml file.",
     )
