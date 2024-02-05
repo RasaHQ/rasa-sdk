@@ -1,12 +1,21 @@
 import rasa_sdk.endpoint as ep
+import pytest
+
+from rasa_sdk.constants import DEFAULT_ENDPOINTS_PATH
 
 
-def test_arg_parser_endpoints():
+@pytest.mark.parametrize(
+    "args, expected",
+    [
+        ([], DEFAULT_ENDPOINTS_PATH),
+        (["--endpoints", "a.yml"], "a.yml"),
+    ],
+)
+def test_arg_parser_endpoints(args, expected):
     parser = ep.create_argument_parser()
-    args = ["--endpoints", "endpoint.yml"]
     cmdline_args = parser.parse_args(args)
-    assert cmdline_args.endpoints == "endpoint.yml"
+    assert cmdline_args.endpoints == expected
 
     help_text = parser.format_help()
     assert "--endpoints ENDPOINTS" in help_text
-    assert " Configuration file for tracing as a yml file." in help_text
+    assert " Configuration file for the assistant as a yml file." in help_text

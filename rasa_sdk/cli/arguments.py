@@ -57,5 +57,5 @@ def add_endpoint_arguments(parser):
     parser.add_argument(
         "--endpoints",
         default=DEFAULT_ENDPOINTS_PATH,
-        help="Configuration file for tracing as a yml file.",
+        help="Configuration file for the assistant as a yml file.",
     )
