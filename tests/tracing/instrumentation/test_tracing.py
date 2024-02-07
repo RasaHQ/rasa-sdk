@@ -1,4 +1,5 @@
 import json
+import pytest
 
 import rasa_sdk.endpoint as ep
 
@@ -9,22 +10,36 @@ from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
 
+data = {
+    "version": "1.0.0",
+    "sender_id": "1",
+    "tracker": {
+        "sender_id": "1",
+        "conversation_id": "default",
+        "latest_message": {"message_id": "1"},
+    },
+    "domain": {},
+}
+
+
+@pytest.mark.parametrize(
+    "action_name, action_package",
+    [
+        ("dummy_action", "action_fixtures"),
+        ("", None),
+    ],
+)
 def test_server_webhook_custom_action_is_instrumented(
     tracer_provider: TracerProvider,
     span_exporter: InMemorySpanExporter,
     previous_num_captured_spans: int,
+    action_name: str,
+    action_package: str,
 ) -> None:
     """Tests that the custom action is instrumented."""
-    data = {
-        "next_action": "custom_action",
-        "version": "1.0.0",
-        "tracker": {
-            "sender_id": "1",
-            "conversation_id": "default",
-            "latest_message": {"message_id": "1"},
-        },
-    }
-    app = ep.create_app(None, tracer_provider=tracer_provider)
+
+    data["next_action"] = action_name
+    app = ep.create_app(action_package, tracer_provider=tracer_provider)
     _, response = app.test_client.post("/webhook", data=json.dumps(data))
 
     assert response.status == 200
@@ -48,21 +63,22 @@ def test_server_webhook_custom_action_is_instrumented(
     }
 
 
+@pytest.mark.parametrize(
+    "action_name, action_package",
+    [
+        ("dummy_action", "action_fixtures"),
+        ("", None),
+    ],
+)
 def test_server_webhook_custom_action_is_not_instrumented(
     span_exporter: InMemorySpanExporter,
     previous_num_captured_spans: int,
+    action_name: str,
+    action_package: str,
 ) -> None:
     """Tests that the server is not instrumented if no tracer provider is provided."""
-    data = {
-        "next_action": "custom_action",
-        "version": "1.0.0",
-        "tracker": {
-            "sender_id": "1",
-            "conversation_id": "default",
-            "latest_message": {"message_id": "1"},
-        },
-    }
-    app = ep.create_app(None)
+    data["next_action"] = action_name
+    app = ep.create_app(action_package)
     _, response = app.test_client.post("/webhook", data=json.dumps(data))
 
     assert response.status == 200
