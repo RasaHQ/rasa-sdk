@@ -73,5 +73,5 @@ def test_get_tracer_and_context() -> None:
     print(type(tracer))
 
     assert isinstance(tracer, ProxyTracer)
-    assert span_name == "rasa_sdk.create_app.webhook"
+    assert span_name == "create_app.webhook"
     assert context is None

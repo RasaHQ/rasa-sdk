@@ -14,7 +14,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from rasa_sdk.tracing.endpoints import EndpointConfig, read_endpoint_config
 
 
-TRACING_SERVICE_NAME = os.environ.get("TRACING_SERVICE_NAME", "rasa_sdk")
+TRACING_SERVICE_NAME = os.environ.get("RASA_SDK_TRACING_SERVICE_NAME", "rasa_sdk")
 
 ENDPOINTS_TRACING_KEY = "tracing"
 
@@ -90,9 +90,7 @@ class JaegerTracerConfigurer(TracerConfigurer):
         :return: The configured `TracerProvider`.
         """
         provider = TracerProvider(
-            resource=Resource.create(
-                {SERVICE_NAME: cfg.kwargs.get("service_name", TRACING_SERVICE_NAME)}
-            )
+            resource=Resource.create({SERVICE_NAME: TRACING_SERVICE_NAME})
         )
 
         jaeger_exporter = JaegerExporter(
@@ -132,9 +130,7 @@ class OTLPCollectorConfigurer(TracerConfigurer):
         :return: The configured `TracerProvider`.
         """
         provider = TracerProvider(
-            resource=Resource.create(
-                {SERVICE_NAME: cfg.kwargs.get("service_name", TRACING_SERVICE_NAME)}
-            )
+            resource=Resource.create({SERVICE_NAME: TRACING_SERVICE_NAME})
         )
 
         insecure = cfg.kwargs.get("insecure")
