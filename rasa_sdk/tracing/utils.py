@@ -20,6 +20,7 @@ def get_tracer_provider(
 
     if endpoints_file is not None:
         tracer_provider = config.get_tracer_provider(endpoints_file)
+        config.configure_tracing(tracer_provider)
     return tracer_provider
 
 
