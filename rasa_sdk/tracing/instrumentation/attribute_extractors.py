@@ -21,7 +21,10 @@ def extract_attrs_for_action_executor(
     :param action_call: The `ActionCall` argument.
     :return: A dictionary containing the attributes.
     """
-    return {
-        "next_action": action_call["next_action"],
-        "sender_id": action_call["sender_id"],
-    }
+    attributes = {"sender_id": action_call["sender_id"]}
+    action_name = action_call.get("next_action")
+
+    if action_name:
+        attributes["action_name"] = action_name
+
+    return attributes

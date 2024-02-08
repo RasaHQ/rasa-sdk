@@ -78,6 +78,36 @@ def traceable_async(
     return async_wrapper
 
 
+def traceable(
+    fn: Callable[[T, Any, Any], S],
+    tracer: Tracer,
+    attr_extractor: Optional[Callable[[T, Any, Any], Dict[str, Any]]],
+) -> Callable[[T, Any, Any], S]:
+    """Wrap a non-`async` function by tracing functionality.
+
+    :param fn: The function to be wrapped.
+    :param tracer: The `Tracer` that shall be used for tracing this function.
+    :param attr_extractor: A function that is applied to the function's instance and
+        the function's arguments.
+    :return: The wrapped function.
+    """
+    should_extract_args = _check_extractor_argument_list(fn, attr_extractor)
+
+    @functools.wraps(fn)
+    def wrapper(self: T, *args: Any, **kwargs: Any) -> S:
+        attrs = (
+            attr_extractor(self, *args, **kwargs)
+            if attr_extractor and should_extract_args
+            else {}
+        )
+        with tracer.start_as_current_span(
+            f"{self.__class__.__name__}.{fn.__name__}", attributes=attrs
+        ):
+            return fn(self, *args, **kwargs)
+
+    return wrapper
+
+
 ActionExecutorType = TypeVar("ActionExecutorType", bound=ActionExecutor)
 
 
@@ -111,7 +141,10 @@ def _instrument_method(
     attr_extractor: Optional[Callable],
 ) -> None:
     method_to_trace = getattr(instrumented_class, method_name)
-    traced_method = traceable_async(method_to_trace, tracer, attr_extractor)
+    if inspect.iscoroutinefunction(method_to_trace):
+        traced_method = traceable_async(method_to_trace, tracer, attr_extractor)
+    else:
+        traced_method = traceable(method_to_trace, tracer, attr_extractor)
     setattr(instrumented_class, method_name, traced_method)
 
     logger.debug(f"Instrumented '{instrumented_class.__name__}.{method_name}'.")
