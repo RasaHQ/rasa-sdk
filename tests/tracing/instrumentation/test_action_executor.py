@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Any, Dict, Sequence, Text, Optional
 
 import pytest
 from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
@@ -10,11 +10,20 @@ from rasa_sdk.types import ActionCall
 from rasa_sdk import Tracker
 
 
+@pytest.mark.parametrize(
+    "action_name, expected",
+    [
+        ("check_balance", {"action_name": "check_balance", "sender_id": "test"}),
+        (None, {"sender_id": "test"}),
+    ],
+)
 @pytest.mark.asyncio
 async def test_tracing_action_executor_run(
     tracer_provider: TracerProvider,
     span_exporter: InMemorySpanExporter,
     previous_num_captured_spans: int,
+    action_name: Optional[str],
+    expected: Dict[Text, Any],
 ) -> None:
     component_class = MockActionExecutor
 
@@ -26,7 +35,7 @@ async def test_tracing_action_executor_run(
     mock_action_executor = component_class()
     action_call = ActionCall(
         {
-            "next_action": "check_balance",
+            "next_action": action_name,
             "sender_id": "test",
             "tracker": Tracker("test", {}, {}, [], False, None, {}, ""),
             "version": "1.0.0",
@@ -46,8 +55,4 @@ async def test_tracing_action_executor_run(
 
     assert captured_span.name == "MockActionExecutor.run"
 
-    expected_attributes = {
-        "next_action": "check_balance",
-        "sender_id": "test",
-    }
-    assert captured_span.attributes == expected_attributes
+    assert captured_span.attributes == expected
