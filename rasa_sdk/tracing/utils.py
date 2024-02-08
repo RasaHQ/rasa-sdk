@@ -20,6 +20,7 @@ def get_tracer_provider(
 
     if endpoints_file is not None:
         tracer_provider = config.get_tracer_provider(endpoints_file)
+        config.configure_tracing(tracer_provider)
     return tracer_provider
 
 
@@ -27,7 +28,7 @@ def get_tracer_and_context(
     tracer_provider: Optional[TracerProvider], request: Request
 ) -> Tuple[Any, Any, Text]:
     """Gets tracer and context"""
-    span_name = "rasa_sdk.create_app.webhook"
+    span_name = "create_app.webhook"
     if tracer_provider is None:
         tracer = trace.get_tracer(span_name)
         context = None

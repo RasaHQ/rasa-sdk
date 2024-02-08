@@ -12,13 +12,33 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from rasa_sdk.tracing.endpoints import EndpointConfig, read_endpoint_config
+from rasa_sdk.tracing.instrumentation import instrumentation
+from rasa_sdk.executor import ActionExecutor
 
 
-TRACING_SERVICE_NAME = os.environ.get("TRACING_SERVICE_NAME", "rasa_sdk")
+TRACING_SERVICE_NAME = os.environ.get("RASA_SDK_TRACING_SERVICE_NAME", "rasa_sdk")
 
 ENDPOINTS_TRACING_KEY = "tracing"
 
 logger = logging.getLogger(__name__)
+
+
+def configure_tracing(tracer_provider: Optional[TracerProvider]) -> None:
+    """Configure tracing functionality.
+
+    When a tracing backend is defined, this function will
+    instrument all methods that shall be traced.
+    If no tracing backend is defined, no tracing is configured.
+
+    :param tracer_provider: The `TracingProvider` to be used for tracing
+    """
+    if tracer_provider is None:
+        return None
+
+    instrumentation.instrument(
+        tracer_provider=tracer_provider,
+        action_executor_class=ActionExecutor,
+    )
 
 
 def get_tracer_provider(endpoints_file: Text) -> Optional[TracerProvider]:
@@ -90,9 +110,7 @@ class JaegerTracerConfigurer(TracerConfigurer):
         :return: The configured `TracerProvider`.
         """
         provider = TracerProvider(
-            resource=Resource.create(
-                {SERVICE_NAME: cfg.kwargs.get("service_name", TRACING_SERVICE_NAME)}
-            )
+            resource=Resource.create({SERVICE_NAME: TRACING_SERVICE_NAME})
         )
 
         jaeger_exporter = JaegerExporter(
@@ -132,9 +150,7 @@ class OTLPCollectorConfigurer(TracerConfigurer):
         :return: The configured `TracerProvider`.
         """
         provider = TracerProvider(
-            resource=Resource.create(
-                {SERVICE_NAME: cfg.kwargs.get("service_name", TRACING_SERVICE_NAME)}
-            )
+            resource=Resource.create({SERVICE_NAME: TRACING_SERVICE_NAME})
         )
 
         insecure = cfg.kwargs.get("insecure")
