@@ -1,3 +1,5 @@
+import json
+
 from typing import Any, Dict, Text
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
 from rasa_sdk.forms import ValidationAction
@@ -51,6 +53,6 @@ def extract_attrs_for_validation_action(
     return {
         "class_name": self.__class__.__name__,
         "sender_id": tracker.sender_id,
-        "slots_to_validate": str(slots_to_validate),
+        "slots_to_validate": json.dumps(list(slots_to_validate)),
         "action_name": self.name(),
     }

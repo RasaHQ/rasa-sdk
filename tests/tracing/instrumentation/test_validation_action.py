@@ -17,10 +17,10 @@ from rasa_sdk.events import SlotSet
 @pytest.mark.parametrize(
     "events, expected_slots_to_validate",
     [
-        ([], "dict_keys([])"),
+        ([], "[]"),
         (
             [SlotSet("name", "Tom"), SlotSet("address", "Berlin")],
-            "dict_keys(['name', 'address'])",
+            '["name", "address"]',
         ),
     ],
 )
