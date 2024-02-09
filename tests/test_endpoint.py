@@ -23,7 +23,7 @@ def test_server_health_returns_200():
 def test_server_list_actions_returns_200():
     request, response = app.test_client.get("/actions")
     assert response.status == 200
-    assert len(response.json) == 3
+    assert len(response.json) == 4
 
 
 def test_server_webhook_unknown_action_returns_404():
