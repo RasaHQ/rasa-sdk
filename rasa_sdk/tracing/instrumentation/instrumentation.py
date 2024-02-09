@@ -15,6 +15,7 @@ from typing import (
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.trace import Tracer
 from rasa_sdk.executor import ActionExecutor
+from rasa_sdk.forms import ValidationAction
 from rasa_sdk.tracing.instrumentation import attribute_extractors
 
 # The `TypeVar` representing the return type for a function to be wrapped.
@@ -70,9 +71,11 @@ def traceable_async(
             if attr_extractor and should_extract_args
             else {}
         )
-        with tracer.start_as_current_span(
-            f"{self.__class__.__name__}.{fn.__name__}", attributes=attrs
-        ):
+        if issubclass(self.__class__, ValidationAction):
+            span_name = f"ValidationAction.{self.__class__.__name__}.{fn.__name__}"
+        else:
+            span_name = f"{self.__class__.__name__}.{fn.__name__}"
+        with tracer.start_as_current_span(span_name, attributes=attrs):
             return await fn(self, *args, **kwargs)
 
     return async_wrapper
@@ -109,11 +112,13 @@ def traceable(
 
 
 ActionExecutorType = TypeVar("ActionExecutorType", bound=ActionExecutor)
+ValidationActionType = TypeVar("ValidationActionType", bound=ValidationAction)
 
 
 def instrument(
     tracer_provider: TracerProvider,
     action_executor_class: Optional[Type[ActionExecutorType]] = None,
+    validation_action_class: Optional[Type[ValidationActionType]] = None,
 ) -> None:
     """Substitute methods to be traced by their traced counterparts.
 
@@ -121,6 +126,8 @@ def instrument(
         on the substituted methods.
     :param action_executor_class: The `ActionExecutor` to be instrumented. If `None`
         is given, no `ActionExecutor` will be instrumented.
+    :param validation_action_class: The `ValidationAction` to be instrumented. If `None`
+        is given, no `ValidationAction` will be instrumented.
     """
     if action_executor_class is not None and not class_is_instrumented(
         action_executor_class
@@ -132,6 +139,17 @@ def instrument(
             attribute_extractors.extract_attrs_for_action_executor,
         )
         mark_class_as_instrumented(action_executor_class)
+
+    if validation_action_class is not None and not class_is_instrumented(
+        validation_action_class
+    ):
+        _instrument_method(
+            tracer_provider.get_tracer(validation_action_class.__module__),
+            validation_action_class,
+            "run",
+            attribute_extractors.extract_attrs_for_validation_action,
+        )
+        mark_class_as_instrumented(validation_action_class)
 
 
 def _instrument_method(
