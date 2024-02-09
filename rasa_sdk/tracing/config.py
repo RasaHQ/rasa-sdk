@@ -14,7 +14,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from rasa_sdk.tracing.endpoints import EndpointConfig, read_endpoint_config
 from rasa_sdk.tracing.instrumentation import instrumentation
 from rasa_sdk.executor import ActionExecutor
-
+from rasa_sdk.forms import ValidationAction
 
 TRACING_SERVICE_NAME = os.environ.get("RASA_SDK_TRACING_SERVICE_NAME", "rasa_sdk")
 
@@ -38,6 +38,7 @@ def configure_tracing(tracer_provider: Optional[TracerProvider]) -> None:
     instrumentation.instrument(
         tracer_provider=tracer_provider,
         action_executor_class=ActionExecutor,
+        validation_action_class=ValidationAction,
     )
 
 
