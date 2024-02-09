@@ -1,6 +1,8 @@
 from typing import Any, Dict, Text
-from rasa_sdk.executor import ActionExecutor
-from rasa_sdk.types import ActionCall
+from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
+from rasa_sdk.forms import ValidationAction
+from rasa_sdk.types import ActionCall, DomainDict
+from rasa_sdk import Tracker
 
 
 # This file contains all attribute extractors for tracing instrumentation.
@@ -28,3 +30,27 @@ def extract_attrs_for_action_executor(
         attributes["action_name"] = action_name
 
     return attributes
+
+
+def extract_attrs_for_validation_action(
+    self: ValidationAction,
+    dispatcher: "CollectingDispatcher",
+    tracker: "Tracker",
+    domain: "DomainDict",
+) -> Dict[Text, Any]:
+    """Extract the attributes for `ValidationAction.run`.
+
+    :param self: The `ValidationAction` on which `run` is called.
+    :param dispatcher: The `CollectingDispatcher` argument.
+    :param tracker: The `Tracker` argument.
+    :param domain: The `DomainDict` argument.
+    :return: A dictionary containing the attributes.
+    """
+    slots_to_validate = tracker.slots_to_validate().keys()
+
+    return {
+        "class_name": self.__class__.__name__,
+        "sender_id": tracker.sender_id,
+        "slots_to_validate": str(slots_to_validate),
+        "action_name": self.name(),
+    }
