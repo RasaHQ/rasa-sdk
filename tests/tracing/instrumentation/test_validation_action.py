@@ -1,17 +1,14 @@
-from typing import Sequence, Optional
+from typing import List, Sequence
 
 import pytest
 from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
 from rasa_sdk.tracing.instrumentation import instrumentation
-from tests.tracing.instrumentation.conftest import (
-    MockValidationAction,
-    # MockValidationActionSubClass,
-)
+from tests.tracing.instrumentation.conftest import MockValidationAction
 from rasa_sdk import Tracker
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.events import SlotSet
+from rasa_sdk.events import SlotSet, EventType
 
 
 @pytest.mark.parametrize(
@@ -29,8 +26,8 @@ async def test_tracing_action_executor_run(
     tracer_provider: TracerProvider,
     span_exporter: InMemorySpanExporter,
     previous_num_captured_spans: int,
-    events: Optional[str],
-    expected_slots_to_validate: Optional[str],
+    events: List[EventType],
+    expected_slots_to_validate: str,
 ) -> None:
     component_class = MockValidationAction
 

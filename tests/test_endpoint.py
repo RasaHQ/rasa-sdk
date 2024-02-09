@@ -25,6 +25,17 @@ def test_server_list_actions_returns_200():
     assert response.status == 200
     assert len(response.json) == 4
 
+    # ENSURE TO UPDATE AS MORE ACTIONS ARE ADDED IN OTHER TESTS
+    expected = [
+        # defined in tests/test_actions.py
+        {"name": "custom_async_action"},
+        {"name": "custom_action"},
+        {"name": "custom_action_exception"},
+        # defined in tests/tracing/instrumentation/conftest.py
+        {"name": "mock_validation_action"},
+    ]
+    assert response.json == expected
+
 
 def test_server_webhook_unknown_action_returns_404():
     data = {
