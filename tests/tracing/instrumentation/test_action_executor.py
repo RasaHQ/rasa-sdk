@@ -11,7 +11,7 @@ from rasa_sdk.tracing.instrumentation import instrumentation
 from tests.tracing.instrumentation.conftest import MockActionExecutor
 from rasa_sdk.types import ActionCall
 from rasa_sdk import Tracker
-from rasa_sdk.tracing.trace_provider import TraceProvider
+from rasa_sdk.tracing.tracer_register import ActionExecutorTracerRegister
 
 
 @pytest.mark.parametrize(
@@ -62,8 +62,7 @@ async def test_tracing_action_executor_run(
     assert captured_span.attributes == expected
 
 
-@pytest.mark.asyncio
-async def test_instrument_action_executor_run_registers_tracer(
+def test_instrument_action_executor_run_registers_tracer(
     tracer_provider: TracerProvider, monkeypatch: MonkeyPatch
 ) -> None:
     component_class = MockActionExecutor
@@ -73,8 +72,10 @@ async def test_instrument_action_executor_run_registers_tracer(
     register_tracer_mock = Mock()
     get_tracer_mock = Mock(return_value=mock_tracer)
 
-    monkeypatch.setattr(TraceProvider, "register_tracer", register_tracer_mock())
-    monkeypatch.setattr(TraceProvider, "get_tracer", get_tracer_mock)
+    monkeypatch.setattr(
+        ActionExecutorTracerRegister, "register_tracer", register_tracer_mock()
+    )
+    monkeypatch.setattr(ActionExecutorTracerRegister, "get_tracer", get_tracer_mock)
 
     instrumentation.instrument(
         tracer_provider,
@@ -82,7 +83,7 @@ async def test_instrument_action_executor_run_registers_tracer(
     )
     register_tracer_mock.assert_called_once()
 
-    provider = TraceProvider()
+    provider = ActionExecutorTracerRegister()
     tracer = provider.get_tracer()
 
     assert tracer is not None
