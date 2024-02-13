@@ -17,6 +17,7 @@ from opentelemetry.trace import Tracer
 from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.forms import ValidationAction
 from rasa_sdk.tracing.instrumentation import attribute_extractors
+from rasa_sdk.tracing.trace_provider import TraceProvider
 
 # The `TypeVar` representing the return type for a function to be wrapped.
 S = TypeVar("S")
@@ -132,13 +133,15 @@ def instrument(
     if action_executor_class is not None and not class_is_instrumented(
         action_executor_class
     ):
+        tracer = tracer_provider.get_tracer(action_executor_class.__module__)
         _instrument_method(
-            tracer_provider.get_tracer(action_executor_class.__module__),
+            tracer,
             action_executor_class,
             "run",
             attribute_extractors.extract_attrs_for_action_executor,
         )
         mark_class_as_instrumented(action_executor_class)
+        TraceProvider().register_tracer(tracer)
 
     if validation_action_class is not None and not class_is_instrumented(
         validation_action_class
