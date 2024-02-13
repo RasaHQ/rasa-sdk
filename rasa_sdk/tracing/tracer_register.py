@@ -3,20 +3,20 @@ from rasa_sdk.utils import Singleton
 from opentelemetry.trace import Tracer
 
 
-class TraceProvider(metaclass=Singleton):
-    """Represents a provider for tracer."""
+class ActionExecutorTracerRegister(metaclass=Singleton):
+    """Represents a provider for ActionExecutor tracer."""
 
     tracer: Optional[Tracer] = None
 
     def register_tracer(self, tracer: Tracer) -> None:
-        """Register a tracer.
+        """Register an ActionExecutor tracer.
         Args:
             trace: The tracer to register.
         """
         self.tracer = tracer
 
     def get_tracer(self) -> Optional[Tracer]:
-        """Get the tracer.
+        """Get the ActionExecutor tracer.
         Returns:
             The tracer.
         """
