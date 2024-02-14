@@ -1,13 +1,17 @@
-from typing import Any, Dict, Sequence, Text, Optional
-
 import pytest
+
+from typing import Any, Dict, Sequence, Text, Optional
+from unittest.mock import Mock
+from pytest import MonkeyPatch
 from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+from opentelemetry import trace
 
 from rasa_sdk.tracing.instrumentation import instrumentation
 from tests.tracing.instrumentation.conftest import MockActionExecutor
 from rasa_sdk.types import ActionCall
 from rasa_sdk import Tracker
+from rasa_sdk.tracing.tracer_register import ActionExecutorTracerRegister
 
 
 @pytest.mark.parametrize(
@@ -56,3 +60,31 @@ async def test_tracing_action_executor_run(
     assert captured_span.name == "MockActionExecutor.run"
 
     assert captured_span.attributes == expected
+
+
+def test_instrument_action_executor_run_registers_tracer(
+    tracer_provider: TracerProvider, monkeypatch: MonkeyPatch
+) -> None:
+    component_class = MockActionExecutor
+
+    mock_tracer = trace.get_tracer(__name__)
+
+    register_tracer_mock = Mock()
+    get_tracer_mock = Mock(return_value=mock_tracer)
+
+    monkeypatch.setattr(
+        ActionExecutorTracerRegister, "register_tracer", register_tracer_mock()
+    )
+    monkeypatch.setattr(ActionExecutorTracerRegister, "get_tracer", get_tracer_mock)
+
+    instrumentation.instrument(
+        tracer_provider,
+        action_executor_class=component_class,
+    )
+    register_tracer_mock.assert_called_once()
+
+    provider = ActionExecutorTracerRegister()
+    tracer = provider.get_tracer()
+
+    assert tracer is not None
+    assert tracer == mock_tracer
