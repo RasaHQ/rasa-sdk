@@ -99,14 +99,23 @@ def traceable(
 
     @functools.wraps(fn)
     def wrapper(self: T, *args: Any, **kwargs: Any) -> S:
-        attrs = (
-            attr_extractor(self, *args, **kwargs)
-            if attr_extractor and should_extract_args
-            else {}
-        )
+        if fn.__name__ == "_create_api_response":
+            attrs = (
+                attr_extractor(*args, **kwargs)
+                if attr_extractor and should_extract_args
+                else {}
+            )
+        else:
+            attrs = (
+                attr_extractor(self, *args, **kwargs)
+                if attr_extractor and should_extract_args
+                else {}
+            )
         with tracer.start_as_current_span(
             f"{self.__class__.__name__}.{fn.__name__}", attributes=attrs
         ):
+            if fn.__name__ == "_create_api_response":
+                return fn(*args, **kwargs)
             return fn(self, *args, **kwargs)
 
     return wrapper
@@ -139,6 +148,12 @@ def instrument(
             action_executor_class,
             "run",
             attribute_extractors.extract_attrs_for_action_executor,
+        )
+        _instrument_method(
+            tracer,
+            action_executor_class,
+            "_create_api_response",
+            attribute_extractors.extract_attrs_for_create_api_response,
         )
         mark_class_as_instrumented(action_executor_class)
         ActionExecutorTracerRegister().register_tracer(tracer)
