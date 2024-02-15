@@ -58,7 +58,7 @@ def extract_attrs_for_validation_action(
     }
 
 
-def extract_attrs_for_create_api_response(
+def extract_attrs_for_action_executor_create_api_response(
     events: List[Dict[Text, Any]],
     messages: List[Dict[Text, Any]],
 ) -> Dict[Text, Any]:
@@ -68,5 +68,20 @@ def extract_attrs_for_create_api_response(
     :param messsages: A list of bot responses.
     :return: A dictionary containing the attributes.
     """
-    slot_names = [event.get("name") for event in events if event.get("event") == "slot"]
-    return {"slots": json.dumps(slot_names)}
+    event_names = []
+    slot_names = []
+
+    for event in events:
+        event_names.append(event.get("event"))
+        if event.get("event") == "slot" and event.get("name") != "requested_slot":
+            slot_names.append(event.get("name"))
+    utters = [
+        message.get("response") for message in messages if message.get("response")
+    ]
+
+    return {
+        "events": json.dumps(list(dict.fromkeys(event_names))),
+        "slots": json.dumps(list(dict.fromkeys(slot_names))),
+        "utters": json.dumps(utters),
+        "message_count": len(messages),
+    }

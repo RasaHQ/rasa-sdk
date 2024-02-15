@@ -99,7 +99,9 @@ def traceable(
 
     @functools.wraps(fn)
     def wrapper(self: T, *args: Any, **kwargs: Any) -> S:
-        if fn.__name__ == "_create_api_response":
+        # the conditional statement is needed because
+        # _create_api_response is a static method
+        if isinstance(self, ActionExecutor) and fn.__name__ == "_create_api_response":
             attrs = (
                 attr_extractor(*args, **kwargs)
                 if attr_extractor and should_extract_args
@@ -114,7 +116,10 @@ def traceable(
         with tracer.start_as_current_span(
             f"{self.__class__.__name__}.{fn.__name__}", attributes=attrs
         ):
-            if fn.__name__ == "_create_api_response":
+            if (
+                isinstance(self, ActionExecutor)
+                and fn.__name__ == "_create_api_response"
+            ):
                 return fn(*args, **kwargs)
             return fn(self, *args, **kwargs)
 
@@ -153,7 +158,7 @@ def instrument(
             tracer,
             action_executor_class,
             "_create_api_response",
-            attribute_extractors.extract_attrs_for_create_api_response,
+            attribute_extractors.extract_attrs_for_action_executor_create_api_response,
         )
         mark_class_as_instrumented(action_executor_class)
         ActionExecutorTracerRegister().register_tracer(tracer)
