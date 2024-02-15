@@ -1,11 +1,12 @@
-from typing import Any, Dict, Sequence, Text, Optional
-
 import pytest
+
+from typing import Any, Dict, Sequence, Text, Optional, List
 from unittest.mock import Mock
 from pytest import MonkeyPatch
 from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry import trace
+from rasa_sdk.events import ActionExecuted, SlotSet
 
 
 from rasa_sdk.tracing.instrumentation import instrumentation
@@ -89,3 +90,46 @@ def test_instrument_action_executor_run_registers_tracer(
 
     assert tracer is not None
     assert tracer == mock_tracer
+
+
+@pytest.mark.parametrize(
+    "events, expected",
+    [
+        ([], {"slots": "[]"}),
+        ([ActionExecuted("my_form")], {"slots": "[]"}),
+        (
+            [ActionExecuted("my_form"), SlotSet("my_slot", "some_value")],
+            {"slots": '["my_slot"]'},
+        ),
+    ],
+)
+def test_tracing_action_executor_create_api_response(
+    tracer_provider: TracerProvider,
+    span_exporter: InMemorySpanExporter,
+    previous_num_captured_spans: int,
+    events: Optional[List],
+    expected: Dict[Text, Any],
+) -> None:
+    component_class = MockActionExecutor
+
+    instrumentation.instrument(
+        tracer_provider,
+        action_executor_class=component_class,
+    )
+
+    mock_action_executor = component_class()
+
+    mock_action_executor._create_api_response(events, [{"text": "hello"}])
+
+    captured_spans: Sequence[
+        ReadableSpan
+    ] = span_exporter.get_finished_spans()  # type: ignore
+
+    num_captured_spans = len(captured_spans) - previous_num_captured_spans
+    assert num_captured_spans == 1
+
+    captured_span = captured_spans[-1]
+
+    assert captured_span.name == "MockActionExecutor._create_api_response"
+
+    assert captured_span.attributes == expected
