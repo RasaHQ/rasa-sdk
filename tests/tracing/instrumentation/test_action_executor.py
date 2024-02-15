@@ -13,6 +13,16 @@ from tests.tracing.instrumentation.conftest import MockActionExecutor
 from rasa_sdk.types import ActionCall
 from rasa_sdk import Tracker
 from rasa_sdk.tracing.tracer_register import ActionExecutorTracerRegister
+from rasa_sdk.executor import CollectingDispatcher
+
+
+dispatcher1 = CollectingDispatcher()
+dispatcher1.utter_message(template="utter_greet")
+dispatcher2 = CollectingDispatcher()
+dispatcher2.utter_message("Hello")
+dispatcher3 = CollectingDispatcher()
+dispatcher3.utter_message("Hello")
+dispatcher3.utter_message(template="utter_greet")
 
 
 @pytest.mark.parametrize(
@@ -92,13 +102,33 @@ def test_instrument_action_executor_run_registers_tracer(
 
 
 @pytest.mark.parametrize(
-    "events, expected",
+    "events, messages, expected",
     [
-        ([], {"slots": "[]"}),
-        ([ActionExecuted("my_form")], {"slots": "[]"}),
+        ([], [], {"events": "[]", "slots": "[]", "utters": "[]", "message_count": 0}),
+        (
+            [ActionExecuted("my_form")],
+            dispatcher2.messages,
+            {"events": '["action"]', "slots": "[]", "utters": "[]", "message_count": 1},
+        ),
         (
             [ActionExecuted("my_form"), SlotSet("my_slot", "some_value")],
-            {"slots": '["my_slot"]'},
+            dispatcher1.messages,
+            {
+                "events": '["action", "slot"]',
+                "slots": '["my_slot"]',
+                "utters": '["utter_greet"]',
+                "message_count": 1,
+            },
+        ),
+        (
+            [SlotSet("my_slot", "some_value")],
+            dispatcher3.messages,
+            {
+                "events": '["slot"]',
+                "slots": '["my_slot"]',
+                "utters": '["utter_greet"]',
+                "message_count": 2,
+            },
         ),
     ],
 )
@@ -107,6 +137,7 @@ def test_tracing_action_executor_create_api_response(
     span_exporter: InMemorySpanExporter,
     previous_num_captured_spans: int,
     events: Optional[List],
+    messages: Optional[List],
     expected: Dict[Text, Any],
 ) -> None:
     component_class = MockActionExecutor
@@ -118,7 +149,7 @@ def test_tracing_action_executor_create_api_response(
 
     mock_action_executor = component_class()
 
-    mock_action_executor._create_api_response(events, [{"text": "hello"}])
+    mock_action_executor._create_api_response(events, messages)
 
     captured_spans: Sequence[
         ReadableSpan
