@@ -1,6 +1,6 @@
 import json
 
-from typing import Any, Dict, Text
+from typing import Any, Dict, Text, List
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
 from rasa_sdk.forms import ValidationAction
 from rasa_sdk.types import ActionCall, DomainDict
@@ -55,4 +55,33 @@ def extract_attrs_for_validation_action(
         "sender_id": tracker.sender_id,
         "slots_to_validate": json.dumps(list(slots_to_validate)),
         "action_name": self.name(),
+    }
+
+
+def extract_attrs_for_action_executor_create_api_response(
+    events: List[Dict[Text, Any]],
+    messages: List[Dict[Text, Any]],
+) -> Dict[Text, Any]:
+    """Extract the attributes for `ActionExecutor.run`.
+
+    :param events: A list of events.
+    :param messsages: A list of bot responses.
+    :return: A dictionary containing the attributes.
+    """
+    event_names = []
+    slot_names = []
+
+    for event in events:
+        event_names.append(event.get("event"))
+        if event.get("event") == "slot" and event.get("name") != "requested_slot":
+            slot_names.append(event.get("name"))
+    utters = [
+        message.get("response") for message in messages if message.get("response")
+    ]
+
+    return {
+        "events": json.dumps(list(dict.fromkeys(event_names))),
+        "slots": json.dumps(list(dict.fromkeys(slot_names))),
+        "utters": json.dumps(utters),
+        "message_count": len(messages),
     }

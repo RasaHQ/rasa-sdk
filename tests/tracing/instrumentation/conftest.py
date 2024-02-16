@@ -1,5 +1,5 @@
 import pytest
-from typing import Text
+from typing import Any, Dict, Text, List
 
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
@@ -45,6 +45,12 @@ class MockActionExecutor(ActionExecutor):
             )
 
     async def run(self, action_call: ActionCall) -> None:
+        pass
+
+    @staticmethod
+    def _create_api_response(
+        events: List[Dict[Text, Any]], messages: List[Dict[Text, Any]]
+    ) -> None:
         pass
 
 

@@ -1,17 +1,43 @@
 import pytest
 
-from typing import Any, Dict, Sequence, Text, Optional
+from typing import Any, Dict, Sequence, Text, Optional, List, Callable
 from unittest.mock import Mock
 from pytest import MonkeyPatch
 from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry import trace
+from rasa_sdk.events import ActionExecuted, SlotSet
 
 from rasa_sdk.tracing.instrumentation import instrumentation
 from tests.tracing.instrumentation.conftest import MockActionExecutor
 from rasa_sdk.types import ActionCall
 from rasa_sdk import Tracker
 from rasa_sdk.tracing.tracer_register import ActionExecutorTracerRegister
+from rasa_sdk.executor import CollectingDispatcher
+
+
+def get_dispatcher0():
+    dispatcher = CollectingDispatcher()
+    return dispatcher
+
+
+def get_dispatcher1():
+    dispatcher = CollectingDispatcher()
+    dispatcher.utter_message(template="utter_greet")
+    return dispatcher
+
+
+def get_dispatcher2():
+    dispatcher = CollectingDispatcher()
+    dispatcher.utter_message("Hello")
+    return dispatcher
+
+
+def get_dispatcher3():
+    dispatcher = CollectingDispatcher()
+    dispatcher.utter_message("Hello")
+    dispatcher.utter_message(template="utter_greet")
+    return dispatcher
 
 
 @pytest.mark.parametrize(
@@ -88,3 +114,72 @@ def test_instrument_action_executor_run_registers_tracer(
 
     assert tracer is not None
     assert tracer == mock_tracer
+
+
+@pytest.mark.parametrize(
+    "events, get_dispatcher, expected",
+    [
+        (
+            [],
+            get_dispatcher0,
+            {"events": "[]", "slots": "[]", "utters": "[]", "message_count": 0},
+        ),
+        (
+            [ActionExecuted("my_form")],
+            get_dispatcher2,
+            {"events": '["action"]', "slots": "[]", "utters": "[]", "message_count": 1},
+        ),
+        (
+            [ActionExecuted("my_form"), SlotSet("my_slot", "some_value")],
+            get_dispatcher1,
+            {
+                "events": '["action", "slot"]',
+                "slots": '["my_slot"]',
+                "utters": '["utter_greet"]',
+                "message_count": 1,
+            },
+        ),
+        (
+            [SlotSet("my_slot", "some_value")],
+            get_dispatcher3,
+            {
+                "events": '["slot"]',
+                "slots": '["my_slot"]',
+                "utters": '["utter_greet"]',
+                "message_count": 2,
+            },
+        ),
+    ],
+)
+def test_tracing_action_executor_create_api_response(
+    tracer_provider: TracerProvider,
+    span_exporter: InMemorySpanExporter,
+    previous_num_captured_spans: int,
+    events: Optional[List],
+    get_dispatcher: Callable,
+    expected: Dict[Text, Any],
+) -> None:
+    component_class = MockActionExecutor
+
+    instrumentation.instrument(
+        tracer_provider,
+        action_executor_class=component_class,
+    )
+
+    mock_action_executor = component_class()
+
+    dispatcher = get_dispatcher()
+    mock_action_executor._create_api_response(events, dispatcher.messages)
+
+    captured_spans: Sequence[
+        ReadableSpan
+    ] = span_exporter.get_finished_spans()  # type: ignore
+
+    num_captured_spans = len(captured_spans) - previous_num_captured_spans
+    assert num_captured_spans == 1
+
+    captured_span = captured_spans[-1]
+
+    assert captured_span.name == "MockActionExecutor._create_api_response"
+
+    assert captured_span.attributes == expected
