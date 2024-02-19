@@ -6,7 +6,7 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
-from rasa_sdk.forms import ValidationAction
+from rasa_sdk.forms import ValidationAction, FormValidationAction
 from rasa_sdk.types import ActionCall, DomainDict
 from rasa_sdk import Tracker
 
@@ -79,3 +79,30 @@ class MockValidationAction(ValidationAction):
 
     def name(self) -> Text:
         return "mock_validation_action"
+
+
+class MockFormValidationAction(FormValidationAction):
+    def __init__(self) -> None:
+        self.fail_if_undefined("run")
+
+    def fail_if_undefined(self, method_name: Text) -> None:
+        if not (
+            hasattr(self.__class__.__base__, method_name)
+            and callable(getattr(self.__class__.__base__, method_name))
+        ):
+            pytest.fail(
+                f"method '{method_name}' not found in {self.__class__.__base__}. "
+                f"This likely means the method was renamed, which means the "
+                f"instrumentation needs to be adapted!"
+            )
+
+    async def _extract_validation_events(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> None:
+        return tracker.events
+
+    def name(self) -> Text:
+        return "mock_form_validation_action"
