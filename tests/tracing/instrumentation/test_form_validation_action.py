@@ -1,17 +1,14 @@
-from typing import List, Optional, Sequence
+from typing import Sequence, Optional
 
 import pytest
 from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
 from rasa_sdk.tracing.instrumentation import instrumentation
-from tests.tracing.instrumentation.conftest import (
-    MockValidationAction,
-    MockFormValidationAction,
-)
+from tests.tracing.instrumentation.conftest import MockFormValidationAction
 from rasa_sdk import Tracker
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.events import SlotSet, EventType
+from rasa_sdk.events import SlotSet
 
 
 @pytest.mark.parametrize(
@@ -25,14 +22,14 @@ from rasa_sdk.events import SlotSet, EventType
     ],
 )
 @pytest.mark.asyncio
-async def test_validation_action_run(
+async def test_form_validation_action_run(
     tracer_provider: TracerProvider,
     span_exporter: InMemorySpanExporter,
     previous_num_captured_spans: int,
-    events: List[EventType],
-    expected_slots_to_validate: str,
+    events: Optional[str],
+    expected_slots_to_validate: Optional[str],
 ) -> None:
-    component_class = MockValidationAction
+    component_class = MockFormValidationAction
 
     instrumentation.instrument(
         tracer_provider,
@@ -50,17 +47,18 @@ async def test_validation_action_run(
     ] = span_exporter.get_finished_spans()  # type: ignore
 
     num_captured_spans = len(captured_spans) - previous_num_captured_spans
-    assert num_captured_spans == 1
+    # includes the child span for `_extract_validation_events` method call
+    assert num_captured_spans == 2
 
     captured_span = captured_spans[-1]
 
-    assert captured_span.name == "ValidationAction.MockValidationAction.run"
+    assert captured_span.name == "FormValidationAction.MockFormValidationAction.run"
 
     expected_attributes = {
         "class_name": component_class.__name__,
         "sender_id": "test",
         "slots_to_validate": expected_slots_to_validate,
-        "action_name": "mock_validation_action",
+        "action_name": "mock_form_validation_action",
     }
 
     assert captured_span.attributes == expected_attributes
@@ -83,7 +81,7 @@ async def test_validation_action_run(
     ],
 )
 @pytest.mark.asyncio
-async def test_validation_action_extract_validation_events(
+async def test_form_validation_action_extract_validation_events(
     tracer_provider: TracerProvider,
     span_exporter: InMemorySpanExporter,
     previous_num_captured_spans: int,

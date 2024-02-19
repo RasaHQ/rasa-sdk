@@ -23,7 +23,7 @@ def test_server_health_returns_200():
 def test_server_list_actions_returns_200():
     request, response = app.test_client.get("/actions")
     assert response.status == 200
-    assert len(response.json) == 4
+    assert len(response.json) == 5
 
     # ENSURE TO UPDATE AS MORE ACTIONS ARE ADDED IN OTHER TESTS
     expected = [
@@ -33,6 +33,7 @@ def test_server_list_actions_returns_200():
         {"name": "custom_action_exception"},
         # defined in tests/tracing/instrumentation/conftest.py
         {"name": "mock_validation_action"},
+        {"name": "mock_form_validation_action"},
     ]
     assert response.json == expected
 
