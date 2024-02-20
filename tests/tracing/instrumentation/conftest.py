@@ -80,6 +80,14 @@ class MockValidationAction(ValidationAction):
     def name(self) -> Text:
         return "mock_validation_action"
 
+    async def _extract_validation_events(
+        self,
+        dispatcher: "CollectingDispatcher",
+        tracker: "Tracker",
+        domain: "DomainDict",
+    ) -> None:
+        return tracker.events
+
 
 class MockFormValidationAction(FormValidationAction):
     def __init__(self) -> None:
