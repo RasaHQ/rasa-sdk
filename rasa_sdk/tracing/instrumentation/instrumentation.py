@@ -254,13 +254,18 @@ def _instrument_validation_action_extract_validation_events(
         @functools.wraps(fn)
         async def wrapper(
             self,
-            dispatcher: "CollectingDispatcher",
-            tracker: "Tracker",
-            domain: "DomainDict",
+            dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: DomainDict,
         ) -> List[EventType]:
-            with tracer.start_as_current_span(
-                f"{validation_action_class.__name__}.{self.__class__.__name__}.{fn.__name__}"
-            ) as span:
+            if issubclass(self.__class__, FormValidationAction):
+                span_name = (
+                    f"FormValidationAction.{self.__class__.__name__}.{fn.__name__}"
+                )
+            else:
+                span_name = f"ValidationAction.{self.__class__.__name__}.{fn.__name__}"
+
+            with tracer.start_as_current_span(span_name) as span:
                 validation_events = await fn(self, dispatcher, tracker, domain)
                 event_names = []
                 slot_names = []

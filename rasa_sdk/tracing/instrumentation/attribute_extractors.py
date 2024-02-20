@@ -36,9 +36,9 @@ def extract_attrs_for_action_executor(
 
 def extract_attrs_for_validation_action(
     self: ValidationAction,
-    dispatcher: "CollectingDispatcher",
-    tracker: "Tracker",
-    domain: "DomainDict",
+    dispatcher: CollectingDispatcher,
+    tracker: Tracker,
+    domain: DomainDict,
 ) -> Dict[Text, Any]:
     """Extract the attributes for `ValidationAction.run`.
 

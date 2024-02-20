@@ -8,13 +8,14 @@ from rasa_sdk.tracing.instrumentation import instrumentation
 from tests.tracing.instrumentation.conftest import MockFormValidationAction
 from rasa_sdk import Tracker
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.events import SlotSet
+from rasa_sdk.events import ActionExecuted, SlotSet
 
 
 @pytest.mark.parametrize(
     "events, expected_slots_to_validate",
     [
         ([], "[]"),
+        ([ActionExecuted("my_form")], "[]"),
         (
             [SlotSet("name", "Tom"), SlotSet("address", "Berlin")],
             '["name", "address"]',
@@ -68,6 +69,7 @@ async def test_form_validation_action_run(
     "events, slots, validation_events",
     [
         ([], "[]", "[]"),
+        ([ActionExecuted("my_form")], "[]", '["action"]'),
         (
             [SlotSet("name", "Tom")],
             '["name"]',
@@ -113,7 +115,7 @@ async def test_form_validation_action_extract_validation_events(
 
     captured_span = captured_spans[-1]
     expected_span_name = (
-        "MockFormValidationAction.MockFormValidationAction._extract_validation_events"
+        "FormValidationAction.MockFormValidationAction._extract_validation_events"
     )
 
     assert captured_span.name == expected_span_name
