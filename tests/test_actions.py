@@ -43,3 +43,16 @@ class CustomActionRaisingException(Action):
         domain: DomainDict,
     ) -> List[Dict[Text, Any]]:
         raise Exception("test exception")
+
+
+class CustomActionWithDialogueStack(Action):
+    def name(cls) -> Text:
+        return "custom_action_with_dialogue_stack"
+
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: DomainDict,
+    ) -> List[Dict[Text, Any]]:
+        return [SlotSet("stack", tracker.stack)]
