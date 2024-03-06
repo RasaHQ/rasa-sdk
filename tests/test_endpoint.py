@@ -1,3 +1,4 @@
+from typing import Any, Dict, List, Text
 import json
 import logging
 import zlib
@@ -6,6 +7,7 @@ import pytest
 
 import rasa_sdk.endpoint as ep
 from rasa_sdk.events import SlotSet
+from tests.conftest import get_stack
 
 # noinspection PyTypeChecker
 app = ep.create_app(None)
@@ -23,7 +25,7 @@ def test_server_health_returns_200():
 def test_server_list_actions_returns_200():
     request, response = app.test_client.get("/actions")
     assert response.status == 200
-    assert len(response.json) == 5
+    assert len(response.json) == 6
 
     # ENSURE TO UPDATE AS MORE ACTIONS ARE ADDED IN OTHER TESTS
     expected = [
@@ -31,6 +33,7 @@ def test_server_list_actions_returns_200():
         {"name": "custom_async_action"},
         {"name": "custom_action"},
         {"name": "custom_action_exception"},
+        {"name": "custom_action_with_dialogue_stack"},
         # defined in tests/tracing/instrumentation/conftest.py
         {"name": "mock_validation_action"},
         {"name": "mock_form_validation_action"},
@@ -116,6 +119,27 @@ def test_server_webhook_custom_action_encoded_data_returns_200():
     events = response.json.get("events")
 
     assert events == [SlotSet("test", "bar")]
+    assert response.status == 200
+
+
+@pytest.mark.parametrize(
+    "stack_state, dialogue_stack",
+    [
+        ({}, []),
+        ({"stack": get_stack()}, get_stack()),
+    ],
+)
+def test_server_webhook_custom_action_with_dialogue_stack_returns_200(
+    stack_state: Dict[Text, Any], dialogue_stack: List[Dict[Text, Any]]
+):
+    data = {
+        "next_action": "custom_action_with_dialogue_stack",
+        "tracker": {"sender_id": "1", "conversation_id": "default", **stack_state},
+    }
+    _, response = app.test_client.post("/webhook", data=json.dumps(data))
+    events = response.json.get("events")
+
+    assert events == [SlotSet("stack", dialogue_stack)]
     assert response.status == 200
 
 

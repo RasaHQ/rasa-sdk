@@ -70,7 +70,6 @@ def test_get_tracer_and_context() -> None:
     app = ep.create_app(None)
     request, _ = app.test_client.post("/webhook", data=json.dumps(data))
     tracer, context, span_name = get_tracer_and_context(None, request)
-    print(type(tracer))
 
     assert isinstance(tracer, ProxyTracer)
     assert span_name == "create_app.webhook"

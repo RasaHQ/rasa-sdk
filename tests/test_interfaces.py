@@ -1,9 +1,10 @@
-from typing import Dict
+from typing import Any, Dict, List, Text
 
 import pytest
 from rasa_sdk.events import SlotSet
 
 from rasa_sdk.interfaces import Tracker
+from tests.conftest import get_stack
 
 
 @pytest.mark.parametrize(
@@ -61,3 +62,22 @@ def test_tracker_with_slots():
 
     assert tracker.slots["my slot"] == 5
     assert tracker.slots["my slot 2"] is None
+
+
+@pytest.mark.parametrize(
+    "stack_state, dialogue_stack",
+    [
+        ({}, []),
+        ({"stack": get_stack()}, get_stack()),
+    ],
+)
+def test_stack_in_tracker_state(
+    stack_state: Dict[Text, Any], dialogue_stack: List[Dict[Text, Any]]
+):
+
+    state = {"events": [], "sender_id": "old", "active_loop": {}, **stack_state}
+    tracker = Tracker.from_dict(state)
+
+    assert tracker.stack == dialogue_stack
+    assert tracker.copy().stack == dialogue_stack
+    assert tracker.current_state()["stack"] == dialogue_stack

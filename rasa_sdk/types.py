@@ -26,6 +26,8 @@ class TrackerState(TypedDict):
     active_form: Dict[Text, Any]
     # the name of the previously executed action or text of e2e action
     latest_action_name: Optional[Text]
+    # the current dialogue stack
+    stack: List[Dict[Text, Any]]
 
 
 class DomainDict(TypedDict):
