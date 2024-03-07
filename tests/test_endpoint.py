@@ -16,6 +16,11 @@ app = ep.create_app(None)
 logger = logging.getLogger(__name__)
 
 
+def test_endpoint_exit_for_unknown_actions_package():
+    with pytest.raises(SystemExit):
+        ep.create_app("non-existing-actions-package")
+
+
 def test_server_health_returns_200():
     request, response = app.test_client.get("/health")
     assert response.status == 200
@@ -141,10 +146,3 @@ def test_server_webhook_custom_action_with_dialogue_stack_returns_200(
 
     assert events == [SlotSet("stack", dialogue_stack)]
     assert response.status == 200
-
-
-# ENSURE THIS IS ALWAYS THE LAST TEST FOR OTHER TESTS TO RUN
-# because the call to sys.exit() terminates pytest process
-def test_endpoint_exit_for_unknown_actions_package():
-    with pytest.raises(SystemExit):
-        ep.create_app("non-existing-actions-package")
