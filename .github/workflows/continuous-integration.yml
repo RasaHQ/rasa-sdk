@@ -318,7 +318,7 @@ jobs:
       - name: Notify Slack 💬
         if: env.IS_TAG_BUILD && success()
         env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_RELEASE_ASSISTANT_RELEASE_WEBHOOK }}
         uses: Ilshidur/action-slack@2.1.0
         with:
           args: "⚡ New *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/${{ env.RASA_SDK_VERSION }}/CHANGELOG.mdx"
@@ -326,7 +326,7 @@ jobs:
       - name: Notify Slack of Failure ⛔
         if: env.IS_TAG_BUILD && failure()
         env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_RELEASE_ASSISTANT_DEV_TRIBE_WEBHOOK }}
         uses: Ilshidur/action-slack@2.1.0
         with:
           args: "⛔️ *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} could not be released 😱 GitHub Actions: https://github.com/RasaHQ/rasa-sdk/actions?query=branch%3A${{ env.RASA_SDK_VERSION }}"
