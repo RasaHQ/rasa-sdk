@@ -109,5 +109,5 @@ python_functions = "test_"
 asyncio_mode = "auto"
 
 [tool.poetry.group.dev.dependencies]
-ruff = ">=0.0.256,<0.0.286"
+ruff = ">=0.0.256,<0.3.6"
 pytest-asyncio = "^0.21.0"
