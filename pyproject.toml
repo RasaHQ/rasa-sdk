@@ -110,4 +110,4 @@ asyncio_mode = "auto"
 
 [tool.poetry.group.dev.dependencies]
 ruff = ">=0.0.256,<0.0.286"
-pytest-asyncio = "^0.21.0"
+pytest-asyncio = ">=0.21,<0.24"
