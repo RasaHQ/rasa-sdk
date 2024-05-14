@@ -104,6 +104,10 @@ def create_app(
     executor = ActionExecutor()
     executor.register_package(action_package_name)
 
+    @app.main_process_start
+    async def main_process_start(app: Sanic):
+        app.shared_ctx.tracer_provider = tracer_provider
+
     @app.get("/health")
     async def health(_) -> HTTPResponse:
         """Ping endpoint to check if the server is running and well."""
@@ -113,7 +117,7 @@ def create_app(
     @app.post("/webhook")
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
-        tracer, context, span_name = get_tracer_and_context(tracer_provider, request)
+        tracer, context, span_name = get_tracer_and_context(app.shared_ctx.tracer_provider, request)
 
         with tracer.start_as_current_span(span_name, context=context) as span:
             if request.headers.get("Content-Encoding") == "deflate":
