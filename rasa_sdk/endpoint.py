@@ -26,16 +26,23 @@ with warnings.catch_warnings():
         category=DeprecationWarning,
         message="distutils Version classes are deprecated",
     )
-    from opentelemetry.sdk.trace import TracerProvider
     from sanic_cors import CORS
     from sanic.request import Request
     from rasa_sdk import utils
     from rasa_sdk.cli.arguments import add_endpoint_arguments
-    from rasa_sdk.constants import DEFAULT_KEEP_ALIVE_TIMEOUT, DEFAULT_SERVER_PORT
+    from rasa_sdk.constants import (
+        DEFAULT_ENDPOINTS_PATH,
+        DEFAULT_KEEP_ALIVE_TIMEOUT,
+        DEFAULT_SERVER_PORT,
+    )
     from rasa_sdk.executor import ActionExecutor
     from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
     from rasa_sdk.plugin import plugin_manager
-    from rasa_sdk.tracing.utils import get_tracer_and_context, set_span_attributes
+    from rasa_sdk.tracing.utils import (
+        get_tracer_and_context,
+        get_tracer_provider,
+        set_span_attributes,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -76,8 +83,9 @@ def create_argument_parser():
     return parser
 
 
-async def load_tracer_provider(app: Sanic, tracer_provider: Optional[TracerProvider]):
+async def load_tracer_provider(endpoints: str, app: Sanic):
     """Load the tracer provider into the Sanic app."""
+    tracer_provider = get_tracer_provider(endpoints)
     app.shared_ctx.tracer_provider = tracer_provider
 
 
@@ -85,7 +93,6 @@ def create_app(
     action_package_name: Union[Text, types.ModuleType],
     cors_origins: Union[Text, List[Text], None] = "*",
     auto_reload: bool = False,
-    tracer_provider: Optional[TracerProvider] = None,
 ) -> Sanic:
     """Create a Sanic application and return it.
 
@@ -94,7 +101,6 @@ def create_app(
             from.
         cors_origins: CORS origins to allow.
         auto_reload: When `True`, auto-reloading of actions is enabled.
-        tracer_provider: Tracer provider to use for tracing.
 
     Returns:
         A new Sanic application ready to be run.
@@ -106,10 +112,7 @@ def create_app(
     executor = ActionExecutor()
     executor.register_package(action_package_name)
 
-    app.register_listener(
-        partial(load_tracer_provider, tracer_provider=tracer_provider),
-        "main_process_start",
-    )
+    app.shared_ctx.tracer_provider = None
 
     @app.get("/health")
     async def health(_) -> HTTPResponse:
@@ -184,7 +187,7 @@ def run(
     ssl_keyfile: Optional[Text] = None,
     ssl_password: Optional[Text] = None,
     auto_reload: bool = False,
-    tracer_provider: Optional[TracerProvider] = None,
+    endpoints: str = DEFAULT_ENDPOINTS_PATH,
     keep_alive_timeout: int = DEFAULT_KEEP_ALIVE_TIMEOUT,
 ) -> None:
     """Starts the action endpoint server with given config values."""
@@ -195,11 +198,16 @@ def run(
             action_package_name,
             cors_origins=cors_origins,
             auto_reload=auto_reload,
-            tracer_provider=tracer_provider,
         ),
     )
     app = loader.load()
+
     app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
+
+    app.register_listener(
+        partial(load_tracer_provider, endpoints=endpoints),
+        "main_process_start",
+    )
 
     # Attach additional sanic extensions: listeners, middleware and routing
     logger.info("Starting plugins...")

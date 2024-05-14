@@ -1,4 +1,3 @@
-import argparse
 from rasa_sdk.tracing import config
 from opentelemetry import trace
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
@@ -9,25 +8,18 @@ from sanic.request import Request
 from typing import Optional, Tuple, Any, Text
 
 
-def get_tracer_provider(
-    cmdline_arguments: argparse.Namespace,
-) -> Optional[TracerProvider]:
+def get_tracer_provider(endpoints_file: str) -> Optional[TracerProvider]:
     """Gets the tracer provider from the command line arguments."""
-    tracer_provider = None
-    endpoints_file = ""
-    if "endpoints" in cmdline_arguments:
-        endpoints_file = cmdline_arguments.endpoints
+    tracer_provider = config.get_tracer_provider(endpoints_file)
+    config.configure_tracing(tracer_provider)
 
-    if endpoints_file is not None:
-        tracer_provider = config.get_tracer_provider(endpoints_file)
-        config.configure_tracing(tracer_provider)
     return tracer_provider
 
 
 def get_tracer_and_context(
     tracer_provider: Optional[TracerProvider], request: Request
 ) -> Tuple[Any, Any, Text]:
-    """Gets tracer and context"""
+    """Gets tracer and context."""
     span_name = "create_app.webhook"
     if tracer_provider is None:
         tracer = trace.get_tracer(span_name)
@@ -39,7 +31,7 @@ def get_tracer_and_context(
 
 
 def set_span_attributes(span: Any, action_call: dict) -> None:
-    """Sets span attributes"""
+    """Sets span attributes."""
     tracker = action_call.get("tracker", {})
     set_span_attributes = {
         "http.method": "POST",

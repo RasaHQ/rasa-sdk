@@ -4,16 +4,19 @@ import logging
 import zlib
 
 import pytest
+from sanic import Sanic
 
 import rasa_sdk.endpoint as ep
 from rasa_sdk.events import SlotSet
 from tests.conftest import get_stack
 
-# noinspection PyTypeChecker
-app = ep.create_app(None)
-
 
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture
+def app():
+    return ep.create_app("tests.test_actions")
 
 
 def test_endpoint_exit_for_unknown_actions_package():
@@ -21,32 +24,28 @@ def test_endpoint_exit_for_unknown_actions_package():
         ep.create_app("non-existing-actions-package")
 
 
-def test_server_health_returns_200():
+def test_server_health_returns_200(app: Sanic):
     request, response = app.test_client.get("/health")
     assert response.status == 200
     assert response.json == {"status": "ok"}
 
 
-def test_server_list_actions_returns_200():
+def test_server_list_actions_returns_200(app: Sanic):
     request, response = app.test_client.get("/actions")
     assert response.status == 200
-    assert len(response.json) == 6
+    assert len(response.json) == 4
 
-    # ENSURE TO UPDATE AS MORE ACTIONS ARE ADDED IN OTHER TESTS
     expected = [
         # defined in tests/test_actions.py
         {"name": "custom_async_action"},
         {"name": "custom_action"},
         {"name": "custom_action_exception"},
         {"name": "custom_action_with_dialogue_stack"},
-        # defined in tests/tracing/instrumentation/conftest.py
-        {"name": "mock_validation_action"},
-        {"name": "mock_form_validation_action"},
     ]
     assert response.json == expected
 
 
-def test_server_webhook_unknown_action_returns_404():
+def test_server_webhook_unknown_action_returns_404(app: Sanic):
     data = {
         "next_action": "test_action_1",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
@@ -55,7 +54,7 @@ def test_server_webhook_unknown_action_returns_404():
     assert response.status == 404
 
 
-def test_server_webhook_handles_action_exception():
+def test_server_webhook_handles_action_exception(app: Sanic):
     data = {
         "next_action": "custom_action_exception",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
@@ -66,7 +65,7 @@ def test_server_webhook_handles_action_exception():
     assert response.json.get("request_body") == data
 
 
-def test_server_webhook_custom_action_returns_200():
+def test_server_webhook_custom_action_returns_200(app: Sanic):
     data = {
         "next_action": "custom_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
@@ -78,7 +77,7 @@ def test_server_webhook_custom_action_returns_200():
     assert response.status == 200
 
 
-def test_server_webhook_custom_async_action_returns_200():
+def test_server_webhook_custom_async_action_returns_200(app: Sanic):
     data = {
         "next_action": "custom_async_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
@@ -109,7 +108,7 @@ def test_arg_parser_actions_params_module_style():
     assert cmdline_args.actions == "actions.act"
 
 
-def test_server_webhook_custom_action_encoded_data_returns_200():
+def test_server_webhook_custom_action_encoded_data_returns_200(app: Sanic):
     data = {
         "next_action": "custom_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
@@ -135,7 +134,7 @@ def test_server_webhook_custom_action_encoded_data_returns_200():
     ],
 )
 def test_server_webhook_custom_action_with_dialogue_stack_returns_200(
-    stack_state: Dict[Text, Any], dialogue_stack: List[Dict[Text, Any]]
+    stack_state: Dict[Text, Any], dialogue_stack: List[Dict[Text, Any]], app: Sanic
 ):
     data = {
         "next_action": "custom_action_with_dialogue_stack",
