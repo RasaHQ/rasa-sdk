@@ -205,7 +205,7 @@ def run(
     app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
 
     app.register_listener(
-        partial(load_tracer_provider, endpoints=endpoints),
+        partial(load_tracer_provider, endpoints),
         "main_process_start",
     )
 
