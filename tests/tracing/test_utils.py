@@ -20,10 +20,11 @@ def test_get_tracer_provider_returns_none_if_no_endpoints_file() -> None:
     """Tests that get_tracer_provider returns None if no endpoints file is provided."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--random_args", type=str, default=None)
+    parser.add_argument("--endpoints", default="endpoints.yml")
 
     args = parser.parse_args(["--random_args", "random text"])
 
-    tracer_provider = get_tracer_provider(args)
+    tracer_provider = get_tracer_provider(args.endpoints)
 
     assert tracer_provider is None
 
@@ -36,7 +37,7 @@ def test_get_tracer_provider_returns_none_if_tracing_is_not_configured() -> None
     endpoints_file = str(TRACING_TESTS_FIXTURES_DIRECTORY / "no_tracing.yml")
     args = parser.parse_args(["--endpoints", endpoints_file])
 
-    tracer_provider = get_tracer_provider(args)
+    tracer_provider = get_tracer_provider(args.endpoints)
 
     assert tracer_provider is None
 
@@ -50,7 +51,7 @@ def test_get_tracer_provider_returns_provider() -> None:
     endpoints_file = str(TRACING_TESTS_FIXTURES_DIRECTORY / "jaeger_endpoints.yml")
     args = parser.parse_args(["--endpoints", endpoints_file])
 
-    tracer_provider = get_tracer_provider(args)
+    tracer_provider = get_tracer_provider(args.endpoints)
 
     assert tracer_provider is not None
     assert isinstance(tracer_provider, TracerProvider)

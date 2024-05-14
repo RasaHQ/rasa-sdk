@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def app():
-    return ep.create_app("tests.test_actions")
+def sanic_app():
+    return ep.create_app("tests")
 
 
 def test_endpoint_exit_for_unknown_actions_package():
@@ -24,65 +24,72 @@ def test_endpoint_exit_for_unknown_actions_package():
         ep.create_app("non-existing-actions-package")
 
 
-def test_server_health_returns_200(app: Sanic):
-    request, response = app.test_client.get("/health")
+def test_server_health_returns_200(sanic_app: Sanic):
+    request, response = sanic_app.test_client.get("/health")
     assert response.status == 200
     assert response.json == {"status": "ok"}
 
 
-def test_server_list_actions_returns_200(app: Sanic):
-    request, response = app.test_client.get("/actions")
+def test_server_list_actions_returns_200(sanic_app: Sanic):
+    request, response = sanic_app.test_client.get("/actions")
     assert response.status == 200
-    assert len(response.json) == 4
-
+    assert len(response.json) == 9
+    print(response.json)
     expected = [
-        # defined in tests/test_actions.py
+        # defined in tests/test_actions
         {"name": "custom_async_action"},
         {"name": "custom_action"},
         {"name": "custom_action_exception"},
         {"name": "custom_action_with_dialogue_stack"},
+        {"name": "subclass_test_action_a"},
+        {"name": "mock_validation_action"},
+        {"name": "mock_form_validation_action"},
+        # defined in tests/test_forms.py
+        {"name": "some_form"},
+        # defined in tests/test_actions
+        {"name": "subclass_test_action_b"},
     ]
     assert response.json == expected
 
 
-def test_server_webhook_unknown_action_returns_404(app: Sanic):
+def test_server_webhook_unknown_action_returns_404(sanic_app: Sanic):
     data = {
         "next_action": "test_action_1",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
     }
-    request, response = app.test_client.post("/webhook", data=json.dumps(data))
+    request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     assert response.status == 404
 
 
-def test_server_webhook_handles_action_exception(app: Sanic):
+def test_server_webhook_handles_action_exception(sanic_app: Sanic):
     data = {
         "next_action": "custom_action_exception",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
     }
-    request, response = app.test_client.post("/webhook", data=json.dumps(data))
+    request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     assert response.status == 500
     assert response.json.get("error") == "test exception"
     assert response.json.get("request_body") == data
 
 
-def test_server_webhook_custom_action_returns_200(app: Sanic):
+def test_server_webhook_custom_action_returns_200(sanic_app: Sanic):
     data = {
         "next_action": "custom_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
     }
-    request, response = app.test_client.post("/webhook", data=json.dumps(data))
+    request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     events = response.json.get("events")
 
     assert events == [SlotSet("test", "bar")]
     assert response.status == 200
 
 
-def test_server_webhook_custom_async_action_returns_200(app: Sanic):
+def test_server_webhook_custom_async_action_returns_200(sanic_app: Sanic):
     data = {
         "next_action": "custom_async_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
     }
-    request, response = app.test_client.post("/webhook", data=json.dumps(data))
+    request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     events = response.json.get("events")
 
     assert events == [SlotSet("test", "foo"), SlotSet("test2", "boo")]
@@ -108,14 +115,14 @@ def test_arg_parser_actions_params_module_style():
     assert cmdline_args.actions == "actions.act"
 
 
-def test_server_webhook_custom_action_encoded_data_returns_200(app: Sanic):
+def test_server_webhook_custom_action_encoded_data_returns_200(sanic_app: Sanic):
     data = {
         "next_action": "custom_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
         "domain": {"intents": ["greet", "goodbye"]},
     }
 
-    request, response = app.test_client.post(
+    request, response = sanic_app.test_client.post(
         "/webhook",
         data=zlib.compress(json.dumps(data).encode()),
         headers={"Content-encoding": "deflate"},
@@ -134,13 +141,15 @@ def test_server_webhook_custom_action_encoded_data_returns_200(app: Sanic):
     ],
 )
 def test_server_webhook_custom_action_with_dialogue_stack_returns_200(
-    stack_state: Dict[Text, Any], dialogue_stack: List[Dict[Text, Any]], app: Sanic
+    stack_state: Dict[Text, Any],
+    dialogue_stack: List[Dict[Text, Any]],
+    sanic_app: Sanic,
 ):
     data = {
         "next_action": "custom_action_with_dialogue_stack",
         "tracker": {"sender_id": "1", "conversation_id": "default", **stack_state},
     }
-    _, response = app.test_client.post("/webhook", data=json.dumps(data))
+    _, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     events = response.json.get("events")
 
     assert events == [SlotSet("stack", dialogue_stack)]
