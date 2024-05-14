@@ -44,7 +44,6 @@ def configure_cors(
     app: Sanic, cors_origins: Union[Text, List[Text], None] = ""
 ) -> None:
     """Configure CORS origins for the given app."""
-
     CORS(
         app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True
     )
@@ -56,7 +55,6 @@ def create_ssl_context(
     ssl_password: Optional[Text] = None,
 ) -> Optional[SSLContext]:
     """Create a SSL context if a certificate is passed."""
-
     if ssl_certificate:
         import ssl
 
@@ -71,12 +69,16 @@ def create_ssl_context(
 
 def create_argument_parser():
     """Parse all the command line arguments for the run script."""
-
     parser = argparse.ArgumentParser(description="starts the action endpoint")
     add_endpoint_arguments(parser)
     utils.add_logging_level_option_arguments(parser)
     utils.add_logging_file_arguments(parser)
     return parser
+
+
+async def load_tracer_provider(app: Sanic, tracer_provider: Optional[TracerProvider]):
+    """Load the tracer provider into the Sanic app."""
+    app.shared_ctx.tracer_provider = tracer_provider
 
 
 def create_app(
@@ -104,9 +106,10 @@ def create_app(
     executor = ActionExecutor()
     executor.register_package(action_package_name)
 
-    @app.main_process_start
-    async def main_process_start(app: Sanic):
-        app.shared_ctx.tracer_provider = tracer_provider
+    app.register_listener(
+        partial(load_tracer_provider, tracer_provider=tracer_provider),
+        "main_process_start",
+    )
 
     @app.get("/health")
     async def health(_) -> HTTPResponse:
@@ -117,7 +120,9 @@ def create_app(
     @app.post("/webhook")
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
-        tracer, context, span_name = get_tracer_and_context(app.shared_ctx.tracer_provider, request)
+        tracer, context, span_name = get_tracer_and_context(
+            app.shared_ctx.tracer_provider, request
+        )
 
         with tracer.start_as_current_span(span_name, context=context) as span:
             if request.headers.get("Content-Encoding") == "deflate":
