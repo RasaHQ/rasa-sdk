@@ -21,7 +21,7 @@ def span_exporter(tracer_provider: TracerProvider) -> InMemorySpanExporter:
     return exporter
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def previous_num_captured_spans(span_exporter: InMemorySpanExporter) -> int:
     captured_spans = span_exporter.get_finished_spans()  # type: ignore
     return len(captured_spans)
