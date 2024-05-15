@@ -86,7 +86,7 @@ def create_argument_parser():
 async def load_tracer_provider(endpoints: str, app: Sanic):
     """Load the tracer provider into the Sanic app."""
     tracer_provider = get_tracer_provider(endpoints)
-    app.shared_ctx.tracer_provider = tracer_provider
+    app.ctx.tracer_provider = tracer_provider
 
 
 def create_app(
@@ -112,7 +112,7 @@ def create_app(
     executor = ActionExecutor()
     executor.register_package(action_package_name)
 
-    app.shared_ctx.tracer_provider = None
+    app.ctx.tracer_provider = None
 
     @app.get("/health")
     async def health(_) -> HTTPResponse:
@@ -124,7 +124,7 @@ def create_app(
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
         tracer, context, span_name = get_tracer_and_context(
-            app.shared_ctx.tracer_provider, request
+            request.app.ctx.tracer_provider, request
         )
 
         with tracer.start_as_current_span(span_name, context=context) as span:
@@ -206,7 +206,7 @@ def run(
 
     app.register_listener(
         partial(load_tracer_provider, endpoints),
-        "main_process_start",
+        "before_server_start",
     )
 
     # Attach additional sanic extensions: listeners, middleware and routing
