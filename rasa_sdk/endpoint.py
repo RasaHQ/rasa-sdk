@@ -218,10 +218,13 @@ def run(
     host = os.environ.get("SANIC_HOST", "0.0.0.0")
 
     logger.info(f"Action endpoint is up and running on {protocol}://{host}:{port}")
-    app.prepare(
-        host=host, port=port, ssl=ssl_context, workers=utils.number_of_sanic_workers()
+    app.run(
+        host=host,
+        port=port,
+        ssl=ssl_context,
+        workers=utils.number_of_sanic_workers(),
+        legacy=True,
     )
-    Sanic.serve(primary=app, app_loader=loader)
 
 
 if __name__ == "__main__":

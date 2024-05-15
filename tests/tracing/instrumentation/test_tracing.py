@@ -48,8 +48,8 @@ def test_server_webhook_custom_action_is_instrumented(
     app = ep.create_app(action_package)
 
     app.register_listener(
-        partial(ep.load_tracer_provider, endpoints="endpoints.yml"),
-        "main_process_start",
+        partial(ep.load_tracer_provider, "endpoints.yml"),
+        "before_server_start",
     )
 
     _, response = app.test_client.post("/webhook", data=json.dumps(data))
