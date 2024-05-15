@@ -10,7 +10,12 @@ import types
 import sys
 import os
 
-from rasa_sdk.interfaces import Tracker, ActionNotFoundException, Action
+from rasa_sdk.interfaces import (
+    Tracker,
+    ActionNotFoundException,
+    Action,
+    ActionMissingDomainException,
+)
 
 from rasa_sdk import utils
 
@@ -24,7 +29,6 @@ class CollectingDispatcher:
     """Send messages back to user"""
 
     def __init__(self) -> None:
-
         self.messages: List[Dict[Text, Any]] = []
 
     def utter_message(
@@ -162,6 +166,8 @@ class ActionExecutor:
         self.actions: Dict[Text, Callable] = {}
         self._modules: Dict[Text, TimestampModule] = {}
         self._loaded: Set[Type[Action]] = set()
+        self.domain: Dict[Text, Any] = {}
+        self.domain_digest: Text = ""
 
     def register_action(self, action: Union[Type[Action], Action]) -> None:
         if inspect.isclass(action):
@@ -380,6 +386,49 @@ class ActionExecutor:
                 # we won't append this to validated events -> will be ignored
         return validated
 
+    def is_domain_digest_valid(self, domain_digest: Text) -> bool:
+        """Check if the domain_digest is valid
+
+        If the domain_digest is empty or different from the one provided, it is invalid.
+
+        Args:
+            domain_digest: latest value provided to compare the current value with.
+
+        Returns:
+            True if the domain_digest is valid, False otherwise.
+        """
+        return bool(self.domain_digest) and self.domain_digest == domain_digest
+
+    def get_domain(
+        self, payload: Dict[Text, Any], action_name: Text
+    ) -> Dict[Text, Any]:
+        """Retrieve the Domain dictionary.
+
+        This method returns the proper domain if present, otherwise raises the error.
+
+        Args:
+            payload: request payload containing the Domain data.
+            action_name: name of the action that should be executed.
+
+        Returns:
+            The Domain dictionary.
+        """
+        payload_domain = payload.get("domain")
+        payload_domain_digest = payload.get("domain_digest")
+
+        # If digest is invalid (empty or mismatched) and no domain is available - raise the error
+        if (
+            not self.is_domain_digest_valid(payload_domain_digest)
+            and not payload_domain
+        ):
+            raise ActionMissingDomainException(action_name)
+
+        if payload_domain:
+            self.domain = payload_domain
+            self.domain_digest = payload_domain_digest
+
+        return self.domain
+
     async def run(self, action_call: "ActionCall") -> Optional[Dict[Text, Any]]:
         from rasa_sdk.interfaces import Tracker
 
@@ -391,7 +440,7 @@ class ActionExecutor:
                 raise ActionNotFoundException(action_name)
 
             tracker_json = action_call["tracker"]
-            domain = action_call.get("domain", {})
+            domain = self.get_domain(action_call, action_name)
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
 
