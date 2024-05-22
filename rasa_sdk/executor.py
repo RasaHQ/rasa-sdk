@@ -166,8 +166,8 @@ class ActionExecutor:
         self.actions: Dict[Text, Callable] = {}
         self._modules: Dict[Text, TimestampModule] = {}
         self._loaded: Set[Type[Action]] = set()
-        self.domain: Dict[Text, Any] = None
-        self.domain_digest: Text = None
+        self.domain: Optional[Dict[Text, Any]] = None
+        self.domain_digest: Optional[Text] = None
 
     def register_action(self, action: Union[Type[Action], Action]) -> None:
         if inspect.isclass(action):
@@ -386,7 +386,7 @@ class ActionExecutor:
                 # we won't append this to validated events -> will be ignored
         return validated
 
-    def is_domain_digest_valid(self, domain_digest: Text) -> bool:
+    def is_domain_digest_valid(self, domain_digest: Optional[Text]) -> bool:
         """Check if the domain_digest is valid
 
         If the domain_digest is empty or different from the one provided, it is invalid.
@@ -401,7 +401,7 @@ class ActionExecutor:
 
     def update_and_return_domain(
         self, payload: Dict[Text, Any], action_name: Text
-    ) -> Dict[Text, Any]:
+    ) -> Optional[Dict[Text, Any]]:
         """Validate the digest, store the domain if available, and return the domain.
 
         This method validates the domain digest from the payload.
@@ -436,7 +436,7 @@ class ActionExecutor:
 
         return self.domain
 
-    async def run(self, action_call: "ActionCall") -> Optional[Dict[Text, Any]]:
+    async def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
         from rasa_sdk.interfaces import Tracker
 
         action_name = action_call.get("next_action")
