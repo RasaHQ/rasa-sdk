@@ -19,9 +19,6 @@ from rasa_sdk.interfaces import (
 
 from rasa_sdk import utils
 
-if typing.TYPE_CHECKING:  # pragma: no cover
-    from rasa_sdk.types import ActionCall
-
 logger = logging.getLogger(__name__)
 
 
