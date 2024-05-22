@@ -2,7 +2,6 @@ import importlib
 import inspect
 import logging
 import pkgutil
-import typing
 import warnings
 from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, Set, cast
 from collections import namedtuple
