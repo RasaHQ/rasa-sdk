@@ -422,7 +422,7 @@ class ActionExecutor:
         # If digest is invalid and no domain is available - raise the error
         if (
             not self.is_domain_digest_valid(payload_domain_digest)
-            and not payload_domain
+            and payload_domain is None
         ):
             raise ActionMissingDomainException(action_name)
 

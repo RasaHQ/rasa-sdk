@@ -39,6 +39,7 @@ def test_server_webhook_custom_action_is_instrumented(
     """Tests that the custom action is instrumented."""
 
     data["next_action"] = action_name
+    data["domain"] = {}
     app = ep.create_app(action_package, tracer_provider=tracer_provider)
     _, response = app.test_client.post("/webhook", data=json.dumps(data))
 
