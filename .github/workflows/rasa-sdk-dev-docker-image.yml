@@ -8,7 +8,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  REPOSITORY: 329710836760.dkr.ecr.us-east-1.amazonaws.com/rasa-sdk
+  REPOSITORY: 329710836760.dkr.ecr.us-east-1.amazonaws.com/rasa-sdk-dev
   DEFAULT_PYTHON_VERSION: "3.10"
 
 permissions:
@@ -50,10 +50,11 @@ jobs:
           version: v0.5.1
           driver: docker
 
-      - name: Build, tag, and push image to Amazon ECR
-        env:
-          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+      - name: Build docker image
         run: |
           docker buildx bake --load
+
+      - name: Tag and push docker image to AWS
+        run: |
           docker tag rasa/rasa-sdk:main $REPOSITORY:latest
           docker push $REPOSITORY:latest
