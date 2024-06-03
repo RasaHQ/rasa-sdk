@@ -1,0 +1,60 @@
+name: Create Dev Docker Images
+
+on:
+  schedule:
+    # Run cron job at 8AM Monday to Sunday.
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  REPOSITORY: 329710836760.dkr.ecr.us-east-1.amazonaws.com/rasa-sdk-dev
+  DEFAULT_PYTHON_VERSION: "3.10"
+
+permissions:
+  checks: write
+  id-token: write
+  pull-requests: write
+  contents: read
+  issues: read
+
+jobs:
+  rasa-sdk-dev-docker-image:
+    name: rasa-sdk dev docker image
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Read Poetry Version 🔢
+        run: |
+          echo "POETRY_VERSION=$(scripts/poetry-version.sh)" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@8c3f20df09ac63af7b3ae3d7c91f105f857d8497 # v3.0.1
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
+        with:
+          mask-password: "true"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c
+        with:
+          version: v0.5.1
+          driver: docker
+
+      - name: Build docker image
+        run: |
+          docker buildx bake --load
+
+      - name: Tag and push docker image to AWS
+        run: |
+          docker tag rasa/rasa-sdk:main $REPOSITORY:latest
+          docker push $REPOSITORY:latest
