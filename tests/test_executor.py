@@ -8,7 +8,7 @@ from typing import Text, Optional, Generator
 
 import pytest
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
-from tests.test_actions.test_actions import SubclassTestActionA, SubclassTestActionB
+from tests.conftest import SubclassTestActionA, SubclassTestActionB
 
 TEST_PACKAGE_BASE = "tests/executor_test_packages"
 

@@ -5,7 +5,7 @@ from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
 from rasa_sdk.tracing.instrumentation import instrumentation
-from tests.test_actions.test_actions import MockFormValidationAction
+from tests.conftest import MockFormValidationAction
 from rasa_sdk import Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import ActionExecuted, SlotSet

@@ -36,7 +36,7 @@ def test_server_list_actions_returns_200(sanic_app: Sanic):
     assert len(response.json) == 9
     print(response.json)
     expected = [
-        # defined in tests/test_actions
+        # defined in tests/conftest.py
         {"name": "custom_async_action"},
         {"name": "custom_action"},
         {"name": "custom_action_exception"},
@@ -46,7 +46,7 @@ def test_server_list_actions_returns_200(sanic_app: Sanic):
         {"name": "mock_form_validation_action"},
         # defined in tests/test_forms.py
         {"name": "some_form"},
-        # defined in tests/test_actions
+        # defined in tests/conftest.py
         {"name": "subclass_test_action_b"},
     ]
     assert response.json == expected

@@ -5,7 +5,7 @@ from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
 from rasa_sdk.tracing.instrumentation import instrumentation
-from tests.test_actions.test_actions import (
+from tests.conftest import (
     MockValidationAction,
 )
 from rasa_sdk import Tracker
