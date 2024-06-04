@@ -3,7 +3,6 @@ import logging
 from rasa_sdk import utils
 from rasa_sdk.endpoint import create_argument_parser, run
 from rasa_sdk.constants import APPLICATION_ROOT_LOGGER_NAME
-from rasa_sdk.tracing.utils import get_tracer_provider
 
 
 def main_from_args(args):
@@ -18,7 +17,6 @@ def main_from_args(args):
         args.logging_config_file,
     )
     utils.update_sanic_log_level()
-    tracer_provider = get_tracer_provider(args)
 
     run(
         args.actions,
@@ -28,7 +26,7 @@ def main_from_args(args):
         args.ssl_keyfile,
         args.ssl_password,
         args.auto_reload,
-        tracer_provider,
+        args.endpoints,
     )
 
 

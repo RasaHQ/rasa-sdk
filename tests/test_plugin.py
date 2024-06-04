@@ -34,6 +34,7 @@ def test_plugin_attach_sanic_app_extension(
     monkeypatch.setattr(
         manager.hook, "attach_sanic_app_extensions", MagicMock(return_value=None)
     )
+    monkeypatch.setattr("rasa_sdk.endpoint.Sanic.serve", MagicMock(return_value=None))
     app_mock = MagicMock()
 
     # Create a MagicMock object to replace the create_app() method
@@ -42,8 +43,8 @@ def test_plugin_attach_sanic_app_extension(
     # Set the create_app() method to return create_app_mock
     monkeypatch.setattr("rasa_sdk.endpoint.create_app", create_app_mock)
 
-    # Set the return value of app_mock.run() to None
-    app_mock.run.return_value = None
+    # Set the return value of app_mock.prepare() to None
+    app_mock.prepare.return_value = None
 
     with warnings.catch_warnings():
         warnings.simplefilter("error")

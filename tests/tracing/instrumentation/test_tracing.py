@@ -1,10 +1,13 @@
 import json
+from functools import partial
+
 import pytest
 
 import rasa_sdk.endpoint as ep
 
 from typing import Sequence
 from opentelemetry.sdk.trace import TracerProvider
+from pytest import MonkeyPatch
 
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
@@ -35,11 +38,20 @@ def test_server_webhook_custom_action_is_instrumented(
     previous_num_captured_spans: int,
     action_name: str,
     action_package: str,
+    monkeypatch: MonkeyPatch,
 ) -> None:
     """Tests that the custom action is instrumented."""
-
+    monkeypatch.setattr(
+        "rasa_sdk.endpoint.get_tracer_provider", lambda _: tracer_provider
+    )
     data["next_action"] = action_name
-    app = ep.create_app(action_package, tracer_provider=tracer_provider)
+    app = ep.create_app(action_package)
+
+    app.register_listener(
+        partial(ep.load_tracer_provider, "endpoints.yml"),
+        "before_server_start",
+    )
+
     _, response = app.test_client.post("/webhook", data=json.dumps(data))
 
     assert response.status == 200

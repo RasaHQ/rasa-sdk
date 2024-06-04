@@ -4,11 +4,11 @@ import random
 import string
 import time
 
-from rasa_sdk import Action
 from typing import Text, Optional, Generator
 
 import pytest
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
+from tests.conftest import SubclassTestActionA, SubclassTestActionB
 
 TEST_PACKAGE_BASE = "tests/executor_test_packages"
 
@@ -235,16 +235,6 @@ async def test_reload_module(
         "image": None,
         "attachment": None,
     }
-
-
-class SubclassTestActionA(Action):
-    def name(self):
-        return "subclass_test_action_a"
-
-
-class SubclassTestActionB(SubclassTestActionA):
-    def name(self):
-        return "subclass_test_action_b"
 
 
 def test_load_subclasses(executor: ActionExecutor):
