@@ -384,3 +384,14 @@ class ActionNotFoundException(Exception):
 
     def __str__(self) -> Text:
         return self.message
+
+
+class ActionMissingDomainException(Exception):
+    """Raising this exception when the domain is missing."""
+
+    def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
+        self.action_name = action_name
+        self.message = message or "Domain context is missing."
+
+    def __str__(self) -> Text:
+        return self.message
