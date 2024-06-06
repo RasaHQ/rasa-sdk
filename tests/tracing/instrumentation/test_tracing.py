@@ -45,6 +45,7 @@ def test_server_webhook_custom_action_is_instrumented(
         "rasa_sdk.endpoint.get_tracer_provider", lambda _: tracer_provider
     )
     data["next_action"] = action_name
+    data["domain"] = {}
     app = ep.create_app(action_package)
 
     app.register_listener(

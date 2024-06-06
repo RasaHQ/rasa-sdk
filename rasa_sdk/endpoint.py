@@ -36,7 +36,11 @@ with warnings.catch_warnings():
         DEFAULT_SERVER_PORT,
     )
     from rasa_sdk.executor import ActionExecutor
-    from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
+    from rasa_sdk.interfaces import (
+        ActionExecutionRejection,
+        ActionNotFoundException,
+        ActionMissingDomainException,
+    )
     from rasa_sdk.plugin import plugin_manager
     from rasa_sdk.tracing.utils import (
         get_tracer_and_context,
@@ -153,6 +157,10 @@ def create_app(
                 logger.error(e)
                 body = {"error": e.message, "action_name": e.action_name}
                 return response.json(body, status=404)
+            except ActionMissingDomainException as e:
+                logger.error(e)
+                body = {"error": e.message, "action_name": e.action_name}
+                return response.json(body, status=449)
 
             set_span_attributes(span, action_call)
 

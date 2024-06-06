@@ -2,7 +2,6 @@ import importlib
 import inspect
 import logging
 import pkgutil
-import typing
 import warnings
 from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, Set, cast
 from collections import namedtuple
@@ -10,12 +9,14 @@ import types
 import sys
 import os
 
-from rasa_sdk.interfaces import Tracker, ActionNotFoundException, Action
+from rasa_sdk.interfaces import (
+    Tracker,
+    ActionNotFoundException,
+    Action,
+    ActionMissingDomainException,
+)
 
 from rasa_sdk import utils
-
-if typing.TYPE_CHECKING:  # pragma: no cover
-    from rasa_sdk.types import ActionCall
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,6 @@ class CollectingDispatcher:
     """Send messages back to user"""
 
     def __init__(self) -> None:
-
         self.messages: List[Dict[Text, Any]] = []
 
     def utter_message(
@@ -162,6 +162,8 @@ class ActionExecutor:
         self.actions: Dict[Text, Callable] = {}
         self._modules: Dict[Text, TimestampModule] = {}
         self._loaded: Set[Type[Action]] = set()
+        self.domain: Optional[Dict[Text, Any]] = None
+        self.domain_digest: Optional[Text] = None
 
     def register_action(self, action: Union[Type[Action], Action]) -> None:
         if inspect.isclass(action):
@@ -380,7 +382,49 @@ class ActionExecutor:
                 # we won't append this to validated events -> will be ignored
         return validated
 
-    async def run(self, action_call: "ActionCall") -> Optional[Dict[Text, Any]]:
+    def is_domain_digest_valid(self, domain_digest: Optional[Text]) -> bool:
+        """Check if the domain_digest is valid
+        If the domain_digest is empty or different from the one provided, it is invalid.
+        Args:
+            domain_digest: latest value provided to compare the current value with.
+        Returns:
+            True if the domain_digest is valid, False otherwise.
+        """
+        return bool(self.domain_digest) and self.domain_digest == domain_digest
+
+    def update_and_return_domain(
+        self, payload: Dict[Text, Any], action_name: Text
+    ) -> Optional[Dict[Text, Any]]:
+        """Validate the digest, store the domain if available, and return the domain.
+        This method validates the domain digest from the payload.
+        If the digest is invalid and no domain is provided, an exception is raised.
+        If domain data is available, it stores the domain and digest.
+        Finally, it returns the domain.
+        Args:
+            payload: Request payload containing the domain data.
+            action_name: Name of the action that should be executed.
+        Returns:
+            The domain dictionary.
+        Raises:
+            ActionMissingDomainException: Invalid digest and no domain data available.
+        """
+        payload_domain = payload.get("domain")
+        payload_domain_digest = payload.get("domain_digest")
+
+        # If digest is invalid and no domain is available - raise the error
+        if (
+            not self.is_domain_digest_valid(payload_domain_digest)
+            and payload_domain is None
+        ):
+            raise ActionMissingDomainException(action_name)
+
+        if payload_domain:
+            self.domain = payload_domain
+            self.domain_digest = payload_domain_digest
+
+        return self.domain
+
+    async def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
         from rasa_sdk.interfaces import Tracker
 
         action_name = action_call.get("next_action")
@@ -391,7 +435,7 @@ class ActionExecutor:
                 raise ActionNotFoundException(action_name)
 
             tracker_json = action_call["tracker"]
-            domain = action_call.get("domain", {})
+            domain = self.update_and_return_domain(action_call, action_name)
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
 

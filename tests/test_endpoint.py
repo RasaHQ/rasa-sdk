@@ -65,6 +65,7 @@ def test_server_webhook_handles_action_exception(sanic_app: Sanic):
     data = {
         "next_action": "custom_action_exception",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
+        "domain": {},
     }
     request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     assert response.status == 500
@@ -76,6 +77,7 @@ def test_server_webhook_custom_action_returns_200(sanic_app: Sanic):
     data = {
         "next_action": "custom_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
+        "domain": {},
     }
     request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     events = response.json.get("events")
@@ -88,6 +90,7 @@ def test_server_webhook_custom_async_action_returns_200(sanic_app: Sanic):
     data = {
         "next_action": "custom_async_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
+        "domain": {},
     }
     request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     events = response.json.get("events")
@@ -148,6 +151,7 @@ def test_server_webhook_custom_action_with_dialogue_stack_returns_200(
     data = {
         "next_action": "custom_action_with_dialogue_stack",
         "tracker": {"sender_id": "1", "conversation_id": "default", **stack_state},
+        "domain": {},
     }
     _, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     events = response.json.get("events")
