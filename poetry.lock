@@ -1565,6 +1565,17 @@ tomli = {version = "*", markers = "python_version < \"3.11\""}
 dev = ["furo", "packaging", "sphinx (>=5)", "twisted"]
 
 [[package]]
+name = "types-protobuf"
+version = "4.25.0.20240417"
+description = "Typing stubs for protobuf"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-protobuf-4.25.0.20240417.tar.gz", hash = "sha256:c34eff17b9b3a0adb6830622f0f302484e4c089f533a46e3f147568313544352"},
+    {file = "types_protobuf-4.25.0.20240417-py3-none-any.whl", hash = "sha256:e9b613227c2127e3d4881d75d93c93b4d6fd97b5f6a099a0b654a05351c8685d"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.9.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -1900,4 +1911,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "154b5b360e5a822ebeacf1cc569bfdb45c9c2e318a4ff69031210117abb7c47a"
+content-hash = "6fab19810735e6ca4cd28bc038f641e64545379904ba604b9f405088d0e2bfbe"
