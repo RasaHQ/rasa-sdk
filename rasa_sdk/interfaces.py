@@ -46,7 +46,7 @@ class Tracker:
         followup_action: Optional[Text],
         active_loop: Dict[Text, Any],
         latest_action_name: Optional[Text],
-        stack: List[Dict[Text, Any]] = [],
+        stack: Optional[List[Dict[Text, Any]]] = None,
     ) -> None:
         """Initialize the tracker."""
 
@@ -68,7 +68,7 @@ class Tracker:
         self.latest_message = latest_message if latest_message else {}
         self.active_loop = active_loop
         self.latest_action_name = latest_action_name
-        self.stack = stack
+        self.stack = stack if stack else []
 
     @property
     def active_form(self) -> Dict[Text, Any]:

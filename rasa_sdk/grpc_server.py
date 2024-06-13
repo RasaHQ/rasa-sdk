@@ -45,7 +45,9 @@ class ActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookServicer):
             utils.check_version_compatibility(request.version)
             try:
                 action_call = MessageToDict(request)
-                result = await self.executor.run(action_call)
+                logger.info(f"Received request to run action '{action_call.get('next_action')}'.")
+                result = None
+                # result = await self.executor.run(action_call)
             except ActionExecutionRejection as e:
                 logger.debug(e)
                 body = {"error": e.message, "action_name": e.action_name}
