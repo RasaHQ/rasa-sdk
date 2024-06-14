@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import grpc
 import utils
 import logging
@@ -10,9 +12,10 @@ from google.protobuf.json_format import MessageToDict, ParseDict
 
 from rasa_sdk.constants import DEFAULT_SERVER_PORT, DEFAULT_ENDPOINTS_PATH
 from rasa_sdk.executor import ActionExecutor
+from rasa_sdk.grpc_exceptions import ResourceNotFound, ResourceNotFoundType
 from rasa_sdk.grpc_py import action_webhook_pb2, action_webhook_pb2_grpc
 from rasa_sdk.grpc_py.action_webhook_pb2 import WebhookRequest
-from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException
+from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException, ActionMissingDomainException
 from rasa_sdk.tracing.utils import (
     get_tracer_and_context,
     TracerProvider,
@@ -38,16 +41,14 @@ class ActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookServicer):
         self.executor = executor
 
     async def webhook(self, request: WebhookRequest, context):
-        tracer, context, span_name = get_tracer_and_context(
+        tracer, tracer_context, span_name = get_tracer_and_context(
             self.tracer_provider, request
         )
-        with tracer.start_as_current_span(span_name, context=context) as span:
+        with tracer.start_as_current_span(span_name, context=tracer_context) as span:
             utils.check_version_compatibility(request.version)
             try:
-                action_call = MessageToDict(request)
-                logger.info(f"Received request to run action '{action_call.get('next_action')}'.")
-                result = None
-                # result = await self.executor.run(action_call)
+                action_call = MessageToDict(request, preserving_proto_field_name=True)
+                result = await self.executor.run(action_call)
             except ActionExecutionRejection as e:
                 logger.debug(e)
                 body = {"error": e.message, "action_name": e.action_name}
@@ -56,9 +57,25 @@ class ActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookServicer):
                 return action_webhook_pb2.WebhookResponse()
             except ActionNotFoundException as e:
                 logger.error(e)
-                body = {"error": e.message, "action_name": e.action_name}
-                context.set_code(grpc.StatusCode.NOTFOUND)
-                context.set_details(str(body))
+                resource_not_found = ResourceNotFound(
+                    action_name=e.action_name,
+                    message=e.message,
+                    resource_type=ResourceNotFoundType.ACTION,
+                )
+                body = resource_not_found.json()
+                context.set_code(grpc.StatusCode.NOT_FOUND)
+                context.set_details(body)
+                return action_webhook_pb2.WebhookResponse()
+            except ActionMissingDomainException as e:
+                logger.error(e)
+                resource_not_found = ResourceNotFound(
+                    action_name=e.action_name,
+                    message=e.message,
+                    resource_type=ResourceNotFoundType.DOMAIN,
+                )
+                body = resource_not_found.json()
+                context.set_code(grpc.StatusCode.NOT_FOUND)
+                context.set_details(body)
                 return action_webhook_pb2.WebhookResponse()
             if not result:
                 return action_webhook_pb2.WebhookResponse()

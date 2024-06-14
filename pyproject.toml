@@ -90,6 +90,7 @@ opentelemetry-exporter-otlp = "~1.15.0"
 grpcio = "1.59.3"
 protobuf = "4.25.3"
 grpcio-tools = "1.56.2"
+pydantic = "2.6.4"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^4.1.0"
