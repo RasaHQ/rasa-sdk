@@ -63,6 +63,15 @@ class CollectingDispatcher:
 
     # deprecated
     def utter_custom_message(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
+        """Sends a message with custom elements to the output channel.
+
+        Deprecated:
+            Use `utter_message(elements=<list of elements>)` instead.
+
+        Args:
+            elements: List of elements to be sent to the output channel.
+            kwargs: Additional parameters to be sent to the output channel.
+        """
         warnings.warn(
             "Use of `utter_custom_message` is deprecated. "
             "Use `utter_message(elements=<list of elements>)` instead.",
@@ -166,6 +175,13 @@ class ActionExecutor:
         self.domain_digest: Optional[Text] = None
 
     def register_action(self, action: Union[Type[Action], Action]) -> None:
+        """Register an action with the executor.
+
+        Args:
+            action: Action to be registered. It can either be an instance of
+            `Action` subclass class or an actual `Action` subclass.
+        """
+
         if inspect.isclass(action):
             action = cast(Type[Action], action)
             if action.__module__.startswith("rasa."):
@@ -189,7 +205,13 @@ class ActionExecutor:
                 "a function, use `register_function` instead."
             )
 
-    def register_function(self, name: Text, f: Callable) -> None:
+    def register_function(self, action_name: Text, f: Callable) -> None:
+        """Register an executor function for an action.
+
+        Args:
+            action_name: Name of the action.
+            f: Function to be registered.
+        """
         valid_keys = utils.arguments_of(f)
         if len(valid_keys) < 3:
             raise Exception(
@@ -200,12 +222,12 @@ class ActionExecutor:
                 "parameters."
             )
 
-        if name in self.actions:
-            logger.info(f"Re-registered function for '{name}'.")
+        if action_name in self.actions:
+            logger.info(f"Re-registered function for '{action_name}'.")
         else:
-            logger.info(f"Registered function for '{name}'.")
+            logger.info(f"Registered function for '{action_name}'.")
 
-        self.actions[name] = f
+        self.actions[action_name] = f
 
     def _import_submodules(
         self, package: Union[Text, types.ModuleType], recursive: bool = True
@@ -349,7 +371,17 @@ class ActionExecutor:
         return {"events": events, "responses": messages}
 
     @staticmethod
-    def validate_events(events: List[Dict[Text, Any]], action_name: Text):
+    def validate_events(events: List[Dict[Text, Any]], action_name: Text) -> List[Dict[Text, Any]]:
+        """Validate the events returned by the action.
+
+        Args:
+            events: List of events returned by the action.
+
+            action_name: Name of the action that should be executed.
+
+        Returns:
+            List of validated events.
+        """
         validated = []
         for event in events:
             if isinstance(event, dict):
@@ -425,6 +457,15 @@ class ActionExecutor:
         return self.domain
 
     async def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
+        """Run the action and return the response.
+
+        Args:
+            action_call: Request payload containing the action data.
+
+        Returns:
+            Response containing the events and messages or None if
+            the action does not exist.
+        """
         from rasa_sdk.interfaces import Tracker
 
         action_name = action_call.get("next_action")

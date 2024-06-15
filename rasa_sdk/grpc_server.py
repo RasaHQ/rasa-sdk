@@ -5,14 +5,14 @@ import utils
 import logging
 import ssl
 import types
-from typing import Text, Union, Optional
+from typing import Union, Optional, Callable
 from concurrent import futures
 from grpc import aio
 from google.protobuf.json_format import MessageToDict, ParseDict
 
 from rasa_sdk.constants import DEFAULT_SERVER_PORT, DEFAULT_ENDPOINTS_PATH
 from rasa_sdk.executor import ActionExecutor
-from rasa_sdk.grpc_exceptions import ResourceNotFound, ResourceNotFoundType
+from rasa_sdk.grpc_errors import ResourceNotFound, ResourceNotFoundType
 from rasa_sdk.grpc_py import action_webhook_pb2, action_webhook_pb2_grpc
 from rasa_sdk.grpc_py.action_webhook_pb2 import WebhookRequest
 from rasa_sdk.interfaces import ActionExecutionRejection, ActionNotFoundException, ActionMissingDomainException
@@ -40,7 +40,15 @@ class ActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookServicer):
         self.tracer_provider = tracer_provider
         self.executor = executor
 
-    async def webhook(self, request: WebhookRequest, context):
+    async def webhook(self,
+                      request: WebhookRequest, context,
+        ) -> action_webhook_pb2.WebhookResponse:
+        """Handle RPC request for the webhook.
+
+        Args:
+            request: The webhook request.
+            context: The context of the request.
+        """
         tracer, tracer_context, span_name = get_tracer_and_context(
             self.tracer_provider, request
         )
@@ -85,21 +93,40 @@ class ActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookServicer):
             return ParseDict(result, response)
 
 
-def get_ssl_password_callback(ssl_password):
-    def password_callback(*args, **kwargs):
+def get_ssl_password_callback(ssl_password: str) -> Callable[[], bytes]:
+    """Return a password callback function for the SSL key file.
+
+    Args:
+        ssl_password: Password for the SSL key file.
+
+    Returns:
+        A password callback function.
+    """
+    def password_callback() -> bytes:
+        """Return the SSL password as bytes."""
         return ssl_password.encode() if ssl_password else None
 
     return password_callback
 
 
 async def run_grpc(
-    action_package_name: Union[Text, types.ModuleType],
+    action_package_name: Union[str, types.ModuleType],
     port: int = DEFAULT_SERVER_PORT,
-    ssl_certificate: Optional[Text] = None,
-    ssl_keyfile: Optional[Text] = None,
-    ssl_password: Optional[Text] = None,
+    ssl_certificate: Optional[str] = None,
+    ssl_keyfile: Optional[str] = None,
+    ssl_password: Optional[str] = None,
     endpoints: str = DEFAULT_ENDPOINTS_PATH,
 ):
+    """Start a gRPC server to handle incoming action requests.
+
+    Args:
+        action_package_name: Name of the package which contains the custom actions.
+        port: Port to start the server on.
+        ssl_certificate: File path to the SSL certificate.
+        ssl_keyfile: File path to the SSL key file.
+        ssl_password: Password for the SSL key file.
+        endpoints: Path to the endpoints file.
+    """
     workers = utils.number_of_sanic_workers()
     server = aio.server(futures.ThreadPoolExecutor(max_workers=workers))
     executor = ActionExecutor()
@@ -117,13 +144,19 @@ async def run_grpc(
             keyfile=ssl_keyfile,
             password=get_ssl_password_callback(ssl_password),
         )
+        logger.info(
+            f"Starting gRPC server with SSL support on port {port}"
+        )
         server.add_secure_port(
             f"[::]:{port}", server_credentials=grpc.ssl_server_credentials(ssl_context)
         )
     else:
+        logger.info(
+            f"Starting gRPC server without SSL on port {port}"
+        )
         # Use insecure connection if no SSL/TLS information is provided
         server.add_insecure_port(f"[::]:{port}")
 
     await server.start()
-    print(f"gRPC Server started on port {port}")
+    logger.info(f"gRPC Server started on port {port}")
     await server.wait_for_termination()

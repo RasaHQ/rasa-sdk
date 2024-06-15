@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-import dataclasses
-
 from enum import Enum
 
 
@@ -14,6 +12,7 @@ class ResourceNotFoundType(str, Enum):
 
 
 class ResourceNotFound(BaseModel):
+    """Error which indicates that a resource was not found."""
     action_name: str = Field(alias="action_name")
     message: str = Field(alias="message")
     resource_type: ResourceNotFoundType = Field(alias="resource_type")
