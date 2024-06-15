@@ -1,6 +1,5 @@
 import logging
 import asyncio
-import signal
 
 from rasa_sdk import utils
 from rasa_sdk.endpoint import create_argument_parser, run
@@ -8,17 +7,6 @@ from rasa_sdk.constants import APPLICATION_ROOT_LOGGER_NAME
 from rasa_sdk.grpc_server import run_grpc
 
 logger = logging.getLogger(__name__)
-
-
-def initialise_interrupts() -> None:
-    """Initialise handlers for kernel signal interrupts."""
-
-    def handle_sigint(signum, frame):
-        logger.info("Received SIGINT, exiting")
-        asyncio.get_event_loop().stop()
-
-    signal.signal(signal.SIGINT, handle_sigint)
-    signal.signal(signal.SIGTERM, handle_sigint)
 
 
 def main_from_args(args):
@@ -33,8 +21,6 @@ def main_from_args(args):
         args.logging_config_file,
     )
     utils.update_sanic_log_level()
-
-    initialise_interrupts()
 
     if args.grpc:
         asyncio.run(

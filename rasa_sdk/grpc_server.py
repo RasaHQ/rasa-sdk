@@ -1,5 +1,13 @@
 from __future__ import annotations
 
+import time
+
+import sys
+
+import signal
+
+import asyncio
+
 import grpc
 import utils
 import logging
@@ -49,6 +57,7 @@ class ActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookServicer):
             request: The webhook request.
             context: The context of the request.
         """
+        await asyncio.sleep(50)
         tracer, tracer_context, span_name = get_tracer_and_context(
             self.tracer_provider, request
         )
@@ -109,6 +118,28 @@ def get_ssl_password_callback(ssl_password: str) -> Callable[[], bytes]:
     return password_callback
 
 
+def get_signal_name(signal_number: int) -> str:
+    """Return the signal name for the given signal number."""
+    return signal.Signals(signal_number).name
+
+
+def initialise_interrupts(server: grpc.aio.Server) -> None:
+    """Initialise handlers for kernel signal interrupts."""
+
+    async def handle_sigint(signal_received: int):
+        logger.info(
+            f"Received {get_signal_name(signal_received)} signal. Stopping gRPC server..."
+        )
+        await server.stop(0)
+        logger.info("gRPC server stopped.")
+
+    loop = asyncio.get_event_loop()
+    loop.add_signal_handler(signal.SIGINT,
+                            lambda: asyncio.create_task(handle_sigint(signal.SIGINT)))
+    loop.add_signal_handler(signal.SIGTERM,
+                            lambda: asyncio.create_task(handle_sigint(signal.SIGTERM)))
+
+
 async def run_grpc(
     action_package_name: Union[str, types.ModuleType],
     port: int = DEFAULT_SERVER_PORT,
@@ -129,6 +160,7 @@ async def run_grpc(
     """
     workers = utils.number_of_sanic_workers()
     server = aio.server(futures.ThreadPoolExecutor(max_workers=workers))
+    initialise_interrupts(server)
     executor = ActionExecutor()
     executor.register_package(action_package_name)
     # tracer_provider = get_tracer_provider(endpoints)
