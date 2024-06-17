@@ -11,3 +11,4 @@ PYTHON_LOGGING_SCHEMA_DOCS = (
     "https://docs.python.org/3/library/logging.config.html#dictionary-schema-details"
 )
 DEFAULT_ENDPOINTS_PATH = "endpoints.yml"
+NO_GRACE_PERIOD = 0

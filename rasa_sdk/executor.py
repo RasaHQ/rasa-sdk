@@ -371,7 +371,10 @@ class ActionExecutor:
         return {"events": events, "responses": messages}
 
     @staticmethod
-    def validate_events(events: List[Dict[Text, Any]], action_name: Text) -> List[Dict[Text, Any]]:
+    def validate_events(
+        events: List[Dict[Text, Any]],
+        action_name: Text,
+    ) -> List[Dict[Text, Any]]:
         """Validate the events returned by the action.
 
         Args:
