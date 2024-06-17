@@ -6,7 +6,6 @@ import asyncio
 
 import grpc
 import logging
-import ssl
 import types
 from typing import Union, Optional
 from concurrent import futures
@@ -94,7 +93,7 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookService
                     action_name=e.action_name,
                     message=e.message,
                     resource_type=ResourceNotFoundType.ACTION,
-                ).model_dump()
+                ).model_dump_json()
                 context.set_code(grpc.StatusCode.NOT_FOUND)
                 context.set_details(body)
                 return action_webhook_pb2.WebhookResponse()
@@ -104,7 +103,7 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookService
                     action_name=e.action_name,
                     message=e.message,
                     resource_type=ResourceNotFoundType.DOMAIN,
-                ).model_dump()
+                ).model_dump_json()
                 context.set_code(grpc.StatusCode.NOT_FOUND)
                 context.set_details(body)
                 return action_webhook_pb2.WebhookResponse()
@@ -172,15 +171,20 @@ async def run_grpc(
     )
     if ssl_certificate and ssl_keyfile:
         # Use SSL/TLS if certificate and key are provided
-        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        ssl_context.load_cert_chain(
-            ssl_certificate,
-            keyfile=ssl_keyfile,
-            password=ssl_password if ssl_password else None,
-        )
+        # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        # ssl_context.load_cert_chain(
+        #     ssl_certificate,
+        #     keyfile=ssl_keyfile,
+        #     password=ssl_password if ssl_password else None,
+        # )
+        private_key = open(ssl_keyfile, "rb").read()
+        certificate_chain = open(ssl_certificate, "rb").read()
         logger.info(f"Starting gRPC server with SSL support on port {port}")
         server.add_secure_port(
-            f"[::]:{port}", server_credentials=grpc.ssl_server_credentials(ssl_context)
+            f"[::]:{port}",
+            server_credentials=grpc.ssl_server_credentials(
+                [(private_key, certificate_chain)]
+            ),
         )
     else:
         logger.info(f"Starting gRPC server without SSL on port {port}")
