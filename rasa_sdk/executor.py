@@ -1,3 +1,4 @@
+from __future__ import annotations
 import importlib
 import inspect
 import logging
@@ -8,6 +9,8 @@ from collections import namedtuple
 import types
 import sys
 import os
+
+from pydantic import BaseModel, Field
 
 from rasa_sdk.interfaces import (
     Tracker,
@@ -22,9 +25,10 @@ logger = logging.getLogger(__name__)
 
 
 class CollectingDispatcher:
-    """Send messages back to user"""
+    """Send messages back to user."""
 
     def __init__(self) -> None:
+        """Create a `CollectingDispatcher` object."""
         self.messages: List[Dict[Text, Any]] = []
 
     def utter_message(
@@ -167,7 +171,9 @@ TimestampModule = namedtuple("TimestampModule", ["timestamp", "module"])
 
 
 class ActionExecutor:
+    """Executes actions."""
     def __init__(self) -> None:
+        """Initializes the `ActionExecutor`."""
         self.actions: Dict[Text, Callable] = {}
         self._modules: Dict[Text, TimestampModule] = {}
         self._loaded: Set[Type[Action]] = set()
@@ -181,7 +187,6 @@ class ActionExecutor:
             action: Action to be registered. It can either be an instance of
             `Action` subclass class or an actual `Action` subclass.
         """
-
         if inspect.isclass(action):
             action = cast(Type[Action], action)
             if action.__module__.startswith("rasa."):
@@ -274,8 +279,7 @@ class ActionExecutor:
         return module
 
     def register_package(self, package: Union[Text, types.ModuleType]) -> None:
-        """Register all the `Action` subclasses contained in a Python module or
-        package.
+        """Register all the `Action` subclasses contained in a Python module or package.
 
         If an `ImportError` is raised when loading the module or package, the
         action server is stopped with exit code 1.
@@ -308,14 +312,14 @@ class ActionExecutor:
                 self.register_action(action)
 
     def _find_modules_to_reload(self) -> Dict[Text, TimestampModule]:
-        """Finds all Python modules that should be reloaded by checking their
-        files' timestamps.
+        """Finds all Python modules that should be reloaded.
+
+         Reloads modules by checking their files' timestamps.
 
         Returns:
             Dictionary containing file paths, new timestamps and Python modules
             that should be reloaded.
         """
-
         to_reload = {}
 
         for path, (timestamp, module) in self._modules.items():
@@ -418,10 +422,13 @@ class ActionExecutor:
         return validated
 
     def is_domain_digest_valid(self, domain_digest: Optional[Text]) -> bool:
-        """Check if the domain_digest is valid
+        """Check if the domain_digest is valid.
+
         If the domain_digest is empty or different from the one provided, it is invalid.
+
         Args:
             domain_digest: latest value provided to compare the current value with.
+
         Returns:
             True if the domain_digest is valid, False otherwise.
         """
@@ -431,15 +438,19 @@ class ActionExecutor:
         self, payload: Dict[Text, Any], action_name: Text
     ) -> Optional[Dict[Text, Any]]:
         """Validate the digest, store the domain if available, and return the domain.
+
         This method validates the domain digest from the payload.
         If the digest is invalid and no domain is provided, an exception is raised.
         If domain data is available, it stores the domain and digest.
         Finally, it returns the domain.
+
         Args:
             payload: Request payload containing the domain data.
             action_name: Name of the action that should be executed.
+
         Returns:
             The domain dictionary.
+
         Raises:
             ActionMissingDomainException: Invalid digest and no domain data available.
         """
@@ -497,3 +508,12 @@ class ActionExecutor:
 
         logger.warning("Received an action call without an action.")
         return None
+
+    def list_actions(self) -> List[ActionName]:
+        """List all registered action names."""
+        return [ActionName(name=action_name) for action_name in self.actions.keys()]
+
+
+class ActionName(BaseModel):
+    """Model for action name."""
+    name: str = Field(alias="name")

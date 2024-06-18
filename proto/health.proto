@@ -6,6 +6,6 @@ message HealthCheckRequest {}
 
 message HealthCheckResponse {}
 
-service Health {
+service HealthService {
   rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
 }

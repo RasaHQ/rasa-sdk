@@ -3,8 +3,15 @@ syntax = "proto3";
 package action_server_webhook;
 import "google/protobuf/struct.proto";
 
-service ActionServerWebhook {
-    rpc webhook (WebhookRequest) returns (WebhookResponse);
+service ActionService {
+    rpc Webhook (WebhookRequest) returns (WebhookResponse);
+    rpc Actions (ActionsRequest) returns (ActionsResponse);
+}
+
+message ActionsRequest {}
+
+message ActionsResponse {
+    map<string, string> actions = 1;
 }
 
 message Tracker {

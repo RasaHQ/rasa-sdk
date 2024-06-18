@@ -5,7 +5,7 @@ import grpc
 from rasa_sdk.grpc_py import health_pb2 as rasa__sdk_dot_grpc__py_dot_health__pb2
 
 
-class HealthStub(object):
+class HealthServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -15,13 +15,13 @@ class HealthStub(object):
             channel: A grpc.Channel.
         """
         self.Check = channel.unary_unary(
-                '/grpc.health.v1.Health/Check',
+                '/grpc.health.v1.HealthService/Check',
                 request_serializer=rasa__sdk_dot_grpc__py_dot_health__pb2.HealthCheckRequest.SerializeToString,
                 response_deserializer=rasa__sdk_dot_grpc__py_dot_health__pb2.HealthCheckResponse.FromString,
                 )
 
 
-class HealthServicer(object):
+class HealthServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Check(self, request, context):
@@ -31,7 +31,7 @@ class HealthServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_HealthServicer_to_server(servicer, server):
+def add_HealthServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Check': grpc.unary_unary_rpc_method_handler(
                     servicer.Check,
@@ -40,12 +40,12 @@ def add_HealthServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'grpc.health.v1.Health', rpc_method_handlers)
+            'grpc.health.v1.HealthService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class Health(object):
+class HealthService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -59,7 +59,7 @@ class Health(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/grpc.health.v1.Health/Check',
+        return grpc.experimental.unary_unary(request, target, '/grpc.health.v1.HealthService/Check',
             rasa__sdk_dot_grpc__py_dot_health__pb2.HealthCheckRequest.SerializeToString,
             rasa__sdk_dot_grpc__py_dot_health__pb2.HealthCheckResponse.FromString,
             options, channel_credentials,

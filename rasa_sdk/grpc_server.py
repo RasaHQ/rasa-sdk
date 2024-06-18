@@ -23,8 +23,17 @@ from rasa_sdk.grpc_errors import (
     ResourceNotFoundType,
     ActionExecutionFailed,
 )
-from rasa_sdk.grpc_py import action_webhook_pb2, action_webhook_pb2_grpc
-from rasa_sdk.grpc_py.action_webhook_pb2 import WebhookRequest
+from rasa_sdk.grpc_py import (
+    action_webhook_pb2,
+    action_webhook_pb2_grpc,
+    health_pb2_grpc,
+)
+from rasa_sdk.grpc_py.action_webhook_pb2 import (
+    ActionsResponse,
+    ActionsRequest,
+    WebhookRequest,
+)
+from rasa_sdk.grpc_py.health_pb2 import HealthCheckRequest, HealthCheckResponse
 from rasa_sdk.interfaces import (
     ActionExecutionRejection,
     ActionNotFoundException,
@@ -42,7 +51,27 @@ from rasa_sdk.utils import (
 logger = logging.getLogger(__name__)
 
 
-class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookServicer):
+class GRPCActionServerHealthCheck(health_pb2_grpc.HealthServiceServicer):
+    """Runs health check RPC which is served through gRPC server."""
+    def __init__(self) -> None:
+        """Initializes the HealthServicer."""
+        pass
+
+    def Check(self, request: HealthCheckRequest, context) -> HealthCheckResponse:
+        """Handle RPC request for the health check.
+
+        Args:
+            request: The health check request.
+            context: The context of the request.
+
+        Returns:
+            gRPC response.
+        """
+        response = HealthCheckResponse()
+        return response
+
+
+class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
     """Runs webhook RPC which is served through gRPC server."""
 
     def __init__(
@@ -59,7 +88,21 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookService
         self.tracer_provider = tracer_provider
         self.executor = executor
 
-    async def webhook(
+    async def Actions(self, request: ActionsRequest, context) -> ActionsResponse:
+        """Handle RPC request for the actions.
+
+        Args:
+            request: The actions request.
+            context: The context of the request.
+
+        Returns:
+            gRPC response.
+        """
+        actions = self.executor.list_actions()
+        response = ActionsResponse()
+        return ParseDict(actions, response)
+
+    async def Webhook(
         self,
         request: WebhookRequest,
         context,
@@ -169,8 +212,12 @@ async def run_grpc(
     executor.register_package(action_package_name)
     # tracer_provider = get_tracer_provider(endpoints)
     tracer_provider = None
-    action_webhook_pb2_grpc.add_ActionServerWebhookServicer_to_server(
+    action_webhook_pb2_grpc.add_ActionServiceServicer_to_server(
         GRPCActionServerWebhook(executor, tracer_provider), server
+    )
+
+    health_pb2_grpc.add_HealthServiceServicer_to_server(
+        GRPCActionServerHealthCheck(), server
     )
 
     ca_cert = file_as_bytes(ssl_ca_file) if ssl_ca_file else None

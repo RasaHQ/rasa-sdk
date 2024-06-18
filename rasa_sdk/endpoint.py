@@ -172,7 +172,7 @@ def create_app(
         if auto_reload:
             executor.reload()
 
-        body = [{"name": k} for k in executor.actions.keys()]
+        body = [action_name_item.model_dump() for action_name_item in executor.list_actions()]  # noqa: E501
         return response.json(body, status=200)
 
     @app.exception(Exception)
