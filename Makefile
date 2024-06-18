@@ -61,13 +61,11 @@ cleanup-generated-changelog:
 release:
 	poetry run python scripts/release.py
 
-download-protoc-compiler:
-	curl -0L https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protoc-25.0-osx-aarch_64.zip --output protoc-25.0-osx-aarch_64.zip
-
 generate-grpc:
 	 python -m grpc_tools.protoc \
 	 	-Irasa_sdk/grpc_py=./proto \
 	 	--python_out=. \
 	 	--grpc_python_out=. \
 	 	--pyi_out=. \
-	 	proto/action_webhook.proto
+	 	proto/action_webhook.proto \
+	 	proto/health.proto

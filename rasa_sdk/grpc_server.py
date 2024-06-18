@@ -3,6 +3,7 @@ from __future__ import annotations
 import signal
 
 import asyncio
+import ssl
 
 import grpc
 import logging
@@ -171,12 +172,13 @@ async def run_grpc(
     )
     if ssl_certificate and ssl_keyfile:
         # Use SSL/TLS if certificate and key are provided
-        # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        # ssl_context.load_cert_chain(
-        #     ssl_certificate,
-        #     keyfile=ssl_keyfile,
-        #     password=ssl_password if ssl_password else None,
-        # )
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain(
+            ssl_certificate,
+            keyfile=ssl_keyfile,
+            password=ssl_password if ssl_password else None,
+        )
+        grpc.ssl_channel_credentials()
         private_key = open(ssl_keyfile, "rb").read()
         certificate_chain = open(ssl_certificate, "rb").read()
         logger.info(f"Starting gRPC server with SSL support on port {port}")
