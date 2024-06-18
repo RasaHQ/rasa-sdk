@@ -113,7 +113,7 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
     async def Webhook(
         self,
         request: WebhookRequest,
-        context,
+        context: grpc.aio.ServicerContext,
     ) -> action_webhook_pb2.WebhookResponse:
         """Handle RPC request for the webhook.
 
