@@ -3,7 +3,6 @@ from __future__ import annotations
 import signal
 
 import asyncio
-import ssl
 
 import grpc
 import logging
@@ -35,7 +34,10 @@ from rasa_sdk.tracing.utils import (
     get_tracer_and_context,
     TracerProvider,
 )
-from rasa_sdk.utils import check_version_compatibility, number_of_sanic_workers
+from rasa_sdk.utils import (
+    check_version_compatibility,
+    number_of_sanic_workers, file_as_bytes,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +86,7 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServerWebhookService
 
                 body = ActionExecutionFailed(
                     action_name=e.action_name, message=e.message
-                ).model_dump()
+                ).model_dump_json()
                 context.set_code(grpc.StatusCode.INTERNAL)
                 context.set_details(body)
                 return action_webhook_pb2.WebhookResponse()
@@ -147,7 +149,7 @@ async def run_grpc(
     port: int = DEFAULT_SERVER_PORT,
     ssl_certificate: Optional[str] = None,
     ssl_keyfile: Optional[str] = None,
-    ssl_password: Optional[str] = None,
+    ssl_ca_file: Optional[str] = None,
     endpoints: str = DEFAULT_ENDPOINTS_PATH,
 ):
     """Start a gRPC server to handle incoming action requests.
@@ -157,7 +159,7 @@ async def run_grpc(
         port: Port to start the server on.
         ssl_certificate: File path to the SSL certificate.
         ssl_keyfile: File path to the SSL key file.
-        ssl_password: Password for the SSL key file.
+        ssl_ca_file: File path to the SSL CA certificate file.
         endpoints: Path to the endpoints file.
     """
     workers = number_of_sanic_workers()
@@ -170,22 +172,21 @@ async def run_grpc(
     action_webhook_pb2_grpc.add_ActionServerWebhookServicer_to_server(
         GRPCActionServerWebhook(executor, tracer_provider), server
     )
+
+    ca_cert = file_as_bytes(ssl_ca_file) if ssl_ca_file else None
+
     if ssl_certificate and ssl_keyfile:
         # Use SSL/TLS if certificate and key are provided
-        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        ssl_context.load_cert_chain(
-            ssl_certificate,
-            keyfile=ssl_keyfile,
-            password=ssl_password if ssl_password else None,
-        )
         grpc.ssl_channel_credentials()
-        private_key = open(ssl_keyfile, "rb").read()
-        certificate_chain = open(ssl_certificate, "rb").read()
+        private_key = file_as_bytes(ssl_keyfile)
+        certificate_chain = file_as_bytes(ssl_certificate)
         logger.info(f"Starting gRPC server with SSL support on port {port}")
         server.add_secure_port(
             f"[::]:{port}",
             server_credentials=grpc.ssl_server_credentials(
-                [(private_key, certificate_chain)]
+                private_key_certificate_chain_pairs=[(private_key, certificate_chain)],
+                root_certificates = ca_cert,
+                require_client_auth = True if ca_cert else False,
             ),
         )
     else:

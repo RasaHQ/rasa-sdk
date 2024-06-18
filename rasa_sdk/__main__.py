@@ -29,7 +29,7 @@ def main_from_args(args):
                 args.port,
                 args.ssl_certificate,
                 args.ssl_keyfile,
-                args.ssl_password,
+                args.ssl_ca_file,
                 args.endpoints,
             )
         )
@@ -47,7 +47,7 @@ def main_from_args(args):
 
 
 def main():
-    # Running as standalone python application
+    """Runs the action server as standalone application."""
     arg_parser = create_argument_parser()
     cmdline_args = arg_parser.parse_args()
 
