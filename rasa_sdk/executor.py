@@ -172,6 +172,7 @@ TimestampModule = namedtuple("TimestampModule", ["timestamp", "module"])
 
 class ActionExecutor:
     """Executes actions."""
+
     def __init__(self) -> None:
         """Initializes the `ActionExecutor`."""
         self.actions: Dict[Text, Callable] = {}
@@ -516,4 +517,5 @@ class ActionExecutor:
 
 class ActionName(BaseModel):
     """Model for action name."""
+
     name: str = Field(alias="name")

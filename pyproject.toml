@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 line-length = 88
 target-version = [ "py37", "py38", "py39", "py310",]
-exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist))"
+exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist ))"
 
 [tool.poetry]
 name = "rasa-sdk"
@@ -67,11 +67,13 @@ ignore_missing_imports = true
 show_error_codes = true
 warn_redundant_casts = true
 warn_unused_ignores = true
+exclude = "rasa_sdk/grpc_py"
 
 [tool.ruff]
 ignore = [ "D100", "D104", "D105", "RUF005",]
 line-length = 88
 select = [ "D", "E", "F", "W", "RUF",]
+exclude = [ "rasa_sdk/grpc_py" ]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"

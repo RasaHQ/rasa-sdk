@@ -45,7 +45,8 @@ from rasa_sdk.tracing.utils import (
 )
 from rasa_sdk.utils import (
     check_version_compatibility,
-    number_of_sanic_workers, file_as_bytes,
+    number_of_sanic_workers,
+    file_as_bytes,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,6 +54,7 @@ logger = logging.getLogger(__name__)
 
 class GRPCActionServerHealthCheck(health_pb2_grpc.HealthServiceServicer):
     """Runs health check RPC which is served through gRPC server."""
+
     def __init__(self) -> None:
         """Initializes the HealthServicer."""
         pass
@@ -232,8 +234,8 @@ async def run_grpc(
             f"[::]:{port}",
             server_credentials=grpc.ssl_server_credentials(
                 private_key_certificate_chain_pairs=[(private_key, certificate_chain)],
-                root_certificates = ca_cert,
-                require_client_auth = True if ca_cert else False,
+                root_certificates=ca_cert,
+                require_client_auth=True if ca_cert else False,
             ),
         )
     else:

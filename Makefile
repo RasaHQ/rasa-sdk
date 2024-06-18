@@ -36,7 +36,7 @@ formatter:
 
 lint:
 	poetry run ruff check rasa_sdk tests --ignore D
-	poetry run black --check rasa_sdk tests
+	poetry run black --exclude="rasa_sdk/grpc_py" --check rasa_sdk tests
 	make lint-docstrings
 
  # Compare against `main` if no branch was provided

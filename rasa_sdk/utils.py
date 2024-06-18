@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 class Element(dict):
     """Represents an element in a list of elements in a rich message."""
+
     __acceptable_keys = ["title", "item_url", "image_url", "subtitle", "buttons"]
 
     def __init__(self, *args, **kwargs):
@@ -46,6 +47,7 @@ class Element(dict):
 
 class Button(dict):
     """Represents a button in a rich message."""
+
     pass
 
 

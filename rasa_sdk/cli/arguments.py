@@ -82,7 +82,5 @@ def add_endpoint_arguments(parser: argparse.ArgumentParser) -> None:
         help="Configuration file for the assistant as a yml file.",
     )
     parser.add_argument(
-        "--grpc",
-        help="Starts grpc server instead of http",
-        action="store_true"
+        "--grpc", help="Starts grpc server instead of http", action="store_true"
     )
