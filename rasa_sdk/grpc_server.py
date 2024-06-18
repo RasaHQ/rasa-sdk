@@ -79,15 +79,18 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
     def __init__(
         self,
         executor: ActionExecutor,
+        auto_reload: bool = False,
         tracer_provider: Optional[TracerProvider] = None,
     ) -> None:
         """Initializes the ActionServerWebhook.
 
         Args:
             tracer_provider: The tracer provider.
+            auto_reload: Enable auto-reloading of modules containing Action subclasses.
             executor: The action executor.
         """
         self.tracer_provider = tracer_provider
+        self.auto_reload = auto_reload
         self.executor = executor
 
     async def Actions(self, request: ActionsRequest, context) -> ActionsResponse:
@@ -100,6 +103,9 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         Returns:
             gRPC response.
         """
+        if self.auto_reload:
+            self.executor.reload()
+
         actions = self.executor.list_actions()
         response = ActionsResponse()
         return ParseDict(actions, response)
@@ -123,6 +129,8 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         )
         with tracer.start_as_current_span(span_name, context=tracer_context):
             check_version_compatibility(request.version)
+            if self.auto_reload:
+                self.executor.reload()
             try:
                 action_call = MessageToDict(request, preserving_proto_field_name=True)
                 result = await self.executor.run(action_call)
@@ -195,6 +203,7 @@ async def run_grpc(
     ssl_certificate: Optional[str] = None,
     ssl_keyfile: Optional[str] = None,
     ssl_ca_file: Optional[str] = None,
+    auto_reload: bool = False,
     endpoints: str = DEFAULT_ENDPOINTS_PATH,
 ):
     """Start a gRPC server to handle incoming action requests.
@@ -205,6 +214,7 @@ async def run_grpc(
         ssl_certificate: File path to the SSL certificate.
         ssl_keyfile: File path to the SSL key file.
         ssl_ca_file: File path to the SSL CA certificate file.
+        auto_reload: Enable auto-reloading of modules containing Action subclasses.
         endpoints: Path to the endpoints file.
     """
     workers = number_of_sanic_workers()
@@ -215,7 +225,7 @@ async def run_grpc(
     # tracer_provider = get_tracer_provider(endpoints)
     tracer_provider = None
     action_webhook_pb2_grpc.add_ActionServiceServicer_to_server(
-        GRPCActionServerWebhook(executor, tracer_provider), server
+        GRPCActionServerWebhook(executor, auto_reload, tracer_provider), server
     )
 
     health_pb2_grpc.add_HealthServiceServicer_to_server(

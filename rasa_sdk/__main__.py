@@ -30,6 +30,7 @@ def main_from_args(args):
                 args.ssl_certificate,
                 args.ssl_keyfile,
                 args.ssl_ca_file,
+                args.auto_reload,
                 args.endpoints,
             )
         )
