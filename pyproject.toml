@@ -9,7 +9,7 @@ exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist ))"
 
 [tool.poetry]
 name = "rasa-sdk"
-version = "3.9.0.dev2"
+version = "3.9.0rc1"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
 authors = [ "Rasa Technologies GmbH <hi@rasa.com>",]
 maintainers = [ "Tom Bocklisch <tom@rasa.com>",]
@@ -73,7 +73,7 @@ exclude = "rasa_sdk/grpc_py"
 ignore = [ "D100", "D104", "D105", "RUF005",]
 line-length = 88
 select = [ "D", "E", "F", "W", "RUF",]
-exclude = [ "rasa_sdk/grpc_py" ]
+exclude = [ "rasa_sdk/grpc_py",]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
