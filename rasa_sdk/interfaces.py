@@ -23,7 +23,6 @@ class Tracker:
     @classmethod
     def from_dict(cls, state: "TrackerState") -> "Tracker":
         """Create a tracker from dump."""
-
         return Tracker(
             state["sender_id"],
             state.get("slots", {}),
@@ -46,10 +45,9 @@ class Tracker:
         followup_action: Optional[Text],
         active_loop: Dict[Text, Any],
         latest_action_name: Optional[Text],
-        stack: List[Dict[Text, Any]] = [],
+        stack: Optional[List[Dict[Text, Any]]] = None,
     ) -> None:
         """Initialize the tracker."""
-
         # list of previously seen events
         self.events = events
         # id of the source of the messages
@@ -68,10 +66,11 @@ class Tracker:
         self.latest_message = latest_message if latest_message else {}
         self.active_loop = active_loop
         self.latest_action_name = latest_action_name
-        self.stack = stack
+        self.stack = stack if stack else []
 
     @property
     def active_form(self) -> Dict[Text, Any]:
+        """Get the currently active form."""
         warnings.warn(
             "Use of `active_form` is deprecated. Please use `active_loop insteaad.",
             DeprecationWarning,
@@ -80,7 +79,6 @@ class Tracker:
 
     def current_state(self) -> Dict[Text, Any]:
         """Return the current tracker state as an object."""
-
         if len(self.events) > 0:
             latest_event_time = self.events[-1].get("timestamp")
         else:
@@ -100,12 +98,11 @@ class Tracker:
         }
 
     def current_slot_values(self) -> Dict[Text, Any]:
-        """Return the currently set values of the slots"""
+        """Return the currently set values of the slots."""
         return self.slots
 
     def get_slot(self, key) -> Optional[Any]:
         """Retrieves the value of a slot."""
-
         if key in self.slots:
             return self.slots[key]
         else:
@@ -133,7 +130,6 @@ class Tracker:
         Returns:
             List of entity values.
         """
-
         entities = self.latest_message.get("entities", [])
         return (
             x.get("value")
@@ -144,8 +140,7 @@ class Tracker:
         )
 
     def get_latest_input_channel(self) -> Optional[Text]:
-        """Get the name of the input_channel of the latest UserUttered event"""
-
+        """Get the name of the input_channel of the latest UserUttered event."""
         for e in reversed(self.events):
             if e.get("event") == "user":
                 return e.get("input_channel")
@@ -229,7 +224,8 @@ class Tracker:
 
         def undo_till_previous(event_type: Text, done_events: List[Dict[Text, Any]]):
             """Removes events from `done_events` until the first
-            occurrence `event_type` is found which is also removed."""
+            occurrence `event_type` is found which is also removed.
+            """
             # list gets modified - hence we need to copy events!
             for e in reversed(done_events[:]):
                 del done_events[-1]
@@ -262,7 +258,6 @@ class Tracker:
         Returns:
             A mapping of extracted slot candidates and their values.
         """
-
         slots: Dict[Text, Any] = {}
         count: int = 0
 
@@ -331,7 +326,6 @@ class Action:
 
     def name(self) -> Text:
         """Unique identifier of this simple action."""
-
         raise NotImplementedError("An action must implement a name")
 
     async def run(
@@ -356,7 +350,6 @@ class Action:
             A dictionary of `rasa_sdk.events.Event` instances that is
                 returned through the endpoint
         """
-
         raise NotImplementedError("An action must implement its run method")
 
     def __str__(self) -> Text:
@@ -365,7 +358,9 @@ class Action:
 
 class ActionExecutionRejection(Exception):
     """Raising this exception will allow other policies
-    to predict another action"""
+    to predict another action
+    .
+    """
 
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         self.action_name = action_name

@@ -1,8 +1,12 @@
 import logging
+import asyncio
 
 from rasa_sdk import utils
 from rasa_sdk.endpoint import create_argument_parser, run
 from rasa_sdk.constants import APPLICATION_ROOT_LOGGER_NAME
+from rasa_sdk.grpc_server import run_grpc
+
+logger = logging.getLogger(__name__)
 
 
 def main_from_args(args):
@@ -18,20 +22,33 @@ def main_from_args(args):
     )
     utils.update_sanic_log_level()
 
-    run(
-        args.actions,
-        args.port,
-        args.cors,
-        args.ssl_certificate,
-        args.ssl_keyfile,
-        args.ssl_password,
-        args.auto_reload,
-        args.endpoints,
-    )
+    if args.grpc:
+        asyncio.run(
+            run_grpc(
+                args.actions,
+                args.port,
+                args.ssl_certificate,
+                args.ssl_keyfile,
+                args.ssl_ca_file,
+                args.auto_reload,
+                args.endpoints,
+            )
+        )
+    else:
+        run(
+            args.actions,
+            args.port,
+            args.cors,
+            args.ssl_certificate,
+            args.ssl_keyfile,
+            args.ssl_password,
+            args.auto_reload,
+            args.endpoints,
+        )
 
 
 def main():
-    # Running as standalone python application
+    """Runs the action server as standalone application."""
     arg_parser = create_argument_parser()
     cmdline_args = arg_parser.parse_args()
 

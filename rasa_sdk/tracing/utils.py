@@ -5,7 +5,7 @@ from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapProp
 from opentelemetry.sdk.trace import TracerProvider
 from sanic.request import Request
 
-from typing import Optional, Tuple, Any, Text
+from typing import Optional, Tuple, Any, Text, Union
 
 
 def get_tracer_provider(endpoints_file: str) -> Optional[TracerProvider]:
@@ -17,10 +17,11 @@ def get_tracer_provider(endpoints_file: str) -> Optional[TracerProvider]:
 
 
 def get_tracer_and_context(
-    tracer_provider: Optional[TracerProvider], request: Request
+    tracer_provider: Optional[TracerProvider], request: Union[Request]
 ) -> Tuple[Any, Any, Text]:
     """Gets tracer and context."""
     span_name = "create_app.webhook"
+
     if tracer_provider is None:
         tracer = trace.get_tracer(span_name)
         context = None

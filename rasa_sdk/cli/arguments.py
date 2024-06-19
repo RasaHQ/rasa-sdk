@@ -3,17 +3,31 @@ import argparse
 from rasa_sdk.constants import DEFAULT_SERVER_PORT, DEFAULT_ENDPOINTS_PATH
 
 
-def action_arg(action):
-    if "/" in action:
+def action_arg(actions_module_path: str) -> str:
+    """Validate the action module path.
+
+    Valid action module path is python module, so it should not contain a slash.
+
+    Args:
+        actions_module_path: Path to the actions python module.
+
+    Returns:
+        actions_module_path: If provided module path is valid.
+
+    Raises:
+        argparse.ArgumentTypeError: If the module path is invalid.
+    """
+    if "/" in actions_module_path:
         raise argparse.ArgumentTypeError(
             "Invalid actions format. Actions file should be a python module "
             "and passed with module notation (e.g. directory.actions)."
         )
     else:
-        return action
+        return actions_module_path
 
 
-def add_endpoint_arguments(parser):
+def add_endpoint_arguments(parser: argparse.ArgumentParser) -> None:
+    """Add all the arguments to the argument parser."""
     parser.add_argument(
         "-p",
         "--port",
@@ -47,7 +61,15 @@ def add_endpoint_arguments(parser):
         "--ssl-password",
         default=None,
         help="If your ssl-keyfile is protected by a password, you can specify it "
-        "using this paramer.",
+        "using this parameter. "
+        "Not supported in grpc mode.",
+    )
+    parser.add_argument(
+        "--ssl-ca-file",
+        default=None,
+        help="If you want to authenticate the client using a certificate, you can "
+        "specify the CA certificate of the client using this parameter. "
+        "Supported only in grpc mode.",
     )
     parser.add_argument(
         "--auto-reload",
@@ -58,4 +80,7 @@ def add_endpoint_arguments(parser):
         "--endpoints",
         default=DEFAULT_ENDPOINTS_PATH,
         help="Configuration file for the assistant as a yml file.",
+    )
+    parser.add_argument(
+        "--grpc", help="Starts grpc server instead of http", action="store_true"
     )

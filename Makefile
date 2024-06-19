@@ -20,7 +20,6 @@ install:
 	poetry run python -m pip install -U pip
 	poetry install
 
-
 clean:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
@@ -37,7 +36,7 @@ formatter:
 
 lint:
 	poetry run ruff check rasa_sdk tests --ignore D
-	poetry run black --check rasa_sdk tests
+	poetry run black --exclude="rasa_sdk/grpc_py" --check rasa_sdk tests
 	make lint-docstrings
 
  # Compare against `main` if no branch was provided
@@ -62,3 +61,11 @@ cleanup-generated-changelog:
 release:
 	poetry run python scripts/release.py
 
+generate-grpc:
+	 python -m grpc_tools.protoc \
+	 	-Irasa_sdk/grpc_py=./proto \
+	 	--python_out=. \
+	 	--grpc_python_out=. \
+	 	--pyi_out=. \
+	 	proto/action_webhook.proto \
+	 	proto/health.proto
