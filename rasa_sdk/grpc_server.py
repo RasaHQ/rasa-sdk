@@ -11,6 +11,7 @@ from typing import Union, Optional
 from concurrent import futures
 from grpc import aio
 from google.protobuf.json_format import MessageToDict, ParseDict
+from opentelemetry import trace
 
 from rasa_sdk.constants import (
     DEFAULT_SERVER_PORT,
@@ -40,7 +41,7 @@ from rasa_sdk.interfaces import (
     ActionMissingDomainException,
 )
 from rasa_sdk.tracing.utils import (
-    get_tracer_and_context,
+    get_tracer_provider,
     TracerProvider,
 )
 from rasa_sdk.utils import (
@@ -124,10 +125,14 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         Returns:
             gRPC response.
         """
-        tracer, tracer_context, span_name = get_tracer_and_context(
-            self.tracer_provider, request
+        span_name = "GRPCActionServerWebhook.Webhook"
+        tracer = (
+            self.tracer_provider.get_tracer(span_name)
+            if self.tracer_provider
+            else trace.get_tracer(span_name)
         )
-        with tracer.start_as_current_span(span_name, context=tracer_context):
+
+        with tracer.start_as_current_span(span_name):
             check_version_compatibility(request.version)
             if self.auto_reload:
                 self.executor.reload()
@@ -218,12 +223,14 @@ async def run_grpc(
         endpoints: Path to the endpoints file.
     """
     workers = number_of_sanic_workers()
-    server = aio.server(futures.ThreadPoolExecutor(max_workers=workers))
+    server = aio.server(
+        futures.ThreadPoolExecutor(max_workers=workers),
+        compression=grpc.Compression.Gzip,
+    )
     initialise_interrupts(server)
     executor = ActionExecutor()
     executor.register_package(action_package_name)
-    # tracer_provider = get_tracer_provider(endpoints)
-    tracer_provider = None
+    tracer_provider = get_tracer_provider(endpoints)
     action_webhook_pb2_grpc.add_ActionServiceServicer_to_server(
         GRPCActionServerWebhook(executor, auto_reload, tracer_provider), server
     )

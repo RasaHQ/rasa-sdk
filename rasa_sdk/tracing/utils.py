@@ -1,4 +1,3 @@
-from rasa_sdk.grpc_py.action_webhook_pb2 import WebhookRequest
 from rasa_sdk.tracing import config
 from opentelemetry import trace
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
@@ -18,12 +17,12 @@ def get_tracer_provider(endpoints_file: str) -> Optional[TracerProvider]:
 
 
 def get_tracer_and_context(
-    tracer_provider: Optional[TracerProvider], request: Union[Request, WebhookRequest]
+    tracer_provider: Optional[TracerProvider], request: Union[Request]
 ) -> Tuple[Any, Any, Text]:
     """Gets tracer and context."""
     span_name = "create_app.webhook"
 
-    if tracer_provider is None or isinstance(request, WebhookRequest):
+    if tracer_provider is None:
         tracer = trace.get_tracer(span_name)
         context = None
     else:
