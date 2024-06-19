@@ -4,6 +4,7 @@ from sanic import Sanic
 
 import pytest
 
+import rasa_sdk
 from rasa_sdk import Action, FormValidationAction, Tracker, ValidationAction
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
@@ -13,6 +14,7 @@ Sanic.test_mode = True
 
 
 def get_stack():
+    """Return a dialogue stack."""
     dialogue_stack = [
         {
             "frame_id": "CP6JP9GQ",
@@ -147,3 +149,15 @@ class SubclassTestActionA(Action):
 class SubclassTestActionB(SubclassTestActionA):
     def name(self):
         return "subclass_test_action_b"
+
+
+@pytest.fixture
+def current_rasa_version() -> str:
+    """Return current Rasa version."""
+    return rasa_sdk.__version__
+
+
+@pytest.fixture
+def previous_rasa_version() -> str:
+    """Return previous Rasa version."""
+    return "1.0.0"

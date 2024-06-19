@@ -12,16 +12,9 @@ class ActionsRequest(_message.Message):
 
 class ActionsResponse(_message.Message):
     __slots__ = ["actions"]
-    class ActionsEntry(_message.Message):
-        __slots__ = ["key", "value"]
-        KEY_FIELD_NUMBER: _ClassVar[int]
-        VALUE_FIELD_NUMBER: _ClassVar[int]
-        key: str
-        value: str
-        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ACTIONS_FIELD_NUMBER: _ClassVar[int]
-    actions: _containers.ScalarMap[str, str]
-    def __init__(self, actions: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    actions: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
+    def __init__(self, actions: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ...) -> None: ...
 
 class Tracker(_message.Message):
     __slots__ = ["sender_id", "slots", "latest_message", "events", "paused", "followup_action", "active_loop", "latest_action_name", "stack"]

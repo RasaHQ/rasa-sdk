@@ -94,7 +94,11 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         self.auto_reload = auto_reload
         self.executor = executor
 
-    async def Actions(self, request: ActionsRequest, context) -> ActionsResponse:
+    async def Actions(
+        self,
+        request: ActionsRequest,
+        context: grpc.aio.ServicerContext,
+    ) -> ActionsResponse:
         """Handle RPC request for the actions.
 
         Args:
@@ -107,9 +111,14 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         if self.auto_reload:
             self.executor.reload()
 
-        actions = self.executor.list_actions()
+        actions = [action.model_dump() for action in self.executor.list_actions()]
         response = ActionsResponse()
-        return ParseDict(actions, response)
+        return ParseDict(
+            {
+                "actions": actions,
+            },
+            response,
+        )
 
     async def Webhook(
         self,
