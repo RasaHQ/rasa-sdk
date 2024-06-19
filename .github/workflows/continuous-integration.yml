@@ -59,6 +59,9 @@ jobs:
       - name: Install Dependencies 📦
         run: make install
 
+      - name: Listing Dependencies 📦
+        run: poetry show
+
       - name: Lint Code 🎎
         run: |
           # If it's not a pull request, $DOCSTRING_DIFF_BRANCH is unset.

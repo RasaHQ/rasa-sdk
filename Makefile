@@ -20,6 +20,10 @@ install:
 	poetry run python -m pip install -U pip
 	poetry install
 
+install-dev:
+	poetry run python -m pip install -U pip
+	poetry install --with dev
+
 clean:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
@@ -38,6 +42,7 @@ lint:
 	poetry run ruff check rasa_sdk tests --ignore D
 	poetry run black --exclude="rasa_sdk/grpc_py" --check rasa_sdk tests
 	make lint-docstrings
+	make check-generate-grpc-code-in-sync
 
  # Compare against `main` if no branch was provided
 BRANCH ?= main
@@ -62,10 +67,15 @@ release:
 	poetry run python scripts/release.py
 
 generate-grpc:
-	 python -m grpc_tools.protoc \
+	 poetry run python -m grpc_tools.protoc \
 	 	-Irasa_sdk/grpc_py=./proto \
 	 	--python_out=. \
 	 	--grpc_python_out=. \
 	 	--pyi_out=. \
 	 	proto/action_webhook.proto \
 	 	proto/health.proto
+
+check-generate-grpc-code-in-sync: generate-grpc
+	# this is a helper to check if the generated code is in sync with the proto files
+	# it's not run on CI at the moment
+	git diff --exit-code rasa_sdk/grpc_py | if [ "$$(wc -c)" -eq 0 ]; then echo "Generated code is in sync with proto files"; else echo "Generated code is not in sync with proto files"; exit 1; fi
