@@ -11,7 +11,7 @@ service ActionService {
 message ActionsRequest {}
 
 message ActionsResponse {
-    map<string, string> actions = 1;
+    repeated google.protobuf.Struct actions = 1;
 }
 
 message Tracker {
