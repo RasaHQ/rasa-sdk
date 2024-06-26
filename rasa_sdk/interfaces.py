@@ -386,7 +386,9 @@ class ActionMissingDomainException(Exception):
 
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         self.action_name = action_name
-        self.message = message or "Domain context is missing."
+        self.message = (
+            message or "Missing domain context, assistant will retry the request."
+        )
 
     def __str__(self) -> Text:
         return self.message

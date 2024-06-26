@@ -158,7 +158,7 @@ def create_app(
                 body = {"error": e.message, "action_name": e.action_name}
                 return response.json(body, status=404)
             except ActionMissingDomainException as e:
-                logger.error(e)
+                logger.debug(e)
                 body = {"error": e.message, "action_name": e.action_name}
                 return response.json(body, status=449)
 
