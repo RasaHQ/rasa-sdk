@@ -387,7 +387,10 @@ class ActionMissingDomainException(Exception):
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         self.action_name = action_name
         self.message = (
-            message or "Missing domain context, assistant will retry the request."
+            message
+            or "Missing domain context, assistant will retry the request and include "
+            "the domain in the request payload. For more information please see "
+            "https://rasa.com/docs/rasa-pro/action-server/"
         )
 
     def __str__(self) -> Text:
