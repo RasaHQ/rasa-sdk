@@ -6,9 +6,12 @@ import warnings
 import zlib
 import json
 from functools import partial
-from typing import List, Text, Union, Optional
+from typing import List, Text, Union, Optional, Any
 from ssl import SSLContext
+
+from multidict import MultiDict
 from sanic import Sanic, response
+from sanic.compat import Header
 from sanic.response import HTTPResponse
 from sanic.worker.loader import AppLoader
 
@@ -127,8 +130,21 @@ def create_app(
     @app.post("/webhook")
     async def webhook(request: Request) -> HTTPResponse:
         """Webhook to retrieve action calls."""
-        tracer, context, span_name = get_tracer_and_context(
-            request.app.ctx.tracer_provider, request
+        span_name = "create_app.webhook"
+
+        def header_to_multi_dict(headers: Header) -> MultiDict:
+            return MultiDict(
+                [
+                    (key, value)
+                    for key, value in headers.items()
+                    if key.lower() not in ("content-length", "content-encoding")
+                ]
+            )
+
+        tracer, context = get_tracer_and_context(
+            span_name=span_name,
+            tracer_provider=request.app.ctx.tracer_provider,
+            tracing_carrier=header_to_multi_dict(request.headers),
         )
 
         with tracer.start_as_current_span(span_name, context=context) as span:
@@ -162,7 +178,12 @@ def create_app(
                 body = {"error": e.message, "action_name": e.action_name}
                 return response.json(body, status=449)
 
-            set_span_attributes(span, action_call)
+            set_http_span_attributes(
+                span,
+                action_call,
+                http_method="POST",
+                route="/webhook",
+            )
 
             return response.json(result, status=200)
 
@@ -236,6 +257,19 @@ def run(
         workers=utils.number_of_sanic_workers(),
         legacy=True,
     )
+
+
+def set_http_span_attributes(
+    span: Any,
+    action_call: dict,
+    http_method: str,
+    route: str,
+) -> None:
+    """Sets http span attributes."""
+    set_span_attributes(span, action_call)
+    if span.is_recording():
+        span.set_attribute("http.method", http_method)
+        span.set_attribute("http.route", route)
 
 
 if __name__ == "__main__":

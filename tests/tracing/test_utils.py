@@ -44,7 +44,8 @@ def test_get_tracer_provider_returns_none_if_tracing_is_not_configured() -> None
 
 def test_get_tracer_provider_returns_provider() -> None:
     """Tests that get_tracer_provider returns a TracerProvider
-    if tracing is configured."""
+    if tracing is configured.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--endpoints", type=str, default=None)
 
@@ -58,7 +59,7 @@ def test_get_tracer_provider_returns_provider() -> None:
 
 
 def test_get_tracer_and_context() -> None:
-    """Tests that get_tracer_and_context returns a ProxyTracer and span name"""
+    """Tests that get_tracer_and_context returns a ProxyTracer and span name."""
     data = {
         "next_action": "custom_action",
         "version": "1.0.0",
@@ -70,8 +71,11 @@ def test_get_tracer_and_context() -> None:
     }
     app = ep.create_app(None)
     request, _ = app.test_client.post("/webhook", data=json.dumps(data))
-    tracer, context, span_name = get_tracer_and_context(None, request)
+    tracer, context = get_tracer_and_context(
+        span_name="create_app.webhook",
+        tracer_provider=None,
+        tracing_carrier=request.headers,
+    )
 
     assert isinstance(tracer, ProxyTracer)
-    assert span_name == "create_app.webhook"
     assert context is None
