@@ -7,11 +7,12 @@ import asyncio
 import grpc
 import logging
 import types
-from typing import Union, Optional
+from typing import Union, Optional, Any, Dict
 from concurrent import futures
 from grpc import aio
 from google.protobuf.json_format import MessageToDict, ParseDict
-from opentelemetry import trace
+from grpc.aio import Metadata
+from multidict import MultiDict
 
 from rasa_sdk.constants import (
     DEFAULT_SERVER_PORT,
@@ -43,6 +44,8 @@ from rasa_sdk.interfaces import (
 from rasa_sdk.tracing.utils import (
     get_tracer_provider,
     TracerProvider,
+    get_tracer_and_context,
+    set_span_attributes,
 )
 from rasa_sdk.utils import (
     check_version_compatibility,
@@ -135,13 +138,23 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
             gRPC response.
         """
         span_name = "GRPCActionServerWebhook.Webhook"
-        tracer = (
-            self.tracer_provider.get_tracer(span_name)
-            if self.tracer_provider
-            else trace.get_tracer(span_name)
+        invocation_metadata = context.invocation_metadata()
+
+        def convert_metadata_to_multidict(
+            metadata: Optional[Metadata],
+        ) -> Optional[MultiDict]:
+            """Convert list of tuples to multidict."""
+            if not metadata:
+                return None
+            return MultiDict(metadata)
+
+        tracer, tracing_context = get_tracer_and_context(
+            span_name=span_name,
+            tracer_provider=self.tracer_provider,
+            tracing_carrier=convert_metadata_to_multidict(invocation_metadata),
         )
 
-        with tracer.start_as_current_span(span_name):
+        with tracer.start_as_current_span(span_name, context=tracing_context) as span:
             check_version_compatibility(request.version)
             if self.auto_reload:
                 self.executor.reload()
@@ -179,10 +192,19 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                 return action_webhook_pb2.WebhookResponse()
             if not result:
                 return action_webhook_pb2.WebhookResponse()
-            # set_span_attributes(span, request)
-            response = action_webhook_pb2.WebhookResponse()
 
+            set_grpc_span_attributes(span, action_call, method_name="Webhook")
+            response = action_webhook_pb2.WebhookResponse()
             return ParseDict(result, response)
+
+
+def set_grpc_span_attributes(
+    span: Any, action_call: Dict[str, Any], method_name: str
+) -> None:
+    """Sets grpc span attributes."""
+    set_span_attributes(span, action_call)
+    if span.is_recording():
+        span.set_attribute("grpc.method", method_name)
 
 
 def get_signal_name(signal_number: int) -> str:
