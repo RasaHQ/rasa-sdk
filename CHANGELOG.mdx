@@ -17,6 +17,24 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 <!-- TOWNCRIER -->
 
+## [3.9.0] - 2024-07-03
+                       
+Rasa_Sdk 3.9.0 (2024-07-03)                            
+### Features
+- [#1109](https://github.com/rasahq/rasa-sdk/issues/1109): Rasa SDK now supports gRPC protocol. 
+  This allows users to use gRPC to invoke custom actions.
+  Users can use secure (TLS) and insecure connections to communicate over gRPC.
+  To start action server with gRPC use `--grpc` flag.
+  For SSL support, users can provide `--ssl-keyfile`,  `--ssl-certificate` and `--ssl-ca-file`.
+  Support for `--ssl-password` is not available yet due to a limitation in the gRPC Python library.
+
+### Bugfixes
+- [#1117](https://github.com/rasahq/rasa-sdk/issues/1117): Tracing is supported for actions called over gRPC protocol.
+
+### Miscellaneous internal changes
+- [#1113](https://github.com/rasahq/rasa-sdk/issues/1113), [#1120](https://github.com/rasahq/rasa-sdk/issues/1120)
+
+
 ## [3.9.0.dev2] - 2024-06-04
                             
 Rasa_Sdk 3.9.0.dev2 (2024-06-04)                                 
