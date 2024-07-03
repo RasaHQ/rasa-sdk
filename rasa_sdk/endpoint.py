@@ -114,6 +114,9 @@ def create_app(
     """
     app = Sanic("rasa_sdk", configure_logging=False)
 
+    # Reset Sanic warnings filter that allows the triggering of Sanic warnings
+    warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"sanic.*")
+
     configure_cors(app, cors_origins)
 
     executor = ActionExecutor()
