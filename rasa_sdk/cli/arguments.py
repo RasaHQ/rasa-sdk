@@ -48,6 +48,12 @@ def add_endpoint_arguments(parser: argparse.ArgumentParser) -> None:
         help="name of action package to be loaded",
     )
     parser.add_argument(
+        "--actions-module",
+        type=action_arg,
+        default=None,
+        help="name of action package to be loaded",
+    )
+    parser.add_argument(
         "--ssl-keyfile",
         default=None,
         help="Set the SSL certificate to create a TLS secured server.",

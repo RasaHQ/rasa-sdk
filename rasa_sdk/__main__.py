@@ -25,7 +25,7 @@ def main_from_args(args):
     if args.grpc:
         asyncio.run(
             run_grpc(
-                args.actions,
+                args.actions_module or args.actions,
                 args.port,
                 args.ssl_certificate,
                 args.ssl_keyfile,
@@ -36,7 +36,7 @@ def main_from_args(args):
         )
     else:
         run(
-            args.actions,
+            args.actions_module or args.actions,
             args.port,
             args.cors,
             args.ssl_certificate,
