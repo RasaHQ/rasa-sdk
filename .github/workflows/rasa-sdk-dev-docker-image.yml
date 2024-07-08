@@ -52,7 +52,7 @@ jobs:
 
       - name: Build docker image
         run: |
-          docker buildx bake --load
+          docker buildx bake --set *.platform=linux/amd64,linux/arm64 --load
 
       - name: Tag and push docker image to AWS
         run: |

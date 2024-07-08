@@ -240,21 +240,17 @@ jobs:
         run: |
           echo "IMAGE_TAG=${{ needs.build_docker_image_set_env.outputs.image_tag }}" >> $GITHUB_ENV
 
-      - name: Build Docker image
-        run: |
-          docker buildx bake --load
-
       - name: Login to Docker Hub Registry 🔢
         if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true' && github.repository == 'RasaHQ/rasa-sdk'
         run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin || true
 
-      - name: Push Docker image 📦
+      - name: Build and Push Docker image 📦
         if: github.event_name == 'push' && env.IS_TAG_BUILD == 'true' && github.repository == 'RasaHQ/rasa-sdk'
         run: |
           IS_NEWEST_VERSION=${{ needs.build_docker_image_set_env.outputs.is_newest_version }}
 
           # Push image
-          docker push rasa/rasa-sdk:${IMAGE_TAG}
+          IMAGE_TAG=${IMAGE_TAG} docker buildx bake --set *.platform=linux/amd64,linux/arm64 -f docker-bake.hcl default --push
 
           # Tag the image as latest
           if [[ "${IS_NEWEST_VERSION}" == "true" ]]; then
