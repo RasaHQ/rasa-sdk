@@ -50,11 +50,6 @@ jobs:
         with:
           version: v0.5.1
 
-      - name: Build docker image
+      - name: Build and push docker image to AWS
         run: |
-          docker buildx bake --set *.platform=linux/amd64,linux/arm64 --load
-
-      - name: Tag and push docker image to AWS
-        run: |
-          docker tag rasa/rasa-sdk:main $REPOSITORY:latest
-          docker push $REPOSITORY:latest
+          docker buildx bake --set *.platform=linux/amd64,linux/arm64 --set tags=$REPOSITORY:latest --push
