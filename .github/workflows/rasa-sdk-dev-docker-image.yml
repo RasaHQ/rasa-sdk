@@ -5,6 +5,7 @@ on:
     # Run cron job at 8AM Monday to Sunday.
     - cron: '0 8 * * *'
   workflow_dispatch:
+  pull_request:
 
 env:
   AWS_REGION: us-east-1
@@ -48,13 +49,7 @@ jobs:
         uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c
         with:
           version: v0.5.1
-          driver: docker
 
-      - name: Build docker image
+      - name: Build and push docker image to AWS
         run: |
-          docker buildx bake --load
-
-      - name: Tag and push docker image to AWS
-        run: |
-          docker tag rasa/rasa-sdk:main $REPOSITORY:latest
-          docker push $REPOSITORY:latest
+          docker buildx bake --set *.platform=linux/amd64,linux/arm64 --set default.tags=$REPOSITORY:latest --push
