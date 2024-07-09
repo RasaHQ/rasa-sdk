@@ -52,4 +52,4 @@ jobs:
 
       - name: Build and push docker image to AWS
         run: |
-          docker buildx bake --set *.platform=linux/amd64,linux/arm64 --set tags=$REPOSITORY:latest --push
+          docker buildx bake --set *.platform=linux/amd64,linux/arm64 --set target.default.tags=$REPOSITORY:latest --push
