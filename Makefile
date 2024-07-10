@@ -41,9 +41,11 @@ lint-docstrings: ## check docstrings
 IMAGE_NAME ?= rasa/rasa-sdk
 IMAGE_TAG ?= latest
 PLATFORM ?= linux/arm64
+POETRY_VERSION ?= $(shell ./scripts/poetry-version.sh)
 
 build-docker:  ## build docker image for one platform
 	docker build . \
+			--build-arg POETRY_VERSION=$(POETRY_VERSION) \
             --platform=$(PLATFORM) \
             -f Dockerfile \
             -t $(IMAGE_NAME):$(IMAGE_TAG)
@@ -53,7 +55,8 @@ build-docker:  ## build docker image for one platform
 build-and-push-multi-platform-docker: PLATFORM = linux/amd64,linux/arm64
 build-and-push-multi-platform-docker:  ## build and push multi-platform docker image
 	docker buildx build . \
-            --platform=$(PLATFORM) \
+            --build-arg POETRY_VERSION=$(POETRY_VERSION) \
+			--platform=$(PLATFORM) \
 			-f Dockerfile \
 			-t $(IMAGE_NAME):$(IMAGE_TAG) \
 			--push
