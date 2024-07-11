@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as base
+FROM ubuntu:22.04 AS base
 
 # hadolint ignore=DL3005,DL3008
 RUN apt-get update -qq \
@@ -16,7 +16,9 @@ RUN apt-get update -qq \
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 100
 
-FROM base as python_builder
+FROM base AS python_builder
+
+ARG POETRY_VERSION=1.8.2
 
 # hadolint ignore=DL3008
 RUN apt-get update -qq \
@@ -26,10 +28,10 @@ RUN apt-get update -qq \
 
 # install poetry
 # keep this in sync with the version in pyproject.toml and Dockerfile
-ENV POETRY_VERSION 1.8.2
+ENV POETRY_VERSION=$POETRY_VERSION
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sSL https://install.python-poetry.org | python
-ENV PATH "/root/.local/bin:/opt/venv/bin:${PATH}"
+ENV PATH="/root/.local/bin:/opt/venv/bin:${PATH}"
 
 # install dependencies
 COPY . /app/
