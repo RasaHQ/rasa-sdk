@@ -4,9 +4,7 @@ from typing_extensions import TypedDict
 
 
 class TrackerState(TypedDict):
-    """
-    A dictionary representation of the state of a conversation.
-    """
+    """A dictionary representation of the state of a conversation."""
 
     # id of the source of the messages
     sender_id: Text
@@ -31,9 +29,7 @@ class TrackerState(TypedDict):
 
 
 class DomainDict(TypedDict):
-    """
-    A dictionary representation of the domain.
-    """
+    """A dictionary representation of the domain."""
 
     intents: List[Dict[Text, Any]]
     entities: List[Text]
@@ -44,9 +40,7 @@ class DomainDict(TypedDict):
 
 
 class ActionCall(TypedDict):
-    """
-    A dictionary representation of an action to be executed.
-    """
+    """A dictionary representation of an action to be executed."""
 
     # the name of the next action to be executed
     next_action: Optional[Text]

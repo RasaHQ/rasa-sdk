@@ -32,12 +32,12 @@ clean:
 types:
 	poetry run mypy rasa_sdk
 
-formatter:
-	poetry run black rasa_sdk tests
+formatter: ## format code
+	poetry run ruff format rasa_sdk tests
 
 lint:
 	poetry run ruff check rasa_sdk tests --ignore D
-	poetry run black --check rasa_sdk tests
+	poetry run ruff format --check rasa_sdk tests
 	make lint-docstrings
 
  # Compare against `main` if no branch was provided

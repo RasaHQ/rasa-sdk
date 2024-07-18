@@ -25,8 +25,8 @@ if typing.TYPE_CHECKING:  # pragma: no cover
 
 
 class ActionQueryKnowledgeBase(Action):
-    """
-    Action that queries the knowledge base for objects and attributes of an object.
+    """Action that queries the knowledge base for objects and attributes of an object.
+
     The action needs to be inherited and the knowledge base needs to be set.
     In order to actually query the knowledge base you need to:
     - create your knowledge base
@@ -39,10 +39,12 @@ class ActionQueryKnowledgeBase(Action):
     def __init__(
         self, knowledge_base: KnowledgeBase, use_last_object_mention: bool = True
     ) -> None:
+        """Creates an action that queries the knowledge base."""
         self.knowledge_base = knowledge_base
         self.use_last_object_mention = use_last_object_mention
 
     def name(self) -> Text:
+        """Returns the unique identifier of this action."""
         return "action_query_knowledge_base"
 
     def utter_attribute_value(
@@ -52,12 +54,10 @@ class ActionQueryKnowledgeBase(Action):
         attribute_name: Text,
         attribute_value: Text,
     ):
-        """
-        Utters a response that informs the user about the attribute value of the
-        attribute of interest.
+        """Utters a response that informs the user about the value of an attribute.
 
         Args:
-            dispatcher: the dispatcher
+            dispatcher: the collecting dispatcher
             object_name: the name of the object
             attribute_name: the name of the attribute
             attribute_value: the value of the attribute
@@ -83,8 +83,7 @@ class ActionQueryKnowledgeBase(Action):
         object_type: Text,
         objects: List[Dict[Text, Any]],
     ):
-        """
-        Utters a response to the user that lists all found objects.
+        """Utters a response to the user that lists all found objects.
 
         Args:
             dispatcher: the dispatcher
@@ -113,11 +112,13 @@ class ActionQueryKnowledgeBase(Action):
         tracker: Tracker,
         domain: "DomainDict",
     ) -> List[Dict[Text, Any]]:
-        """
-        Executes this action. If the user ask a question about an attribute,
-        the knowledge base is queried for that attribute. Otherwise, if no
-        attribute was detected in the latest request it assumes user is talking
-        about a new object type and, multiple objects of the requested type are
+        """Executes the action.
+
+        If the user ask a question about an attribute,
+        the knowledge base is queried for that attribute.
+        Otherwise, if no attribute was detected in the latest
+        request it assumes user is talking about a new object type and,
+        multiple objects of the requested type are
         returned from the knowledge base.
 
         Args:
@@ -126,7 +127,6 @@ class ActionQueryKnowledgeBase(Action):
             domain: the domain
 
         Returns: list of slots
-
         """
         object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
         last_object_type = tracker.get_slot(SLOT_LAST_OBJECT_TYPE)
@@ -168,13 +168,15 @@ class ActionQueryKnowledgeBase(Action):
     async def _query_objects(
         self, dispatcher: CollectingDispatcher, object_type: Text, tracker: Tracker
     ) -> List[Dict]:
-        """
+        """Queries the knowledge base for objects of the requested object type.
+
         Queries the knowledge base for objects of the requested object type and
         outputs those to the user. The objects are filtered by any attribute the
         user mentioned in the request.
 
         Args:
             dispatcher: the dispatcher
+            object_type: the object types
             tracker: the tracker
 
         Returns: list of slots
@@ -227,12 +229,15 @@ class ActionQueryKnowledgeBase(Action):
         attribute: Text,
         tracker: Tracker,
     ) -> List[Dict]:
-        """
+        """Query the knowledge base using value of the attribute of the object.
+
         Queries the knowledge base for the value of the requested attribute of the
         mentioned object and outputs it to the user.
 
         Args:
             dispatcher: the dispatcher
+            object_type: the object type
+            attribute: the requested attribute
             tracker: the tracker
 
         Returns: list of slots

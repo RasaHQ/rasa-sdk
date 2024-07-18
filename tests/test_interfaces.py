@@ -74,7 +74,6 @@ def test_tracker_with_slots():
 def test_stack_in_tracker_state(
     stack_state: Dict[Text, Any], dialogue_stack: List[Dict[Text, Any]]
 ):
-
     state = {"events": [], "sender_id": "old", "active_loop": {}, **stack_state}
     tracker = Tracker.from_dict(state)
 

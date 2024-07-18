@@ -42,8 +42,7 @@ def test_get_tracer_provider_returns_none_if_tracing_is_not_configured() -> None
 
 
 def test_get_tracer_provider_returns_provider() -> None:
-    """Tests that get_tracer_provider returns a TracerProvider
-    if tracing is configured."""
+    """Tests that get_tracer_provider returns a TracerProvider if tracing is configured."""  # noqa: E501
     parser = argparse.ArgumentParser()
     parser.add_argument("--endpoints", type=str, default=None)
 

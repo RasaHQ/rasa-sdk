@@ -10,13 +10,15 @@ class ActionExecutorTracerRegister(metaclass=Singleton):
 
     def register_tracer(self, tracer: Tracer) -> None:
         """Register an ActionExecutor tracer.
+
         Args:
-            trace: The tracer to register.
+            tracer: The tracer to register.
         """
         self.tracer = tracer
 
     def get_tracer(self) -> Optional[Tracer]:
         """Get the ActionExecutor tracer.
+
         Returns:
             The tracer.
         """

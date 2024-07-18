@@ -12,9 +12,15 @@ DEFAULT_ENCODING = "utf-8"
 def read_endpoint_config(
     filename: Text, endpoint_type: Text
 ) -> Optional["EndpointConfig"]:
-    """Read an endpoint configuration file from disk and extract one
+    """Read an endpoint configuration file from disk and extract one config.
 
-    config."""
+    Args:
+        filename: the endpoint config file to read
+        endpoint_type: the type of the endpoint
+
+    Returns:
+        The endpoint configuration of the passed type if it exists, `None` otherwise.
+    """
     if not filename:
         return None
 
@@ -28,8 +34,9 @@ def read_endpoint_config(
         return EndpointConfig.from_dict(content[endpoint_type])
     except FileNotFoundError:
         logger.error(
-            "Failed to read endpoint configuration "
-            "from {}. No such file.".format(os.path.abspath(filename))
+            "Failed to read endpoint configuration " "from {}. No such file.".format(
+                os.path.abspath(filename)
+            )
         )
         return None
 

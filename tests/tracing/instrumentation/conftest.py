@@ -31,6 +31,8 @@ def previous_num_captured_spans(span_exporter: InMemorySpanExporter) -> int:
 
 class MockActionExecutor(ActionExecutor):
     def __init__(self) -> None:
+        """Initializes the mock action executor."""
+        super().__init__()
         self.fail_if_undefined("run")
 
     def fail_if_undefined(self, method_name: Text) -> None:
