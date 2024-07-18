@@ -115,8 +115,9 @@ class Tracker:
         entity_role: Optional[Text] = None,
         entity_group: Optional[Text] = None,
     ) -> Iterator[Text]:
-        """Get entity values found for the passed entity type and optional role and
-        group in latest message.
+        """Get entity values found for the passed entity type.
+
+        Optionally role and group of the entities in the last message can be specified.
 
         If you are only interested in the first entity of a given type use
         `next(tracker.get_latest_entity_values("my_entity_name"), None)`.
@@ -222,9 +223,17 @@ class Tracker:
     def applied_events(self) -> List[Dict[Text, Any]]:
         """Returns all actions that should be applied - w/o reverted events."""
 
-        def undo_till_previous(event_type: Text, done_events: List[Dict[Text, Any]]):
-            """Removes events from `done_events` until the first
-            occurrence `event_type` is found which is also removed.
+        def undo_till_previous(
+            event_type: Text, done_events: List[Dict[Text, Any]]
+        ) -> None:
+            """Removes events from `done_events` until `event_type` is found.
+
+            Removes all events until first occurrence of an `event_type` is found
+            including the `event_type`.
+
+            Args:
+                event_type: The type of event to remove.
+                done_events: The list of events to remove the event from.
             """
             # list gets modified - hence we need to copy events!
             for e in reversed(done_events[:]):
@@ -357,27 +366,33 @@ class Action:
 
 
 class ActionExecutionRejection(Exception):
-    """Raising this exception will allow other policies
-    to predict another action
-    .
-    """
+    """Raising this exception will allow other policies to predict another action."""
 
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
+        """Create a rejection exception.
+
+        Args:
+            action_name: Name of the action that should be rejected.
+            message: Optional message to provide more information
+        """
         self.action_name = action_name
         self.message = message or f"Custom action '{action_name}' rejected execution."
 
     def __str__(self) -> Text:
+        """Return the string representation of the exception."""
         return self.message
 
 
 class ActionNotFoundException(Exception):
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
+        """Create an exception for when an action is not found."""
         self.action_name = action_name
         self.message = (
             message or f"No registered action found for name '{action_name}'."
         )
 
     def __str__(self) -> Text:
+        """Return the string representation of the exception."""
         return self.message
 
 
@@ -385,6 +400,7 @@ class ActionMissingDomainException(Exception):
     """Raising this exception when the domain is missing."""
 
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
+        """Create an exception for when the domain is missing."""
         self.action_name = action_name
         self.message = (
             message
@@ -394,4 +410,5 @@ class ActionMissingDomainException(Exception):
         )
 
     def __str__(self) -> Text:
+        """Return the string representation of the exception."""
         return self.message

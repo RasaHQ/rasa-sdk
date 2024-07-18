@@ -108,7 +108,7 @@ make install
 
 ## Code Style
 
-To ensure a standardized code style we use the formatter [black](https://github.com/ambv/black).
+To ensure a standardized code style we use the formatter [ruff](https://github.com/astral-sh/ruff).
 If your code is not formatted properly, GitHub CI will fail to build.
 
 If you want to automatically format your code on every commit, you can use [pre-commit](https://pre-commit.com/).

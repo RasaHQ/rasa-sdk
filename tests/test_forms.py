@@ -32,6 +32,11 @@ DEFAULT_DOMAIN = {
 
 class TestFormValidationAction(FormValidationAction):
     def __init__(self, form_name: Text = "some_form") -> None:
+        """Initializes test form validation action.
+
+        Args:
+            form_name: name of the form
+        """
         self.name_of_form = form_name
 
     def name(self) -> Text:
