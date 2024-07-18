@@ -25,11 +25,11 @@ types: ## check types
 	poetry run mypy rasa_sdk
 
 formatter: ## format code
-	poetry run black rasa_sdk tests
+	poetry run ruff format rasa_sdk tests
 
 lint: ## check style with ruff and black
 	poetry run ruff check rasa_sdk tests --ignore D
-	poetry run black --exclude="rasa_sdk/grpc_py" --check rasa_sdk tests
+	poetry run ruff format --check rasa_sdk tests
 	make lint-docstrings
 	make check-generate-grpc-code-in-sync
 
