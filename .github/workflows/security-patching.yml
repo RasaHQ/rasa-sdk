@@ -31,13 +31,29 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Checkout action repository to get records
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        with:
+          repository: RasaHQ/get-release-records-from-datocms-gha
+          ref: main
+          token: ${{ secrets.CLONE_CMS_CHECKER }}
+          path: .github/get-release-records-from-datocms-gha
+
+      - name: Run action to get records
+        uses: ./.github/get-release-records-from-datocms-gha
+        id: get_branches
+        with:
+          dato-cms-api-key: ${{ secrets.DATO_CMS_API_KEY }}
+          product-name: Rasa Pro
+          status: active
+
       - name: Fetch all tags
         run: git fetch --tags
 
       - name: Run Python script
         id: tags
         run: |
-          python scripts/get_tags_from_branch.py '["3.3.x","3.4.x","3.5.x","3.6.x","3.7.x","3.8.x"]' '3.3.x'
+          python scripts/get_tags_from_branch.py '${{ steps.get_branches.outputs.records }}' '3.7.x'
 
       - name: Show tags
         run: |
@@ -84,13 +100,10 @@ jobs:
         run: |
           docker build . -t ${{env.RELEASE_REGISTRY_SDK}}/rasa-sdk:${{ matrix.supported_versions }}-latest --build-arg VERSION_NUMBER=${{ matrix.supported_versions }} -f Dockerfile.patch
 
-      - name: Fail pushing the patch if the build is not a success
-        if: steps.build.outcome == 'failure'
-        run: exit 1
-
       # Push patched images to the release registry with patched tag.
       - name: Push image to release registry
         id: push
+        continue-on-error: true
         run: |
           docker push ${{env.RELEASE_REGISTRY_SDK}}/rasa-sdk:${{ matrix.supported_versions }}-latest
  
