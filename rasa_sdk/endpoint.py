@@ -143,7 +143,7 @@ def create_app(
                     if key.lower() not in ("content-length", "content-encoding")
                 ]
             )
-
+        logger.info(f"Request headers: {request.headers}")
         tracer, context = get_tracer_and_context(
             span_name=span_name,
             tracer_provider=request.app.ctx.tracer_provider,
