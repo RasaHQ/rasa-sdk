@@ -10,6 +10,9 @@ import types
 from typing import Union, Optional, Any, Dict
 from concurrent import futures
 from grpc import aio
+from grpc_health.v1 import health
+from grpc_health.v1 import health_pb2
+from grpc_health.v1 import health_pb2_grpc
 from google.protobuf.json_format import MessageToDict, ParseDict
 from grpc.aio import Metadata
 from multidict import MultiDict
@@ -28,14 +31,12 @@ from rasa_sdk.grpc_errors import (
 from rasa_sdk.grpc_py import (
     action_webhook_pb2,
     action_webhook_pb2_grpc,
-    health_pb2_grpc,
 )
 from rasa_sdk.grpc_py.action_webhook_pb2 import (
     ActionsResponse,
     ActionsRequest,
     WebhookRequest,
 )
-from rasa_sdk.grpc_py.health_pb2 import HealthCheckRequest, HealthCheckResponse
 from rasa_sdk.interfaces import (
     ActionExecutionRejection,
     ActionNotFoundException,
@@ -54,27 +55,6 @@ from rasa_sdk.utils import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-class GRPCActionServerHealthCheck(health_pb2_grpc.HealthServiceServicer):
-    """Runs health check RPC which is served through gRPC server."""
-
-    def __init__(self) -> None:
-        """Initializes the HealthServicer."""
-        pass
-
-    def Check(self, request: HealthCheckRequest, context) -> HealthCheckResponse:
-        """Handle RPC request for the health check.
-
-        Args:
-            request: The health check request.
-            context: The context of the request.
-
-        Returns:
-            gRPC response.
-        """
-        response = HealthCheckResponse()
-        return response
 
 
 class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
@@ -233,6 +213,15 @@ def initialise_interrupts(server: grpc.aio.Server) -> None:
     )
 
 
+def _configure_health_server(server: grpc.Server):
+    health_servicer = health.HealthServicer(
+        experimental_non_blocking=True,
+        experimental_thread_pool=futures.ThreadPoolExecutor(max_workers=10),
+    )
+    health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
+    health_servicer.set("ActionServer", health_pb2.HealthCheckResponse.SERVING)
+
+
 async def run_grpc(
     action_package_name: Union[str, types.ModuleType],
     port: int = DEFAULT_SERVER_PORT,
@@ -266,9 +255,7 @@ async def run_grpc(
         GRPCActionServerWebhook(executor, auto_reload, tracer_provider), server
     )
 
-    health_pb2_grpc.add_HealthServiceServicer_to_server(
-        GRPCActionServerHealthCheck(), server
-    )
+    _configure_health_server(server)
 
     ca_cert = file_as_bytes(ssl_ca_file) if ssl_ca_file else None
 

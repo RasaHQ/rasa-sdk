@@ -84,8 +84,7 @@ generate-grpc:  ## generate grpc code
 	 	--python_out=. \
 	 	--grpc_python_out=. \
 	 	--pyi_out=. \
-	 	proto/action_webhook.proto \
-	 	proto/health.proto
+	 	proto/action_webhook.proto
 
 check-generate-grpc-code-in-sync: generate-grpc
 check-generate-grpc-code-in-sync: ## check if the generated code is in sync with the proto files
