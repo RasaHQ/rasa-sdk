@@ -46,7 +46,9 @@ def test_server_webhook_custom_action_is_instrumented(
     )
     data["next_action"] = action_name
     data["domain"] = {}
-    app = ep.create_app(action_package)
+    action_executor = ep.ActionExecutor()
+    action_executor.register_package(action_package)
+    app = ep.create_app(action_executor)
 
     app.register_listener(
         partial(ep.load_tracer_provider, "endpoints.yml"),
@@ -91,7 +93,9 @@ def test_server_webhook_custom_action_is_not_instrumented(
 ) -> None:
     """Tests that the server is not instrumented if no tracer provider is provided."""
     data["next_action"] = action_name
-    app = ep.create_app(action_package)
+    action_executor = ep.ActionExecutor()
+    action_executor.register_package(action_package)
+    app = ep.create_app(action_executor)
     _, response = app.test_client.post("/webhook", data=json.dumps(data))
 
     assert response.status == 200

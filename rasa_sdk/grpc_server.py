@@ -3,12 +3,10 @@ from __future__ import annotations
 import signal
 
 import asyncio
-import time
 
 import grpc
 import logging
-import types
-from typing import Union, Optional, Any, Dict
+from typing import Optional, Any, Dict
 from concurrent import futures
 from grpc import aio
 from grpc_health.v1 import health
@@ -179,7 +177,7 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
 
             _set_grpc_span_attributes(span, action_call, method_name="Webhook")
             response = action_webhook_pb2.WebhookResponse()
-            return ParseDict(result, response)
+            return ParseDict(result.model_dump(), response)
 
 
 def _set_grpc_span_attributes(
@@ -196,7 +194,7 @@ def _get_signal_name(signal_number: int) -> str:
     return signal.Signals(signal_number).name
 
 
-def _initialise_interrupts(server: grpc.aio.Server) -> None:
+def _initialise_interrupts(server: grpc.Server) -> None:
     """Initialise handlers for kernel signal interrupts."""
 
     async def handle_sigint(signal_received: int):
@@ -231,75 +229,133 @@ def _initialise_health_service(server: grpc.Server):
     health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
 
 
-def _initialise_action_service(server: grpc.Server,
-                               action_package_name: Union[str, types.ModuleType],
-                               auto_reload: bool,
-                               endpoints: str):
+def _initialise_action_service(
+    server: grpc.Server,
+    action_executor: ActionExecutor,
+    auto_reload: bool,
+    endpoints: str,
+):
     """Initialise the action service.
 
     Args:
         server: The gRPC server.
-        action_package_name: Name of the package which contains the custom actions.
+        action_executor: The action executor.
         auto_reload: Enable auto-reloading of modules containing Action subclasses.
         endpoints: Path to the endpoints file.
     """
-    executor = ActionExecutor()
-    executor.register_package(action_package_name)
     tracer_provider = get_tracer_provider(endpoints)
     action_webhook_pb2_grpc.add_ActionServiceServicer_to_server(
-        GRPCActionServerWebhook(executor, auto_reload, tracer_provider), server
+        GRPCActionServerWebhook(action_executor, auto_reload, tracer_provider), server
     )
 
 
-async def run_grpc(
-    action_package_name: Union[str, types.ModuleType],
+def _initialise_port(
+    server: grpc.Server,
     port: int = DEFAULT_SERVER_PORT,
-    ssl_certificate: Optional[str] = None,
-    ssl_keyfile: Optional[str] = None,
-    ssl_ca_file: Optional[str] = None,
-    auto_reload: bool = False,
-    endpoints: str = DEFAULT_ENDPOINTS_PATH,
-):
-    """Start a gRPC server to handle incoming action requests.
-
-    Args:
-        action_package_name: Name of the package which contains the custom actions.
-        port: Port to start the server on.
-        ssl_certificate: File path to the SSL certificate.
-        ssl_keyfile: File path to the SSL key file.
-        ssl_ca_file: File path to the SSL CA certificate file.
-        auto_reload: Enable auto-reloading of modules containing Action subclasses.
-        endpoints: Path to the endpoints file.
-    """
-    workers = number_of_sanic_workers()
-    server = aio.server(
-        futures.ThreadPoolExecutor(max_workers=workers),
-        compression=grpc.Compression.Gzip,
-    )
-    _initialise_interrupts(server)
-    _initialise_health_service(server)
-    _initialise_action_service(server, action_package_name, auto_reload, endpoints)
-
-    ca_cert = file_as_bytes(ssl_ca_file) if ssl_ca_file else None
-
-    if ssl_certificate and ssl_keyfile:
+    ssl_server_cert: Optional[bytes] = None,
+    ssl_server_cert_key: Optional[bytes] = None,
+    ssl_ca_cert: Optional[bytes] = None,
+) -> None:
+    if ssl_server_cert and ssl_server_cert_key:
         # Use SSL/TLS if certificate and key are provided
         grpc.ssl_channel_credentials()
-        private_key = file_as_bytes(ssl_keyfile)
-        certificate_chain = file_as_bytes(ssl_certificate)
         logger.info(f"Starting gRPC server with SSL support on port {port}")
         server.add_secure_port(
             f"[::]:{port}",
             server_credentials=grpc.ssl_server_credentials(
-                private_key_certificate_chain_pairs=[(private_key, certificate_chain)],
-                root_certificates=ca_cert,
-                require_client_auth=True if ca_cert else False,
+                private_key_certificate_chain_pairs=[
+                    (ssl_server_cert_key, ssl_server_cert)
+                ],
+                root_certificates=ssl_ca_cert,
+                require_client_auth=True if ssl_ca_cert else False,
             ),
         )
     else:
         logger.info(f"Starting gRPC server without SSL on port {port}")
         # Use insecure connection if no SSL/TLS information is provided
         server.add_insecure_port(f"[::]:{port}")
+
+
+def _initialise_grpc_server(
+    action_executor: ActionExecutor,
+    port: int = DEFAULT_SERVER_PORT,
+    max_number_of_workers: int = 10,
+    ssl_server_cert: Optional[bytes] = None,
+    ssl_server_cert_key: Optional[bytes] = None,
+    ssl_ca_cert: Optional[bytes] = None,
+    auto_reload: bool = False,
+    endpoints: str = DEFAULT_ENDPOINTS_PATH,
+) -> grpc.Server:
+    """Create a gRPC server to handle incoming action requests.
+
+    Args:
+        action_executor: The action executor.
+        port: Port to start the server on.
+        max_number_of_workers: Maximum number of workers to use.
+        ssl_server_cert: File path to the SSL certificate.
+        ssl_server_cert_key: File path to the SSL key file.
+        ssl_ca_cert: File path to the SSL CA certificate file.
+        auto_reload: Enable auto-reloading of modules containing Action subclasses.
+        endpoints: Path to the endpoints file.
+
+    Returns:
+        The gRPC server.
+    """
+    server = aio.server(
+        futures.ThreadPoolExecutor(max_workers=max_number_of_workers),
+        compression=grpc.Compression.Gzip,
+    )
+
+    _initialise_health_service(server)
+    _initialise_action_service(server, action_executor, auto_reload, endpoints)
+    _initialise_port(server, port, ssl_server_cert, ssl_server_cert_key, ssl_ca_cert)
+
+    return server
+
+
+async def run_grpc(
+    action_executor: ActionExecutor,
+    port: int = DEFAULT_SERVER_PORT,
+    ssl_server_cert_path: Optional[str] = None,
+    ssl_server_cert_key_file_path: Optional[str] = None,
+    ssl_ca_file_path: Optional[str] = None,
+    auto_reload: bool = False,
+    endpoints: str = DEFAULT_ENDPOINTS_PATH,
+):
+    """Start a gRPC server to handle incoming action requests.
+
+    Args:
+        action_executor: The action executor.
+        port: Port to start the server on.
+        ssl_server_cert_path: File path to the client SSL certificate.
+        ssl_server_cert_key_file_path: File path to the SSL key for client cert.
+        ssl_ca_file_path: File path to the SSL CA certificate file.
+        auto_reload: Enable auto-reloading of modules containing Action subclasses.
+        endpoints: Path to the endpoints file.
+    """
+    max_number_of_workers = number_of_sanic_workers()
+    ssl_server_cert = (
+        file_as_bytes(ssl_server_cert_path) if (ssl_server_cert_path) else None
+    )
+    ssl_server_cert_key = (
+        file_as_bytes(ssl_server_cert_key_file_path)
+        if (ssl_server_cert_key_file_path)
+        else None
+    )
+    ssl_ca_cert = file_as_bytes(ssl_ca_file_path) if (ssl_ca_file_path) else None
+
+    server = _initialise_grpc_server(
+        action_executor,
+        port,
+        max_number_of_workers,
+        ssl_server_cert,
+        ssl_server_cert_key,
+        ssl_ca_cert,
+        auto_reload,
+        endpoints,
+    )
+
+    _initialise_interrupts(server)
 
     await server.start()
     logger.info(f"gRPC Server started on port {port}")

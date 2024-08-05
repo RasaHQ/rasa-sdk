@@ -1,0 +1,38 @@
+configs:
+  action-server-endpoints.yml:
+    content: |
+      empty: "empty"
+      
+
+services:
+  action-server-grpc-no-tls:
+    container_name: action-server-grpc-no-tls
+    image: ${RASA_SDK_REPOSITORY}:${RASA_SDK_IMAGE_TAG}
+    volumes:
+      - "./actions:/app/actions"
+    configs:
+      - source: action-server-endpoints.yml
+        target: /app/endpoints.yml
+    networks: [ 'rasa-pro-network' ]
+    entrypoint: "python -m rasa_sdk"
+    command: --actions actions -p 7010 --grpc
+    ports:
+      - "7010:7010"
+
+  action-server-grpc-tls:
+    container_name: action-server-grpc-tls
+    image: ${RASA_SDK_REPOSITORY}:${RASA_SDK_IMAGE_TAG}
+    volumes:
+      - "./certs/server.pem:/certs/server.pem"
+      - "./certs/server-key.pem:/certs/server-key.pem"
+      - "./actions:/app/actions"
+    configs:
+      - source: action-server-endpoints.yml
+        target: /app/endpoints.yml
+    networks: [ 'rasa-pro-network' ]
+    entrypoint: "python -m rasa_sdk"
+    command: --actions actions -p 7011 --grpc --ssl-certificate /certs/server.pem --ssl-keyfile /certs/server-key.pem
+    ports:
+      - "7011:7011"
+
+networks: { rasa-pro-network: { } }
