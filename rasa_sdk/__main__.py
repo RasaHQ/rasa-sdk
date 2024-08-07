@@ -4,6 +4,7 @@ import asyncio
 from rasa_sdk import utils
 from rasa_sdk.endpoint import create_argument_parser, run
 from rasa_sdk.constants import APPLICATION_ROOT_LOGGER_NAME
+from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.grpc_server import run_grpc
 
 logger = logging.getLogger(__name__)
@@ -22,10 +23,13 @@ def main_from_args(args):
     )
     utils.update_sanic_log_level()
 
+    action_executor = ActionExecutor()
+    action_executor.register_package(args.actions)
+
     if args.grpc:
         asyncio.run(
             run_grpc(
-                args.actions,
+                action_executor,
                 args.port,
                 args.ssl_certificate,
                 args.ssl_keyfile,
@@ -36,7 +40,7 @@ def main_from_args(args):
         )
     else:
         run(
-            args.actions,
+            action_executor,
             args.port,
             args.cors,
             args.ssl_certificate,

@@ -463,6 +463,21 @@ files = [
 protobuf = ["grpcio-tools (>=1.59.3)"]
 
 [[package]]
+name = "grpcio-health-checking"
+version = "1.59.3"
+description = "Standard Health Checking Service for gRPC"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "grpcio-health-checking-1.59.3.tar.gz", hash = "sha256:015017ce4164fc7dce81da3a1718a4b3153230e481b2cdebf392468b613f0766"},
+    {file = "grpcio_health_checking-1.59.3-py3-none-any.whl", hash = "sha256:30b0184173d5a7a48788b1643968a9f75154b2bf8d47baf795c03402727a84cf"},
+]
+
+[package.dependencies]
+grpcio = ">=1.59.3"
+protobuf = ">=4.21.6"
+
+[[package]]
 name = "grpcio-tools"
 version = "1.56.2"
 description = "Protobuf code generator for gRPC"
@@ -2043,4 +2058,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "6b7c70eee912d47c931bd47dc3738bf25bffda2ac77e45ceca33a94656bb5f9e"
+content-hash = "73c3b65eb0052bae1164bd81d1bfb8e4e2703cd708037ea9d84e7d2929cbaf7f"

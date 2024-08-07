@@ -1,0 +1,39 @@
+name: Debug custom actions integration test containers
+description: Encapsulates steps for custom actions test debugging
+
+inputs:
+  COMPOSE_FILE_PATH:
+    description: 'Custom action docker compose path'
+    required: true
+  RASA_SDK_REPOSITORY:
+    description: 'Rasa SDK repository path'
+    required: true
+  RASA_SDK_IMAGE_TAG:
+    description: 'Rasa SDK image tag'
+    required: true
+
+runs:
+  using: 'composite'
+
+  steps:
+  - name: List containers
+    run: sudo docker ps -a
+    shell: bash
+
+  - name: Check logs for action server without TLS
+    env:
+      RASA_SDK_REPOSITORY: ${{ inputs.RASA_SDK_REPOSITORY }}
+      RASA_SDK_IMAGE_TAG: ${{ inputs.RASA_SDK_IMAGE_TAG }}
+    run: |
+      docker compose -f ${{ inputs.COMPOSE_FILE_PATH }} \
+        logs action-server-grpc-no-tls
+    shell: bash
+  
+  - name: Check logs for action server with TLS
+    env:
+      RASA_SDK_REPOSITORY: ${{ inputs.RASA_SDK_REPOSITORY }}
+      RASA_SDK_IMAGE_TAG: ${{ inputs.RASA_SDK_IMAGE_TAG }}
+    run: |
+      docker compose -f ${{ inputs.COMPOSE_FILE_PATH }} \
+      logs action-server-grpc-tls
+    shell: bash

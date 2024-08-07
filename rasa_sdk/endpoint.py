@@ -1,7 +1,6 @@
 import argparse
 import logging
 import os
-import types
 import warnings
 import zlib
 import json
@@ -97,15 +96,14 @@ async def load_tracer_provider(endpoints: str, app: Sanic):
 
 
 def create_app(
-    action_package_name: Union[Text, types.ModuleType],
+    action_executor: ActionExecutor,
     cors_origins: Union[Text, List[Text], None] = "*",
     auto_reload: bool = False,
 ) -> Sanic:
     """Create a Sanic application and return it.
 
     Args:
-        action_package_name: Name of the package or module to load actions
-            from.
+        action_executor: The action executor to use.
         cors_origins: CORS origins to allow.
         auto_reload: When `True`, auto-reloading of actions is enabled.
 
@@ -118,9 +116,6 @@ def create_app(
     warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"sanic.*")
 
     configure_cors(app, cors_origins)
-
-    executor = ActionExecutor()
-    executor.register_package(action_package_name)
 
     app.ctx.tracer_provider = None
 
@@ -165,9 +160,9 @@ def create_app(
             utils.check_version_compatibility(action_call.get("version"))
 
             if auto_reload:
-                executor.reload()
+                action_executor.reload()
             try:
-                result = await executor.run(action_call)
+                result = await action_executor.run(action_call)
             except ActionExecutionRejection as e:
                 logger.debug(e)
                 body = {"error": e.message, "action_name": e.action_name}
@@ -188,17 +183,20 @@ def create_app(
                 route="/webhook",
             )
 
-            return response.json(result, status=200)
+            return response.json(
+                result.model_dump() if result else None,
+                status=200,
+            )
 
     @app.get("/actions")
     async def actions(_) -> HTTPResponse:
         """List all registered actions."""
         if auto_reload:
-            executor.reload()
+            action_executor.reload()
 
         body = [
             action_name_item.model_dump()
-            for action_name_item in executor.list_actions()
+            for action_name_item in action_executor.list_actions()
         ]
         return response.json(body, status=200)
 
@@ -215,7 +213,7 @@ def create_app(
 
 
 def run(
-    action_package_name: Union[Text, types.ModuleType],
+    action_executor: ActionExecutor,
     port: int = DEFAULT_SERVER_PORT,
     cors_origins: Union[Text, List[Text], None] = "*",
     ssl_certificate: Optional[Text] = None,
@@ -230,7 +228,7 @@ def run(
     loader = AppLoader(
         factory=partial(
             create_app,
-            action_package_name,
+            action_executor,
             cors_origins=cors_origins,
             auto_reload=auto_reload,
         ),

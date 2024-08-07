@@ -12,6 +12,10 @@ env:
   IS_TAG_BUILD: ${{ startsWith(github.event.ref, 'refs/tags') }}
   DEV_REPOSITORY: 329710836760.dkr.ecr.us-east-1.amazonaws.com/rasa-sdk-dev
   AWS_REGION: us-east-1
+  # This tag is used to build the image without dev dependencies
+  DEV_IMAGE_TAG: pr${{ github.event.number }}
+  # This tag is used to build the image with dev dependencies
+  DEV_IMAGE_WITH_DEV_DEPS_TAG: pr${{ github.event.number }}-with-dev-deps
 
 # SECRETS
 # - PYPI_TOKEN: publishing token for amn41 account, needs to be maintainer of
@@ -143,17 +147,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@8c3f20df09ac63af7b3ae3d7c91f105f857d8497 # v3.0.1
+      - name: Authenticate to AWS ECR
+        uses: ./.github/actions/auth-aws-ecr
         with:
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_SESSION_TOKEN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
-        with:
-          mask-password: "true"
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ARN_ROLE_TO_ASSUME: ${{ secrets.AWS_ASSUME_ROLE_SESSION_TOKEN }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
@@ -164,5 +162,104 @@ jobs:
       - name: Build and push docker image to AWS
         run: |
           IMAGE_NAME=${{ env.DEV_REPOSITORY }} \
-          IMAGE_TAG=pr${{ github.event.number }} \
+          IMAGE_TAG=${{ env.DEV_IMAGE_TAG }} \
           make build-and-push-multi-platform-docker
+
+  rasa-sdk-with-dev-deps-docker-image:
+    name: Build dev Docker image with dev dependencies
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Authenticate to AWS ECR
+        uses: ./.github/actions/auth-aws-ecr
+        with:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ARN_ROLE_TO_ASSUME: ${{ secrets.AWS_ASSUME_ROLE_SESSION_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@0d103c3126aa41d772a8362f6aa67afac040f80c  # v3.1.0
+
+      - name: Build and push docker image to AWS
+        run: |
+          IMAGE_WITH_DEV_DEPS=${{ env.DEV_REPOSITORY }} \
+          IMAGE_TAG=${{ env.DEV_IMAGE_WITH_DEV_DEPS_TAG }} \
+          make build-and-push-multi-platform-docker-with-dev-deps
+
+  grpc_standalone_integration_tests:
+    name: Run gRPC integration tests using standalone server
+    runs-on: ubuntu-22.04
+    needs: [rasa-sdk-with-dev-deps-docker-image]
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Authenticate to AWS ECR
+        uses: ./.github/actions/auth-aws-ecr
+        with:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ARN_ROLE_TO_ASSUME: ${{ secrets.AWS_ASSUME_ROLE_SESSION_TOKEN }}
+
+      - name: Docker version
+        run: docker --version && docker compose version
+
+      - name: gRPC Server Integration Testing - Run tests on gRPC server with and without TLS 🩺
+        run: |
+          make run-grpc-standalone-integration-tests
+        env:
+          IMAGE_WITH_DEV_DEPS: ${{ env.DEV_REPOSITORY }}
+          IMAGE_TAG: ${{ env.DEV_IMAGE_WITH_DEV_DEPS_TAG }}
+
+
+  grpc_docker_integration_tests:
+    name: Run gRPC integration tests using Docker containers
+    runs-on: ubuntu-22.04
+    needs: [rasa-sdk-dev-docker-image, rasa-sdk-with-dev-deps-docker-image]
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Authenticate to AWS ECR
+        uses: ./.github/actions/auth-aws-ecr
+        with:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ARN_ROLE_TO_ASSUME: ${{ secrets.AWS_ASSUME_ROLE_SESSION_TOKEN }}
+
+      - name: Docker version
+        run: docker --version && docker compose version
+
+      - name: gRPC Server Integration Testing - Run env docker containers
+        run: |
+          make start-grpc-integration-test-env
+        env:
+          IMAGE_NAME: ${{ env.DEV_REPOSITORY }}
+          IMAGE_TAG: ${{ env.DEV_IMAGE_TAG }}
+
+      - name: gRPC Server Integration Testing - Run tests on gRPC server with and without TLS 🩺
+        run: |
+          make run-grpc-integration-tests
+        env:
+          IMAGE_WITH_DEV_DEPS: ${{ env.DEV_REPOSITORY }}
+          IMAGE_TAG: ${{ env.DEV_IMAGE_WITH_DEV_DEPS_TAG }}
+
+      - name: gRPC Server Integration Testing - Stop env docker containers
+        run: |
+          make stop-grpc-integration-test-env
+        env:
+          IMAGE_NAME: ${{ env.DEV_REPOSITORY }}
+          IMAGE_TAG: ${{ env.DEV_IMAGE_TAG }}
+
+      - name: Show container logs
+        if: always()
+        uses: ./.github/actions/debug-grpc
+        with:
+          COMPOSE_FILE_PATH: integration_tests/grpc_server/setup/docker-compose.yml
+          RASA_SDK_REPOSITORY: ${{ env.DEV_REPOSITORY }}
+          RASA_SDK_IMAGE_TAG: ${{ env.DEV_IMAGE_TAG }}
