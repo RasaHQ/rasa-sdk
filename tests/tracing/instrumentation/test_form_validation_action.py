@@ -43,9 +43,7 @@ async def test_form_validation_action_run(
 
     await mock_validation_action.run(dispatcher, tracker, {})
 
-    captured_spans: Sequence[
-        ReadableSpan
-    ] = span_exporter.get_finished_spans()  # type: ignore
+    captured_spans: Sequence[ReadableSpan] = span_exporter.get_finished_spans()  # type: ignore
 
     num_captured_spans = len(captured_spans) - previous_num_captured_spans
     # includes the child span for `_extract_validation_events` method call
@@ -106,9 +104,7 @@ async def test_form_validation_action_extract_validation_events(
         dispatcher, tracker, {}
     )
 
-    captured_spans: Sequence[
-        ReadableSpan
-    ] = span_exporter.get_finished_spans()  # type: ignore
+    captured_spans: Sequence[ReadableSpan] = span_exporter.get_finished_spans()  # type: ignore
 
     num_captured_spans = len(captured_spans) - previous_num_captured_spans
     assert num_captured_spans == 1
