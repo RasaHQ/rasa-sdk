@@ -2,11 +2,6 @@
 requires = [ "poetry-core>=1.0.4",]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-line-length = 88
-target-version = [ "py37", "py38", "py39", "py310",]
-exclude = "((.eggs | .git | .mypy_cache | .pytest_cache | build | dist ))"
-
 [tool.poetry]
 name = "rasa-sdk"
 version = "3.9.0"
@@ -70,10 +65,13 @@ warn_unused_ignores = true
 exclude = "rasa_sdk/grpc_py"
 
 [tool.ruff]
-ignore = [ "D100", "D104", "D105", "RUF005",]
 line-length = 88
+target-version = "py38"
+exclude = [ "rasa_sdk/grpc_py", "eggs", ".git", ".pytest_cache", "build", "dist", ".DS_Store"]
+
+[tool.ruff.lint]
+ignore = [ "D100", "D101", "D102", "D103", "D104", "D105", "RUF005",]
 select = [ "D", "E", "F", "W", "RUF",]
-exclude = [ "rasa_sdk/grpc_py",]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
@@ -108,7 +106,7 @@ semantic_version = "^2.8.5"
 mypy = "^1.5"
 sanic-testing = "^22.12"
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
 [tool.pytest.ini_options]
@@ -116,6 +114,6 @@ python_functions = "test_"
 asyncio_mode = "auto"
 
 [tool.poetry.group.dev.dependencies]
-ruff = ">=0.0.256,<0.0.286"
+ruff = ">=0.3.5,<0.4.0"
 pytest-asyncio = "^0.21.0"
 types-protobuf = "4.25.0.20240417"

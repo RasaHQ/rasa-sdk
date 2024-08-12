@@ -20,7 +20,7 @@ def compare_slots(slot_list_1, slot_list_2):
     assert len(slot_list_2) == len(slot_list_1)
 
     for slot_1 in slot_list_1:
-        slot_2 = list(filter(lambda x: x["name"] == slot_1["name"], slot_list_2))[0]
+        slot_2 = next(iter(filter(lambda x: x["name"] == slot_1["name"], slot_list_2)))
 
         if isinstance(slot_2["value"], list):
             assert set(slot_1["value"]) == set(slot_2["value"])

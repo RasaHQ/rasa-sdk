@@ -81,6 +81,7 @@ class CustomActionWithDialogueStack(Action):
 
 class MockFormValidationAction(FormValidationAction):
     def __init__(self) -> None:
+        """Initializes the mock form validation action."""
         self.fail_if_undefined("run")
 
     def fail_if_undefined(self, method_name: str) -> None:
@@ -108,6 +109,7 @@ class MockFormValidationAction(FormValidationAction):
 
 class MockValidationAction(ValidationAction):
     def __init__(self) -> None:
+        """Initializes the mock validation action."""
         self.fail_if_undefined("run")
 
     def fail_if_undefined(self, method_name: Text) -> None:

@@ -18,8 +18,9 @@ def get_object_name(
     ordinal_mention_mapping: Dict[Text, Callable],
     use_last_object_mention: bool = True,
 ) -> Optional[Text]:
-    """
-    Get the name of the object the user referred to. Either the NER detected the
+    """Get the name of the object the user referred to.
+
+    Either the NER detected the
     object and stored its name in the corresponding slot (e.g. "PastaBar"
     is detected as "restaurant") or the user referred to the object by any kind of
     mention, such as "first one" or "it".
@@ -29,10 +30,10 @@ def get_object_name(
         ordinal_mention_mapping: mapping that maps
                                  an ordinal mention to an object in a list
         use_last_object_mention: if true the last mentioned object is returned if
-        no other mention could be detected
+                                 no other mention could be detected
 
     Returns: the name of the actual object (value of key attribute in the
-    knowledge base)
+             knowledge base)
     """
     mention = tracker.get_slot(SLOT_MENTION)
     object_type = tracker.get_slot(SLOT_OBJECT_TYPE)
@@ -57,8 +58,7 @@ def get_object_name(
 def resolve_mention(
     tracker: "Tracker", ordinal_mention_mapping: Dict[Text, Callable]
 ) -> Optional[Text]:
-    """
-    Resolve the given mention to the name of the actual object.
+    """Resolve the given mention to the name of the actual object.
 
     Different kind of mentions exist. We distinguish between ordinal mentions and
     all others for now.
@@ -75,9 +75,8 @@ def resolve_mention(
         ordinal_mention_mapping: mapping that maps an ordinal mention
                                  to an object in a list
 
-    Returns: name of the actually object
+    Returns: name of an object
     """
-
     mention = tracker.get_slot(SLOT_MENTION)
     listed_items = tracker.get_slot(SLOT_LISTED_OBJECTS)
     last_object = tracker.get_slot(SLOT_LAST_OBJECT)
@@ -105,7 +104,8 @@ def resolve_mention(
 def get_attribute_slots(
     tracker: "Tracker", object_attributes: List[Text]
 ) -> List[Dict[Text, Text]]:
-    """
+    """Returns a list of attributes which are set in the tracker slots.
+
     If the user mentioned one or multiple attributes of the provided object_type in
     an utterance, we extract all attribute values from the tracker and put them
     in a list. The list is used later on to filter a list of objects.
@@ -135,8 +135,7 @@ def get_attribute_slots(
 def reset_attribute_slots(
     tracker: "Tracker", object_attributes: List[Text]
 ) -> List[Dict]:
-    """
-    Reset all attribute slots of the current object type.
+    """Reset all attribute slots of the current object type.
 
     If the user is saying something like "Show me all restaurants with Italian
     cuisine.", the NER should detect "restaurant" as "object_type" and "Italian" as
@@ -171,7 +170,8 @@ def match_extracted_entities_to_object_type(
     tracker: "Tracker",
     object_types: List[Text],
 ) -> Optional[Text]:
-    """
+    """Returns the first object type if the last user message contains it.
+
     If the user ask a question about an attribute using an object name and
     without specifying the object type, then this function searches the
     corresponding object type. (e.g: when user asks'price range of B&B', this
