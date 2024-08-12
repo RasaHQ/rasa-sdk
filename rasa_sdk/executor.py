@@ -170,6 +170,13 @@ class CollectingDispatcher:
 TimestampModule = namedtuple("TimestampModule", ["timestamp", "module"])
 
 
+class ActionExecutorRunResult(BaseModel):
+    """Model for action executor run result."""
+
+    events: List[Dict[Text, Any]] = Field(alias="events")
+    responses: List[Dict[Text, Any]] = Field(alias="responses")
+
+
 class ActionExecutor:
     """Executes actions."""
 
@@ -372,8 +379,8 @@ class ActionExecutor:
     @staticmethod
     def _create_api_response(
         events: List[Dict[Text, Any]], messages: List[Dict[Text, Any]]
-    ) -> Dict[Text, Any]:
-        return {"events": events, "responses": messages}
+    ) -> ActionExecutorRunResult:
+        return ActionExecutorRunResult(events=events, responses=messages)
 
     @staticmethod
     def validate_events(
@@ -471,7 +478,10 @@ class ActionExecutor:
 
         return self.domain
 
-    async def run(self, action_call: Dict[Text, Any]) -> Optional[Dict[Text, Any]]:
+    async def run(
+        self,
+        action_call: Dict[Text, Any],
+    ) -> Optional[ActionExecutorRunResult]:
         """Run the action and return the response.
 
         Args:
