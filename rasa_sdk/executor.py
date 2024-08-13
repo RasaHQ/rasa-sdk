@@ -24,7 +24,6 @@ class CollectingDispatcher:
     """Send messages back to user"""
 
     def __init__(self) -> None:
-
         self.messages: List[Dict[Text, Any]] = []
 
     def utter_message(

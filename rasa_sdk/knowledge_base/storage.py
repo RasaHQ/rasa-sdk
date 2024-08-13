@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 class KnowledgeBase:
     def __init__(self) -> None:
+        """Create a new knowledge base."""
         self.ordinal_mention_mapping = {
             "1": lambda lst: lst[0],
             "2": lambda lst: lst[1],
@@ -33,8 +34,7 @@ class KnowledgeBase:
         ] = defaultdict(lambda: lambda obj: obj["name"])
 
     async def get_attributes_of_object(self, object_type: Text) -> List[Text]:
-        """
-        Returns a list of all attributes that belong to the provided object type.
+        """Returns a list of all attributes that belong to the provided object type.
 
         Args:
             object_type: the object type
@@ -44,8 +44,7 @@ class KnowledgeBase:
         raise NotImplementedError("Method is not implemented.")
 
     async def get_key_attribute_of_object(self, object_type: Text) -> Text:
-        """
-        Returns the key attribute for the given object type.
+        """Returns the key attribute for the given object type.
 
         Args:
             object_type: the object type
@@ -57,21 +56,20 @@ class KnowledgeBase:
     async def get_representation_function_of_object(
         self, object_type: Text
     ) -> Callable:
-        """
-        Returns a lamdba function that takes the object and returns a string
-        representation of it.
+        """Returns a lambda function that returns string representation of the object.
 
         Args:
             object_type: the object type
 
-        Returns: lamdba function
+        Returns: lambda function
         """
         return self.representation_function[object_type]
 
     def set_ordinal_mention_mapping(self, mapping: Dict[Text, Callable]) -> None:
-        """
-        Overwrites the default ordinal mention mapping. E.g. the mapping that
-        maps, for example, "first one" to the first element in a list.
+        """Overwrites the default ordinal mention mapping.
+
+        E.g. the mapping that maps, for example,
+        "first one" to the first element in a list.
 
         Args:
             mapping: the ordinal mention mapping
@@ -81,9 +79,10 @@ class KnowledgeBase:
     async def get_objects(
         self, object_type: Text, attributes: List[Dict[Text, Text]], limit: int = 5
     ) -> List[Dict[Text, Any]]:
-        """
-        Query the knowledge base for objects of the given type. Restrict the objects
-        by the provided attributes, if any attributes are given.
+        """Query the knowledge base for objects of the given type.
+
+        Restrict the objects by the provided attributes,
+        if any attributes are given.
 
         Args:
             object_type: the object type
@@ -97,8 +96,7 @@ class KnowledgeBase:
     async def get_object(
         self, object_type: Text, object_identifier: Text
     ) -> Optional[Dict[Text, Any]]:
-        """
-        Returns the object of the given type that matches the given object identifier.
+        """Returns the object of the given type and identifier.
 
         Args:
             object_type: the object type
@@ -110,16 +108,14 @@ class KnowledgeBase:
         raise NotImplementedError("Method is not implemented.")
 
     def get_object_types(self) -> List[Text]:
-        """
-        Returns a list of object types from knowledge base data.
-        """
+        """Returns a list of object types from knowledge base data."""
         raise NotImplementedError("Method is not implemented.")
 
 
 class InMemoryKnowledgeBase(KnowledgeBase):
     def __init__(self, data_file: Text) -> None:
-        """
-        Initialize the in-memory knowledge base.
+        """Initialize the in-memory knowledge base.
+
         Loads the data from the given data file into memory.
 
         Args:
@@ -131,9 +127,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         super().__init__()
 
     def load(self) -> None:
-        """
-        Load the data from the given file and initialize an in-memory knowledge base.
-        """
+        """Load the data from the file in an in-memory knowledge base."""
         try:
             with open(self.data_file, encoding="utf-8") as f:
                 content = f.read()
@@ -151,8 +145,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
     def set_representation_function_of_object(
         self, object_type: Text, representation_function: Callable
     ) -> None:
-        """
-        Set the representation function of the given object type.
+        """Set the representation function of the given object type.
 
         Args:
             object_type: the object type
@@ -163,8 +156,7 @@ class InMemoryKnowledgeBase(KnowledgeBase):
     def set_key_attribute_of_object(
         self, object_type: Text, key_attribute: Text
     ) -> None:
-        """
-        Set the key attribute of the given object type.
+        """Set the key attribute of the given object type.
 
         Args:
             object_type: the object type
@@ -173,6 +165,13 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         self.key_attribute[object_type] = key_attribute
 
     async def get_attributes_of_object(self, object_type: Text) -> List[Text]:
+        """Returns attributes of the object.
+
+        Args:
+            object_type: the object type
+
+        Returns: list of attributes of an object
+        """
         if object_type not in self.data or not self.data[object_type]:
             return []
 
@@ -183,6 +182,16 @@ class InMemoryKnowledgeBase(KnowledgeBase):
     async def get_objects(
         self, object_type: Text, attributes: List[Dict[Text, Text]], limit: int = 5
     ) -> List[Dict[Text, Any]]:
+        """Returns objects of the given type.
+
+        If attributes are specified,
+        the objects are filtered by these attributes.
+
+        Args:
+            object_type: the object type
+            attributes: list of attributes to filter the objects by
+            limit: maximum number of objects to return
+        """
         if object_type not in self.data:
             return []
 
@@ -207,6 +216,15 @@ class InMemoryKnowledgeBase(KnowledgeBase):
     async def get_object(
         self, object_type: Text, object_identifier: Text
     ) -> Optional[Dict[Text, Any]]:
+        """Returns the object of the given type and identifier.
+
+        Args:
+            object_type: the object type
+            object_identifier: value of the key attribute or the string
+            representation of the object
+
+        Returns: the object of interest if found, else None
+        """
         if object_type not in self.data:
             return None
 
@@ -248,5 +266,9 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         return objects_of_interest[0]
 
     def get_object_types(self) -> List[Text]:
-        """See parent class docstring."""
+        """Returns a list of object types from knowledge base data.
+
+        Returns:
+            list of object types
+        """
         return list(self.data.keys())

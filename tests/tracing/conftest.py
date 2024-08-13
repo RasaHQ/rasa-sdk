@@ -31,6 +31,7 @@ def udp_server() -> Generator[socket.socket, None, None]:
 
 class CapturingTestSpanExporter(trace_service.TraceServiceServicer):
     def __init__(self) -> None:
+        """Initializes the capture test span exporter."""
         self.spans: Optional[RepeatedCompositeFieldContainer[ResourceSpans]] = None
 
     def Export(
