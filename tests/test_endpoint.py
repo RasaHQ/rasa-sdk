@@ -15,13 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def sanic_app():
-    return ep.create_app("tests")
+def action_executor() -> ep.ActionExecutor:
+    _executor = ep.ActionExecutor()
+    _executor.register_package("tests")
+    return _executor
 
 
-def test_endpoint_exit_for_unknown_actions_package():
-    with pytest.raises(SystemExit):
-        ep.create_app("non-existing-actions-package")
+@pytest.fixture
+def sanic_app(action_executor: ep.ActionExecutor) -> Sanic:
+    return ep.create_app(action_executor)
 
 
 def test_server_health_returns_200(sanic_app: Sanic):
@@ -30,8 +32,15 @@ def test_server_health_returns_200(sanic_app: Sanic):
     assert response.json == {"status": "ok"}
 
 
-def test_server_list_actions_returns_200(sanic_app: Sanic):
+def test_server_list_actions_returns_200(
+    sanic_app: Sanic,
+):
+    """Test that the server returns a list of actions."""
+
+    # When we request the list of actions
     request, response = sanic_app.test_client.get("/actions")
+
+    # Then the server should return a list of actions
     assert response.status == 200
     assert len(response.json) == 9
     print(response.json)
@@ -52,16 +61,20 @@ def test_server_list_actions_returns_200(sanic_app: Sanic):
     assert response.json == expected
 
 
-def test_server_webhook_unknown_action_returns_404(sanic_app: Sanic):
+def test_server_webhook_unknown_action_returns_404(
+    sanic_app: Sanic,
+):
     data = {
-        "next_action": "test_action_1",
+        "next_action": "non_existing_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
     }
     request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     assert response.status == 404
 
 
-def test_server_webhook_handles_action_exception(sanic_app: Sanic):
+def test_server_webhook_handles_action_exception(
+    sanic_app: Sanic,
+):
     data = {
         "next_action": "custom_action_exception",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
@@ -73,7 +86,9 @@ def test_server_webhook_handles_action_exception(sanic_app: Sanic):
     assert response.json.get("request_body") == data
 
 
-def test_server_webhook_custom_action_returns_200(sanic_app: Sanic):
+def test_server_webhook_custom_action_returns_200(
+    sanic_app: Sanic,
+):
     data = {
         "next_action": "custom_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},

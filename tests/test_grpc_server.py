@@ -1,4 +1,4 @@
-from typing import Union, Any, Dict, Text, List
+from typing import Union, List
 from unittest.mock import MagicMock, AsyncMock
 
 import grpc
@@ -6,7 +6,7 @@ import pytest
 from google.protobuf.json_format import MessageToDict, ParseDict
 
 from rasa_sdk import ActionExecutionRejection
-from rasa_sdk.executor import ActionName, ActionExecutor
+from rasa_sdk.executor import ActionName, ActionExecutor, ActionExecutorRunResult
 from rasa_sdk.grpc_errors import (
     ActionExecutionFailed,
     ResourceNotFound,
@@ -85,21 +85,21 @@ def grpc_action_server_webhook(mock_executor: AsyncMock) -> GRPCActionServerWebh
 
 
 @pytest.fixture
-def executor_response() -> Dict[Text, Any]:
+def executor_response() -> ActionExecutorRunResult:
     """Create an executor response."""
-    return {
-        "events": [{"event": "slot", "name": "test", "value": "foo"}],
-        "responses": [{"utter": "Hi"}],
-    }
+    return ActionExecutorRunResult(
+        events=[{"event": "slot", "name": "test", "value": "foo"}],
+        responses=[{"utter": "Hi"}],
+    )
 
 
 @pytest.fixture
 def expected_grpc_webhook_response(
-    executor_response: Dict[Text, Any],
+    executor_response: ActionExecutorRunResult,
 ) -> action_webhook_pb2.WebhookResponse:
     """Create a gRPC webhook response."""
     result = action_webhook_pb2.WebhookResponse()
-    return ParseDict(executor_response, result)
+    return ParseDict(executor_response.model_dump(), result)
 
 
 def action_names() -> List[ActionName]:
@@ -133,9 +133,9 @@ async def test_grpc_action_server_webhook_no_errors(
     grpc_webhook_request: action_webhook_pb2.WebhookRequest,
     mock_executor: AsyncMock,
     mock_grpc_service_context: MagicMock,
-    executor_response: Dict[Text, Any],
+    executor_response: ActionExecutorRunResult,
     expected_grpc_webhook_response: action_webhook_pb2.WebhookResponse,
-):
+) -> None:
     """Test that the gRPC action server webhook can handle a request without errors."""
     grpc_action_server_webhook.auto_reload = auto_reload
     mock_executor.run.return_value = executor_response
@@ -198,7 +198,7 @@ async def test_grpc_action_server_webhook_action_execution_rejected(
     grpc_webhook_request: action_webhook_pb2.WebhookRequest,
     mock_executor: AsyncMock,
     mock_grpc_service_context: MagicMock,
-):
+) -> None:
     """Test that the gRPC action server webhook can handle a request with an action execution rejection."""  # noqa: E501
     mock_executor.run.side_effect = exception
     response = await grpc_action_server_webhook.Webhook(
@@ -231,7 +231,7 @@ async def test_grpc_action_server_actions(
     grpc_action_server_webhook: GRPCActionServerWebhook,
     mock_grpc_service_context: MagicMock,
     mock_executor: AsyncMock,
-):
+) -> None:
     """Test that the gRPC action server webhook can handle a request for actions."""
     mock_executor.list_actions.return_value = given_action_names
 

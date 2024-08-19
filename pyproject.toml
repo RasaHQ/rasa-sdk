@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "rasa-sdk"
-version = "3.9.0"
+version = "3.9.1"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
 authors = [ "Rasa Technologies GmbH <hi@rasa.com>",]
 maintainers = [ "Tom Bocklisch <tom@rasa.com>",]
@@ -67,11 +67,7 @@ exclude = "rasa_sdk/grpc_py"
 [tool.ruff]
 line-length = 88
 target-version = "py38"
-exclude = [ "rasa_sdk/grpc_py", "eggs", ".git", ".pytest_cache", "build", "dist", ".DS_Store"]
-
-[tool.ruff.lint]
-ignore = [ "D100", "D101", "D102", "D103", "D104", "D105", "RUF005",]
-select = [ "D", "E", "F", "W", "RUF",]
+exclude = [ "rasa_sdk/grpc_py", "eggs", ".git", ".pytest_cache", "build", "dist", ".DS_Store",]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
@@ -91,6 +87,7 @@ grpcio = "1.59.3"
 protobuf = "4.25.3"
 grpcio-tools = "1.56.2"
 pydantic = "2.6.4"
+grpcio-health-checking = "1.59.3"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^4.1.0"
@@ -105,12 +102,16 @@ semantic_version = "^2.8.5"
 mypy = "^1.5"
 sanic-testing = "^22.12"
 
-[tool.ruff.lint.pydocstyle]
-convention = "google"
+[tool.ruff.lint]
+ignore = [ "D100", "D101", "D102", "D103", "D104", "D105", "RUF005",]
+select = [ "D", "E", "F", "W", "RUF",]
 
 [tool.pytest.ini_options]
 python_functions = "test_"
 asyncio_mode = "auto"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.poetry.group.dev.dependencies]
 ruff = ">=0.3.5,<0.4.0"
