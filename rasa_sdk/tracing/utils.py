@@ -43,7 +43,7 @@ def set_span_attributes(span: Any, action_call: dict) -> None:
         "next_action": action_call.get("next_action"),
         "version": action_call.get("version"),
         "sender_id": tracker.get("sender_id"),
-        "message_id": tracker.get("latest_message", {}).get("message_id"),
+        "message_id": tracker.get("latest_message", {}).get("message_id", "None"),
     }
 
     if span.is_recording():
