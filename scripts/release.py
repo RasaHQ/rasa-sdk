@@ -4,6 +4,7 @@
 - increases the version number
 - pushes the new branch to GitHub
 """
+
 import argparse
 import os
 import re
@@ -284,6 +285,91 @@ def print_done_message_same_branch(version: Version) -> None:
     )
 
 
+# wip
+def tag_commit(tag: Text) -> None:
+    """Tags a git commit."""
+    print(f"Applying tag '{tag}' to commit.")
+    check_call(["git", "tag", tag, "-m", "next release"])
+
+
+def push_tag(tag: Text) -> None:
+    """Pushes a tag to the remote."""
+    print(f"Pushing tag '{tag}' to origin.")
+    check_call(["git", "push", "origin", tag, "--tags"])
+
+
+def print_tag_release_done_message(version: Version) -> None:
+    """Print final information for the user about the tagged commit."""
+    print()
+    print(
+        "The release script will increase the version number, "
+        "create a changelog and create a release branch. Let's go!"
+        f"\033[94m Tag for version {version} "
+        "was added and pushed to the remote \033[0m"
+    )
+
+
+# def confirm_tag_version(version: Version) -> bool:
+#     """Allow the user to confirm the version tag they are applying."""
+#     if str(version) in git_existing_tags():
+#         confirmed = questionary.confirm(
+#             f"Tag with version '{version}' already exists, overwrite?", default=False
+#         ).ask()
+#     else:
+#         confirmed = questionary.confirm(
+#             f"Current version is '{get_current_version()}. "
+#             f"Is this the tag you want to apply?",
+#             default=True,
+#         ).ask()
+#     if confirmed:
+#         return True
+#     else:
+#         print("Aborting.")
+#         sys.exit(1)
+
+
+def tag_release(args: argparse.Namespace) -> None:
+    """Tag the current commit with the current version."""
+    print(
+        """
+    The release tag script will tag the current commit with the current version.
+    This should be done on the applicable *.x branch after running
+    `make prepare-release` and merging the prepared release branch.
+        """
+    )
+
+    branch = git_current_branch()
+    version = Version(get_current_version())
+
+    if (
+        not version.is_alpha
+        and not version.is_beta
+        and not git_current_branch_is_main_or_release()
+    ):
+        print(
+            f"""
+    You are currently on branch {branch}.
+    You should only apply release tags to release branches (e.g. 1.x) or main.
+            """
+        )
+        sys.exit(1)
+    ensure_clean_git()
+    # if args.skip_confirmation:
+    #     if str(version) in git_existing_tags():
+    #         print(f"Tag with version '{version}' already exists, will not overwrite.")
+    #         sys.exit(1)
+    # else:
+    #     confirm_tag_version(version)
+    tag = str(version)
+    tag_commit(tag)
+    push_tag(tag)
+
+    print_tag_release_done_message(version)
+
+
+# wip
+
+
 def main(args: argparse.Namespace) -> None:
     """Start a release preparation."""
 
@@ -316,6 +402,7 @@ def main(args: argparse.Namespace) -> None:
         create_commit(version)
         push_changes()
 
+        tag_release(args)
         print_done_message(branch, base, version)
 
 
