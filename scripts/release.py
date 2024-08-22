@@ -306,9 +306,7 @@ def print_tag_release_done_message(version: Version) -> None:
     """Print final information for the user about the tagged commit."""
     print()
     print(
-        "The release script will increase the version number, "
-        "create a changelog and create a release branch. Let's go!"
-        f"\033[94m Tag for version {version} "
+        f"\033[94m All done - tag for version {version} "
         "was added and pushed to the remote \033[0m"
     )
 
