@@ -35,9 +35,9 @@ def create_argument_parser() -> argparse.ArgumentParser:
     """Parse all the command line arguments for the release script."""
 
     parser = argparse.ArgumentParser(description="Prepare or tag the next library release")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('--next_version', action='store_true')
-    group.add_argument('--tag', action='store_true')
+    # group = parser.add_mutually_exclusive_group()
+    # group.add_argument('--next_version')
+    # group.add_argument('--tag', action='store_true')
     parser.add_argument(
         "--next_version",
         type=str,
