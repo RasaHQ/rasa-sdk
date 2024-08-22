@@ -363,8 +363,8 @@ def main(args: argparse.Namespace) -> None:
         write_version_file(version)
         write_version_to_pyproject(version)
 
-        if not version.pre:
-            # never update changelog on a prerelease version
+        if not version.pre and not version.dev:
+            # never update changelog on a prerelease or Dev version
             generate_changelog(version)
 
         # alpha workflow on feature branch when a version bump is required
