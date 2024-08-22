@@ -37,16 +37,15 @@ RELEASE_BRANCH_PATTERN = re.compile(r"^\d+\.\d+\.x$")
 def create_argument_parser() -> argparse.ArgumentParser:
     """Parse all the command line arguments for the release script."""
 
-    parser = argparse.ArgumentParser(description="Prepare or tag the next library release")
+    parser = argparse.ArgumentParser(
+        description="Prepare or tag the next library release"
+    )
     parser.add_argument(
         "--next_version",
         type=str,
         help="Either next version number or 'major', 'minor', 'micro', 'alpha', 'rc'",
     )
-    parser.add_argument(
-        "--tag",
-        help="Tag the next release",action="store_true"
-    )
+    parser.add_argument("--tag", help="Tag the next release", action="store_true")
 
     return parser
 
@@ -318,7 +317,11 @@ def tag_release() -> None:
     """Tag the current commit with the current version."""
     print(
         """
-    The release tag script will tag the current commit with the current version."""
+    The release tag script will tag the current commit with the current version.
+
+    This should be done on the applicable *.x branch after running
+    `make release` and merging the prepared release branch.
+        """
     )
 
     branch = git_current_branch()
