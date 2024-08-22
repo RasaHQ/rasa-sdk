@@ -45,7 +45,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--tag",
-        help="Tag the next release",
+        help="Tag the next release",action="store_true"
     )
 
     return parser
