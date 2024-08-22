@@ -3,7 +3,10 @@
 - creates a new changelog section in CHANGELOG.mdx based on all collected changes
 - increases the version number
 - pushes the new branch to GitHub
-- Tags the release and pushes tag to GitHub
+
+When run with `--tag`:
+- tags the current commit with the version number found in the version module
+- and pushes the tag to GitHub.
 """
 
 import argparse
