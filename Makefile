@@ -104,6 +104,9 @@ cleanup-generated-changelog:  ## cleanup the generated changelog
 release: ## start the release process
 	poetry run python scripts/release.py
 
+tag-release:  ## Tag a release.
+	poetry run python scripts/release.py --tag
+
 generate-grpc:  ## generate grpc code
 	 poetry run python -m grpc_tools.protoc \
 	 	-Irasa_sdk/grpc_py=./proto \

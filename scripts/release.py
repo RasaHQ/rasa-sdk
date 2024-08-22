@@ -3,7 +3,9 @@
 - creates a new changelog section in CHANGELOG.mdx based on all collected changes
 - increases the version number
 - pushes the new branch to GitHub
+- Tags the release and pushes tag to GitHub
 """
+
 import argparse
 import os
 import re
@@ -32,11 +34,18 @@ RELEASE_BRANCH_PATTERN = re.compile(r"^\d+\.\d+\.x$")
 def create_argument_parser() -> argparse.ArgumentParser:
     """Parse all the command line arguments for the release script."""
 
-    parser = argparse.ArgumentParser(description="prepare the next library release")
+    parser = argparse.ArgumentParser(description="Prepare or tag the next library release")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--next_version', action='store_true')
+    group.add_argument('--tag', action='store_true')
     parser.add_argument(
         "--next_version",
         type=str,
         help="Either next version number or 'major', 'minor', 'micro', 'alpha', 'rc'",
+    )
+    parser.add_argument(
+        "--tag",
+        help="Tag the next release",
     )
 
     return parser
@@ -284,39 +293,95 @@ def print_done_message_same_branch(version: Version) -> None:
     )
 
 
-def main(args: argparse.Namespace) -> None:
-    """Start a release preparation."""
+def tag_commit(tag: Text) -> None:
+    """Tags a git commit."""
+    print(f"Applying tag '{tag}' to commit.")
+    check_call(["git", "tag", tag, "-m", "next release"])
 
+
+def push_tag(tag: Text) -> None:
+    """Pushes a tag to the remote."""
+    print(f"Pushing tag '{tag}' to origin.")
+    check_call(["git", "push", "origin", tag, "--tags"])
+
+
+def print_tag_release_done_message(version: Version) -> None:
+    """Print final information for the user about the tagged commit."""
+    print()
     print(
         "The release script will increase the version number, "
         "create a changelog and create a release branch. Let's go!"
+        f"\033[94m Tag for version {version} "
+        "was added and pushed to the remote \033[0m"
     )
 
+
+def tag_release() -> None:
+    """Tag the current commit with the current version."""
+    print(
+        """
+    The release tag script will tag the current commit with the current version."""
+    )
+
+    branch = git_current_branch()
+    version = Version(get_current_version())
+
+    if (
+        not version.is_alpha
+        and not version.is_beta
+        and not git_current_branch_is_main_or_release()
+    ):
+        print(
+            f"""
+    You are currently on branch {branch}.
+    You should only apply release tags to release branches (e.g. 1.x) or main.
+            """
+        )
+        sys.exit(1)
     ensure_clean_git()
-    version = next_version(args)
-    confirm_version(version)
+    tag = str(version)
+    tag_commit(tag)
+    push_tag(tag)
 
-    write_version_file(version)
-    write_version_to_pyproject(version)
+    print_tag_release_done_message(version)
 
-    if not version.pre:
-        # never update changelog on a prerelease version
-        generate_changelog(version)
 
-    # alpha workflow on feature branch when a version bump is required
-    if version.is_alpha and not git_current_branch_is_main_or_release():
-        create_commit(version)
-        push_changes()
+def main(args: argparse.Namespace) -> None:
+    """Start a release preparation, or tag release."""
 
-        print_done_message_same_branch(version)
+    if not args.tag:
+        print(
+            "The release script will increase the version number, "
+            "create a changelog and create a release branch. Let's go!"
+        )
+
+        ensure_clean_git()
+        version = next_version(args)
+        confirm_version(version)
+
+        write_version_file(version)
+        write_version_to_pyproject(version)
+
+        if not version.pre:
+            # never update changelog on a prerelease version
+            generate_changelog(version)
+
+        # alpha workflow on feature branch when a version bump is required
+        if version.is_alpha and not git_current_branch_is_main_or_release():
+            create_commit(version)
+            push_changes()
+
+            print_done_message_same_branch(version)
+        else:
+            base = git_current_branch()
+            branch = create_release_branch(version)
+
+            create_commit(version)
+            push_changes()
+
+            print_done_message(branch, base, version)
     else:
-        base = git_current_branch()
-        branch = create_release_branch(version)
-
-        create_commit(version)
-        push_changes()
-
-        print_done_message(branch, base, version)
+        tag_release()
 
 
 if __name__ == "__main__":
