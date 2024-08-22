@@ -129,15 +129,7 @@ by GitHub Actions.
 2. If this is a minor / major release: Make sure all fixes from currently supported minor versions have been merged from their respective release branches (e.g. 3.3.x) back into main.
 3. Run `make release`
 4. Create a PR against main or the release branch (e.g. `1.2.x`)
-5. Once your PR is merged, pull the release branch locally.
-6. Create a tag for a new release (this SHOULD always happen on `main` or release branches), e.g. using
-    ```bash
-    git tag 1.2.0 -m "next release"
-    git push origin 1.2.0
-    ```
-    GitHub Actions will build this tag and push a package to
-    [pypi](https://pypi.python.org/pypi/rasa-sdk).
-6. **If this is a minor release**, a new release branch should be created
+5. **If this is a minor release**, a new release branch should be created
   pointing to the same commit as the tag to allow for future patch releases,
   e.g.
     ```bash
