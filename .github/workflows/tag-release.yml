@@ -60,7 +60,7 @@ jobs:
         # This is a workaround for that issue
         run: |
           sudo apt-get -y install libpq-dev
-          make install-full
+          make install
 
       - name: Configure git
         run: |
