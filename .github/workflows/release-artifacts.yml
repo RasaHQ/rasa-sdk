@@ -146,7 +146,7 @@ jobs:
           echo "RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//}" >> $GITHUB_ENV
 
       - name: Notify Slack 💬
-        if: env.IS_TAG_BUILD && success()
+        if: success()
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_RELEASE_ASSISTANT_RELEASE_WEBHOOK }}
         uses: Ilshidur/action-slack@2.1.0
@@ -154,7 +154,7 @@ jobs:
           args: "⚡ New *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/${{ env.RASA_SDK_VERSION }}/CHANGELOG.mdx"
 
       - name: Notify Slack of Failure ⛔
-        if: env.IS_TAG_BUILD && failure()
+        if: failure()
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_RELEASE_ASSISTANT_DEV_TRIBE_WEBHOOK }}
         uses: Ilshidur/action-slack@2.1.0
