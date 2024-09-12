@@ -14,7 +14,7 @@ env:
 jobs:
   if_merged_tag_release:
     name: Tag Release Version
-    if: startsWith(github.head_ref, 'prepare-release-') && github.event.pull_request.merged == true
+    ## if: startsWith(github.head_ref, 'prepare-release-') && github.event.pull_request.merged == true
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout git repository 🕝
