@@ -115,9 +115,7 @@ generate-grpc:  ## generate grpc code
 	 	--pyi_out=. \
 	 	proto/action_webhook.proto
 
-check-generate-grpc-code-in-sync: generate-grpc
-check-generate-grpc-code-in-sync: ## check if the generated code is in sync with the proto files
-	# this is a helper to check if the generated code is in sync with the proto files
+check-generate-grpc-code-in-sync: generate-grpc ## check if the generated code is in sync with the proto files, it uses a helper to check if the generated code is in sync with the proto files
 	git diff --exit-code rasa_sdk/grpc_py | if [ "$$(wc -c)" -eq 0 ]; then echo "Generated code is in sync with proto files"; else echo "Generated code is not in sync with proto files"; exit 1; fi
 
 GRPC_STANDALONE_SERVER_INTEGRATION_TEST_RESULTS_FILE = grpc-standalone-server-integration-test-results.xml
