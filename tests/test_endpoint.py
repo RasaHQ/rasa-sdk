@@ -36,7 +36,6 @@ def test_server_list_actions_returns_200(
     sanic_app: Sanic,
 ):
     """Test that the server returns a list of actions."""
-
     # When we request the list of actions
     request, response = sanic_app.test_client.get("/actions")
 

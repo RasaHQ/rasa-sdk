@@ -212,7 +212,7 @@ def test_cli_invalid_format_value_in_config(caplog: LogCaptureFixture) -> None:
 
 
 @pytest.mark.skipif(
-    sys.version_info.minor != 8, 
+    sys.version_info.minor != 8,
     reason="no error is raised with python 3.9+",
 )
 def test_cli_non_existent_handler_id_in_config(caplog: LogCaptureFixture) -> None:
