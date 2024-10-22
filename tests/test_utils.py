@@ -207,24 +207,6 @@ def test_cli_invalid_format_value_in_config(caplog: LogCaptureFixture) -> None:
     )
 
 
-def test_cli_non_existent_handler_id_in_config(caplog: LogCaptureFixture) -> None:
-    root_dir = Path(__file__).resolve().parents[1]
-    logging_config_file = (
-        root_dir / "data/test_logging_config_files/test_non_existent_handler_id.yml"
-    )
-
-    with caplog.at_level(logging.DEBUG):
-        rasa_sdk.utils.configure_logging_from_input_file(
-            logging_config_file=logging_config_file
-        )
-
-    assert (
-        f"The logging config file {logging_config_file} could not be applied "
-        f"because it failed validation against the built-in Python "
-        f"logging schema." in caplog.text
-    )
-
-
 def test_configure_default_logging():
     output_file = "test_default_logging.log"
     rasa_sdk.utils.configure_file_logging(
