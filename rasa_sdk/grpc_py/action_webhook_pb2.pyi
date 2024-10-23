@@ -7,19 +7,19 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class ActionsRequest(_message.Message):
-    __slots__ = []
+    __slots__ = ()
     def __init__(self) -> None: ...
 
 class ActionsResponse(_message.Message):
-    __slots__ = ["actions"]
+    __slots__ = ("actions",)
     ACTIONS_FIELD_NUMBER: _ClassVar[int]
     actions: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
     def __init__(self, actions: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ...) -> None: ...
 
 class Tracker(_message.Message):
-    __slots__ = ["sender_id", "slots", "latest_message", "events", "paused", "followup_action", "active_loop", "latest_action_name", "stack"]
+    __slots__ = ("sender_id", "slots", "latest_message", "events", "paused", "followup_action", "active_loop", "latest_action_name", "stack")
     class ActiveLoopEntry(_message.Message):
-        __slots__ = ["key", "value"]
+        __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
         key: str
@@ -46,7 +46,7 @@ class Tracker(_message.Message):
     def __init__(self, sender_id: _Optional[str] = ..., slots: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., latest_message: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., events: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., paused: bool = ..., followup_action: _Optional[str] = ..., active_loop: _Optional[_Mapping[str, str]] = ..., latest_action_name: _Optional[str] = ..., stack: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ...) -> None: ...
 
 class Intent(_message.Message):
-    __slots__ = ["string_value", "dict_value"]
+    __slots__ = ("string_value", "dict_value")
     STRING_VALUE_FIELD_NUMBER: _ClassVar[int]
     DICT_VALUE_FIELD_NUMBER: _ClassVar[int]
     string_value: str
@@ -54,7 +54,7 @@ class Intent(_message.Message):
     def __init__(self, string_value: _Optional[str] = ..., dict_value: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class Entity(_message.Message):
-    __slots__ = ["string_value", "dict_value"]
+    __slots__ = ("string_value", "dict_value")
     STRING_VALUE_FIELD_NUMBER: _ClassVar[int]
     DICT_VALUE_FIELD_NUMBER: _ClassVar[int]
     string_value: str
@@ -62,7 +62,7 @@ class Entity(_message.Message):
     def __init__(self, string_value: _Optional[str] = ..., dict_value: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class Action(_message.Message):
-    __slots__ = ["string_value", "dict_value"]
+    __slots__ = ("string_value", "dict_value")
     STRING_VALUE_FIELD_NUMBER: _ClassVar[int]
     DICT_VALUE_FIELD_NUMBER: _ClassVar[int]
     string_value: str
@@ -70,7 +70,7 @@ class Action(_message.Message):
     def __init__(self, string_value: _Optional[str] = ..., dict_value: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class Domain(_message.Message):
-    __slots__ = ["config", "session_config", "intents", "entities", "slots", "responses", "actions", "forms", "e2e_actions"]
+    __slots__ = ("config", "session_config", "intents", "entities", "slots", "responses", "actions", "forms", "e2e_actions")
     CONFIG_FIELD_NUMBER: _ClassVar[int]
     SESSION_CONFIG_FIELD_NUMBER: _ClassVar[int]
     INTENTS_FIELD_NUMBER: _ClassVar[int]
@@ -92,7 +92,7 @@ class Domain(_message.Message):
     def __init__(self, config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., session_config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., intents: _Optional[_Iterable[_Union[Intent, _Mapping]]] = ..., entities: _Optional[_Iterable[_Union[Entity, _Mapping]]] = ..., slots: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., responses: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., actions: _Optional[_Iterable[_Union[Action, _Mapping]]] = ..., forms: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., e2e_actions: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ...) -> None: ...
 
 class WebhookRequest(_message.Message):
-    __slots__ = ["next_action", "sender_id", "tracker", "domain", "version", "domain_digest"]
+    __slots__ = ("next_action", "sender_id", "tracker", "domain", "version", "domain_digest")
     NEXT_ACTION_FIELD_NUMBER: _ClassVar[int]
     SENDER_ID_FIELD_NUMBER: _ClassVar[int]
     TRACKER_FIELD_NUMBER: _ClassVar[int]
@@ -108,7 +108,7 @@ class WebhookRequest(_message.Message):
     def __init__(self, next_action: _Optional[str] = ..., sender_id: _Optional[str] = ..., tracker: _Optional[_Union[Tracker, _Mapping]] = ..., domain: _Optional[_Union[Domain, _Mapping]] = ..., version: _Optional[str] = ..., domain_digest: _Optional[str] = ...) -> None: ...
 
 class WebhookResponse(_message.Message):
-    __slots__ = ["events", "responses"]
+    __slots__ = ("events", "responses")
     EVENTS_FIELD_NUMBER: _ClassVar[int]
     RESPONSES_FIELD_NUMBER: _ClassVar[int]
     events: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
