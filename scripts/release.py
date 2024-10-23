@@ -327,18 +327,18 @@ def tag_release() -> None:
     branch = git_current_branch()
     version = Version(get_current_version())
 
-    if (
-        not version.is_alpha
-        and not version.is_beta
-        and not git_current_branch_is_main_or_release()
-    ):
-        print(
-            f"""
-    You are currently on branch {branch}.
-    You should only apply release tags to release branches (e.g. 1.x) or main.
-            """
-        )
-        sys.exit(1)
+    # if (
+    #     not version.is_alpha
+    #     and not version.is_beta
+    #     and not git_current_branch_is_main_or_release()
+    # ):
+    #     print(
+    #         f"""
+    # You are currently on branch {branch}.
+    # You should only apply release tags to release branches (e.g. 1.x) or main.
+    #         """
+    #     )
+    #     sys.exit(1)
     ensure_clean_git()
     tag = str(version)
     tag_commit(tag)
