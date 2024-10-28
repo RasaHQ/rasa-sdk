@@ -20,6 +20,7 @@ _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'rasa_sdk.grpc_py.action_webhook_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
+
   DESCRIPTOR._options = None
   _TRACKER_ACTIVELOOPENTRY._options = None
   _TRACKER_ACTIVELOOPENTRY._serialized_options = b'8\001'
