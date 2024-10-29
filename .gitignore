@@ -119,3 +119,5 @@ tests/executor_test_packages
 
 grpc-standalone-server-integration-test-results.xml
 grpc-server-docker-integration-test-results.xml
+
+.vscode/
