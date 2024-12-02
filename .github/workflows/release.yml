@@ -38,7 +38,7 @@ jobs:
         run:  |
           git config user.name "rasabot"
           git config user.email "rasabot@rasa.com"
-          git checkout -b prepare-release-${{ github.event.inputs.version }}
+          git checkout -b prepare-release-$INPUT_VERSION
           poetry run python scripts/release.py --next_version $INPUT_VERSION
         env:
           INPUT_VERSION: ${{ github.event.inputs.version }}
@@ -47,10 +47,12 @@ jobs:
         uses: devops-infra/action-pull-request@e66e2ba93519dc63b9884a26e620e2fd0cffab2c # v0.5.5
         with:
           github_token: ${{ env.GITHUB_TOKEN }}
-          source_branch: prepare-release-${{ github.event.inputs.version }}
+          source_branch: prepare-release-${{ env.VERSION }}
           target_branch: main
           body: "**Automated pull request for Rasa SDK release.**"
           title: Release ${{ github.event.inputs.version }}
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
 
   if_merged_tag_release:
     name: Tag Release Version
