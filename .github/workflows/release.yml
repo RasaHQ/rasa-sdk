@@ -19,6 +19,7 @@ env:
 
 jobs:
   prepare-the-release:
+    name: Prepare the Release
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-22.04
     steps:
