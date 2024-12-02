@@ -361,7 +361,9 @@ def main(args: argparse.Namespace) -> None:
             version = parse_next_version(args.next_version)
         else:
             version = next_version(args)
-        confirm_version(version)
+        # Skip confirmation if --next_version is provided
+        if not args.next_version:
+            confirm_version(version)
 
         write_version_file(version)
         write_version_to_pyproject(version)
