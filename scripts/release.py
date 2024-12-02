@@ -357,7 +357,10 @@ def main(args: argparse.Namespace) -> None:
         )
 
         ensure_clean_git()
-        version = next_version(args)
+        if args.next_version:
+            version = parse_next_version(args.next_version)
+        else:
+            version = next_version(args)
         confirm_version(version)
 
         write_version_file(version)
@@ -371,7 +374,6 @@ def main(args: argparse.Namespace) -> None:
         if version.is_alpha and not git_current_branch_is_main_or_release():
             create_commit(version)
             push_changes()
-
             print_done_message_same_branch(version)
         else:
             base = git_current_branch()
