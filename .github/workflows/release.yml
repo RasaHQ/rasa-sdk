@@ -16,6 +16,7 @@ env:
   COMMIT_EMAIL: sara-tagger@users.noreply.github.com
   DEFAULT_PYTHON_VERSION: "3.10"
   GITHUB_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
+  INPUT_VERSION: ${{ github.event.inputs.version }}
 
 jobs:
   prepare-the-release:
@@ -85,8 +86,6 @@ jobs:
           git config user.name "rasabot"
           git config user.email "rasabot@rasa.com"
           poetry run python scripts/release.py --next_version $INPUT_VERSION
-        env:
-          INPUT_VERSION: ${{ github.event.inputs.version }}
 
       - name: Create pull request
         uses: devops-infra/action-pull-request@e66e2ba93519dc63b9884a26e620e2fd0cffab2c # v0.5.5
@@ -96,8 +95,6 @@ jobs:
           target_branch: ${{ env.base_branch }}
           body: "**Automated pull request for Rasa SDK release.**"
           title: Release ${{ github.event.inputs.version }}
-        env:
-          INPUT_VERSION: ${{ github.event.inputs.version }}
 
   if_merged_tag_release:
     name: Tag Release Version
