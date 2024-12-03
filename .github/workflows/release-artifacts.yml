@@ -161,7 +161,7 @@ jobs:
         with:
           # Send notification to #release slack channel
           channel-id: "C024Z61K9QU"
-          slack-message: ":rocket: New *Rasa SDKe* version `${{ env.TAG_VERSION }}` has been released! More information can be found <https://github.com/RasaHQ/rasa-sdk/releases/tag/${{ env.TAG_VERSION }}|here>."
+          slack-message: ":rocket: New *Rasa SDK* version `${{ env.TAG_VERSION }}` has been released! More information can be found <https://github.com/RasaHQ/rasa-sdk/releases/tag/${{ env.TAG_VERSION }}|here>."
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
@@ -171,6 +171,6 @@ jobs:
         with:
           # Send notification to #devtribe slack channel
           channel-id: "C061J0LGHU0"
-          slack-message: ":broken_heart: *Rasa SDKe* release version `${{ env.TAG_VERSION }}` has failed! More information can be found <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|here>."
+          slack-message: ":broken_heart: *Rasa SDK* release version `${{ env.TAG_VERSION }}` has failed! More information can be found <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|here>."
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
