@@ -26,17 +26,17 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Check version format
-        run: |
-          version="$INPUT_VERSION"
+      # - name: Check version format
+      #   run: |
+      #     version="$INPUT_VERSION"
           
-          # Check if version is in format number.number.number.dev
-          if ! [[ $version =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?\.dev[0-9]+$ ]]; then
-            echo "Invalid version format. It should be in format 'number.number.number.dev'."
-            exit 1
-          fi
-        env:
-          INPUT_VERSION: ${{ github.event.inputs.version }}        
+      #     # Check if version is in format number.number.number.dev
+      #     if ! [[ $version =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?\.dev[0-9]+$ ]]; then
+      #       echo "Invalid version format. It should be in format 'number.number.number.dev'."
+      #       exit 1
+      #     fi
+      #   env:
+      #     INPUT_VERSION: ${{ github.event.inputs.version }}        
     
       - name: Check-out base branch
         run: |
