@@ -63,7 +63,7 @@ jobs:
         with:
           github_token: ${{ env.GITHUB_TOKEN }}
           source_branch: prepare-release-${{ env.INPUT_VERSION }}
-          target_branch: ${{ env.base_branch }}
+          target_branch: ${{ env.BASE_BRANCH }}
           body: "**Automated pull request for Rasa SDK release.**"
           title: Release ${{ github.event.inputs.version }}
         env:
