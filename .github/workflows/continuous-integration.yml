@@ -141,6 +141,7 @@ jobs:
 
   rasa-sdk-dev-docker-image:
     name: Build dev Docker image
+    if: "!startsWith(github.ref, 'refs/heads/prepare-release-')"
     runs-on: ubuntu-22.04
 
     steps:
@@ -167,6 +168,7 @@ jobs:
 
   rasa-sdk-with-dev-deps-docker-image:
     name: Build dev Docker image with dev dependencies
+    if: "!startsWith(github.ref, 'refs/heads/prepare-release-')"
     runs-on: ubuntu-22.04
 
     steps:
@@ -193,6 +195,7 @@ jobs:
 
   grpc_standalone_integration_tests:
     name: Run gRPC integration tests using standalone server
+    if: "!startsWith(github.ref, 'refs/heads/prepare-release-')"
     runs-on: ubuntu-22.04
     needs: [rasa-sdk-with-dev-deps-docker-image]
 
@@ -219,6 +222,7 @@ jobs:
 
   grpc_docker_integration_tests:
     name: Run gRPC integration tests using Docker containers
+    if: "!startsWith(github.ref, 'refs/heads/prepare-release-')"
     runs-on: ubuntu-22.04
     needs: [rasa-sdk-dev-docker-image, rasa-sdk-with-dev-deps-docker-image]
 
