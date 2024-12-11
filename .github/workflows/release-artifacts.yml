@@ -13,7 +13,7 @@ on:
 jobs:
   release-artifacts-docker:
     name: Release Artifacts Docker
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     outputs:
       tag_version: ${{ steps.set-tag-version.outputs.tag_version }}
@@ -57,7 +57,7 @@ jobs:
             
   release-artifacts-pypi:
     name: Release Artifacts PyPI
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     
     steps:
       - name: Checkout git repository 🕝
@@ -103,7 +103,7 @@ jobs:
 
   release-artifact-slack-notifications:
     name: Release Analytics Artifact Slack Notifications
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [release-artifacts-docker, release-artifacts-pypi]
     if: always()  # Ensures this job runs regardless of the result of previous jobs
 
