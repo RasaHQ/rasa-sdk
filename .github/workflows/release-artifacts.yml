@@ -94,17 +94,6 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
           skip_existing: true
-      
-      - name: Publish Release Notes 🗞
-        if: success()
-        env:
-          GITHUB_TAG: ${{ needs.define-release-version.outputs.version }}
-          GITHUB_REPO_SLUG: ${{ github.repository }}
-          GITHUB_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
-        run: |
-          GITHUB_TAG=$GITHUB_TAG
-          pip install -U github3.py pep440-version-utils
-          python3 scripts/publish_gh_release_notes.py
 
   release-atifacts-publish-release:
     name: Release Artifacts Publish Release
