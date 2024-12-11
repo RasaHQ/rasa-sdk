@@ -13,7 +13,7 @@ on:
 jobs:
   release-artifacts-docker:
     name: Release Artifacts Docker
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     outputs:
       tag_version: ${{ steps.set-tag-version.outputs.tag_version }}
@@ -89,6 +89,29 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
           skip_existing: true
+      
+      - name: Publish Release Notes 🗞
+        if: success()
+        env:
+          GITHUB_TAG: ${{ needs.release-artifacts-docker.outputs.tag_version }}
+          GITHUB_REPO_SLUG: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
+        run: |
+          GITHUB_TAG=$GITHUB_TAG
+          pip install -U github3.py pep440-version-utils
+          python3 scripts/publish_gh_release_notes.py
+
+  release-atifacts-publish-release:
+    name: Release Artifacts Publish Release
+    runs-on: ubuntu-22.04
+    needs: [release-artifacts-docker, release-artifacts-pypi]
+
+    steps:
+      - name: Check out code
+        if: success()
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ needs.release-artifacts-docker.outputs.tag_version }}
       
       - name: Publish Release Notes 🗞
         if: success()
