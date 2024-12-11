@@ -61,7 +61,7 @@ jobs:
             
   release-artifacts-pypi:
     name: Release Artifacts PyPI
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: define-release-version
     
     steps:
@@ -108,7 +108,7 @@ jobs:
 
   release-atifacts-publish-release:
     name: Release Artifacts Publish Release
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [define-release-version, release-artifacts-docker, release-artifacts-pypi]
 
     steps:
@@ -131,8 +131,9 @@ jobs:
 
   release-artifact-slack-notifications:
     name: Release Analytics Artifact Slack Notifications
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [define-release-version, release-artifacts-docker, release-artifacts-pypi]
+
     if: always()  # Ensures this job runs regardless of the result of previous jobs
 
     steps:
