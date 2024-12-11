@@ -11,22 +11,20 @@ on:
         required: true
 
 jobs:
-  release-artifacts-docker:
-    name: Release Artifacts Docker
-    runs-on: ubuntu-22.04
+  define-release-version:
+    name: Define Release Version
+    runs-on: ubuntu-24.04
 
     outputs:
-      tag_version: ${{ steps.set-tag-version.outputs.tag_version }}
+      version: ${{ steps.set-tag-version.outputs.tag_version }}
     
     steps:
-      - name: Set tag version
+      - name: Define release version
         id: set-tag-version
         run: |
           if [[ -n "$GITHUB_REF" && "$GITHUB_REF" == refs/tags/* ]]; then
-            echo "TAG_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
             echo "tag_version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           elif [[ -n "$INPUT_TAG_VERSION" ]]; then
-            echo "TAG_VERSION=$INPUT_TAG_VERSION" >> $GITHUB_ENV
             echo "tag_version=$INPUT_TAG_VERSION" >> $GITHUB_OUTPUT
           else
             echo "No tag version found."
@@ -34,11 +32,17 @@ jobs:
           fi
         env:
           INPUT_TAG_VERSION: ${{ github.event.inputs.tag_version }}
-          
+      
+  release-artifacts-docker:
+    name: Release Artifacts Docker
+    runs-on: ubuntu-24.04
+    needs: define-release-version
+  
+    steps:
       - name: Check out code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
-          ref: ${{ env.TAG_VERSION }}
+          ref: ${{ needs.define-release-version.outputs.version }}
           
       - name: Set up QEMU
         uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
@@ -52,18 +56,19 @@ jobs:
       - name: Build and Push Docker image 📦
         run: |
           IMAGE_NAME=rasa/rasa-sdk
-          IMAGE_TAG="${TAG_VERSION}"
+          IMAGE_TAG="${{ needs.define-release-version.outputs.version }}"
           make build-and-push-multi-platform-docker
             
   release-artifacts-pypi:
     name: Release Artifacts PyPI
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    needs: define-release-version
     
     steps:
       - name: Checkout git repository 🕝
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
-          ref: ${{ needs.release-artifacts-docker.outputs.tag_version }}
+          ref: ${{ needs.define-release-version.outputs.version }}
 
       - name: Set up Python 3.10 🐍
         uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435
@@ -89,11 +94,23 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
           skip_existing: true
+
+  release-atifacts-publish-release:
+    name: Release Artifacts Publish Release
+    runs-on: ubuntu-24.04
+    needs: [define-release-version, release-artifacts-docker, release-artifacts-pypi]
+
+    steps:
+      - name: Check out code
+        if: success()
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ needs.define-release-version.outputs.version }}
       
       - name: Publish Release Notes 🗞
         if: success()
         env:
-          GITHUB_TAG: ${{ needs.release-artifacts-docker.outputs.tag_version }}
+          GITHUB_TAG: ${{ needs.define-release-version.outputs.version }}
           GITHUB_REPO_SLUG: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
         run: |
@@ -103,27 +120,19 @@ jobs:
 
   release-artifact-slack-notifications:
     name: Release Analytics Artifact Slack Notifications
-    runs-on: ubuntu-22.04
-    needs: [release-artifacts-docker, release-artifacts-pypi]
+    runs-on: ubuntu-24.04
+    needs: [define-release-version, release-artifacts-docker, release-artifacts-pypi]
+
     if: always()  # Ensures this job runs regardless of the result of previous jobs
 
     steps:
-      - name: Set tag version
-        run: |
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            echo "TAG_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          else
-            echo "No tag version found."
-            exit 1
-          fi
-
       - name: Notify Slack of successful release 💬
         if: ${{ needs.build_docker_image.result == 'success' && needs.deploy.result == 'success' }}
         uses: slackapi/slack-github-action@6c661ce58804a1a20f6dc5fbee7f0381b469e001 #v 1.25.0
         with:
           # Send notification to #release slack channel
           channel-id: "C024Z61K9QU"
-          slack-message: ":rocket: New *Rasa SDK* version `${{ needs.release-artifacts-docker.outputs.tag_version }}` has been released! More information can be found <https://github.com/RasaHQ/rasa-sdk/releases/tag/${{ env.TAG_VERSION }}|here>."
+          slack-message: ":rocket: New *Rasa SDK* version `${{ needs.define-release-version.outputs.version }}` has been released! More information can be found <https://github.com/RasaHQ/rasa-sdk/releases/tag/${{ needs.define-release-version.outputs.version }}|here>."
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
@@ -133,6 +142,6 @@ jobs:
         with:
           # Send notification to #devtribe slack channel
           channel-id: "C061J0LGHU0"
-          slack-message: ":broken_heart: *Rasa SDK* release version `${{ needs.release-artifacts-docker.outputs.tag_version }}` has failed! More information can be found <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|here>."
+          slack-message: ":broken_heart: *Rasa SDK* release version `${{ needs.define-release-version.outputs.version }}` has failed! More information can be found <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|here>."
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
