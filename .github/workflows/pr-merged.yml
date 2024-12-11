@@ -20,7 +20,7 @@ permissions:
 jobs:
   rasa-sdk-dev-docker-image:
     name: Build Dev Docker Image and Push to AWS
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Check out code

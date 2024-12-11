@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   get_tags:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     continue-on-error: true
     outputs:
       tags: ${{ steps.tags.outputs.tags }}
@@ -61,7 +61,7 @@ jobs:
       
 
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: get_tags
     # Don't allow a single image failure to block all the image builds.
     continue-on-error: true
