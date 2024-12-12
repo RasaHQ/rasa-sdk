@@ -29,7 +29,7 @@ permissions:
 jobs:
   quality:
     name: Code Quality
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout git repository 🕝
@@ -85,7 +85,7 @@ jobs:
 
   test:
     name: Run Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: [3.8, 3.9, '3.10']
@@ -131,7 +131,7 @@ jobs:
 
   docker_linter:
     name: Lint Dockerfile
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
       - name: Lint Dockerfile
@@ -141,7 +141,7 @@ jobs:
 
   rasa-sdk-dev-docker-image:
     name: Build dev Docker image
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Check out code
@@ -167,7 +167,7 @@ jobs:
 
   rasa-sdk-with-dev-deps-docker-image:
     name: Build dev Docker image with dev dependencies
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Check out code
@@ -193,7 +193,7 @@ jobs:
 
   grpc_standalone_integration_tests:
     name: Run gRPC integration tests using standalone server
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [rasa-sdk-with-dev-deps-docker-image]
 
     steps:
@@ -219,7 +219,7 @@ jobs:
 
   grpc_docker_integration_tests:
     name: Run gRPC integration tests using Docker containers
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [rasa-sdk-dev-docker-image, rasa-sdk-with-dev-deps-docker-image]
 
     steps:
