@@ -121,7 +121,7 @@ jobs:
   release-artifact-slack-notifications:
     name: Release Analytics Artifact Slack Notifications
     runs-on: ubuntu-24.04
-    needs: [define-release-version, release-artifacts-docker, release-artifacts-pypi]
+    needs: [define-release-version, release-artifacts-docker, release-artifacts-pypi, release-atifacts-publish-release]
 
     if: always()  # Ensures this job runs regardless of the result of previous jobs
 
