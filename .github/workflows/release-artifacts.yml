@@ -5,101 +5,70 @@ on:
     tags:
       - "*"
   workflow_dispatch:
+    inputs:
+      tag_version:
+        description: 'Tag version:'
+        required: true
 
 jobs:
-  build_docker_image_set_env:
-    name: Prepare environment for Docker build
+  define-release-version:
+    name: Define Release Version
     runs-on: ubuntu-24.04
-    if: github.repository == 'RasaHQ/rasa-sdk'
+
     outputs:
-      # Tag name used for intermediate images created during Docker image builds, e.g. 3886 - a PR number
-      image_tag: ${{ steps.set_output.outputs.image_tag }}
-      # Return 'true' if tag version is equal or higher than the latest tagged rasa-sdk version
-      is_newest_version: ${{ steps.rasa_sdk_get_version.outputs.is_newest_version }}
+      version: ${{ steps.set-tag-version.outputs.tag_version }}
+    
     steps:
-      - name: Checkout git repository 🕝
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
-
-      # Set environment variables for a tag
-      #
-      # In this scenario, we've pushed the '2.4.1' tag
-      #
-      # Example output:
-      # IMAGE_TAG=2.4.1
-      - name: Set image_tag
+      - name: Define release version
+        id: set-tag-version
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "IMAGE_TAG=${TAG_NAME}" >> $GITHUB_ENV
-          echo "image_tag=${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
-
-      - name: Set is_newest_version
-        id: rasa_sdk_get_version
-        run: |
-          # Get latest tagged rasa-sdk version
-          git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
-          # Fetch branch history
-          git fetch --prune --unshallow
-          LATEST_TAGGED_NON_ALPHA_RASA_SDK_VERSION=$(git tag | sort -r -V | grep -E "^[0-9.]+$" | head -n1)
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
-          # Return 'true' if tag version is equal or higher than the latest tagged rasa-sdk version
-          IS_NEWEST_VERSION=$((printf '%s\n%s\n' "${LATEST_TAGGED_NON_ALPHA_RASA_SDK_VERSION}" "$CURRENT_TAG" \
-            | sort -V -C && echo true || echo false) || true)
-
-
-          if [[ "${IS_NEWEST_VERSION}" == "true" && "$CURRENT_TAG" =~ ^[0-9.]+$ ]]; then
-            echo "is_newest_version=true" >> $GITHUB_OUTPUT
+          if [[ -n "$GITHUB_REF" && "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "tag_version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          elif [[ -n "$INPUT_TAG_VERSION" ]]; then
+            echo "tag_version=$INPUT_TAG_VERSION" >> $GITHUB_OUTPUT
           else
-            echo "is_newest_version=false" >> $GITHUB_OUTPUT
+            echo "No tag version found."
+            exit 1
           fi
-
-  build_docker_image:
-    name: Build Docker image
+        env:
+          INPUT_TAG_VERSION: ${{ github.event.inputs.tag_version }}
+      
+  release-artifacts-docker:
+    name: Release Artifacts Docker
     runs-on: ubuntu-24.04
-    needs: [ build_docker_image_set_env ]
-    if: github.repository == 'RasaHQ/rasa-sdk'
-
+    needs: define-release-version
+  
     steps:
-      - name: Checkout git repository 🕝
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
-
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ needs.define-release-version.outputs.version }}
+          
       - name: Set up QEMU
         uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@0d103c3126aa41d772a8362f6aa67afac040f80c  # v3.1.0
 
-      - name: Set environment variables
-        run: |
-          echo "IMAGE_TAG=${{ needs.build_docker_image_set_env.outputs.image_tag }}" >> $GITHUB_ENV
-
       - name: Login to Docker Hub Registry 🔢
         run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin || true
 
       - name: Build and Push Docker image 📦
         run: |
-          IS_NEWEST_VERSION=${{ needs.build_docker_image_set_env.outputs.is_newest_version }}
-
-          # Push image
-          IMAGE_NAME=rasa/rasa-sdk \
-          IMAGE_TAG=${GITHUB_REF#refs/tags/} \
+          IMAGE_NAME=rasa/rasa-sdk
+          IMAGE_TAG="${{ needs.define-release-version.outputs.version }}"
           make build-and-push-multi-platform-docker
-
-          # Tag the image as latest
-          if [[ "${IS_NEWEST_VERSION}" == "true" ]]; then
-            IMAGE_TAG=latest \
-            make build-and-push-multi-platform-docker
-          fi
-
-  deploy:
-    name: Deploy to PyPI
+            
+  release-artifacts-pypi:
+    name: Release Artifacts PyPI
     runs-on: ubuntu-24.04
-
-    # deploy will only be run when there is a tag available
-    needs: [ build_docker_image ] # only run after all other stages succeeded
-
+    needs: define-release-version
+    
     steps:
       - name: Checkout git repository 🕝
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ needs.define-release-version.outputs.version }}
 
       - name: Set up Python 3.10 🐍
         uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435
@@ -126,37 +95,53 @@ jobs:
           password: ${{ secrets.PYPI_TOKEN }}
           skip_existing: true
 
+  release-atifacts-publish-release:
+    name: Release Artifacts Publish Release
+    runs-on: ubuntu-24.04
+    needs: [define-release-version, release-artifacts-docker, release-artifacts-pypi]
+
+    steps:
+      - name: Check out code
+        if: success()
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ needs.define-release-version.outputs.version }}
+      
       - name: Publish Release Notes 🗞
-        if: env.IS_TAG_BUILD
+        if: success()
         env:
-          GITHUB_TAG: ${{ github.ref }}
+          GITHUB_TAG: ${{ needs.define-release-version.outputs.version }}
           GITHUB_REPO_SLUG: ${{ github.repository }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
         run: |
-          GITHUB_TAG=${GITHUB_TAG/refs\/tags\//}
-          sudo apt-get update
-          sudo apt-get -y install pandoc
-          pip install -U github3.py pep440_version_utils
-          python3 ${GITHUB_WORKSPACE}/scripts/publish_gh_release_notes.py
+          GITHUB_TAG=$GITHUB_TAG
+          pip install -U github3.py pep440-version-utils
+          python3 scripts/publish_gh_release_notes.py
 
-      - name: Get RASA SDK Version
-        env:
-          RASA_SDK_VERSION: ${{ github.ref }}
-        run: |
-          echo "RASA_SDK_VERSION=${RASA_SDK_VERSION/refs\/tags\//}" >> $GITHUB_ENV
+  release-artifact-slack-notifications:
+    name: Release Analytics Artifact Slack Notifications
+    runs-on: ubuntu-24.04
+    needs: [define-release-version, release-artifacts-docker, release-artifacts-pypi, release-atifacts-publish-release]
 
-      - name: Notify Slack 💬
-        if: env.IS_TAG_BUILD && success()
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_RELEASE_ASSISTANT_RELEASE_WEBHOOK }}
-        uses: Ilshidur/action-slack@2.1.0
+    if: always()  # Ensures this job runs regardless of the result of previous jobs
+
+    steps:
+      - name: Notify Slack of successful release 💬
+        if: ${{ needs.release-artifacts-docker.result == 'success' && needs.release-artifacts-pypi.result == 'success' }}
+        uses: slackapi/slack-github-action@6c661ce58804a1a20f6dc5fbee7f0381b469e001 #v 1.25.0
         with:
-          args: "⚡ New *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} has been released! Changelog: https://github.com/RasaHQ/rasa-sdk/blob/${{ env.RASA_SDK_VERSION }}/CHANGELOG.mdx"
-
-      - name: Notify Slack of Failure ⛔
-        if: env.IS_TAG_BUILD && failure()
+          # Send notification to #release slack channel
+          channel-id: "C024Z61K9QU"
+          slack-message: ":rocket: New *Rasa SDK* version `${{ needs.define-release-version.outputs.version }}` has been released! More information can be found <https://github.com/RasaHQ/rasa-sdk/releases/tag/${{ needs.define-release-version.outputs.version }}|here>."
         env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_RELEASE_ASSISTANT_DEV_TRIBE_WEBHOOK }}
-        uses: Ilshidur/action-slack@2.1.0
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Notify Slack of unsuccessful release ⛔️
+        if: ${{ needs.release-artifacts-docker.result == 'success' && needs.release-artifacts-pypi.result == 'success' }}
+        uses: slackapi/slack-github-action@6c661ce58804a1a20f6dc5fbee7f0381b469e001 #v 1.25.0
         with:
-          args: "⛔️ *Rasa SDK* version ${{ env.RASA_SDK_VERSION }} could not be released 😱 GitHub Actions: https://github.com/RasaHQ/rasa-sdk/actions?query=branch%3A${{ env.RASA_SDK_VERSION }}"
+          # Send notification to #devtribe slack channel
+          channel-id: "C061J0LGHU0"
+          slack-message: ":broken_heart: *Rasa SDK* release version `${{ needs.define-release-version.outputs.version }}` has failed! More information can be found <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|here>."
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
