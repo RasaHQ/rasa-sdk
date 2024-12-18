@@ -56,8 +56,10 @@ jobs:
       - name: Build and Push Docker image 📦
         run: |
           IMAGE_NAME=rasa/rasa-sdk
-          IMAGE_TAG="${{ needs.define-release-version.outputs.version }}"
+          IMAGE_TAG=$IMAGE_TAG
           make build-and-push-multi-platform-docker
+        env:
+          IMAGE_TAG: ${{ needs.define-release-version.outputs.version }}
             
   release-artifacts-pypi:
     name: Release Artifacts PyPI
