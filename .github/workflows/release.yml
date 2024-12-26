@@ -7,7 +7,7 @@ on:
         description: 'Version to release'
         required: true
       fromMain:
-        description: 'Release from main?'
+        description: 'Release from main'
         type: boolean
         required: true
         default: false
