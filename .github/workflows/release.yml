@@ -6,6 +6,11 @@ on:
       version:
         description: 'Version to release'
         required: true
+      fromMain:
+        description: 'Release from main?'
+        type: boolean
+        required: true
+        default: false
   pull_request:
     branches:
       - main
@@ -17,6 +22,7 @@ env:
   DEFAULT_PYTHON_VERSION: "3.10"
   GITHUB_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
   INPUT_VERSION: ${{ github.event.inputs.version }}
+  RELEASE_FOM_MAIN: ${{ github.event.inputs.fromMain }}
 
 jobs:
   prepare-the-release:
@@ -29,23 +35,32 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Minor Release Check
-        id: minor_release
+      - name: Dev or RC Release - Check if this is DEV or RC release
+        id: dev_or_rc_check
         run: |
           version="$INPUT_VERSION"
           
-          # Check if version is in format number.number.number
-          if ! [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Invalid version format. It should be in format 'number.number.number'."
-            exit 1
+          # Check if version contains 'dev' or 'rc'
+          if [[ "$version" == *"dev"* || "$version" == *"rc"* ]]; then
+            echo "Dev or RC release detected."
+            echo "is_dev=true" >> $GITHUB_ENV
+          else
+            echo "Not a Dev or RC release."
+            echo "is_dev=false" >> $GITHUB_ENV
           fi
-
+      
+      - name: Minor Release - Check if this is a minor release
+        if: env.is_dev == 'false'
+        id: minor_release
+        run: |
+          version="$INPUT_VERSION"
+      
           # Extract the third number
           IFS='.' read -r -a version_parts <<< "$version"
           third_number="${version_parts[2]}"
-
-          # Check if it's a minor release
-          if [ "$third_number" -eq 0 ]; then
+      
+          # Check if third number is equivalent to 0 and no trailing chars
+          if [[ "$third_number" =~ ^0$ ]]; then
             echo "Minor release detected."
             echo "is_minor=true" >> $GITHUB_ENV
           else
@@ -53,8 +68,8 @@ jobs:
             echo "is_minor=false" >> $GITHUB_ENV
           fi
     
-      - name: Create and Push New Release Branch
-        if: env.is_minor == 'true'
+      - name: Minor Release - Create and push new minor release branch
+        if: ${{ env.is_minor == 'true' && env.is_dev == 'false' }}
         run: |
           version="$INPUT_VERSION"
           IFS='.' read -r -a version_parts <<< "$version"
@@ -65,7 +80,8 @@ jobs:
           git checkout -b $release_branch
           git push origin $release_branch
         
-      - name: Check-out Release Branch
+      - name: Check-out .x branch
+        if: env.RELEASE_FOM_MAIN == 'false'
         run: |
           version="$INPUT_VERSION"
           IFS='.' read -r -a version_parts <<< "$version"
@@ -75,6 +91,11 @@ jobs:
           
           git checkout $release_branch
           git branch
+
+      - name: Check-out main branch
+        if: env.RELEASE_FOM_MAIN == 'true'
+        run: |
+          git checkout main
 
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python-env
