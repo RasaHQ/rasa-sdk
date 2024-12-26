@@ -96,6 +96,8 @@ jobs:
         if: env.RELEASE_FOM_MAIN == 'true'
         run: |
           git checkout main
+          echo "base_branch=main" >> $GITHUB_ENV
+          echo $base_branch
 
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python-env
