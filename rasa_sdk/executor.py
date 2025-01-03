@@ -362,14 +362,13 @@ class ActionExecutor:
                 new_module = importlib.reload(module)
                 self._modules[path] = TimestampModule(timestamp, new_module)
                 logger.info(
-                    f"Reloaded module/package: '{module.__name__}' "
-                    f"(file: '{os.path.relpath(path)}')"
+                    f"Reloaded module/package: '{module.__name__}' (file: '{path}')"
                 )
                 any_module_reloaded = True
             except (SyntaxError, ImportError):
                 logger.exception(
                     f"Error while reloading module/package: '{module.__name__}' "
-                    f"(file: '{os.path.relpath(path)}'):"
+                    f"(file: '{path}'):"
                 )
                 logger.info("Please fix the error(s) in the Python file and try again.")
 
