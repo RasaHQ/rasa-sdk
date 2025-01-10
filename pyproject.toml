@@ -97,7 +97,7 @@ towncrier = "^23.6.0"
 toml = "^0.10.0"
 pep440-version-utils = "^0.3.0"
 semantic_version = "^2.8.5"
-mypy = "^1.5"
+mypy = "^1.14"
 sanic-testing = "^22.12"
 
 [tool.ruff.lint]
@@ -113,5 +113,5 @@ convention = "google"
 
 [tool.poetry.group.dev.dependencies]
 ruff = ">=0.3.5,<0.4.0"
-pytest-asyncio = "^0.21.0"
+pytest-asyncio = "^0.23.6"
 types-protobuf = "4.25.0.20240417"
