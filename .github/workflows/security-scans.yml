@@ -8,7 +8,7 @@ jobs:
 
   trivy:
     name: Detecting hardcoded secrets
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
       with:
