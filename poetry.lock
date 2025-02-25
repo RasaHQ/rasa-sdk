@@ -58,13 +58,13 @@ files = [
 
 [[package]]
 name = "certifi"
-version = "2024.7.4"
+version = "2024.12.14"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.7.4-py3-none-any.whl", hash = "sha256:c198e21b1289c2ab85ee4e67bb4b4ef3ead0892059901a8d5b622f24a1101e90"},
-    {file = "certifi-2024.7.4.tar.gz", hash = "sha256:5a1e7645bc0ec61a09e26c36f6106dd4cf40c6db3a1fb6352b0244e7fb057c7b"},
+    {file = "certifi-2024.12.14-py3-none-any.whl", hash = "sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56"},
+    {file = "certifi-2024.12.14.tar.gz", hash = "sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db"},
 ]
 
 [[package]]
@@ -346,20 +346,20 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "googleapis-common-protos"
-version = "1.56.1"
+version = "1.68.0"
 description = "Common protobufs used in Google APIs"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "googleapis-common-protos-1.56.1.tar.gz", hash = "sha256:6b5ee59dc646eb61a8eb65ee1db186d3df6687c8804830024f32573298bca19b"},
-    {file = "googleapis_common_protos-1.56.1-py2.py3-none-any.whl", hash = "sha256:ddcd955b5bb6589368f659fa475373faa1ed7d09cde5ba25e88513d87007e174"},
+    {file = "googleapis_common_protos-1.68.0-py2.py3-none-any.whl", hash = "sha256:aaf179b2f81df26dfadac95def3b16a95064c76a5f45f07e4c68a21bb371c4ac"},
+    {file = "googleapis_common_protos-1.68.0.tar.gz", hash = "sha256:95d38161f4f9af0d9423eed8fb7b64ffd2568c3464eb542ff02c5bfa1953ab3c"},
 ]
 
 [package.dependencies]
-protobuf = ">=3.15.0"
+protobuf = ">=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<6.0.0.dev0"
 
 [package.extras]
-grpc = ["grpcio (>=1.0.0)"]
+grpc = ["grpcio (>=1.44.0,<2.0.0.dev0)"]
 
 [[package]]
 name = "grpcio"
@@ -936,45 +936,45 @@ setuptools = ">=16.0"
 
 [[package]]
 name = "opentelemetry-exporter-jaeger"
-version = "1.16.0"
+version = "1.11.1"
 description = "Jaeger Exporters for OpenTelemetry"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.6"
 files = [
-    {file = "opentelemetry_exporter_jaeger-1.16.0-py3-none-any.whl", hash = "sha256:1990169a4aea7e32cf88b9b213be884d99de769ea1ccb6da0f7de66ac26802ff"},
-    {file = "opentelemetry_exporter_jaeger-1.16.0.tar.gz", hash = "sha256:742716a764ad6bc7f7aabb3c10a7837699a39a46a3991ead0372425d8c214290"},
+    {file = "opentelemetry-exporter-jaeger-1.11.1.tar.gz", hash = "sha256:eaba2302839ba5579a10bc49eb585fdc59684e5edf53a1563e228d2a73c2dab7"},
+    {file = "opentelemetry_exporter_jaeger-1.11.1-py3-none-any.whl", hash = "sha256:d8bffdf0c0a588000ad227feaa5dfbc15becdb428058903d6cc4719e5368048e"},
 ]
 
 [package.dependencies]
-opentelemetry-exporter-jaeger-proto-grpc = "1.16.0"
-opentelemetry-exporter-jaeger-thrift = "1.16.0"
+opentelemetry-exporter-jaeger-proto-grpc = "1.11.1"
+opentelemetry-exporter-jaeger-thrift = "1.11.1"
 
 [[package]]
 name = "opentelemetry-exporter-jaeger-proto-grpc"
-version = "1.16.0"
+version = "1.11.1"
 description = "Jaeger Protobuf Exporter for OpenTelemetry"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.6"
 files = [
-    {file = "opentelemetry_exporter_jaeger_proto_grpc-1.16.0-py3-none-any.whl", hash = "sha256:14cbb627feafe3298e021894e6594865815faa7f20b0140397526bf8a41ae498"},
-    {file = "opentelemetry_exporter_jaeger_proto_grpc-1.16.0.tar.gz", hash = "sha256:61249214c52062a94b13110cfc8c7f8bea85614a796c7aca7be8f486ae5daeb7"},
+    {file = "opentelemetry-exporter-jaeger-proto-grpc-1.11.1.tar.gz", hash = "sha256:e4ee0ede2cf5e45044ad97aa47d0114847143ffa707fffec32b368c76117832f"},
+    {file = "opentelemetry_exporter_jaeger_proto_grpc-1.11.1-py3-none-any.whl", hash = "sha256:0851c4024285604fedeae01e840a6cb52f5ca15dbe2566eca1e61106b0c0ff99"},
 ]
 
 [package.dependencies]
-googleapis-common-protos = ">=1.52,<1.56.3"
+googleapis-common-protos = ">=1.52,<2.0"
 grpcio = ">=1.0.0,<2.0.0"
 opentelemetry-api = ">=1.3,<2.0"
 opentelemetry-sdk = ">=1.11,<2.0"
 
 [[package]]
 name = "opentelemetry-exporter-jaeger-thrift"
-version = "1.16.0"
+version = "1.11.1"
 description = "Jaeger Thrift Exporter for OpenTelemetry"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.6"
 files = [
-    {file = "opentelemetry_exporter_jaeger_thrift-1.16.0-py3-none-any.whl", hash = "sha256:3e4998479598b70d37ae6325586ac6cc1664be0e3360549d62d50e90d8c50e5f"},
-    {file = "opentelemetry_exporter_jaeger_thrift-1.16.0.tar.gz", hash = "sha256:f8b5cc53b88122c87dac14bf926ec3d934486202e2f708285e7487ffe6bdb4f6"},
+    {file = "opentelemetry-exporter-jaeger-thrift-1.11.1.tar.gz", hash = "sha256:9171c23b6ecf3fb89d326008826e85c8192a4ffa0d172a7a5931f2825b405d20"},
+    {file = "opentelemetry_exporter_jaeger_thrift-1.11.1-py3-none-any.whl", hash = "sha256:431bc3e9020cd42bd785979f9394ab492967af5b6adad24763291dcb95cea2a2"},
 ]
 
 [package.dependencies]
@@ -1590,18 +1590,23 @@ doc = ["Sphinx", "sphinx-rtd-theme"]
 
 [[package]]
 name = "setuptools"
-version = "70.0.0"
+version = "75.3.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-70.0.0-py3-none-any.whl", hash = "sha256:54faa7f2e8d2d11bcd2c07bed282eef1046b5c080d1c32add737d7b5817b1ad4"},
-    {file = "setuptools-70.0.0.tar.gz", hash = "sha256:f211a66637b8fa059bb28183da127d4e86396c991a942b028c6650d4319c3fd0"},
+    {file = "setuptools-75.3.0-py3-none-any.whl", hash = "sha256:f2504966861356aa38616760c0f66568e535562374995367b4e69c7143cf6bcd"},
+    {file = "setuptools-75.3.0.tar.gz", hash = "sha256:fba5dd4d766e97be1b1681d98712680ae8f2f26d7881245f2ce9e40714f1a686"},
 ]
 
 [package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
-testing = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "importlib-metadata", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "mypy (==1.9)", "packaging (>=23.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.1)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-home (>=0.5)", "pytest-mypy", "pytest-perf", "pytest-ruff (>=0.2.1)", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
+check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1)", "ruff (>=0.5.2)"]
+core = ["importlib-metadata (>=6)", "importlib-resources (>=5.10.2)", "jaraco.collections", "jaraco.functools", "jaraco.text (>=3.7)", "more-itertools", "more-itertools (>=8.8)", "packaging", "packaging (>=24)", "platformdirs (>=4.2.2)", "tomli (>=2.0.1)", "wheel (>=0.43.0)"]
+cover = ["pytest-cov"]
+doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
+enabler = ["pytest-enabler (>=2.2)"]
+test = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "jaraco.test (>=5.5)", "packaging (>=23.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.*)", "pytest-home (>=0.5)", "pytest-perf", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel (>=0.44.0)"]
+type = ["importlib-metadata (>=7.0.2)", "jaraco.develop (>=7.21)", "mypy (==1.12.*)", "pytest-mypy"]
 
 [[package]]
 name = "six"
@@ -2046,4 +2051,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">3.8,<3.13"
-content-hash = "0f7c8ff7e982a6a9b563183342b37bc6a5cc666d4800b7cd6f41bf00bb0c14c7"
+content-hash = "31aad734a4f21ea2d6f2d1968df6256a60cb6e73a741625c06d00d65be532810"
