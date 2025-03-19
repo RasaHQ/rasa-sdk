@@ -98,7 +98,7 @@ toml = "^0.10.0"
 pep440-version-utils = "^0.3.0"
 semantic_version = "^2.8.5"
 mypy = "^1.14"
-sanic-testing = "^22.12"
+sanic-testing = "^24.6"
 
 [tool.ruff.lint]
 ignore = [ "D100", "D101", "D102", "D103", "D104", "D105", "RUF005",]
