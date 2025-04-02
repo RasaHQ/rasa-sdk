@@ -43,7 +43,7 @@ RUN python -m venv /opt/venv && \
   . /opt/venv/bin/activate && \
   pip install --no-cache-dir -U pip && \
   pip install --no-cache-dir wheel && \
-  poetry install --no-dev --no-root --no-interaction
+  poetry install --without dev --no-root --no-interaction
 
 # install dependencies and build wheels
 # hadolint ignore=SC1091,DL3013
