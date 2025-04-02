@@ -103,6 +103,9 @@ ruff = ">=0.3.5,<0.4.0"
 pytest-asyncio = "^0.23.6"
 types-protobuf = "4.25.0.20240417"
 
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.8"
+
 [tool.ruff.lint]
 ignore = [ "D100", "D101", "D102", "D103", "D104", "D105", "RUF005",]
 select = [ "D", "E", "F", "W", "RUF",]
