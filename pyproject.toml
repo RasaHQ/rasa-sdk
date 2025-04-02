@@ -88,7 +88,7 @@ pydantic = "^2.6.4"
 grpcio-health-checking = "~1.59.3"
 grpcio-tools = "~1.60.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest-cov = "^4.1.0"
 coveralls = "^3.0.1"
 pytest = "^7.4.0"
@@ -99,6 +99,9 @@ pep440-version-utils = "^0.3.0"
 semantic_version = "^2.8.5"
 mypy = "^1.14"
 sanic-testing = "^22.12"
+ruff = ">=0.3.5,<0.4.0"
+pytest-asyncio = "^0.23.6"
+types-protobuf = "4.25.0.20240417"
 
 [tool.ruff.lint]
 ignore = [ "D100", "D101", "D102", "D103", "D104", "D105", "RUF005",]
@@ -111,7 +114,3 @@ asyncio_mode = "auto"
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.poetry.group.dev.dependencies]
-ruff = ">=0.3.5,<0.4.0"
-pytest-asyncio = "^0.23.6"
-types-protobuf = "4.25.0.20240417"
