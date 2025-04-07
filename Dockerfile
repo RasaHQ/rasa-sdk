@@ -18,7 +18,7 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
 
 FROM base AS python_builder
 
-ARG POETRY_VERSION=1.8.2
+ARG POETRY_VERSION=2.1.2
 
 # hadolint ignore=DL3008
 RUN apt-get update -qq \
@@ -43,7 +43,7 @@ RUN python -m venv /opt/venv && \
   . /opt/venv/bin/activate && \
   pip install --no-cache-dir -U pip && \
   pip install --no-cache-dir wheel && \
-  poetry install --no-dev --no-root --no-interaction
+  poetry install --without dev --no-root --no-interaction
 
 # install dependencies and build wheels
 # hadolint ignore=SC1091,DL3013
