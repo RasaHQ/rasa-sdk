@@ -10,8 +10,8 @@ on:
 
 env:
   IS_TAG_BUILD: ${{ startsWith(github.event.ref, 'refs/tags') }}
-  DEV_REPOSITORY: 329710836760.dkr.ecr.us-east-1.amazonaws.com/rasa-sdk-dev
-  AWS_REGION: us-east-1
+  DEV_REPOSITORY: 329710836760.dkr.ecr.eu-west-1.amazonaws.com/rasa/rasa-sdk-dev
+  AWS_REGION: eu-west-1
   # This tag is used to build the image without dev dependencies
   DEV_IMAGE_TAG: pr${{ github.event.number }}
   # This tag is used to build the image with dev dependencies
