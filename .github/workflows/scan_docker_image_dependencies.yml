@@ -1,15 +1,21 @@
 name: Scan Rasa SDK App Dependencies
 
 on:
-  workflow_dispatch:
+    schedule:
+      # Runs at 8AM on Monday.
+      - cron: '0 8 * * MON'
+    workflow_dispatch:
 
 jobs:
-  scan_and_alert:
+  get_latest_tag:
     runs-on: ubuntu-24.04
+
+    outputs:
+      tag: ${{ steps.find-tag.outputs.tag }}
 
     steps:
     - name: Checkout repository to check tags
-      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Get latest tagged release
       id: find-tag
@@ -17,62 +23,12 @@ jobs:
         git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
         echo "tag=$(git tag | sort -r -V | grep -E "^[0-9]+.[0-9]+.[0-9]+$" | head -n1)" >> $GITHUB_OUTPUT
 
-    - name: Scan image for language dependency vulnerabilities
-      id: trivy
-      uses: aquasecurity/trivy-action@d63413b0a4a4482237085319f7f4a1ce99a8f2ac
-      continue-on-error: true
-      with:
-        exit-code: '1'
-        format: 'table'
-        severity: 'MEDIUM,HIGH,CRITICAL'
-        ignore-unfixed: true
-        security-checks: 'vuln'
-        image-ref: 'rasa/rasa-sdk:${{ steps.find-tag.outputs.tag }}'  
-        vuln-type: 'library'
-        scan-type: 'image'
-        output: scan-result.txt  
-    
-    - id: auth-security-reports
-      name: Authenticate with gcloud for saving report 🎫
-      uses: 'google-github-actions/auth@ceee102ec2387dd9e844e01b530ccd4ec87ce955'
-      with:
-        credentials_json: '${{ secrets.GCP_WRITE_PUBLIC_SECURITY_REPORTS_KEY }}'
-    
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@d51b5346f85640ec2aa2fa057354d2b82c2fcbce
-
-    - name: Get current date
-      id: date
-      run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
-
-    - name: Upload scan report to GCS
-      run: |
-        gsutil -h "Content-Type:text/plain; charset=utf-8" -h "Cache-Control:public, max-age=0, no-transform" cp scan-result.txt gs://${{ secrets.GCP_SECURITY_REPORTS_BUCKET }}/rasa-sdk-dependency-report-${{ steps.find-tag.outputs.tag }}-${{ steps.date.outputs.date }}.txt
-
-    - name: Alert Slack on findings
-      if: steps.trivy.outcome == 'failure'
-      uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
-      with:
-        channel-id: 'C01M5TAHDHA,C04Q26JSD6U'
-        payload: |
-          {
-            "text": "Dependency vulnerabilities have been found in the Docker image for Rasa SDK ${{ steps.find-tag.outputs.tag }} that could impact customer deployments. Please schedule these for resolution.",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "Dependency vulnerabilities have been found in the Docker image for Rasa SDK ${{ steps.find-tag.outputs.tag }} that could impact customer deployments. Please schedule these for resolution depending on their severity:\n - Critical: This sprint. \n - High: Next sprint. \n - Medium or Low: Add to backlog."
-                }
-              },
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "<https://storage.googleapis.com/${{ secrets.GCP_SECURITY_REPORTS_BUCKET }}/rasa-sdk-dependency-report-${{ steps.find-tag.outputs.tag }}-${{ steps.date.outputs.date }}.txt|View Scan Report>"
-                }
-              }
-            ]
-          }
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_CODESECURITY_BOT_TOKEN }}
+  scan_and_alert:
+    needs: get_latest_tag
+    uses: RasaHQ/infrasec-workflows/.github/workflows/scan-docker-image-dependencies.yml@INFRA-1343/security_scanning_reusable_workflow
+    secrets: inherit
+    with:
+      image_name: rasa/rasa-sdk
+      image_tag: ${{ needs.get_latest_tag.outputs.tag }}
+      slack_channel_id: "C070ELPSLBB"
+      product_name: "Rasa SDK"
