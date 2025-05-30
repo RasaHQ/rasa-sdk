@@ -25,7 +25,7 @@ jobs:
 
   scan_and_alert:
     needs: get_latest_tag
-    uses: RasaHQ/infrasec-workflows/.github/workflows/scan-docker-image-dependencies.yml@INFRA-1343/security_scanning_reusable_workflow
+    uses: RasaHQ/infrasec-workflows/.github/workflows/scan-docker-image-dependencies.yml@main
     secrets: inherit
     with:
       image_name: rasa/rasa-sdk
