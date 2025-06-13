@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "rasa-sdk"
-version = "3.11.1.dev5"
+version = "3.11.2"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
 authors = [ "Rasa Technologies GmbH <hi@rasa.com>",]
 maintainers = [ "Tom Bocklisch <tom@rasa.com>",]
@@ -88,21 +88,6 @@ pydantic = "^2.6.4"
 grpcio-health-checking = "~1.59.3"
 grpcio-tools = ">=1.59.3"
 
-[tool.poetry.group.dev.dependencies]
-pytest-cov = "^4.1.0"
-coveralls = "^3.0.1"
-pytest = "^7.4.0"
-questionary = ">=1.5.1,<2.1.0"
-towncrier = "^23.6.0"
-toml = "^0.10.0"
-pep440-version-utils = "^0.3.0"
-semantic_version = "^2.8.5"
-mypy = "^1.5"
-sanic-testing = "~23.6.0"
-ruff = ">=0.3.5,<0.4.0"
-pytest-asyncio = "^0.21.0"
-types-protobuf = "4.25.0.20240417"
-
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
 
@@ -117,3 +102,17 @@ asyncio_mode = "auto"
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
+[tool.poetry.group.dev.dependencies]
+pytest-cov = "^4.1.0"
+coveralls = "^3.0.1"
+pytest = "^7.4.0"
+questionary = ">=1.5.1,<2.1.0"
+towncrier = "^23.6.0"
+toml = "^0.10.0"
+pep440-version-utils = "^0.3.0"
+semantic_version = "^2.8.5"
+mypy = "^1.5"
+sanic-testing = "~23.6.0"
+ruff = ">=0.3.5,<0.4.0"
+pytest-asyncio = "^0.21.0"
+types-protobuf = "4.25.0.20240417"
