@@ -5,7 +5,7 @@ on:
 
 jobs:
   scan_and_alert:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout repository to check tags
