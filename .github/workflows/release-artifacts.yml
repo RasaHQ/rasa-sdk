@@ -138,7 +138,7 @@ jobs:
         env:
           GITHUB_TAG: ${{ needs.define-release-version.outputs.version }}
           GITHUB_REPO_SLUG: ${{ github.repository }}
-          GITHUB_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           GITHUB_TAG=$GITHUB_TAG
           pip install -U github3.py pep440-version-utils
