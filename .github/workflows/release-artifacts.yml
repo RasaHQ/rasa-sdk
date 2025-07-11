@@ -142,8 +142,8 @@ jobs:
         if: ${{ needs.release-artifacts-docker.result != 'success' || needs.release-artifacts-pypi.result != 'success' }}
         uses: slackapi/slack-github-action@6c661ce58804a1a20f6dc5fbee7f0381b469e001 #v 1.25.0
         with:
-          # Send notification to #devtribe slack channel
-          channel-id: "C061J0LGHU0"
+          # Send notification to ##prodeng-internal slack channel
+          channel-id: "C36SS4N8M"
           slack-message: ":broken_heart: *Rasa SDK* release version `${{ needs.define-release-version.outputs.version }}` has failed! More information can be found <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|here>."
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
