@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "rasa-sdk"
-version = "3.13.0"
+version = "3.14.0.dev2"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
 authors = [ "Rasa Technologies GmbH <hi@rasa.com>",]
 maintainers = [ "Tom Bocklisch <tom@rasa.com>",]
@@ -83,7 +83,7 @@ opentelemetry-sdk = "~1.16.0"
 opentelemetry-exporter-jaeger = "~1.16.0"
 opentelemetry-exporter-otlp = "~1.16.0"
 grpcio = "~1.60.0"
-protobuf = "~4.25.3"
+protobuf = "~4.25.8"
 pydantic = "^2.6.4"
 grpcio-health-checking = "~1.59.3"
 grpcio-tools = "~1.60.0"
