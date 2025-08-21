@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from rasa_sdk.grpc_py import action_webhook_pb2 as action__webhook__pb2
+from rasa_sdk.grpc_py import action_webhook_pb2 as rasa__sdk_dot_grpc__py_dot_action__webhook__pb2
 
 GRPC_GENERATED_VERSION = '1.71.2'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in action_webhook_pb2_grpc.py depends on'
+        + f' but the generated code in rasa_sdk/grpc_py/action_webhook_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,13 +36,13 @@ class ActionServiceStub(object):
         """
         self.Webhook = channel.unary_unary(
                 '/action_server_webhook.ActionService/Webhook',
-                request_serializer=action__webhook__pb2.WebhookRequest.SerializeToString,
-                response_deserializer=action__webhook__pb2.WebhookResponse.FromString,
+                request_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookRequest.SerializeToString,
+                response_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookResponse.FromString,
                 _registered_method=True)
         self.Actions = channel.unary_unary(
                 '/action_server_webhook.ActionService/Actions',
-                request_serializer=action__webhook__pb2.ActionsRequest.SerializeToString,
-                response_deserializer=action__webhook__pb2.ActionsResponse.FromString,
+                request_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsRequest.SerializeToString,
+                response_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsResponse.FromString,
                 _registered_method=True)
 
 
@@ -66,13 +66,13 @@ def add_ActionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Webhook': grpc.unary_unary_rpc_method_handler(
                     servicer.Webhook,
-                    request_deserializer=action__webhook__pb2.WebhookRequest.FromString,
-                    response_serializer=action__webhook__pb2.WebhookResponse.SerializeToString,
+                    request_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookRequest.FromString,
+                    response_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookResponse.SerializeToString,
             ),
             'Actions': grpc.unary_unary_rpc_method_handler(
                     servicer.Actions,
-                    request_deserializer=action__webhook__pb2.ActionsRequest.FromString,
-                    response_serializer=action__webhook__pb2.ActionsResponse.SerializeToString,
+                    request_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsRequest.FromString,
+                    response_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -100,8 +100,8 @@ class ActionService(object):
             request,
             target,
             '/action_server_webhook.ActionService/Webhook',
-            action__webhook__pb2.WebhookRequest.SerializeToString,
-            action__webhook__pb2.WebhookResponse.FromString,
+            rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookRequest.SerializeToString,
+            rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -127,8 +127,8 @@ class ActionService(object):
             request,
             target,
             '/action_server_webhook.ActionService/Actions',
-            action__webhook__pb2.ActionsRequest.SerializeToString,
-            action__webhook__pb2.ActionsResponse.FromString,
+            rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsRequest.SerializeToString,
+            rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsResponse.FromString,
             options,
             channel_credentials,
             insecure,
