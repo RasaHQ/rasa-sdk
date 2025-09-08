@@ -119,7 +119,7 @@ jobs:
           # restore-keys: ${{ runner.os }}-poetry-
 
       - name: Install Dependencies 📦
-        run: make install
+        run: make clean && make install
 
       - name: Test Code 🔍
         run: make test
