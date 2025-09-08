@@ -9,7 +9,7 @@ help:  ## show help message
 
 install: ## install dependencies
 	poetry run python -m pip install -U pip
-	poetry install -vvv
+	poetry install
 
 install-dev: ## install dependencies for development
 	poetry run python -m pip install -U pip
