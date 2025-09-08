@@ -70,7 +70,7 @@ target-version = "py38"
 exclude = [ "rasa_sdk/grpc_py", "eggs", ".git", ".pytest_cache", "build", "dist", ".DS_Store",]
 
 [tool.poetry.dependencies]
-python = ">3.8,<3.13"
+python = ">3.8,<3.14"
 coloredlogs = ">=10,<16"
 sanic = "^22.12"
 typing-extensions = ">=4.1.1,<5.0.0"
