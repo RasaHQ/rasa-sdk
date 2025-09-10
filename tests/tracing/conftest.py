@@ -1,5 +1,6 @@
 import pathlib
 import socket
+import threading
 from concurrent import futures
 from typing import Generator, Optional
 
@@ -45,6 +46,11 @@ class CapturingTestSpanExporter(trace_service.TraceServiceServicer):
 @pytest.fixture
 def span_exporter() -> CapturingTestSpanExporter:
     return CapturingTestSpanExporter()
+
+
+@pytest.fixture
+def result_available_event() -> threading.Event:
+    return threading.Event()
 
 
 @pytest.fixture

@@ -1,4 +1,7 @@
 import socket
+import threading
+
+import grpc
 
 from rasa_sdk.tracing.endpoints import EndpointConfig
 
@@ -7,9 +10,21 @@ from rasa_sdk.tracing.config import JaegerTracerConfigurer
 from tests.tracing import conftest
 from tests.tracing.conftest import (
     TRACING_TESTS_FIXTURES_DIRECTORY,
+    CapturingTestSpanExporter,
 )
 
 UDP_BUFFER_SIZE = 2048
+
+
+def wait(
+    condition: callable,
+    result_available_event: threading.Event,
+    timeout_seconds: int = 15,
+) -> None:
+    """Wait for a condition to be true or timeout."""
+    result_available_event.wait(timeout_seconds)
+    if not condition():
+        raise TimeoutError(f"Condition not met within {timeout_seconds} seconds")
 
 
 def test_jaeger_config_correctly_extracted() -> None:
@@ -39,7 +54,11 @@ def test_jaeger_config_sets_defaults() -> None:
     assert extracted["password"] is None
 
 
-def test_get_tracer_provider_jaeger(udp_server: socket.socket) -> None:
+def test_get_tracer_provider_jaeger(
+    grpc_server: grpc.Server,
+    span_exporter: CapturingTestSpanExporter,
+    result_available_event: threading.Event,
+) -> None:
     """Tests that the tracer provider is correctly configured for Jaeger."""
     endpoints_file = str(TRACING_TESTS_FIXTURES_DIRECTORY / "jaeger_endpoints.yml")
 
@@ -53,11 +72,13 @@ def test_get_tracer_provider_jaeger(udp_server: socket.socket) -> None:
 
     tracer_provider.force_flush()
 
-    message, _ = udp_server.recvfrom(UDP_BUFFER_SIZE)
+    wait(
+        lambda: span_exporter.spans is not None,
+        result_available_event=result_available_event,
+        timeout_seconds=15,
+    )
 
-    batch = conftest.deserialize_jaeger_batch(bytearray(message))
-
-    assert batch.process.serviceName == "rasa_sdk"
-
-    assert len(batch.spans) == 1
-    assert batch.spans[0].operationName == "jaeger_test_span"
+    spans = span_exporter.spans
+    assert spans is not None
+    assert len(spans[0].scope_spans[0].spans) == 1
+    assert spans[0].scope_spans[0].spans[0].name == "jaeger_test_span"

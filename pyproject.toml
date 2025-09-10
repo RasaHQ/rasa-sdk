@@ -113,14 +113,6 @@ markers = "python_version < '3.12'"
 version = "~1.33.0"
 markers = "python_version >= '3.12'"
 
-[[tool.poetry.dependencies.opentelemetry-exporter-jaeger]]
-version = "~1.16.0"
-markers = "python_version < '3.12'"
-
-[[tool.poetry.dependencies.opentelemetry-exporter-jaeger]]
-version = "~1.21.0"
-markers = "python_version >= '3.12'"
-
 [[tool.poetry.dependencies.opentelemetry-exporter-otlp]]
 version = "~1.16.0"
 markers = "python_version < '3.12'"
