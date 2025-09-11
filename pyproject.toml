@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "rasa-sdk"
-version = "3.14.0.dev4"
+version = "3.14.0.dev5"
 description = "Open source machine learning framework to automate text- and voice-based conversations: NLU, dialogue management, connect to Slack, Facebook, and more - Create chatbots and voice assistants"
 authors = [ "Rasa Technologies GmbH <hi@rasa.com>",]
 maintainers = [ "Tom Bocklisch <tom@rasa.com>",]
@@ -81,6 +81,17 @@ pluggy = "^1.0.0"
 pydantic = "^2.6.4"
 grpcio-health-checking = "~1.59.3"
 
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.8"
+
+[tool.ruff.lint]
+ignore = [ "D100", "D101", "D102", "D103", "D104", "D105", "RUF005",]
+select = [ "D", "E", "F", "W", "RUF",]
+
+[tool.pytest.ini_options]
+python_functions = "test_"
+asyncio_mode = "auto"
+
 [tool.poetry.dependencies.protobuf]
 version = "~5.29.5"
 
@@ -101,17 +112,6 @@ version = "~1.33.0"
 
 [tool.poetry.dependencies.opentelemetry-api]
 version = "~1.33.0"
-
-[tool.poetry.requires-plugins]
-poetry-plugin-export = ">=1.8"
-
-[tool.ruff.lint]
-ignore = [ "D100", "D101", "D102", "D103", "D104", "D105", "RUF005",]
-select = [ "D", "E", "F", "W", "RUF",]
-
-[tool.pytest.ini_options]
-python_functions = "test_"
-asyncio_mode = "auto"
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
