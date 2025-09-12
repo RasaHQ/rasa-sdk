@@ -5,7 +5,7 @@ import warnings
 
 from rasa_sdk.grpc_py import action_webhook_pb2 as rasa__sdk_dot_grpc__py_dot_action__webhook__pb2
 
-GRPC_GENERATED_VERSION = '1.71.2'
+GRPC_GENERATED_VERSION = '1.66.2'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
