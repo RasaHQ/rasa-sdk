@@ -18,6 +18,7 @@ from rasa_sdk.forms import ValidationAction, FormValidationAction
 TRACING_SERVICE_NAME = os.environ.get("RASA_SDK_TRACING_SERVICE_NAME", "rasa_sdk")
 
 ENDPOINTS_TRACING_KEY = "tracing"
+ENDPOINTS_TRACING_SERVICE_NAME_KEY = "service_name"
 
 logger = logging.getLogger(__name__)
 

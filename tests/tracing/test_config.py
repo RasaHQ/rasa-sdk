@@ -1,4 +1,3 @@
-import socket
 import threading
 
 import grpc
@@ -7,7 +6,6 @@ from rasa_sdk.tracing.endpoints import EndpointConfig
 
 from rasa_sdk.tracing import config
 from rasa_sdk.tracing.config import JaegerTracerConfigurer
-from tests.tracing import conftest
 from tests.tracing.conftest import (
     TRACING_TESTS_FIXTURES_DIRECTORY,
     CapturingTestSpanExporter,

@@ -13,8 +13,6 @@ from opentelemetry.proto.collector.trace.v1.trace_service_pb2 import (
     ExportTraceServiceResponse,
 )
 from opentelemetry.proto.trace.v1.trace_pb2 import ResourceSpans
-from thrift.protocol.TCompactProtocol import TCompactProtocol
-from thrift.transport.TTransport import TMemoryBuffer
 
 
 TRACING_TESTS_FIXTURES_DIRECTORY = pathlib.Path(__file__).parent / "fixtures"
