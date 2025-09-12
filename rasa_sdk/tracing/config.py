@@ -158,7 +158,7 @@ class JaegerTracerConfigurer(TracerConfigurer):
     @classmethod
     def _build_headers(cls, jaeger_config: Dict[str, Any]) -> Optional[Dict[str, str]]:
         """Build OTLP headers from Jaeger authentication config."""
-        headers = {}
+        headers: Dict[str, str] = {}
         if jaeger_config.get("username") and jaeger_config.get("password"):
             import base64
 
