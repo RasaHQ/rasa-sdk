@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from . import action_webhook_pb2 as action__webhook__pb2
+from rasa_sdk.grpc_py import action_webhook_pb2 as rasa__sdk_dot_grpc__py_dot_action__webhook__pb2
 
 
 class ActionServiceStub(object):
@@ -16,13 +16,13 @@ class ActionServiceStub(object):
         """
         self.Webhook = channel.unary_unary(
                 '/action_server_webhook.ActionService/Webhook',
-                request_serializer=action__webhook__pb2.WebhookRequest.SerializeToString,
-                response_deserializer=action__webhook__pb2.WebhookResponse.FromString,
+                request_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookRequest.SerializeToString,
+                response_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookResponse.FromString,
                 )
         self.Actions = channel.unary_unary(
                 '/action_server_webhook.ActionService/Actions',
-                request_serializer=action__webhook__pb2.ActionsRequest.SerializeToString,
-                response_deserializer=action__webhook__pb2.ActionsResponse.FromString,
+                request_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsRequest.SerializeToString,
+                response_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsResponse.FromString,
                 )
 
 
@@ -46,13 +46,13 @@ def add_ActionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Webhook': grpc.unary_unary_rpc_method_handler(
                     servicer.Webhook,
-                    request_deserializer=action__webhook__pb2.WebhookRequest.FromString,
-                    response_serializer=action__webhook__pb2.WebhookResponse.SerializeToString,
+                    request_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookRequest.FromString,
+                    response_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookResponse.SerializeToString,
             ),
             'Actions': grpc.unary_unary_rpc_method_handler(
                     servicer.Actions,
-                    request_deserializer=action__webhook__pb2.ActionsRequest.FromString,
-                    response_serializer=action__webhook__pb2.ActionsResponse.SerializeToString,
+                    request_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsRequest.FromString,
+                    response_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -76,8 +76,8 @@ class ActionService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/action_server_webhook.ActionService/Webhook',
-            action__webhook__pb2.WebhookRequest.SerializeToString,
-            action__webhook__pb2.WebhookResponse.FromString,
+            rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookRequest.SerializeToString,
+            rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -93,7 +93,7 @@ class ActionService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/action_server_webhook.ActionService/Actions',
-            action__webhook__pb2.ActionsRequest.SerializeToString,
-            action__webhook__pb2.ActionsResponse.FromString,
+            rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsRequest.SerializeToString,
+            rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
