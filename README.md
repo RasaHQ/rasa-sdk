@@ -106,6 +106,28 @@ To install dependencies and `rasa-sdk` itself in editable mode execute
 make install
 ```
 
+### Protobuf Version Support
+
+`rasa-sdk` supports both protobuf 4.x and 5.x. Pip will automatically resolve the appropriate version based on your other dependencies:
+
+```bash
+# Standard installation (pip resolves protobuf version)
+make install
+
+# Force protobuf 4.x installation
+make install-protobuf4
+```
+
+Or using Poetry directly:
+```bash
+# Standard installation (pip resolves protobuf version)
+poetry install
+
+# Force protobuf 4.x installation
+poetry add "protobuf==4.25.8"
+poetry install
+```
+
 
 ## Code Style
 

@@ -7,13 +7,13 @@ GRPC_SERVER_INTEGRATION_TEST_FOLDER = $(INTEGRATION_TEST_FOLDER)/grpc_server
 help:  ## show help message
 	@grep -hE '^[A-Za-z0-9_ \-]*?:.*##.*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-install: ## install dependencies
+install: ## install dependencies (pip will resolve protobuf version)
 	poetry run python -m pip install -U pip
 	poetry install
 
 install-protobuf4: ## install dependencies but force protobuf 4.25.8
-	poetry run python -m pip install -U pip
 	poetry add "protobuf==4.25.8"
+	poetry run python -m pip install -U pip
 	poetry install
 
 install-dev: ## install dependencies for development
