@@ -114,7 +114,7 @@ make install
 # Standard installation (pip resolves protobuf version)
 make install
 
-# Force protobuf 4.x installation
+# Force protobuf 4.x installation  (not supported for Python version > 3.11)
 make install-protobuf4
 ```
 
@@ -123,7 +123,7 @@ Or using Poetry directly:
 # Standard installation (pip resolves protobuf version)
 poetry install
 
-# Force protobuf 4.x installation
+# Force protobuf 4.x installation (not supported for Python version > 3.11)
 poetry add "protobuf==4.25.8"
 poetry install
 ```
