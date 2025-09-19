@@ -29,7 +29,7 @@ DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%rasa_sdk/grpc_py/
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'rasa_sdk.grpc_py.action_webhook_pb2', _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'rasa_sdk.grpc_py.pb5.action_webhook_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_TRACKER_ACTIVELOOPENTRY']._loaded_options = None

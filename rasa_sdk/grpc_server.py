@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import signal
-import importlib
+import importlib.metadata
 import asyncio
 
 import grpc
@@ -28,25 +28,15 @@ from rasa_sdk.grpc_errors import (
     ActionExecutionFailed,
 )
 
-try:
-    # Try to import pb5 (protobuf >= 5)
-    action_webhook_pb2_grpc = importlib.import_module("rasa_sdk.grpc_py.pb5.action_webhook_pb2_grpc")
-    action_webhook_pb2 = importlib.import_module("rasa_sdk.grpc_py.pb5.action_webhook_pb2")
-
-except ModuleNotFoundError:
-    # Fallback to pb4 (protobuf < 5)
-    action_webhook_pb2_grpc = importlib.import_module("rasa_sdk.grpc_py.pb4.action_webhook_pb2_grpc")
-    action_webhook_pb2 = importlib.import_module("rasa_sdk.grpc_py.pb4.action_webhook_pb2")
-
-try:
-    # Try to import pb5 (protobuf >= 5)
+if importlib.metadata.version('protobuf') >= '5.0.0':
+    from rasa_sdk.grpc_py.pb5 import action_webhook_pb2_grpc, action_webhook_pb2
     from rasa_sdk.grpc_py.pb5.action_webhook_pb2 import (
         ActionsResponse,
         ActionsRequest,
         WebhookRequest,
     )
-except ModuleNotFoundError:
-    # Fallback to pb4 (protobuf < 5)
+else:
+    from rasa_sdk.grpc_py.pb4 import action_webhook_pb2_grpc, action_webhook_pb2
     from rasa_sdk.grpc_py.pb4.action_webhook_pb2 import (
         ActionsResponse,
         ActionsRequest,

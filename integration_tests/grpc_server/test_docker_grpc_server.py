@@ -1,5 +1,5 @@
 import logging
-import importlib
+import importlib.metadata
 import os
 from typing import Text, List, Tuple
 
@@ -10,14 +10,10 @@ from google.protobuf.json_format import MessageToDict
 from grpc_health.v1 import health_pb2
 from grpc_health.v1.health_pb2_grpc import HealthStub
 
-try:
-    # Try to import pb5 (protobuf >= 5)
-    action_webhook_pb2_grpc = importlib.import_module("rasa_sdk.grpc_py.pb5.action_webhook_pb2_grpc")
-    action_webhook_pb2 = importlib.import_module("rasa_sdk.grpc_py.pb5.action_webhook_pb2")
-except ModuleNotFoundError:
-    # Fallback to pb4 (protobuf < 5)
-    action_webhook_pb2_grpc = importlib.import_module("rasa_sdk.grpc_py.pb4.action_webhook_pb2_grpc")
-    action_webhook_pb2 = importlib.import_module("rasa_sdk.grpc_py.pb4.action_webhook_pb2")
+if importlib.metadata.version('protobuf') >= '5.0.0':
+    from rasa_sdk.grpc_py.pb5 import action_webhook_pb2_grpc, action_webhook_pb2
+else:
+    from rasa_sdk.grpc_py.pb4 import action_webhook_pb2_grpc, action_webhook_pb2
 
 from rasa_sdk.grpc_server import GRPC_ACTION_SERVER_NAME
 from integration_tests.conftest import ca_cert, client_key, client_cert
