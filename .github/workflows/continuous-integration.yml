@@ -120,10 +120,12 @@ jobs:
           restore-keys: ${{ runner.os }}-poetry-
 
       - name: Install Dependencies 📦
-        if: matrix.protobuf-version == '4.25.8'
-        run: make install-protobuf4
-        else:
-        run: make install
+        run: |
+          if [[ "${{ matrix.protobuf-version }}" == '4.25.8' ]]; then
+            make install-protobuf4
+          else
+            make install
+          fi
 
       - name: Test Code 🔍
         run: make test
