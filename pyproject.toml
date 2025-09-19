@@ -86,7 +86,7 @@ opentelemetry-api = "~1.33.0"
 grpcio = "~1.66.2"
 protobuf = ">=4.25.8,<6.0.0"
 grpcio-tools = "~1.66.2"
-packaging = ">=21.0"
+packaging = ">=20.3,<21.0"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
