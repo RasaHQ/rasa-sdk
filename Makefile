@@ -12,8 +12,8 @@ install: ## install dependencies (pip will resolve protobuf version)
 	poetry install
 
 install-protobuf4: ## install dependencies but force protobuf 4.25.8
-	poetry add "protobuf==4.25.8"
 	poetry run python -m pip install -U pip
+	poetry add "protobuf==4.25.8"
 	poetry install
 
 install-dev: ## install dependencies for development
