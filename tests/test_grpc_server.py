@@ -12,7 +12,10 @@ from rasa_sdk.grpc_errors import (
     ResourceNotFound,
     ResourceNotFoundType,
 )
-from rasa_sdk.grpc_py import action_webhook_pb2
+try:
+    from rasa_sdk.grpc_py.pb5 import action_webhook_pb2
+except ModuleNotFoundError:
+    from rasa_sdk.grpc_py.pb4 import action_webhook_pb2
 from rasa_sdk.grpc_server import GRPCActionServerWebhook
 from rasa_sdk.interfaces import ActionMissingDomainException, ActionNotFoundException
 
