@@ -113,7 +113,7 @@ def check_dependency_compatibility():
 def get_recommended_dependencies():
     """
     Get recommended dependency versions for the current protobuf version.
-    
+
     Returns:
         dict: Dictionary with recommended package versions
     """
