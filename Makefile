@@ -114,12 +114,26 @@ tag-release:  ## Tag a release.
 	poetry run python scripts/release.py --tag
 
 generate-grpc:  ## generate grpc code
-	 poetry run python -m grpc_tools.protoc \
-	 	-Irasa_sdk/grpc_py=./proto \
-	 	--python_out=. \
-	 	--grpc_python_out=. \
-	 	--pyi_out=. \
-	 	proto/action_webhook.proto
+	make generate-grpc-pb4
+	make generate-grpc-pb5
+
+generate-grpc-pb4:
+    poetry add "protobuf==4.25.8"
+	poetry run python -m grpc_tools.protoc \
+		-Irasa_sdk/grpc_py/pb4=./proto \
+		--python_out=. \
+		--grpc_python_out=. \
+		--pyi_out=. \
+		proto/action_webhook.proto
+
+generate-grpc-pb5:
+    poetry add "protobuf==5.29.5"
+	poetry run python -m grpc_tools.protoc \
+		-Irasa_sdk/grpc_py/pb5=./proto \
+		--python_out=. \
+		--grpc_python_out=. \
+		--pyi_out=. \
+		proto/action_webhook.proto
 
 check-generate-grpc-code-in-sync: generate-grpc ## check if the generated code is in sync with the proto files, it uses a helper to check if the generated code is in sync with the proto files
 	git diff --exit-code rasa_sdk/grpc_py | if [ "$$(wc -c)" -eq 0 ]; then echo "Generated code is in sync with proto files"; else echo "Generated code is not in sync with proto files"; exit 1; fi

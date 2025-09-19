@@ -13,7 +13,8 @@ from rasa_sdk.grpc_errors import (
     ResourceNotFoundType,
 )
 import importlib.metadata
-if importlib.metadata.version('protobuf') >= '5.0.0':
+
+if importlib.metadata.version("protobuf") >= "5.0.0":
     from rasa_sdk.grpc_py.pb5 import action_webhook_pb2
 else:
     from rasa_sdk.grpc_py.pb4 import action_webhook_pb2

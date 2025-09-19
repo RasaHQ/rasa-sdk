@@ -28,7 +28,7 @@ from rasa_sdk.grpc_errors import (
     ActionExecutionFailed,
 )
 
-if importlib.metadata.version('protobuf') >= '5.0.0':
+if importlib.metadata.version("protobuf") >= "5.0.0":
     from rasa_sdk.grpc_py.pb5 import action_webhook_pb2_grpc, action_webhook_pb2
     from rasa_sdk.grpc_py.pb5.action_webhook_pb2 import (
         ActionsResponse,
