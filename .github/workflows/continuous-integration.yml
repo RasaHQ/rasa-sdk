@@ -95,9 +95,7 @@ jobs:
         protobuf-version: ['4.25.8', '5.29.5']
         exclude:
           - protobuf-version: '4.25.8'
-            python-version:
-              - '3.12'
-              - '3.13'
+            python-version: '3.13'
     steps:
       - name: Checkout git repository 🕝
         uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
