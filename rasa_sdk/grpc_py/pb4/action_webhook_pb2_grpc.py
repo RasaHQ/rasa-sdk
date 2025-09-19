@@ -2,10 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-try:
-    from rasa_sdk.grpc_py.pb5 import action_webhook_pb2 as rasa__sdk_dot_grpc__py_dot_action__webhook__pb2
-except ModuleNotFoundError:
-    from rasa_sdk.grpc_py.pb4 import action_webhook_pb2 as rasa__sdk_dot_grpc__py_dot_action__webhook__pb2
+from rasa_sdk.grpc_py.pb4 import action_webhook_pb2 as rasa__sdk_dot_grpc__py_dot_action__webhook__pb2
 
 
 class ActionServiceStub(object):

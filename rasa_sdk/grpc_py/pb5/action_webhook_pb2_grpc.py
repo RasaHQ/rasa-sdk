@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from rasa_sdk.grpc_py import action_webhook_pb2 as rasa__sdk_dot_grpc__py_dot_action__webhook__pb2
+from rasa_sdk.grpc_py.pb5 import action_webhook_pb2 as rasa__sdk_dot_grpc__py_dot_action__webhook__pb2
 
 GRPC_GENERATED_VERSION = '1.66.2'
 GRPC_VERSION = grpc.__version__
