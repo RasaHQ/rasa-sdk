@@ -106,6 +106,7 @@ To install dependencies and `rasa-sdk` itself in editable mode execute
 make install
 ```
 
+
 ## Code Style
 
 To ensure a standardized code style we use the formatter [ruff](https://github.com/astral-sh/ruff).
