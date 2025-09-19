@@ -118,7 +118,7 @@ generate-grpc:  ## generate grpc code
 	make generate-grpc-pb5
 
 generate-grpc-pb4:
-    poetry add "protobuf==4.25.8"
+	poetry add "protobuf==4.25.8"
 	poetry run python -m grpc_tools.protoc \
 		-Irasa_sdk/grpc_py/pb4=./proto \
 		--python_out=. \
@@ -127,7 +127,7 @@ generate-grpc-pb4:
 		proto/action_webhook.proto
 
 generate-grpc-pb5:
-    poetry add "protobuf==5.29.5"
+	poetry add "protobuf==5.29.5"
 	poetry run python -m grpc_tools.protoc \
 		-Irasa_sdk/grpc_py/pb5=./proto \
 		--python_out=. \
