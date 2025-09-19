@@ -9,12 +9,12 @@ help:  ## show help message
 
 install: ## install dependencies (pip will resolve protobuf version)
 	poetry run python -m pip install -U pip
-	poetry install
+	poetry install -vv
 
 install-protobuf4: ## install dependencies but force protobuf 4.25.8
 	poetry run python -m pip install -U pip
 	poetry add "protobuf==4.25.8"
-	poetry install
+	poetry install -vv
 
 install-dev: ## install dependencies for development
 	poetry run python -m pip install -U pip
