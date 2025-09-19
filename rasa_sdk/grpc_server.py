@@ -36,8 +36,8 @@ if importlib.metadata.version("protobuf") >= "5.0.0":
         WebhookRequest,
     )
 else:
-    from rasa_sdk.grpc_py.pb4 import action_webhook_pb2_grpc, action_webhook_pb2
-    from rasa_sdk.grpc_py.pb4.action_webhook_pb2 import (
+    from rasa_sdk.grpc_py.pb4 import action_webhook_pb2_grpc, action_webhook_pb2  # type: ignore [no-redef]
+    from rasa_sdk.grpc_py.pb4.action_webhook_pb2 import (  # type: ignore [assignment]
         ActionsResponse,
         ActionsRequest,
         WebhookRequest,
