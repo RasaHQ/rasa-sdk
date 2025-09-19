@@ -7,9 +7,14 @@ GRPC_SERVER_INTEGRATION_TEST_FOLDER = $(INTEGRATION_TEST_FOLDER)/grpc_server
 help:  ## show help message
 	@grep -hE '^[A-Za-z0-9_ \-]*?:.*##.*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-install: ## install dependencies
+install: ## install dependencies (pip will resolve protobuf version)
 	poetry run python -m pip install -U pip
-	poetry install
+	poetry install -vv
+
+install-protobuf4: ## install dependencies but force protobuf 4.25.8
+	poetry run python -m pip install -U pip
+	poetry add "protobuf==4.25.8"
+	poetry install -vv
 
 install-dev: ## install dependencies for development
 	poetry run python -m pip install -U pip
@@ -109,12 +114,32 @@ tag-release:  ## Tag a release.
 	poetry run python scripts/release.py --tag
 
 generate-grpc:  ## generate grpc code
-	 poetry run python -m grpc_tools.protoc \
-	 	-Irasa_sdk/grpc_py=./proto \
-	 	--python_out=. \
-	 	--grpc_python_out=. \
-	 	--pyi_out=. \
-	 	proto/action_webhook.proto
+	make generate-grpc-pb4
+	make generate-grpc-pb5
+
+generate-grpc-pb4:
+	poetry add "protobuf==4.25.8"
+	poetry run python -m grpc_tools.protoc \
+		-Irasa_sdk/grpc_py/pb4=./proto \
+		--python_out=. \
+		--grpc_python_out=. \
+		--pyi_out=. \
+		proto/action_webhook.proto
+	# undo the changes to the poetry.lock and pyproject.toml
+	git checkout poetry.lock
+	git checkout pyproject.toml
+
+generate-grpc-pb5:
+	poetry add "protobuf==5.29.5"
+	poetry run python -m grpc_tools.protoc \
+		-Irasa_sdk/grpc_py/pb5=./proto \
+		--python_out=. \
+		--grpc_python_out=. \
+		--pyi_out=. \
+		proto/action_webhook.proto
+	# undo the changes to the poetry.lock and pyproject.toml
+	git checkout poetry.lock
+	git checkout pyproject.toml
 
 check-generate-grpc-code-in-sync: generate-grpc ## check if the generated code is in sync with the proto files, it uses a helper to check if the generated code is in sync with the proto files
 	git diff --exit-code rasa_sdk/grpc_py | if [ "$$(wc -c)" -eq 0 ]; then echo "Generated code is in sync with proto files"; else echo "Generated code is not in sync with proto files"; exit 1; fi
