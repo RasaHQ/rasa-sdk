@@ -89,9 +89,13 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13']
-
+        protobuf-version: ['4.25.8', '5.29.5']
+        exclude:
+          - protobuf-version: '4.25.8'
+            python-version: '3.13'
     steps:
       - name: Checkout git repository 🕝
         uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
@@ -119,17 +123,23 @@ jobs:
           restore-keys: ${{ runner.os }}-poetry-
 
       - name: Install Dependencies 📦
-        run: make install
+        run: |
+          if [[ "${{ matrix.protobuf-version }}" == '4.25.8' ]]; then
+            make install-protobuf4
+          else
+            make install
+          fi
 
       - name: Test Code 🔍
         run: make test
 
-      - name: Send Coverage Report 📊
-        if: matrix.python-version == '3.10'
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_SERVICE_NAME: github
-        run: poetry run coveralls
+      # TODO: Re-enable (if still required) when coveralls.io availability is restored.
+      # - name: Send Coverage Report 📊
+      #   if: matrix.python-version == '3.10'
+      #   env:
+      #     COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     COVERALLS_SERVICE_NAME: github
+      #   run: poetry run coveralls
 
   docker_linter:
     name: Lint Dockerfile
