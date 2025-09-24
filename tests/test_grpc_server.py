@@ -12,12 +12,7 @@ from rasa_sdk.grpc_errors import (
     ResourceNotFound,
     ResourceNotFoundType,
 )
-import importlib.metadata
-
-if importlib.metadata.version("protobuf") >= "5.0.0":
-    from rasa_sdk.grpc_py.pb5 import action_webhook_pb2
-else:
-    from rasa_sdk.grpc_py.pb4 import action_webhook_pb2
+from rasa_sdk.grpc_py import action_webhook_pb2
 from rasa_sdk.grpc_server import GRPCActionServerWebhook
 from rasa_sdk.interfaces import ActionMissingDomainException, ActionNotFoundException
 
