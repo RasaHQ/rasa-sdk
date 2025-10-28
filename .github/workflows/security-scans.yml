@@ -1,42 +1,60 @@
-name: Security Scans
+# ================================================================
+# 🛡️ Security Checks Workflow
+# ================================================================
+# This GitHub Actions workflow performs automated security checks
+# on every pull request. It includes:
+#
+# 1. Trivy - Detects hardcoded secrets in the repository.
+# 2. Gitleaks - Scans for potential secrets using a reusable workflow.
+# 3. Slack Alert - Sends a notification to #infrasec-alert if any
+#    security job fails.
+#
+# Jobs:
+#   - trivy: Runs a local filesystem scan for secrets.
+#   - gitleaks: Invokes the centralized secret scanning workflow.
+#   - alert_on_failures: Summarizes and alerts on any failures.
+#
+# ================================================================
 
-on:
-  pull_request:
-    types: [opened, synchronize, labeled]
+name: Security Checks
+
+on: [pull_request]
 
 jobs:
   trivy:
-    name: Detecting hardcoded secrets using Trivy
+    name: Run Trivy vulnerability scan
     runs-on: ubuntu-24.04
+
     steps:
-    - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
-      with:
-        # Fetch all history for all tags and branches
-        fetch-depth: '0'
-    
-    - name: Run Trivy vulnerability scanner
-      id: trivy
-      uses: aquasecurity/trivy-action@d63413b0a4a4482237085319f7f4a1ce99a8f2ac
-      continue-on-error: true
-      with:
-        format: 'table'
-        scan-type: 'fs'
-        exit-code: '1'
-        security-checks: 'secret'
-    
-    - name: Fail build if a secret is found
-      if: steps.trivy.outcome == 'failure'
-      run: |
-        echo "=========================================================="
-        echo "| This build has failed because Trivy detected a secret. |"
-        echo "=========================================================="
-        echo "1. Check the step 'Run Trivy vulnerability scanner' for output to help you find the secret."
-        echo "2. If the finding is a false positive, add it as an entry to trivy-secret.yaml in the root of the repo to suppress the finding."
-        echo "3. If the finding is valid, the security team can help advise your next steps."
-        exit 1
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # Fetch all history for all tags and branches
+          fetch-depth: 0
+
+      - name: Run Trivy vulnerability scanner
+        id: trivy
+        uses: aquasecurity/trivy-action@dc5a429b52fcf669ce959baa2c2dd26090d2a6c4 # v0.32.0
+        continue-on-error: true
+        with:
+          format: table
+          scan-type: fs
+          exit-code: 1
+          scanners: secret
+
+      - name: Fail build if a secret is found
+        if: steps.trivy.outcome == 'failure'
+        run: |
+          echo "=========================================================="
+          echo "| This build has failed because Trivy detected a secret. |"
+          echo "=========================================================="
+          echo "1. Check the step 'Run Trivy vulnerability scanner' for output to help you find the secret."
+          echo "2. If the finding is a false positive, add it as an entry to trivy-secret.yaml in the root of the repo to suppress the finding."
+          echo "3. If the finding is valid, the security team can help advise your next steps."
+          exit 1
   
   gitleaks:
-    name: Detecting hardcoded secret using Gitleaks
+    name: Run Gitleaks secret scan
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
@@ -51,7 +69,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   alert_on_failures:
-    name: "Alert on failures (Slack on #infrasec-alert)"
+    name: Alert on failures (Slack on #infrasec-alert)
     needs: [trivy, gitleaks]
     runs-on: ubuntu-24.04
     if: always()
@@ -61,11 +79,17 @@ jobs:
         id: summary
         run: |
           failed_jobs=""
+
           if [ "${{ needs.trivy.result }}" == "failure" ]; then
             failed_jobs="${failed_jobs}• Trivy: ${{ needs.trivy.result }}\n"
           fi
+
           if [ "${{ needs.gitleaks.result }}" == "failure" ]; then
             failed_jobs="${failed_jobs}• Gitleaks: ${{ needs.gitleaks.result }}\n"
+          fi
+
+          if [ "${{ needs.bandit.result }}" == "failure" ]; then
+            failed_jobs="${failed_jobs}• Bandit: ${{ needs.bandit.result }}\n"
           fi
 
           if [ -n "$failed_jobs" ]; then
