@@ -24,8 +24,9 @@ runs:
     env:
       RASA_SDK_REPOSITORY: ${{ inputs.RASA_SDK_REPOSITORY }}
       RASA_SDK_IMAGE_TAG: ${{ inputs.RASA_SDK_IMAGE_TAG }}
+      COMPOSE_FILE_PATH: ${{ inputs.COMPOSE_FILE_PATH }}
     run: |
-      docker compose -f ${{ inputs.COMPOSE_FILE_PATH }} \
+      docker compose -f "$COMPOSE_FILE_PATH" \
         logs action-server-grpc-no-tls
     shell: bash
   
@@ -33,7 +34,8 @@ runs:
     env:
       RASA_SDK_REPOSITORY: ${{ inputs.RASA_SDK_REPOSITORY }}
       RASA_SDK_IMAGE_TAG: ${{ inputs.RASA_SDK_IMAGE_TAG }}
+      COMPOSE_FILE_PATH: ${{ inputs.COMPOSE_FILE_PATH }}
     run: |
-      docker compose -f ${{ inputs.COMPOSE_FILE_PATH }} \
+      docker compose -f "$COMPOSE_FILE_PATH" \
       logs action-server-grpc-tls
     shell: bash
