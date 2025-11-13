@@ -406,7 +406,7 @@ class ActionMissingDomainException(Exception):
             message
             or "Missing domain context, assistant will retry the request and include "
             "the domain in the request payload. For more information please see "
-            "https://rasa.com/docs/rasa-pro/action-server/"
+            "https://rasa.com/docs/action-server/"
         )
 
     def __str__(self) -> Text:
