@@ -43,7 +43,7 @@ old `rasa_core_sdk` package:
 ## Usage
 
 Detailed instructions can be found in the Rasa Documentation about
-[Custom Actions](https://rasa.com/docs/rasa/core/actions).
+[Custom Actions](https://rasa.com/docs/pro/build/custom-actions).
 
 ## Docker
 
