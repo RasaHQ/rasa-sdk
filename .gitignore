@@ -121,3 +121,6 @@ grpc-standalone-server-integration-test-results.xml
 grpc-server-docker-integration-test-results.xml
 
 .vscode/
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.cursor/rules/snyk_rules.mdc
