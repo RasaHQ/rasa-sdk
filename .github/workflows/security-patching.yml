@@ -31,8 +31,16 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Checkout action repository to get records
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        with:
+          repository: RasaHQ/get-release-records-from-cms-gha
+          ref: main
+          token: ${{ secrets.CLONE_CMS_CHECKER }}
+          path: .github/get-release-records-from-cms-gha
+
       - name: Run action to get records
-        uses: RasaHQ/get-release-records-from-cms-gha@cc80bc019e53f22a3c177d40619208983e9c011a
+        uses: ./.github/get-release-records-from-cms-gha
         id: get_branches
         with:
           cms-api-key: ${{ secrets.WEBFLOW_CMS_API_KEY }}
