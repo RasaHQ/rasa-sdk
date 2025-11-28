@@ -34,16 +34,16 @@ jobs:
       - name: Checkout action repository to get records
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         with:
-          repository: RasaHQ/get-release-records-from-datocms-gha
+          repository: RasaHQ/get-release-records-from-cms-gha
           ref: main
           token: ${{ secrets.CLONE_CMS_CHECKER }}
-          path: .github/get-release-records-from-datocms-gha
+          path: .github/get-release-records-from-cms-gha
 
       - name: Run action to get records
-        uses: ./.github/get-release-records-from-datocms-gha
+        uses: ./.github/get-release-records-from-cms-gha
         id: get_branches
         with:
-          dato-cms-api-key: ${{ secrets.DATO_CMS_API_KEY }}
+          cms-api-key: ${{ secrets.WEBFLOW_CMS_API_KEY }}
           product-name: Rasa Pro
           status: active
 
