@@ -292,8 +292,9 @@ class ActionExecutor:
         try:
             self._import_submodules(package)
             # Track the package name for reloading
-            package_name = package if isinstance(package, str) else package.__name__
-            self._registered_packages.add(package_name)
+            if package is not None:
+                package_name = package if isinstance(package, str) else package.__name__
+                self._registered_packages.add(package_name)
         except ImportError:
             logger.exception(f"Failed to register package '{package}'.")
             sys.exit(1)
