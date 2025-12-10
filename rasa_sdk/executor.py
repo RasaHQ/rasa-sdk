@@ -184,7 +184,7 @@ class ActionExecutor:
         """Initializes the `ActionExecutor`."""
         self.actions: Dict[Text, Callable] = {}
         self._modules: Dict[Text, TimestampModule] = {}
-        self._loaded: Set[Type[Action]] = set()
+        self._registered_packages: Set[Text] = set()
         self.domain: Optional[Dict[Text, Any]] = None
         self.domain_digest: Optional[Text] = None
 
@@ -201,12 +201,6 @@ class ActionExecutor:
                 logger.warning(f"Skipping built in Action {action}.")
                 return
             else:
-                # Check if this class has already been loaded in the past.
-                if action in self._loaded:
-                    return
-
-                # Mark the class as "loaded"
-                self._loaded.add(action)
                 action = action()
 
         if isinstance(action, Action):
@@ -297,6 +291,9 @@ class ActionExecutor:
         """
         try:
             self._import_submodules(package)
+            # Track the package name for reloading
+            package_name = package if isinstance(package, str) else package.__name__
+            self._registered_packages.add(package_name)
         except ImportError:
             logger.exception(f"Failed to register package '{package}'.")
             sys.exit(1)
@@ -350,6 +347,9 @@ class ActionExecutor:
         is larger than the previous one, the module is re-imported using
         `importlib.reload`.
 
+        Additionally, re-scans registered packages to discover and import any
+        newly created modules.
+
         If one or more modules are reloaded during this process, the entire
         `Action` class hierarchy is scanned again to see what new classes can
         be registered.
@@ -357,6 +357,7 @@ class ActionExecutor:
         to_reload = self._find_modules_to_reload()
         any_module_reloaded = False
 
+        # Reload modified modules
         for path, (timestamp, module) in to_reload.items():
             try:
                 new_module = importlib.reload(module)
@@ -371,6 +372,22 @@ class ActionExecutor:
                     f"(file: '{path}'):"
                 )
                 logger.info("Please fix the error(s) in the Python file and try again.")
+
+        # Re-scan registered packages to discover new modules
+        for package_name in self._registered_packages:
+            try:
+                # Get current module files before re-import
+                old_module_files = set(self._modules.keys())
+                self._import_submodules(package_name)
+                # Check if any new modules were imported
+                new_module_files = set(self._modules.keys())
+                if new_module_files != old_module_files:
+                    newly_imported = new_module_files - old_module_files
+                    for module_file in newly_imported:
+                        logger.info(f"Discovered new module: '{module_file}'")
+                    any_module_reloaded = True
+            except ImportError:
+                logger.exception(f"Error while scanning package '{package_name}' for new modules:")
 
         if any_module_reloaded:
             self._register_all_actions()

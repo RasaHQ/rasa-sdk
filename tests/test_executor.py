@@ -246,3 +246,151 @@ def test_load_subclasses(executor: ActionExecutor):
         "subclass_test_action_a",
         "subclass_test_action_b",
     ]
+
+
+async def test_reload_discovers_new_modules(
+    executor: ActionExecutor, dispatcher: CollectingDispatcher, package_path: Text
+):
+    """Test that reload discovers newly created module files."""
+    # Initially register package with one action
+    _write_action_file(
+        package_path, "action1.py", "Action1", "action_1", message="action 1"
+    )
+
+    executor.register_package(package_path.replace("/", "."))
+
+    assert "action_1" in executor.actions
+    assert "action_2" not in executor.actions
+
+    # Create a new action file after registration
+    _write_action_file(
+        package_path, "action2.py", "Action2", "action_2", message="action 2"
+    )
+
+    # Set the file's timestamp into the future to ensure it's detected
+    mod_time = time.time() + 10
+    os.utime(os.path.join(package_path, "action2.py"), times=(mod_time, mod_time))
+
+    # Reload should discover the new module
+    executor.reload()
+
+    # Both actions should now be registered
+    assert "action_1" in executor.actions
+    assert "action_2" in executor.actions
+
+    # Test that the new action works
+    action_2 = executor.actions.get("action_2")
+    assert action_2
+
+    await action_2(dispatcher, None, None)
+
+    assert dispatcher.messages[0]["text"] == "action 2"
+
+
+async def test_reload_discovers_new_modules_in_namespace_package(
+    executor: ActionExecutor, dispatcher: CollectingDispatcher, package_path: Text
+):
+    """Test that reload discovers newly created modules in namespace packages."""
+    # Start with a namespace package (no __init__.py) with one module
+    _write_action_file(
+        package_path, "foo.py", "FooAction", "foo_action", message="foo"
+    )
+
+    executor.register_package(package_path.replace("/", "."))
+
+    # Get initial action count
+    initial_action_count = len(executor.actions)
+    assert "foo_action" in executor.actions
+
+    # Add a new module to the namespace package
+    _write_action_file(
+        package_path, "baz.py", "BazAction", "baz_action", message="baz"
+    )
+
+    # Set timestamp into the future
+    mod_time = time.time() + 10
+    os.utime(os.path.join(package_path, "baz.py"), times=(mod_time, mod_time))
+
+    # Reload should discover the new module
+    executor.reload()
+
+    # Action count should increase by 1
+    assert len(executor.actions) == initial_action_count + 1
+    assert "foo_action" in executor.actions
+    assert "baz_action" in executor.actions
+
+    # Test that the new action works
+    action = executor.actions.get("baz_action")
+    assert action
+
+    await action(dispatcher, None, None)
+    assert dispatcher.messages[0]["text"] == "baz"
+
+
+def test_reload_tracks_registered_packages(executor: ActionExecutor, package_path: Text):
+    """Test that registered packages are tracked correctly."""
+    _write_action_file(
+        package_path, "action1.py", "Action1", "action_1", message="action 1"
+    )
+
+    package_name = package_path.replace("/", ".")
+    executor.register_package(package_name)
+
+    # Check that package is tracked
+    assert package_name in executor._registered_packages
+
+
+async def test_reload_with_modified_and_new_modules(
+    executor: ActionExecutor, dispatcher: CollectingDispatcher, package_path: Text
+):
+    """Test that reload handles both modified and newly created modules."""
+    # Start with one action using a unique name
+    _write_action_file(
+        package_path, "mod_action.py", "ModifiedAction", "modified_action", message="original"
+    )
+
+    executor.register_package(package_path.replace("/", "."))
+
+    # Get initial action count
+    initial_action_count = len(executor.actions)
+
+    # Verify initial state
+    assert "modified_action" in executor.actions
+    assert "brand_new_action" not in executor.actions
+
+    # Modify the existing action
+    _write_action_file(
+        package_path, "mod_action.py", "ModifiedAction", "modified_action", message="modified"
+    )
+
+    # Create a new action with a unique name
+    _write_action_file(
+        package_path, "new_action.py", "BrandNewAction", "brand_new_action", message="new action"
+    )
+
+    # Set timestamps into the future
+    mod_time = time.time() + 10
+    for file in ["mod_action.py", "new_action.py"]:
+        os.utime(os.path.join(package_path, file), times=(mod_time, mod_time))
+
+    # Reload should handle both cases
+    executor.reload()
+
+    # Action count should increase by 1 (one new action added)
+    assert len(executor.actions) == initial_action_count + 1
+
+    # Both actions should be registered
+    assert "modified_action" in executor.actions
+    assert "brand_new_action" in executor.actions
+
+    # Test modified action
+    action_1 = executor.actions.get("modified_action")
+    await action_1(dispatcher, None, None)
+    assert dispatcher.messages[0]["text"] == "modified"
+
+    dispatcher.messages.clear()
+
+    # Test new action
+    action_2 = executor.actions.get("brand_new_action")
+    await action_2(dispatcher, None, None)
+    assert dispatcher.messages[0]["text"] == "new action"
