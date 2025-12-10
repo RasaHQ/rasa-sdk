@@ -1,5 +1,4 @@
-"""
-Script used to publish GitHub release notes extracted from CHANGELOG.mdx.
+"""Script used to publish GitHub release notes extracted from CHANGELOG.mdx.
 This script is executed by GitHub after a new release was successfully built.
 
 Uses the following environment variables:
@@ -28,7 +27,6 @@ from pep440_version_utils import Version
 
 def create_github_release(slug: Text, token: Text, tag_name: Text, body: Text):
     """Create a github release."""
-
     github = github3.login(token=token)
     owner, repo = slug.split("/")
     repo = github.repository(owner, repo)
@@ -37,7 +35,6 @@ def create_github_release(slug: Text, token: Text, tag_name: Text, body: Text):
 
 def parse_changelog(tag_name: Text) -> Text:
     """Read the changelog and extract the most recently release entry."""
-
     p = Path(__file__).parent.parent / "CHANGELOG.mdx"
     changelog_lines = p.read_text(encoding="UTF-8").splitlines()
 

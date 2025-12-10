@@ -36,7 +36,6 @@ RELEASE_BRANCH_PATTERN = re.compile(r"^\d+\.\d+\.x$")
 
 def create_argument_parser() -> argparse.ArgumentParser:
     """Parse all the command line arguments for the release script."""
-
     parser = argparse.ArgumentParser(
         description="Prepare or tag the next library release"
     )
@@ -67,7 +66,6 @@ def pyproject_file_path() -> Path:
 
 def write_version_file(version: Version) -> None:
     """Dump a new version into the python version file."""
-
     with version_file_path().open("w") as f:
         f.write(
             f"# this file will automatically be changed,\n"
@@ -79,7 +77,6 @@ def write_version_file(version: Version) -> None:
 
 def write_version_to_pyproject(version: Version) -> None:
     """Dump a new version into the pyproject.toml."""
-
     import toml
 
     pyproject_file = pyproject_file_path()
@@ -101,7 +98,6 @@ def write_version_to_pyproject(version: Version) -> None:
 
 def get_current_version() -> Text:
     """Return the current library version."""
-
     if not version_file_path().is_file():
         raise FileNotFoundError(
             f"Failed to find version file at {version_file_path().absolute()}"
@@ -119,7 +115,6 @@ def get_current_version() -> Text:
 
 def confirm_version(version: Version) -> bool:
     """Allow the user to confirm the version number."""
-
     if str(version) in git_existing_tags():
         confirmed = questionary.confirm(
             f"Tag with version '{version}' already exists, overwrite?", default=False
@@ -182,14 +177,12 @@ def ask_version() -> Text:
 
 def git_existing_tags() -> Set[Text]:
     """Return all existing tags in the local git repo."""
-
     stdout = check_output(["git", "tag"])
     return set(stdout.decode().split("\n"))
 
 
 def git_current_branch() -> Text:
     """Returns the current git branch of the local repo."""
-
     try:
         output = check_output(["git", "symbolic-ref", "--short", "HEAD"])
         return output.decode().strip()
@@ -199,8 +192,7 @@ def git_current_branch() -> Text:
 
 
 def git_current_branch_is_main_or_release() -> bool:
-    """
-    Returns True if the current local git
+    """Returns True if the current local git
     branch is main or a release branch e.g. 1.10.x
     """
     current_branch = git_current_branch()
@@ -212,7 +204,6 @@ def git_current_branch_is_main_or_release() -> bool:
 
 def create_release_branch(version: Version) -> Text:
     """Create a new branch for this release. Returns the branch name."""
-
     branch = f"{RELEASE_BRANCH_PREFIX}{version}"
     check_call(["git", "checkout", "-b", branch])
     return branch
@@ -230,7 +221,6 @@ def push_changes() -> None:
 
 def ensure_clean_git() -> None:
     """Makes sure the current working git copy is clean."""
-
     try:
         check_call(["git", "diff-index", "--quiet", "HEAD", "--"])
     except CalledProcessError:
@@ -271,7 +261,6 @@ def generate_changelog(version: Version) -> None:
 
 def print_done_message(branch: Text, base: Text, version: Version) -> None:
     """Print final information for the user on what to do next."""
-
     pull_request_url = f"{REPO_BASE_URL}/compare/{base}...{branch}?expand=1"
 
     print()
@@ -281,11 +270,9 @@ def print_done_message(branch: Text, base: Text, version: Version) -> None:
 
 
 def print_done_message_same_branch(version: Version) -> None:
-    """
-    Print final information for the user in case changes
+    """Print final information for the user in case changes
     are directly committed on this branch.
     """
-
     print()
     print(
         f"\033[94m All done - changes for version {version} where committed on this branch \033[0m"
@@ -349,7 +336,6 @@ def tag_release() -> None:
 
 def main(args: argparse.Namespace) -> None:
     """Start a release preparation, or tag release."""
-
     if not args.tag:
         print(
             "The release script will increase the version number, "

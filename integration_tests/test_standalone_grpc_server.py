@@ -31,7 +31,6 @@ def mock_executor() -> AsyncMock:
 @pytest.fixture(scope="module")
 def grpc_action_server(mock_executor: AsyncMock) -> None:
     """Create a gRPC server for the action server."""
-
     _event = asyncio.Event()
 
     async def _run_grpc_server() -> None:
@@ -53,7 +52,6 @@ def grpc_action_server(mock_executor: AsyncMock) -> None:
 @pytest.fixture(scope="module")
 def grpc_tls_action_server(mock_executor: AsyncMock) -> None:
     """Create a gRPC server for the action server."""
-
     _event = asyncio.Event()
 
     async def _run_grpc_server() -> None:
@@ -231,7 +229,6 @@ def test_grpc_server_action_missing_domain(
         request: pytest.FixtureRequest,
 ) -> None:
     """Test connectivity to the gRPC server when domain is missing."""
-
     # Given a mock executor
     action_name = "test_action"
     mock_executor.run.side_effect = exception
