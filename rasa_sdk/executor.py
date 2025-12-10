@@ -387,7 +387,10 @@ class ActionExecutor:
                         logger.info(f"Discovered new module: '{module_file}'")
                     any_module_reloaded = True
             except ImportError:
-                logger.exception(f"Error while scanning package '{package_name}' for new modules:")
+                logger.exception(
+                    f"Error while scanning package "
+                    f"'{package_name}' for new modules:"
+                )
 
         if any_module_reloaded:
             self._register_all_actions()

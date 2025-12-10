@@ -292,9 +292,7 @@ async def test_reload_discovers_new_modules_in_namespace_package(
 ):
     """Test that reload discovers newly created modules in namespace packages."""
     # Start with a namespace package (no __init__.py) with one module
-    _write_action_file(
-        package_path, "foo.py", "FooAction", "foo_action", message="foo"
-    )
+    _write_action_file(package_path, "foo.py", "FooAction", "foo_action", message="foo")
 
     executor.register_package(package_path.replace("/", "."))
 
@@ -303,9 +301,7 @@ async def test_reload_discovers_new_modules_in_namespace_package(
     assert "foo_action" in executor.actions
 
     # Add a new module to the namespace package
-    _write_action_file(
-        package_path, "baz.py", "BazAction", "baz_action", message="baz"
-    )
+    _write_action_file(package_path, "baz.py", "BazAction", "baz_action", message="baz")
 
     # Set timestamp into the future
     mod_time = time.time() + 10
@@ -327,7 +323,9 @@ async def test_reload_discovers_new_modules_in_namespace_package(
     assert dispatcher.messages[0]["text"] == "baz"
 
 
-def test_reload_tracks_registered_packages(executor: ActionExecutor, package_path: Text):
+def test_reload_tracks_registered_packages(
+    executor: ActionExecutor, package_path: Text
+):
     """Test that registered packages are tracked correctly."""
     _write_action_file(
         package_path, "action1.py", "Action1", "action_1", message="action 1"
@@ -346,7 +344,11 @@ async def test_reload_with_modified_and_new_modules(
     """Test that reload handles both modified and newly created modules."""
     # Start with one action using a unique name
     _write_action_file(
-        package_path, "mod_action.py", "ModifiedAction", "modified_action", message="original"
+        package_path,
+        "mod_action.py",
+        "ModifiedAction",
+        "modified_action",
+        message="original",
     )
 
     executor.register_package(package_path.replace("/", "."))
@@ -360,12 +362,20 @@ async def test_reload_with_modified_and_new_modules(
 
     # Modify the existing action
     _write_action_file(
-        package_path, "mod_action.py", "ModifiedAction", "modified_action", message="modified"
+        package_path,
+        "mod_action.py",
+        "ModifiedAction",
+        "modified_action",
+        message="modified",
     )
 
     # Create a new action with a unique name
     _write_action_file(
-        package_path, "new_action.py", "BrandNewAction", "brand_new_action", message="new action"
+        package_path,
+        "new_action.py",
+        "BrandNewAction",
+        "brand_new_action",
+        message="new action",
     )
 
     # Set timestamps into the future

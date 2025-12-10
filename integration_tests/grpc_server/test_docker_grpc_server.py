@@ -97,7 +97,6 @@ def test_grpc_server_webhook(
     grpc_metadata: GrpcMetadata,
 ) -> None:
     """Test Webhook invocation of the gRPC server."""
-
     client = action_webhook_pb2_grpc.ActionServiceStub(grpc_channel)
 
     # Invoke Webhook method
