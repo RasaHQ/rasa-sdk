@@ -64,7 +64,7 @@ jobs:
         uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca  # v3.9.0
 
       - name: Login to Docker Hub Registry 🔢
-        run: echo "${{ secrets.DOCKER_ORG_TOKEN }} | docker login -u ${{ secrets.DOCKER_ORG_NAME }}" --password-stdin || true
+        run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin || true
 
       - name: Authenticate with gcloud for release registry 🎫
         id: 'auth-release'
