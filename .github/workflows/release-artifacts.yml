@@ -92,7 +92,7 @@ jobs:
         id: dockerhub-digest
         run: |
           IMAGE="${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}"
-          DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{.Digest}}')"
+          DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest}}' | jq -r '.digest')"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
           echo "DockerHub manifest digest: $DIGEST"       
 
@@ -115,7 +115,7 @@ jobs:
         id: gar-digest
         run: |
           IMAGE="${GAR_IMAGE_NAME}:${IMAGE_TAG}"
-          DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{.Digest}}')"
+          DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest}}' | jq -r '.digest')"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
           echo "GAR manifest digest: $DIGEST"      
 
