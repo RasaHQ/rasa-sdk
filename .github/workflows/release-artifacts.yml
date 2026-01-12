@@ -104,6 +104,20 @@ jobs:
           echo "Signing $REF"
           cosign sign --yes "$REF"
 
+      - name: Verify DockerHub signature (CI)
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
+          EXPECTED_IDENTITY="https://github.com/${{ github.workflow_ref }}"
+          echo "Verifying $REF"
+          echo "Expected identity: $EXPECTED_IDENTITY"
+
+          cosign verify \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            --certificate-identity "$EXPECTED_IDENTITY" \
+            "$REF"          
+
       - name: Build and Push Docker image to the GCP 📦
         run: |
           make build-and-push-multi-platform-docker
@@ -126,6 +140,20 @@ jobs:
           REF="${GAR_IMAGE_NAME}@${{ steps.gar-digest.outputs.digest }}"
           echo "Signing $REF"
           cosign sign --yes "$REF"
+
+      - name: Verify GAR signature (CI) ✅
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          REF="${GAR_IMAGE_NAME}@${{ steps.gar-digest.outputs.digest }}"
+          EXPECTED_IDENTITY="https://github.com/${{ github.workflow_ref }}"
+          echo "Verifying $REF"
+          echo "Expected identity: $EXPECTED_IDENTITY"
+
+          cosign verify \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            --certificate-identity "$EXPECTED_IDENTITY" \
+            "$REF"
             
   release-artifacts-pypi:
     name: Release Artifacts PyPI
