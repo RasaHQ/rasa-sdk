@@ -103,7 +103,9 @@ jobs:
           REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
           echo "Signing $REF"
           cosign sign --yes "$REF"
-
+          echo "Inspecting manifest for ${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}"
+          docker buildx imagetools inspect "${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}" | sed -n '1,80p'
+     
       - name: Verify DockerHub signature (CI)
         env:
           COSIGN_EXPERIMENTAL: "true"
