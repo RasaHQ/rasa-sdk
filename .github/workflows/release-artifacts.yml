@@ -44,7 +44,7 @@ jobs:
 
     env:
       IMAGE_TAG: ${{ needs.define-release-version.outputs.version }}
-      DOCKERHUB_IMAGE_NAME: docker.io/rasa/rasa-sdk
+      DOCKERHUB_IMAGE_NAME: docker.io/rasa/orela-test
       GAR_IMAGE_NAME: europe-west3-docker.pkg.dev/rasa-releases/rasa-sdk/rasa-sdk    
   
     steps:
