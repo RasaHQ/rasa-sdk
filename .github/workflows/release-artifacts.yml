@@ -92,7 +92,7 @@ jobs:
         id: dockerhub-digest
         run: |
           IMAGE="${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}"
-          DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest}}' | jq -r '.digest')"
+          DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{.Manifest.Digest}}')"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
           echo "DockerHub manifest digest: $DIGEST"       
 
@@ -103,8 +103,12 @@ jobs:
           REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
           echo "Signing $REF"
           cosign sign --yes "$REF"
-          echo "Inspecting manifest for ${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}"
-          docker buildx imagetools inspect "${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}" | sed -n '1,80p'
+
+          echo "Triangulated signature ref:"
+          cosign triangulate "$REF"
+
+          echo "Cosign tree (what artifacts exist):"
+          cosign tree "$REF" || true
      
       - name: Verify DockerHub signature (CI)
         env:
