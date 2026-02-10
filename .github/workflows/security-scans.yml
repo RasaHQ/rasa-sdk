@@ -6,8 +6,8 @@
 #
 # 1. Trivy - Detects hardcoded secrets in the repository.
 # 2. Gitleaks - Scans for potential secrets using a reusable workflow.
-# 3. Slack Alert - Sends a notification to #infrasec-alert if any
-#    security job fails.
+# 3. Slack Alert - Sends a notification to #infrasec-alert and #rasa-pro-alerts
+#    if any security job fails.
 #
 # Jobs:
 #   - trivy: Runs a local filesystem scan for secrets.
@@ -69,7 +69,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   alert_on_failures:
-    name: Alert on failures (Slack on #infrasec-alert)
+    name: Alert on failures
     needs: [trivy, gitleaks]
     runs-on: ubuntu-24.04
     if: always()
@@ -103,7 +103,7 @@ jobs:
             echo "summary=All security scans passed successfully" >> $GITHUB_OUTPUT
           fi
 
-      - name: Send Slack notification
+      - name: Send Slack notification to infrasec-alert channel
         if: steps.summary.outputs.failed == 'true'
         uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02d # v2.0.0
         with:
@@ -122,3 +122,18 @@ jobs:
                 }
               ]
             }
+
+      - name: Send Slack notification to rasa-pro-alerts channel
+        if: steps.summary.outputs.failed == 'true'
+        uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02d # v2.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channel: "C01M5TAHDHA"
+            text: |
+              *Security scans:* some jobs failed :rotating_light:
+              *Repository:* `${{ github.repository }}`
+              *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Open run>
+              ${{ steps.summary.outputs.summary }}
+              *Remedy guide:* <https://www.notion.so/rasa/Guide-How-to-Remove-a-Committed-Security-Key-From-GitHub-and-Clean-Repo-History-2afb9c0d544a8080bee6f5380b8e22e0|How to remove a committed security key>
