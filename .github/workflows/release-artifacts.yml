@@ -104,34 +104,56 @@ jobs:
           COSIGN_EXPERIMENTAL: "true"
         run: |
           IMAGE_REF="${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}"
-          DIGEST_REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
+          REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
           
-          echo "Signing multi-arch image: $DIGEST_REF"
+          echo "Signing multi-arch image: $REF"
           
           # Sign the manifest list 
-          cosign sign --yes "$DIGEST_REF"
+          cosign sign --yes "$REF"
           
           # Optional: Also recursively sign each platform-specific image
-          # cosign sign --yes --recursive "$DIGEST_REF"
+          # cosign sign --yes --recursive "$REF"
           
           echo "Signature created successfully"
+
+      - name: Debug - Check if signature exists
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
+          
+          echo "Checking for signatures on: $REF"
+          
+          # Show what cosign can find
+          echo "=== Cosign tree ==="
+          cosign tree "$REF" || echo "No tree data found"
+          
+          echo ""
+          echo "=== Triangulate (where signature should be) ==="
+          cosign triangulate "$REF" || echo "Cannot triangulate"
+          
+          echo ""
+          echo "=== Attempt to verify (without identity check) ==="
+          cosign verify \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$REF" || echo "No signatures found with OIDC issuer check"
 
       - name: Verify DockerHub signature
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          DIGEST_REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
+          REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
           
           # Use the repository path for identity verification
           EXPECTED_IDENTITY="https://github.com/${{ github.repository }}/.github/workflows/${{ github.workflow }}@${{ github.ref }}"
           
-          echo "Verifying: $DIGEST_REF"
+          echo "Verifying: $REF"
           echo "Expected identity: $EXPECTED_IDENTITY"
           
           cosign verify \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
             --certificate-identity-regexp "^https://github.com/${{ github.repository }}/" \
-            "$DIGEST_REF" | jq .      
+            "$REF" | jq .      
 
       - name: Build and Push Docker image to the GCP 
         run: |
