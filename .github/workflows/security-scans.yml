@@ -55,18 +55,9 @@ jobs:
   
   gitleaks:
     name: Run Gitleaks secret scan
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
-        with:
-          fetch-depth: 0
-
-      - name: Run Gitleaks Scan
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
-        env:
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: RasaHQ/infrasec-workflows/.github/workflows/scan-secret-gitleaks.yml@b8288eca81b68b2d0ed7fc8f08e625a3a06f3a3e
+    secrets:
+      GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
   alert_on_failures:
     name: Alert on failures
