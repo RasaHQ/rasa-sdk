@@ -99,26 +99,26 @@ jobs:
           echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
           echo "DockerHub manifest digest: ${DIGEST}" 
 
-      - name: Sign DockerHub image
-        env:
-          COSIGN_EXPERIMENTAL: "true"
+      - name: Sign DockerHub by digest
         run: |
-          IMAGE_REF="${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}"
           REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
           
-          echo "Signing multi-arch image: $REF"
+          echo "Reference to sign: $REF"
           
-          # Sign the manifest list 
-          cosign sign --yes "$REF"
+          # Sign without COSIGN_EXPERIMENTAL
+          cosign sign --yes --verbose "$REF"
           
-          # Optional: Also recursively sign each platform-specific image
-          # cosign sign --yes --recursive "$REF"
+          # Verify it was pushed
+          echo ""
+          echo "Signature artifacts:"
+          cosign tree "$REF"
           
-          echo "Signature created successfully"
+          # Check triangulated reference
+          echo ""
+          echo "Signature reference:"
+          cosign triangulate "$REF"
 
       - name: Debug - Check if signature exists
-        env:
-          COSIGN_EXPERIMENTAL: "true"
         run: |
           REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
           
@@ -139,8 +139,6 @@ jobs:
             "$REF" || echo "No signatures found with OIDC issuer check"
 
       - name: Verify DockerHub signature
-        env:
-          COSIGN_EXPERIMENTAL: "true"
         run: |
           REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
           
@@ -171,16 +169,12 @@ jobs:
           echo "GAR manifest digest: $DIGEST"      
 
       - name: sign GAR by digest
-        env:
-          COSIGN_EXPERIMENTAL: "true"
         run: |
           REF="${GAR_IMAGE_NAME}@${{ steps.gar-digest.outputs.digest }}"
           echo "Signing $REF"
           cosign sign --yes "$REF"
 
       - name: Verify GAR signature (CI) 
-        env:
-          COSIGN_EXPERIMENTAL: "true"
         run: |
           REF="${GAR_IMAGE_NAME}@${{ steps.gar-digest.outputs.digest }}"
           EXPECTED_IDENTITY="https://github.com/${{ github.workflow_ref }}"
