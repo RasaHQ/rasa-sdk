@@ -92,10 +92,12 @@ jobs:
         id: dockerhub-digest
         run: |
           IMAGE="${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}"
-          # Use docker buildx imagetools to get the proper manifest digest
-          DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{.Manifest.Digest}}')"
-          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-          echo "DockerHub manifest digest: $DIGEST"
+          
+          # Extract the main Digest line (not the manifest-specific ones)
+          DIGEST=$(docker buildx imagetools inspect "$IMAGE" | grep -E '^Digest:' | awk '{print $2}')
+          
+          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+          echo "DockerHub manifest digest: ${DIGEST}" 
 
       - name: Sign DockerHub image
         env:
