@@ -81,7 +81,7 @@ jobs:
         with:
           cosign-release: 'v3.0.2'
 
-      - name: Build and Push Docker image to the DockerHub 📦
+      - name: Build and Push Docker image to the DockerHub 
         run: |
           make build-and-push-multi-platform-docker
         env:
@@ -92,39 +92,46 @@ jobs:
         id: dockerhub-digest
         run: |
           IMAGE="${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}"
-          DIGEST="$(docker manifest inspect "$IMAGE" --verbose | grep -m1 '"digest"' | cut -d'"' -f4)"
+          # Use docker buildx imagetools to get the proper manifest digest
+          DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{.Manifest.Digest}}')"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-          echo "DockerHub manifest digest: $DIGEST"       
+          echo "DockerHub manifest digest: $DIGEST"
 
-      - name: Sign DockerHub by digest
+      - name: Sign DockerHub image
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
-          echo "Signing $REF"
-          cosign sign --yes "$REF"
+          IMAGE_REF="${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}"
+          DIGEST_REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
+          
+          echo "Signing multi-arch image: $DIGEST_REF"
+          
+          # Sign the manifest list 
+          cosign sign --yes "$DIGEST_REF"
+          
+          # Optional: Also recursively sign each platform-specific image
+          # cosign sign --yes --recursive "$DIGEST_REF"
+          
+          echo "Signature created successfully"
 
-          echo "Triangulated signature ref:"
-          cosign triangulate "$REF"
-
-          echo "Cosign tree (what artifacts exist):"
-          cosign tree "$REF" || true
-     
-      - name: Verify DockerHub signature (CI)
+      - name: Verify DockerHub signature
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
-          EXPECTED_IDENTITY="https://github.com/${{ github.workflow_ref }}"
-          echo "Verifying $REF"
+          DIGEST_REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
+          
+          # Use the repository path for identity verification
+          EXPECTED_IDENTITY="https://github.com/${{ github.repository }}/.github/workflows/${{ github.workflow }}@${{ github.ref }}"
+          
+          echo "Verifying: $DIGEST_REF"
           echo "Expected identity: $EXPECTED_IDENTITY"
-
+          
           cosign verify \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-            --certificate-identity "$EXPECTED_IDENTITY" \
-            "$REF"          
+            --certificate-identity-regexp "^https://github.com/${{ github.repository }}/.*" \
+            "$DIGEST_REF" | jq .          
 
-      - name: Build and Push Docker image to the GCP 📦
+      - name: Build and Push Docker image to the GCP 
         run: |
           make build-and-push-multi-platform-docker
         env:
@@ -147,7 +154,7 @@ jobs:
           echo "Signing $REF"
           cosign sign --yes "$REF"
 
-      - name: Verify GAR signature (CI) ✅
+      - name: Verify GAR signature (CI) 
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
