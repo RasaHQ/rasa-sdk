@@ -157,10 +157,9 @@ jobs:
           
           cosign verify \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-            --certificate-identity-regexp "^https://github.com/${{ github.repository }}/.github/workflows/.*@refs/" \
-#            "$REF" | jq .  
+            --certificate-identity-regexp "^https://github.com/${{ github.repository }}/.github/workflows/.*@refs/" \ 
             "${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}" | jq .
-
+#            "$REF" | jq . 
       - name: Build and Push Docker image to the GCP 
         run: |
           make build-and-push-multi-platform-docker
