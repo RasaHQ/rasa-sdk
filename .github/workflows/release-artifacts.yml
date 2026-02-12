@@ -103,7 +103,7 @@ jobs:
           echo "DockerHub manifest digest: ${DIGEST}" 
 
       - name: Sign DockerHub by digest
-        env:
+#        env:
 #          COSIGN_DOCKER_MEDIA_TYPES: "1"
         run: |
           REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
@@ -144,7 +144,7 @@ jobs:
             "$REF" || echo "No signatures found with OIDC issuer check"
 
       - name: Verify DockerHub signature
-        env:
+#        env:
 #          COSIGN_DOCKER_MEDIA_TYPES: "1"
         run: |
           REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
