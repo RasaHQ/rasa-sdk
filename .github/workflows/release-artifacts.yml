@@ -104,7 +104,7 @@ jobs:
 
       - name: Sign DockerHub by digest
         env:
-          COSIGN_DOCKER_MEDIA_TYPES: "1"
+#          COSIGN_DOCKER_MEDIA_TYPES: "1"
         run: |
           REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
           
@@ -140,11 +140,12 @@ jobs:
           echo "=== Attempt to verify (without identity check) ==="
           cosign verify \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            --certificate-identity-regexp "^https://github.com/${{ github.repository }}/.github/workflows/.*@refs/" \
             "$REF" || echo "No signatures found with OIDC issuer check"
 
       - name: Verify DockerHub signature
         env:
-          COSIGN_DOCKER_MEDIA_TYPES: "1"
+#          COSIGN_DOCKER_MEDIA_TYPES: "1"
         run: |
           REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
           
@@ -156,7 +157,7 @@ jobs:
           
           cosign verify \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-            --certificate-identity-regexp "^https://github.com/${{ github.repository }}/" \
+            --certificate-identity-regexp "^https://github.com/${{ github.repository }}/.github/workflows/.*@refs/" \
             "$REF" | jq .      
 
       - name: Build and Push Docker image to the GCP 
