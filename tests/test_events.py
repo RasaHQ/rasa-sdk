@@ -50,3 +50,34 @@ def test_deprecated_form_validation_event(validate: bool):
             "event": "loop_interrupted",
             "timestamp": timestamp,
         }
+
+
+@pytest.mark.parametrize(
+    "kwargs,expected",
+    [
+        ({}, {"event": "session_ended", "timestamp": None, "metadata": None}),
+        (
+            {"timestamp": 123.0},
+            {"event": "session_ended", "timestamp": 123.0, "metadata": None},
+        ),
+        (
+            {"metadata": {"reason": "user_hangup"}},
+            {
+                "event": "session_ended",
+                "timestamp": None,
+                "metadata": {"reason": "user_hangup"},
+            },
+        ),
+        (
+            {"timestamp": 456.0, "metadata": {"_reason": "hangup"}},
+            {
+                "event": "session_ended",
+                "timestamp": 456.0,
+                "metadata": {"_reason": "hangup"},
+            },
+        ),
+    ],
+)
+def test_session_ended(kwargs, expected):
+    """SessionEnded returns correct event dict for given kwargs."""
+    assert events.SessionEnded(**kwargs) == expected
