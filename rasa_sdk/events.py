@@ -58,6 +58,19 @@ def SessionStarted(timestamp: Optional[float] = None) -> EventType:
 
 
 # noinspection PyPep8Naming
+def SessionEnded(
+    timestamp: Optional[float] = None,
+    metadata: Optional[Dict[Text, Any]] = None,
+) -> EventType:
+    """Mark the end of a conversation session.
+
+    Return this from a custom action to manually end the session. The conversation
+    becomes terminated and non-resumable. No further events can be appended.
+    """
+    return {"event": "session_ended", "timestamp": timestamp, "metadata": metadata}
+
+
+# noinspection PyPep8Naming
 def UserUtteranceReverted(timestamp: Optional[float] = None) -> EventType:
     return {"event": "rewind", "timestamp": timestamp}
 
