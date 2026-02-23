@@ -24,6 +24,7 @@ message Tracker {
     map<string, string> active_loop = 7;
     optional string latest_action_name = 8;
     repeated google.protobuf.Struct stack = 9;
+    optional string user_id = 10;
 }
 
 message Intent {

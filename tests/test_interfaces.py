@@ -80,3 +80,25 @@ def test_stack_in_tracker_state(
     assert tracker.stack == dialogue_stack
     assert tracker.copy().stack == dialogue_stack
     assert tracker.current_state()["stack"] == dialogue_stack
+
+
+@pytest.mark.parametrize(
+    "state,expected_user_id",
+    [
+        ({"events": [], "sender_id": "sender1", "active_loop": {}}, None),
+        (
+            {
+                "events": [],
+                "sender_id": "sender1",
+                "active_loop": {},
+                "user_id": "user-123",
+            },
+            "user-123",
+        ),
+    ],
+)
+def test_user_id_in_tracker(state: Dict, expected_user_id):
+    tracker = Tracker.from_dict(state)
+    assert tracker.user_id == expected_user_id
+    assert tracker.current_state()["user_id"] == expected_user_id
+    assert tracker.copy().user_id == expected_user_id

@@ -33,6 +33,7 @@ class Tracker:
             state.get("active_loop", state.get("active_form", {})),
             state.get("latest_action_name"),
             state.get("stack", []),
+            state.get("user_id"),
         )
 
     def __init__(
@@ -46,6 +47,7 @@ class Tracker:
         active_loop: Dict[Text, Any],
         latest_action_name: Optional[Text],
         stack: Optional[List[Dict[Text, Any]]] = None,
+        user_id: Optional[Text] = None,
     ) -> None:
         """Initialize the tracker."""
         # list of previously seen events
@@ -67,6 +69,7 @@ class Tracker:
         self.active_loop = active_loop
         self.latest_action_name = latest_action_name
         self.stack = stack if stack else []
+        self.user_id = user_id
 
     @property
     def active_form(self) -> Dict[Text, Any]:
@@ -95,6 +98,7 @@ class Tracker:
             "active_loop": self.active_loop,
             "latest_action_name": self.latest_action_name,
             "stack": self.stack,
+            "user_id": self.user_id,
         }
 
     def current_slot_values(self) -> Dict[Text, Any]:
@@ -197,6 +201,7 @@ class Tracker:
             self.active_loop,
             self.latest_action_name,
             self.stack,
+            self.user_id,
         )
 
     def last_executed_action_has(self, name: Text, skip: int = 0) -> bool:
