@@ -26,6 +26,8 @@ class TrackerState(TypedDict):
     latest_action_name: Optional[Text]
     # the current dialogue stack
     stack: List[Dict[Text, Any]]
+    # optional user id
+    user_id: Optional[Text]
 
 
 class DomainDict(TypedDict):

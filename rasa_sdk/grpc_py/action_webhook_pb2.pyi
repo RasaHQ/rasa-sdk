@@ -17,7 +17,7 @@ class ActionsResponse(_message.Message):
     def __init__(self, actions: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ...) -> None: ...
 
 class Tracker(_message.Message):
-    __slots__ = ("sender_id", "slots", "latest_message", "events", "paused", "followup_action", "active_loop", "latest_action_name", "stack")
+    __slots__ = ("sender_id", "slots", "latest_message", "events", "paused", "followup_action", "active_loop", "latest_action_name", "stack", "user_id")
     class ActiveLoopEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -34,6 +34,7 @@ class Tracker(_message.Message):
     ACTIVE_LOOP_FIELD_NUMBER: _ClassVar[int]
     LATEST_ACTION_NAME_FIELD_NUMBER: _ClassVar[int]
     STACK_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
     sender_id: str
     slots: _struct_pb2.Struct
     latest_message: _struct_pb2.Struct
@@ -43,7 +44,8 @@ class Tracker(_message.Message):
     active_loop: _containers.ScalarMap[str, str]
     latest_action_name: str
     stack: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
-    def __init__(self, sender_id: _Optional[str] = ..., slots: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., latest_message: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., events: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., paused: bool = ..., followup_action: _Optional[str] = ..., active_loop: _Optional[_Mapping[str, str]] = ..., latest_action_name: _Optional[str] = ..., stack: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ...) -> None: ...
+    user_id: str
+    def __init__(self, sender_id: _Optional[str] = ..., slots: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., latest_message: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., events: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., paused: bool = ..., followup_action: _Optional[str] = ..., active_loop: _Optional[_Mapping[str, str]] = ..., latest_action_name: _Optional[str] = ..., stack: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., user_id: _Optional[str] = ...) -> None: ...
 
 class Intent(_message.Message):
     __slots__ = ("string_value", "dict_value")
