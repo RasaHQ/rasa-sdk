@@ -19,7 +19,7 @@ jobs:
 
     - name: Scan image for language dependency vulnerabilities
       id: trivy
-      uses: aquasecurity/trivy-action@d63413b0a4a4482237085319f7f4a1ce99a8f2ac
+      uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478 # v0.34.2
       continue-on-error: true
       with:
         exit-code: '1'
@@ -31,6 +31,7 @@ jobs:
         vuln-type: 'library'
         scan-type: 'image'
         output: scan-result.txt  
+        version: v0.69.3
     
     - id: auth-security-reports
       name: Authenticate with gcloud for saving report 🎫
