@@ -25,6 +25,9 @@ jobs:
       id: trivy
       uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478 # v0.34.2
       continue-on-error: true
+      env:
+        TRIVY_TABLE_MODE: detailed
+        TRIVY_DISABLE_VEX_NOTICE: foo
       with:
         exit-code: '1'
         format: 'table'
