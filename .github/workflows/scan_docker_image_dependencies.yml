@@ -1,7 +1,11 @@
 name: Scan Rasa SDK App Dependencies
 
 on:
+  schedule:
+      # Runs at 8AM on Monday.
+      - cron: '0 8 * * MON'
   workflow_dispatch:
+
 
 jobs:
   scan_and_alert:
@@ -54,7 +58,7 @@ jobs:
       if: steps.trivy.outcome == 'failure'
       uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
       with:
-        channel-id: 'C01M5TAHDHA,C04Q26JSD6U'
+        channel-id: ${{ secrets.SLACK_VULN_REPORT_CHANNEL_ID }}
         payload: |
           {
             "text": "Dependency vulnerabilities have been found in the Docker image for Rasa SDK ${{ steps.find-tag.outputs.tag }} that could impact customer deployments. Please schedule these for resolution.",
