@@ -41,6 +41,11 @@ jobs:
     name: Release Artifacts Docker
     runs-on: ubuntu-24.04
     needs: define-release-version
+
+    env:
+      IMAGE_TAG: ${{ needs.define-release-version.outputs.version }}
+      DOCKERHUB_IMAGE_NAME: docker.io/rasa/orela-test
+      GAR_IMAGE_NAME: europe-west3-docker.pkg.dev/rasa-releases/rasa-sdk/rasa-sdk    
   
     steps:
       - name: Check out code
@@ -59,7 +64,7 @@ jobs:
         uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca  # v3.9.0
 
       - name: Login to Docker Hub Registry 🔢
-        run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin || true
+        run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin 
 
       - name: Authenticate with gcloud for release registry 🎫
         id: 'auth-release'
@@ -71,19 +76,122 @@ jobs:
       - name: Authenticate docker for release registry 🎫
         run: gcloud auth configure-docker europe-west3-docker.pkg.dev
 
-      - name: Build and Push Docker image to the DockerHub 📦
-        run: |
-          make build-and-push-multi-platform-docker
-        env:
-          IMAGE_TAG: ${{ needs.define-release-version.outputs.version }}
-          IMAGE_NAME: "rasa/rasa-sdk"
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad
+        with:
+          cosign-release: 'v3.0.2'
 
-      - name: Build and Push Docker image to the GCP 📦
+      - name: Build and Push Docker image to the DockerHub 
         run: |
           make build-and-push-multi-platform-docker
         env:
-          IMAGE_TAG: ${{ needs.define-release-version.outputs.version }}
-          IMAGE_NAME: "europe-west3-docker.pkg.dev/rasa-releases/rasa-sdk/rasa-sdk"
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          IMAGE_NAME: ${{ env.DOCKERHUB_IMAGE_NAME }}
+
+      - name: Login to Docker Hub Registry 🔢
+        run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin 
+
+      - name: Resolve DockerHub manifest digest
+        id: dockerhub-digest
+        run: |
+          IMAGE="${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}"
+          
+          # Extract the main Digest line (not the manifest-specific ones)
+          DIGEST=$(docker buildx imagetools inspect "$IMAGE" | grep -E '^Digest:' | awk '{print $2}')
+          
+          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+          echo "DockerHub manifest digest: ${DIGEST}" 
+
+      - name: Sign DockerHub by digest
+#        env:
+#          COSIGN_DOCKER_MEDIA_TYPES: "1"
+        run: |
+          REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
+          
+          echo "Reference to sign: $REF"
+          
+          cosign sign --yes --verbose "$REF"
+          
+          # Verify it was pushed
+          echo ""
+          echo "Signature artifacts:"
+          cosign tree "$REF"
+          
+          # Check triangulated reference
+          echo ""
+          echo "Signature reference:"
+          cosign triangulate "$REF"
+
+      - name: Debug - Check if signature exists
+        run: |
+          REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
+          
+          echo "Checking for signatures on: $REF"
+          
+          # Show what cosign can find
+          echo "=== Cosign tree ==="
+          cosign tree "$REF" || echo "No tree data found"
+          
+          echo ""
+          echo "=== Triangulate (where signature should be) ==="
+          cosign triangulate "$REF" || echo "Cannot triangulate"
+          
+          echo ""
+          echo "=== Attempt to verify (without identity check) ==="
+          cosign verify \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            --certificate-identity-regexp "^https://github.com/${{ github.repository }}/.github/workflows/.*@refs/" \
+            "$REF" || echo "No signatures found with OIDC issuer check"
+
+      - name: Verify DockerHub signature
+#        env:
+#          COSIGN_DOCKER_MEDIA_TYPES: "1"
+        run: |
+          REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
+          
+          # Use the repository path for identity verification
+          REF="${DOCKERHUB_IMAGE_NAME}@${{ steps.dockerhub-digest.outputs.digest }}"
+          
+          echo "Verifying: $REF"
+          echo "Expected identity: $EXPECTED_IDENTITY"
+          
+          cosign verify \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            --certificate-identity-regexp "^https://github.com/${{ github.repository }}/.github/workflows/.*@refs/" \ 
+            "${DOCKERHUB_IMAGE_NAME}:${IMAGE_TAG}" | jq .
+#            "$REF" | jq . 
+      - name: Build and Push Docker image to the GCP 
+        run: |
+          make build-and-push-multi-platform-docker
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          IMAGE_NAME: ${{ env.GAR_IMAGE_NAME }}
+
+      - name: Get image digest from GAR
+        id: gar-digest
+        run: |
+          IMAGE="${GAR_IMAGE_NAME}:${IMAGE_TAG}"
+          DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest}}' | jq -r '.digest')"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "GAR manifest digest: $DIGEST"      
+
+      - name: sign GAR by digest
+        run: |
+          REF="${GAR_IMAGE_NAME}@${{ steps.gar-digest.outputs.digest }}"
+          echo "Signing $REF"
+          cosign sign --yes "$REF"
+
+      - name: Verify GAR signature (CI) 
+        run: |
+          REF="${GAR_IMAGE_NAME}@${{ steps.gar-digest.outputs.digest }}"
+          EXPECTED_IDENTITY="https://github.com/${{ github.workflow_ref }}"
+          echo "Verifying $REF"
+          echo "Expected identity: $EXPECTED_IDENTITY"
+
+          cosign verify \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            --certificate-identity "$EXPECTED_IDENTITY" \
+            "$REF"
             
   release-artifacts-pypi:
     name: Release Artifacts PyPI
