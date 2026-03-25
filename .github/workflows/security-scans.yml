@@ -16,13 +16,15 @@ jobs:
         fetch-depth: '0'
     - name: Run Trivy vulnerability scanner
       id: trivy
-      uses: aquasecurity/trivy-action@d63413b0a4a4482237085319f7f4a1ce99a8f2ac
+      uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478
       continue-on-error: true
       with:
         format: 'table'
         scan-type: 'fs'
         exit-code: '1'
-        security-checks: 'secret'
+        scanners: 'secret'
+        version: v0.69.3
+
     - name: Alert on secret finding
       if: steps.trivy.outcome == 'failure'
       uses: slackapi/slack-github-action@936158bbe252e9a6062e793ea4609642c966e302
