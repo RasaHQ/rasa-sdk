@@ -23,7 +23,7 @@ jobs:
         scan-type: 'fs'
         exit-code: '1'
         security-checks: 'secret'
-        version: 0.69.3
+        version: v0.69.3
 
     - name: Alert on secret finding
       if: steps.trivy.outcome == 'failure'
