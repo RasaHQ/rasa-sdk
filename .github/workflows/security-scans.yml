@@ -22,7 +22,7 @@ jobs:
         format: 'table'
         scan-type: 'fs'
         exit-code: '1'
-        security-checks: 'secret'
+        scanners: 'secret'
         version: v0.69.3
 
     - name: Alert on secret finding
