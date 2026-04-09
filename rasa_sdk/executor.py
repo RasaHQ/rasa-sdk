@@ -1,10 +1,23 @@
 from __future__ import annotations
+import asyncio
 import importlib
 import inspect
 import logging
 import pkgutil
 import warnings
-from typing import Text, List, Dict, Any, Type, Union, Callable, Optional, Set, cast
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Text,
+    Type,
+    Union,
+    cast,
+)
 from collections import namedtuple
 import types
 import sys
@@ -25,11 +38,42 @@ logger = logging.getLogger(__name__)
 
 
 class CollectingDispatcher:
-    """Send messages back to user."""
+    """Collect messages and stream text chunks back to the user.
+
+    Every custom action receives an instance of this class as ``dispatcher``.
+    It provides two complementary APIs:
+
+    **Unary API** (always available):
+        :meth:`utter_message` and its deprecated siblings accumulate complete
+        messages in :attr:`messages`.  The executor returns them all at once in
+        the final ``ActionExecutorRunResult.responses`` payload.
+
+    **Streaming API** (transport-dependent):
+        :meth:`stream_start`, :meth:`stream_text`, and :meth:`stream_end` let
+        an action emit text incrementally.  Whether actual streaming occurs is
+        decided entirely by the *transport layer*, not the action author:
+
+        * When :meth:`ActionExecutor.run_streaming` is called the executor
+          injects a sink into :attr:`_stream_sink` before invoking the action,
+          and each chunk is forwarded to that sink immediately.
+        * When the plain :meth:`ActionExecutor.run` is called (unary transport)
+          the sink stays ``None``.  The streaming methods still accumulate text
+          internally, and :meth:`stream_end` flushes it as a single
+          :meth:`utter_message` — so the same action code works correctly on
+          every transport without any branching by the action author.
+
+    Action authors never need to check which path is active; they just call the
+    streaming methods and the dispatcher handles the rest.
+    """
 
     def __init__(self) -> None:
         """Create a `CollectingDispatcher` object."""
         self.messages: List[Dict[Text, Any]] = []
+        # Injected by the executor when a streaming transport is available.
+        # Must be a callable that accepts a chunk dict and returns an awaitable.
+        # When None the streaming methods degrade to a single utter_message call.
+        self._stream_sink: Optional[Callable[[Dict[Text, Any]], Awaitable[None]]] = None
+        self._stream_accumulated_text: str = ""
 
     def utter_message(
         self,
@@ -64,6 +108,46 @@ class CollectingDispatcher:
         message.update(kwargs)
 
         self.messages.append(message)
+
+    async def stream_start(self) -> None:
+        """Begin a streamed response and reset the internal text accumulator.
+
+        If a stream sink is attached, emits a ``stream_start`` chunk event to
+        the sink.  Call this before any :meth:`stream_text` calls.
+        """
+        self._stream_accumulated_text = ""
+        if self._stream_sink is not None:
+            await self._stream_sink({"event": "stream_start"})
+
+    async def stream_text(self, text: str) -> None:
+        """Emit a text chunk event.
+
+        The chunk is always accumulated internally so that :meth:`stream_end`
+        can fall back to a single :meth:`utter_message` on non-streaming
+        transports.  When a sink is attached the chunk is also forwarded
+        immediately.
+
+        Args:
+            text: The text fragment to stream.
+        """
+        self._stream_accumulated_text += text
+        if self._stream_sink is not None:
+            await self._stream_sink({"event": "stream_text", "text": text})
+
+    async def stream_end(self) -> None:
+        """End a streamed response.
+
+        When a sink is attached, emits a ``stream_end`` chunk event.
+        When *no* sink is attached (non-streaming transport), the accumulated
+        text is emitted as a single :meth:`utter_message` call so that the
+        action works correctly on every transport.
+        """
+        if self._stream_sink is not None:
+            await self._stream_sink({"event": "stream_end"})
+        else:
+            if self._stream_accumulated_text:
+                self.utter_message(text=self._stream_accumulated_text)
+        self._stream_accumulated_text = ""
 
     # deprecated
     def utter_custom_message(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
@@ -178,7 +262,25 @@ class ActionExecutorRunResult(BaseModel):
 
 
 class ActionExecutor:
-    """Executes actions."""
+    """Register and execute custom actions.
+
+    The executor owns the transport-level decision of whether to stream.
+    Action authors always write the same code using
+    :class:`CollectingDispatcher`; the executor selects the appropriate
+    execution path:
+
+    * :meth:`run` — unary path.  No sink is attached to the dispatcher, so
+      streaming methods degrade to a single :meth:`~CollectingDispatcher.utter_message`
+      at the end.  All responses are returned together in the result payload.
+    * :meth:`run_streaming` — streaming path.  The executor injects an
+      :class:`asyncio.Queue` as the dispatcher's sink so that text chunks
+      produced by :meth:`~CollectingDispatcher.stream_text` are forwarded
+      immediately, before the action finishes.
+
+    The sink is *not* created by :class:`CollectingDispatcher` itself because
+    the dispatcher has no knowledge of the transport (HTTP, gRPC, direct
+    queue, …) and should not own a queue that only the caller can consume.
+    """
 
     def __init__(self) -> None:
         """Initializes the `ActionExecutor`."""
@@ -501,15 +603,40 @@ class ActionExecutor:
     async def run(
         self,
         action_call: Dict[Text, Any],
+        sink: Optional[asyncio.Queue] = None,
     ) -> Optional[ActionExecutorRunResult]:
         """Run the action and return the response.
 
+        This is the single entry point for action execution regardless of
+        whether the action uses the streaming API or not.
+
+        When *sink* is ``None`` (the default, used by unary transports such as
+        the standard HTTP and gRPC webhooks) the dispatcher's streaming methods
+        still work: text is accumulated internally and flushed as a single
+        :meth:`~CollectingDispatcher.utter_message` when the action calls
+        :meth:`~CollectingDispatcher.stream_end`.  The final result is returned
+        as usual in :class:`ActionExecutorRunResult`.
+
+        When a *sink* queue is provided (streaming transports) the dispatcher
+        forwards each chunk to the queue immediately as the action produces it.
+        The following chunk dicts are emitted in order:
+
+        * ``{"event": "stream_start"}``
+        * ``{"event": "stream_text", "text": "<fragment>"}``  (one per chunk)
+        * ``{"event": "stream_end"}``
+        * ``{"event": "stream_done", "result": <ActionExecutorRunResult>}``
+
+        The ``stream_done`` sentinel is always the last item placed in the
+        queue so consumers know the full result is available.
+
         Args:
             action_call: Request payload containing the action data.
+            sink: Optional queue that receives streaming chunk events.
+                  Pass an :class:`asyncio.Queue` to enable streaming output.
 
         Returns:
-            Response containing the events and messages or None if
-            the action does not exist.
+            Response containing the events and messages, or ``None`` if no
+            action name was provided in *action_call*.
         """
         from rasa_sdk.interfaces import Tracker
 
@@ -524,6 +651,8 @@ class ActionExecutor:
             domain = self.update_and_return_domain(action_call, action_name)
             tracker = Tracker.from_dict(tracker_json)
             dispatcher = CollectingDispatcher()
+            if sink is not None:
+                dispatcher._stream_sink = sink.put
 
             events = await utils.call_potential_coroutine(
                 action(dispatcher, tracker, domain)
@@ -534,11 +663,34 @@ class ActionExecutor:
                 events = []
 
             validated_events = self.validate_events(events, action_name)
+            result = self._create_api_response(validated_events, dispatcher.messages)
+            if sink is not None:
+                await sink.put({"event": "stream_done", "result": result})
             logger.debug(f"Finished running '{action_name}'")
-            return self._create_api_response(validated_events, dispatcher.messages)
+            return result
 
         logger.warning("Received an action call without an action.")
         return None
+
+    async def run_streaming(
+        self,
+        action_call: Dict[Text, Any],
+        sink: asyncio.Queue,
+    ) -> Optional[ActionExecutorRunResult]:
+        """Run the action with streaming output via an :class:`asyncio.Queue`.
+
+        Convenience wrapper around :meth:`run` for callers that always want
+        streaming.  Equivalent to ``run(action_call, sink=sink)``.
+
+        Args:
+            action_call: Request payload containing the action data.
+            sink: Queue that receives streaming chunk events.
+
+        Returns:
+            Response containing the events and messages, or ``None`` if no
+            action name was provided in *action_call*.
+        """
+        return await self.run(action_call, sink=sink)
 
     def list_actions(self) -> List[ActionName]:
         """List all registered action names."""
