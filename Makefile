@@ -60,7 +60,6 @@ build-docker:  ## build docker image for one platform
 build-docker-with-dev-deps:  ## build docker image with dev dependencies for one platform
 	docker build . \
 			--build-arg POETRY_VERSION=$(POETRY_VERSION) \
-			--build-arg SETUPTOOLS_VERSION=$(SETUPTOOLS_VERSION) \
             --platform=$(PLATFORM) \
             -f Dockerfile.dev \
             -t $(IMAGE_WITH_DEV_DEPS):$(IMAGE_TAG)
@@ -84,7 +83,6 @@ build-and-push-multi-platform-docker-with-dev-deps: PLATFORM = linux/amd64,linux
 build-and-push-multi-platform-docker-with-dev-deps:  ## build and push multi-platform docker image with dev dependencies
 	docker buildx build . \
             --build-arg POETRY_VERSION=$(POETRY_VERSION) \
-            --build-arg SETUPTOOLS_VERSION=$(SETUPTOOLS_VERSION) \
 			--platform=$(PLATFORM) \
 			-f Dockerfile.dev \
 			-t $(IMAGE_WITH_DEV_DEPS):$(IMAGE_TAG) \

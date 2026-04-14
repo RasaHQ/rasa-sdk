@@ -86,7 +86,7 @@ COPY ./entrypoint.sh /app/
 COPY --from=python_builder /opt/venv /opt/venv
 
 RUN /opt/venv/bin/pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}" \
-    && apt-get purge -y python3-venv python3-dev \
+    && apt-get purge -y curl python3-venv python3-dev \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
