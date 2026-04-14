@@ -1,5 +1,7 @@
 FROM ubuntu:22.04 AS base
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # hadolint ignore=DL3005,DL3008
 RUN apt-get update -qq \
     # Make sure that all security updates are installed
