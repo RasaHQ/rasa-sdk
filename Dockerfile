@@ -1,4 +1,9 @@
+# Keep this in sync with the version pinned in poetry.lock
+ARG SETUPTOOLS_VERSION=82.0.1
+
 FROM ubuntu:22.04 AS base
+
+ARG SETUPTOOLS_VERSION
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -15,7 +20,7 @@ RUN apt-get update -qq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && curl -sSL https://bootstrap.pypa.io/get-pip.py | python3 \
-    && pip install --no-cache-dir "setuptools>=82"
+    && pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}"
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
    && update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3 100
@@ -68,11 +73,13 @@ RUN find . -name '*.whl' -maxdepth 1 -exec basename {} \; | awk -F - '{ gsub("_"
 # final image
 FROM base
 
+ARG SETUPTOOLS_VERSION
+
 # copy needed files
 COPY ./entrypoint.sh /app/
 COPY --from=python_builder /opt/venv /opt/venv
 
-RUN /opt/venv/bin/pip install --no-cache-dir "setuptools>=82" \
+RUN /opt/venv/bin/pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}" \
     && dpkg --purge --force-depends python3-setuptools-whl python3-venv python3-dev
 
 ENV PATH="/opt/venv/bin:$PATH"
