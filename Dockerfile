@@ -1,9 +1,12 @@
 # Keep this in sync with the version pinned in poetry.lock
 ARG SETUPTOOLS_VERSION=82.0.1
+# Recompute with: curl -fsSL https://bootstrap.pypa.io/get-pip.py | sha256sum
+ARG GET_PIP_SHA256=feba1c697df45be1b539b40d93c102c9ee9dde1d966303323b830b06f3fbca3c
 
 FROM ubuntu:22.04 AS base
 
 ARG SETUPTOOLS_VERSION
+ARG GET_PIP_SHA256
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -19,7 +22,10 @@ RUN apt-get update -qq \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && curl -sSL https://bootstrap.pypa.io/get-pip.py | python3 \
+    && curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
+    && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check --status \
+    && python3 /tmp/get-pip.py \
+    && rm /tmp/get-pip.py \
     && pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}"
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
