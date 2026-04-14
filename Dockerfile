@@ -3,29 +3,24 @@ FROM ubuntu:22.04 AS base
 # hadolint ignore=DL3005,DL3008
 RUN apt-get update -qq \
     # Make sure that all security updates are installed
-    && apt-get dist-upgrade -y --no-install-recommends \
+    && apt-get dist-upgrade -y --no-install-recommends --fix-missing \
     && apt-get install -y --no-install-recommends \
       python3 \
       python3-venv \
-      python3-pip \
       python3-dev \
+      curl \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir -U setuptools # upgrade system-level setuptools that Ubuntu 22.04's apt package delivers
+    && curl -sSL https://bootstrap.pypa.io/get-pip.py | python3 \
+    && pip install --no-cache-dir "setuptools>=82"
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
-   && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 100
+   && update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3 100
 
 FROM base AS python_builder
 
 ARG POETRY_VERSION=2.1.2
-
-# hadolint ignore=DL3008
-RUN apt-get update -qq \
-   && apt-get install -y --no-install-recommends \
-    curl \
-    && apt-get autoremove -y
 
 # install poetry
 # keep this in sync with the version in pyproject.toml and Dockerfile
@@ -74,6 +69,9 @@ FROM base
 # copy needed files
 COPY ./entrypoint.sh /app/
 COPY --from=python_builder /opt/venv /opt/venv
+
+RUN /opt/venv/bin/pip install --no-cache-dir "setuptools>=82" \
+    && dpkg --purge --force-depends python3-setuptools-whl python3-venv python3-dev
 
 ENV PATH="/opt/venv/bin:$PATH"
 
