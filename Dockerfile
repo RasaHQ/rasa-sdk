@@ -11,7 +11,8 @@ RUN apt-get update -qq \
       python3-dev \
     && apt-get autoremove -y \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir -U setuptools # upgrade system-level setuptools that Ubuntu 22.04's apt package delivers
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 100
