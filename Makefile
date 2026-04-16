@@ -45,11 +45,13 @@ IMAGE_WITH_DEV_DEPS ?= rasa/rasa-sdk-with-dev-deps
 IMAGE_TAG ?= latest
 PLATFORM ?= linux/arm64
 POETRY_VERSION ?= $(shell ./scripts/poetry-version.sh)
+SETUPTOOLS_VERSION ?= $(shell ./scripts/setuptools-version.sh)
 
 # Builds a docker image with runtime dependencies installed
 build-docker:  ## build docker image for one platform
 	docker build . \
 			--build-arg POETRY_VERSION=$(POETRY_VERSION) \
+			--build-arg SETUPTOOLS_VERSION=$(SETUPTOOLS_VERSION) \
             --platform=$(PLATFORM) \
             -f Dockerfile \
             -t $(IMAGE_NAME):$(IMAGE_TAG)
@@ -68,6 +70,7 @@ build-and-push-multi-platform-docker: PLATFORM = linux/amd64,linux/arm64
 build-and-push-multi-platform-docker:  ## build and push multi-platform docker image
 	docker buildx build . \
             --build-arg POETRY_VERSION=$(POETRY_VERSION) \
+            --build-arg SETUPTOOLS_VERSION=$(SETUPTOOLS_VERSION) \
 			--platform=$(PLATFORM) \
 			-f Dockerfile \
 			-t $(IMAGE_NAME):$(IMAGE_TAG) \
