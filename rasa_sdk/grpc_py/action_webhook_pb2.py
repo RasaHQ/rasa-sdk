@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%rasa_sdk/grpc_py/action_webhook.proto\x12\x15\x61\x63tion_server_webhook\x1a\x1cgoogle/protobuf/struct.proto\"\xb1\x02\n\x12WebhookStreamEvent\x12\x38\n\x0b\x63hunk_start\x18\x01 \x01(\x0b\x32!.action_server_webhook.ChunkStartH\x00\x12-\n\x05\x63hunk\x18\x02 \x01(\x0b\x32\x1c.action_server_webhook.ChunkH\x00\x12\x34\n\tchunk_end\x18\x03 \x01(\x0b\x32\x1f.action_server_webhook.ChunkEndH\x00\x12>\n\x0c\x66inal_result\x18\x04 \x01(\x0b\x32&.action_server_webhook.WebhookResponseH\x00\x12\x33\n\x05\x65rror\x18\x05 \x01(\x0b\x32\".action_server_webhook.StreamErrorH\x00\x42\x07\n\x05\x65vent\"!\n\nChunkStart\x12\x13\n\x0bresponse_id\x18\x01 \x01(\t\"*\n\x05\x43hunk\x12\x13\n\x0bresponse_id\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\"\x1f\n\x08\x43hunkEnd\x12\x13\n\x0bresponse_id\x18\x01 \x01(\t\"3\n\x0bStreamError\x12\x13\n\x0b\x61\x63tion_name\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x10\n\x0e\x41\x63tionsRequest\";\n\x0f\x41\x63tionsResponse\x12(\n\x07\x61\x63tions\x18\x01 \x03(\x0b\x32\x17.google.protobuf.Struct\"\xda\x03\n\x07Tracker\x12\x11\n\tsender_id\x18\x01 \x01(\t\x12&\n\x05slots\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\x12/\n\x0elatest_message\x18\x03 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\'\n\x06\x65vents\x18\x04 \x03(\x0b\x32\x17.google.protobuf.Struct\x12\x0e\n\x06paused\x18\x05 \x01(\x08\x12\x1c\n\x0f\x66ollowup_action\x18\x06 \x01(\tH\x00\x88\x01\x01\x12\x43\n\x0b\x61\x63tive_loop\x18\x07 \x03(\x0b\x32..action_server_webhook.Tracker.ActiveLoopEntry\x12\x1f\n\x12latest_action_name\x18\x08 \x01(\tH\x01\x88\x01\x01\x12&\n\x05stack\x18\t \x03(\x0b\x32\x17.google.protobuf.Struct\x12\x14\n\x07user_id\x18\n \x01(\tH\x02\x88\x01\x01\x1a\x31\n\x0f\x41\x63tiveLoopEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\x12\n\x10_followup_actionB\x15\n\x13_latest_action_nameB\n\n\x08_user_id\"K\n\x06Intent\x12\x14\n\x0cstring_value\x18\x01 \x01(\t\x12+\n\ndict_value\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\"K\n\x06\x45ntity\x12\x14\n\x0cstring_value\x18\x01 \x01(\t\x12+\n\ndict_value\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\"K\n\x06\x41\x63tion\x12\x14\n\x0cstring_value\x18\x01 \x01(\t\x12+\n\ndict_value\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\"\x9d\x03\n\x06\x44omain\x12\'\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\x17.google.protobuf.Struct\x12/\n\x0esession_config\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\x12.\n\x07intents\x18\x03 \x03(\x0b\x32\x1d.action_server_webhook.Intent\x12/\n\x08\x65ntities\x18\x04 \x03(\x0b\x32\x1d.action_server_webhook.Entity\x12&\n\x05slots\x18\x05 \x01(\x0b\x32\x17.google.protobuf.Struct\x12*\n\tresponses\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12.\n\x07\x61\x63tions\x18\x07 \x03(\x0b\x32\x1d.action_server_webhook.Action\x12&\n\x05\x66orms\x18\x08 \x01(\x0b\x32\x17.google.protobuf.Struct\x12,\n\x0b\x65\x32\x65_actions\x18\t \x03(\x0b\x32\x17.google.protobuf.Struct\"\xd7\x01\n\x0eWebhookRequest\x12\x13\n\x0bnext_action\x18\x01 \x01(\t\x12\x11\n\tsender_id\x18\x02 \x01(\t\x12/\n\x07tracker\x18\x03 \x01(\x0b\x32\x1e.action_server_webhook.Tracker\x12-\n\x06\x64omain\x18\x04 \x01(\x0b\x32\x1d.action_server_webhook.Domain\x12\x0f\n\x07version\x18\x05 \x01(\t\x12\x1a\n\rdomain_digest\x18\x06 \x01(\tH\x00\x88\x01\x01\x42\x10\n\x0e_domain_digest\"f\n\x0fWebhookResponse\x12\'\n\x06\x65vents\x18\x01 \x03(\x0b\x32\x17.google.protobuf.Struct\x12*\n\tresponses\x18\x02 \x03(\x0b\x32\x17.google.protobuf.Struct2\xa8\x02\n\rActionService\x12X\n\x07Webhook\x12%.action_server_webhook.WebhookRequest\x1a&.action_server_webhook.WebhookResponse\x12\x63\n\rWebhookStream\x12%.action_server_webhook.WebhookRequest\x1a).action_server_webhook.WebhookStreamEvent0\x01\x12X\n\x07\x41\x63tions\x12%.action_server_webhook.ActionsRequest\x1a&.action_server_webhook.ActionsResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%rasa_sdk/grpc_py/action_webhook.proto\x12\x15\x61\x63tion_server_webhook\x1a\x1cgoogle/protobuf/struct.proto\"\xb1\x02\n\x12WebhookStreamEvent\x12\x38\n\x0b\x63hunk_start\x18\x01 \x01(\x0b\x32!.action_server_webhook.ChunkStartH\x00\x12-\n\x05\x63hunk\x18\x02 \x01(\x0b\x32\x1c.action_server_webhook.ChunkH\x00\x12\x34\n\tchunk_end\x18\x03 \x01(\x0b\x32\x1f.action_server_webhook.ChunkEndH\x00\x12>\n\x0c\x66inal_result\x18\x04 \x01(\x0b\x32&.action_server_webhook.WebhookResponseH\x00\x12\x33\n\x05\x65rror\x18\x05 \x01(\x0b\x32\".action_server_webhook.StreamErrorH\x00\x42\x07\n\x05\x65vent\"!\n\nChunkStart\x12\x13\n\x0bresponse_id\x18\x01 \x01(\t\"\xcb\x01\n\x05\x43hunk\x12\x13\n\x0bresponse_id\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\x12\r\n\x05image\x18\x03 \x01(\t\x12\'\n\x06\x63ustom\x18\x04 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x12\n\nattachment\x18\x05 \x01(\t\x12(\n\x07\x62uttons\x18\x06 \x03(\x0b\x32\x17.google.protobuf.Struct\x12)\n\x08\x65lements\x18\x07 \x03(\x0b\x32\x17.google.protobuf.Struct\"\x1f\n\x08\x43hunkEnd\x12\x13\n\x0bresponse_id\x18\x01 \x01(\t\"3\n\x0bStreamError\x12\x13\n\x0b\x61\x63tion_name\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x10\n\x0e\x41\x63tionsRequest\";\n\x0f\x41\x63tionsResponse\x12(\n\x07\x61\x63tions\x18\x01 \x03(\x0b\x32\x17.google.protobuf.Struct\"\xda\x03\n\x07Tracker\x12\x11\n\tsender_id\x18\x01 \x01(\t\x12&\n\x05slots\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\x12/\n\x0elatest_message\x18\x03 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\'\n\x06\x65vents\x18\x04 \x03(\x0b\x32\x17.google.protobuf.Struct\x12\x0e\n\x06paused\x18\x05 \x01(\x08\x12\x1c\n\x0f\x66ollowup_action\x18\x06 \x01(\tH\x00\x88\x01\x01\x12\x43\n\x0b\x61\x63tive_loop\x18\x07 \x03(\x0b\x32..action_server_webhook.Tracker.ActiveLoopEntry\x12\x1f\n\x12latest_action_name\x18\x08 \x01(\tH\x01\x88\x01\x01\x12&\n\x05stack\x18\t \x03(\x0b\x32\x17.google.protobuf.Struct\x12\x14\n\x07user_id\x18\n \x01(\tH\x02\x88\x01\x01\x1a\x31\n\x0f\x41\x63tiveLoopEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\x12\n\x10_followup_actionB\x15\n\x13_latest_action_nameB\n\n\x08_user_id\"K\n\x06Intent\x12\x14\n\x0cstring_value\x18\x01 \x01(\t\x12+\n\ndict_value\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\"K\n\x06\x45ntity\x12\x14\n\x0cstring_value\x18\x01 \x01(\t\x12+\n\ndict_value\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\"K\n\x06\x41\x63tion\x12\x14\n\x0cstring_value\x18\x01 \x01(\t\x12+\n\ndict_value\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\"\x9d\x03\n\x06\x44omain\x12\'\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\x17.google.protobuf.Struct\x12/\n\x0esession_config\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\x12.\n\x07intents\x18\x03 \x03(\x0b\x32\x1d.action_server_webhook.Intent\x12/\n\x08\x65ntities\x18\x04 \x03(\x0b\x32\x1d.action_server_webhook.Entity\x12&\n\x05slots\x18\x05 \x01(\x0b\x32\x17.google.protobuf.Struct\x12*\n\tresponses\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12.\n\x07\x61\x63tions\x18\x07 \x03(\x0b\x32\x1d.action_server_webhook.Action\x12&\n\x05\x66orms\x18\x08 \x01(\x0b\x32\x17.google.protobuf.Struct\x12,\n\x0b\x65\x32\x65_actions\x18\t \x03(\x0b\x32\x17.google.protobuf.Struct\"\xd7\x01\n\x0eWebhookRequest\x12\x13\n\x0bnext_action\x18\x01 \x01(\t\x12\x11\n\tsender_id\x18\x02 \x01(\t\x12/\n\x07tracker\x18\x03 \x01(\x0b\x32\x1e.action_server_webhook.Tracker\x12-\n\x06\x64omain\x18\x04 \x01(\x0b\x32\x1d.action_server_webhook.Domain\x12\x0f\n\x07version\x18\x05 \x01(\t\x12\x1a\n\rdomain_digest\x18\x06 \x01(\tH\x00\x88\x01\x01\x42\x10\n\x0e_domain_digest\"f\n\x0fWebhookResponse\x12\'\n\x06\x65vents\x18\x01 \x03(\x0b\x32\x17.google.protobuf.Struct\x12*\n\tresponses\x18\x02 \x03(\x0b\x32\x17.google.protobuf.Struct2\xa8\x02\n\rActionService\x12X\n\x07Webhook\x12%.action_server_webhook.WebhookRequest\x1a&.action_server_webhook.WebhookResponse\x12\x63\n\rWebhookStream\x12%.action_server_webhook.WebhookRequest\x1a).action_server_webhook.WebhookStreamEvent0\x01\x12X\n\x07\x41\x63tions\x12%.action_server_webhook.ActionsRequest\x1a&.action_server_webhook.ActionsResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -38,32 +38,32 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_WEBHOOKSTREAMEVENT']._serialized_end=400
   _globals['_CHUNKSTART']._serialized_start=402
   _globals['_CHUNKSTART']._serialized_end=435
-  _globals['_CHUNK']._serialized_start=437
-  _globals['_CHUNK']._serialized_end=479
-  _globals['_CHUNKEND']._serialized_start=481
-  _globals['_CHUNKEND']._serialized_end=512
-  _globals['_STREAMERROR']._serialized_start=514
-  _globals['_STREAMERROR']._serialized_end=565
-  _globals['_ACTIONSREQUEST']._serialized_start=567
-  _globals['_ACTIONSREQUEST']._serialized_end=583
-  _globals['_ACTIONSRESPONSE']._serialized_start=585
-  _globals['_ACTIONSRESPONSE']._serialized_end=644
-  _globals['_TRACKER']._serialized_start=647
-  _globals['_TRACKER']._serialized_end=1121
-  _globals['_TRACKER_ACTIVELOOPENTRY']._serialized_start=1017
-  _globals['_TRACKER_ACTIVELOOPENTRY']._serialized_end=1066
-  _globals['_INTENT']._serialized_start=1123
-  _globals['_INTENT']._serialized_end=1198
-  _globals['_ENTITY']._serialized_start=1200
-  _globals['_ENTITY']._serialized_end=1275
-  _globals['_ACTION']._serialized_start=1277
-  _globals['_ACTION']._serialized_end=1352
-  _globals['_DOMAIN']._serialized_start=1355
-  _globals['_DOMAIN']._serialized_end=1768
-  _globals['_WEBHOOKREQUEST']._serialized_start=1771
-  _globals['_WEBHOOKREQUEST']._serialized_end=1986
-  _globals['_WEBHOOKRESPONSE']._serialized_start=1988
-  _globals['_WEBHOOKRESPONSE']._serialized_end=2090
-  _globals['_ACTIONSERVICE']._serialized_start=2093
-  _globals['_ACTIONSERVICE']._serialized_end=2389
+  _globals['_CHUNK']._serialized_start=438
+  _globals['_CHUNK']._serialized_end=641
+  _globals['_CHUNKEND']._serialized_start=643
+  _globals['_CHUNKEND']._serialized_end=674
+  _globals['_STREAMERROR']._serialized_start=676
+  _globals['_STREAMERROR']._serialized_end=727
+  _globals['_ACTIONSREQUEST']._serialized_start=729
+  _globals['_ACTIONSREQUEST']._serialized_end=745
+  _globals['_ACTIONSRESPONSE']._serialized_start=747
+  _globals['_ACTIONSRESPONSE']._serialized_end=806
+  _globals['_TRACKER']._serialized_start=809
+  _globals['_TRACKER']._serialized_end=1283
+  _globals['_TRACKER_ACTIVELOOPENTRY']._serialized_start=1179
+  _globals['_TRACKER_ACTIVELOOPENTRY']._serialized_end=1228
+  _globals['_INTENT']._serialized_start=1285
+  _globals['_INTENT']._serialized_end=1360
+  _globals['_ENTITY']._serialized_start=1362
+  _globals['_ENTITY']._serialized_end=1437
+  _globals['_ACTION']._serialized_start=1439
+  _globals['_ACTION']._serialized_end=1514
+  _globals['_DOMAIN']._serialized_start=1517
+  _globals['_DOMAIN']._serialized_end=1930
+  _globals['_WEBHOOKREQUEST']._serialized_start=1933
+  _globals['_WEBHOOKREQUEST']._serialized_end=2148
+  _globals['_WEBHOOKRESPONSE']._serialized_start=2150
+  _globals['_WEBHOOKRESPONSE']._serialized_end=2252
+  _globals['_ACTIONSERVICE']._serialized_start=2255
+  _globals['_ACTIONSERVICE']._serialized_end=2551
 # @@protoc_insertion_point(module_scope)

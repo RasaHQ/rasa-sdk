@@ -27,12 +27,22 @@ class ChunkStart(_message.Message):
     def __init__(self, response_id: _Optional[str] = ...) -> None: ...
 
 class Chunk(_message.Message):
-    __slots__ = ("response_id", "text")
+    __slots__ = ("response_id", "text", "image", "custom", "attachment", "buttons", "elements")
     RESPONSE_ID_FIELD_NUMBER: _ClassVar[int]
     TEXT_FIELD_NUMBER: _ClassVar[int]
+    IMAGE_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_FIELD_NUMBER: _ClassVar[int]
+    ATTACHMENT_FIELD_NUMBER: _ClassVar[int]
+    BUTTONS_FIELD_NUMBER: _ClassVar[int]
+    ELEMENTS_FIELD_NUMBER: _ClassVar[int]
     response_id: str
     text: str
-    def __init__(self, response_id: _Optional[str] = ..., text: _Optional[str] = ...) -> None: ...
+    image: str
+    custom: _struct_pb2.Struct
+    attachment: str
+    buttons: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
+    elements: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
+    def __init__(self, response_id: _Optional[str] = ..., text: _Optional[str] = ..., image: _Optional[str] = ..., custom: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., attachment: _Optional[str] = ..., buttons: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., elements: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ...) -> None: ...
 
 class ChunkEnd(_message.Message):
     __slots__ = ("response_id",)

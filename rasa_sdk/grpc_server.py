@@ -192,7 +192,8 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         client as the action produces text chunks.  The event sequence is:
 
         1. ``chunk_start``   — action has begun a streaming response.
-        2. ``chunk``         — one or more text fragments from the action.
+        2. ``chunk``         — one or more response chunks from the action (text,
+                               image, buttons, elements, attachment, or custom).
         3. ``chunk_end``     — the current streaming response is complete.
         4. ``final_result``  — the full :class:`WebhookResponse` (events +
                                non-streaming responses) after the action finishes.
@@ -253,11 +254,22 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                                 response_id=response_id
                             )
                         )
-                    elif event_type == "stream_text":
+                    elif event_type == "stream_chunk":
                         yield action_webhook_pb2.WebhookStreamEvent(
-                            chunk=action_webhook_pb2.Chunk(
-                                response_id=response_id,
-                                text=chunk.get("text", ""),
+                            chunk=ParseDict(
+                                {
+                                    k: chunk[k]
+                                    for k in (
+                                        "text",
+                                        "image",
+                                        "custom",
+                                        "attachment",
+                                        "buttons",
+                                        "elements",
+                                    )
+                                    if k in chunk
+                                },
+                                action_webhook_pb2.Chunk(response_id=response_id),
                             )
                         )
                     elif event_type == "stream_end":

@@ -1,4 +1,5 @@
-from typing import Union, List
+import asyncio
+from typing import AsyncIterator, Callable, Dict, List, Union, Optional
 from unittest.mock import MagicMock, AsyncMock
 
 import grpc
@@ -243,3 +244,250 @@ async def test_grpc_action_server_actions(
 
     mock_grpc_service_context.set_code.assert_not_called()
     mock_grpc_service_context.set_details.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Helpers for WebhookStream tests
+# ---------------------------------------------------------------------------
+
+
+def _make_streaming_run(
+    chunk_events: List[Dict],
+    result: ActionExecutorRunResult,
+) -> Callable:
+    """Return an async side effect for `executor.run` that populates the sink."""
+
+    async def _run(
+        action_call: Dict, sink: Optional[asyncio.Queue] = None
+    ) -> ActionExecutorRunResult:
+        if sink is not None:
+            for event in chunk_events:
+                await sink.put(event)
+            await sink.put({"event": "stream_done", "result": result})
+        return result
+
+    return _run
+
+
+def _make_error_run(exception: Exception) -> Callable:
+    """Return an async side effect for `executor.run` that raises *exception*."""
+
+    async def _run(action_call: Dict, sink: Optional[asyncio.Queue] = None) -> None:
+        raise exception
+
+    return _run
+
+
+async def _collect_stream(
+    gen: AsyncIterator,
+) -> List[action_webhook_pb2.WebhookStreamEvent]:
+    return [event async for event in gen]
+
+
+# ---------------------------------------------------------------------------
+# WebhookStream — happy path
+# ---------------------------------------------------------------------------
+
+
+async def test_webhook_stream_yields_chunk_start_chunks_chunk_end_final_result(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """Full happy-path: stream_start → stream_chunk(s) → stream_end → final_result."""
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _make_streaming_run(
+        chunk_events=[
+            {"event": "stream_start"},
+            {"event": "stream_chunk", "text": "Hello "},
+            {"event": "stream_chunk", "text": "world"},
+            {"event": "stream_end"},
+        ],
+        result=executor_response,
+    )
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    event_types = [e.WhichOneof("event") for e in events]
+    assert event_types == ["chunk_start", "chunk", "chunk", "chunk_end", "final_result"]
+
+    assert events[1].chunk.text == "Hello "
+    assert events[2].chunk.text == "world"
+
+    mock_grpc_service_context.set_code.assert_not_called()
+    mock_grpc_service_context.set_details.assert_not_called()
+
+
+async def test_webhook_stream_final_result_carries_events_and_responses(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+    expected_grpc_webhook_response: action_webhook_pb2.WebhookResponse,
+) -> None:
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _make_streaming_run(
+        chunk_events=[
+            {"event": "stream_start"},
+            {"event": "stream_end"},
+        ],
+        result=executor_response,
+    )
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    final = next(e for e in events if e.WhichOneof("event") == "final_result")
+    assert final.final_result == expected_grpc_webhook_response
+
+
+async def test_webhook_stream_response_id_is_consistent_across_chunks(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """All chunk messages for a single action call share the same response_id."""
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _make_streaming_run(
+        chunk_events=[
+            {"event": "stream_start"},
+            {"event": "stream_chunk", "text": "A"},
+            {"event": "stream_chunk", "text": "B"},
+            {"event": "stream_end"},
+        ],
+        result=executor_response,
+    )
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    ids = {
+        e.chunk_start.response_id
+        if e.WhichOneof("event") == "chunk_start"
+        else e.chunk.response_id
+        if e.WhichOneof("event") == "chunk"
+        else e.chunk_end.response_id
+        for e in events
+        if e.WhichOneof("event") in ("chunk_start", "chunk", "chunk_end")
+    }
+    assert len(ids) == 1  # all chunks share the same response_id
+    assert ids.pop() != ""  # and it is non-empty
+
+
+# ---------------------------------------------------------------------------
+# WebhookStream — rich chunk fields mapped to proto
+# ---------------------------------------------------------------------------
+
+
+async def test_webhook_stream_rich_chunk_maps_all_fields_to_proto(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _make_streaming_run(
+        chunk_events=[
+            {"event": "stream_start"},
+            {
+                "event": "stream_chunk",
+                "text": "Choose:",
+                "image": "https://example.com/img.png",
+                "buttons": [{"title": "Yes", "payload": "/yes"}],
+                "attachment": "https://example.com/file.pdf",
+            },
+            {"event": "stream_end"},
+        ],
+        result=executor_response,
+    )
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    chunk = next(e for e in events if e.WhichOneof("event") == "chunk").chunk
+    assert chunk.text == "Choose:"
+    assert chunk.image == "https://example.com/img.png"
+    assert chunk.attachment == "https://example.com/file.pdf"
+    assert len(chunk.buttons) == 1
+
+
+# ---------------------------------------------------------------------------
+# WebhookStream — error handling
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "exception, expected_status_code, expected_body_factory",
+    [
+        (
+            ActionExecutionRejection("action_listen", "rejected"),
+            grpc.StatusCode.INTERNAL,
+            lambda: ActionExecutionFailed(
+                action_name="action_listen", message="rejected"
+            ).model_dump_json(),
+        ),
+        (
+            ActionNotFoundException("action_listen", "not found"),
+            grpc.StatusCode.NOT_FOUND,
+            lambda: ResourceNotFound(
+                action_name="action_listen",
+                message="not found",
+                resource_type=ResourceNotFoundType.ACTION,
+            ).model_dump_json(),
+        ),
+        (
+            ActionMissingDomainException("action_listen", "no domain"),
+            grpc.StatusCode.NOT_FOUND,
+            lambda: ResourceNotFound(
+                action_name="action_listen",
+                message="no domain",
+                resource_type=ResourceNotFoundType.DOMAIN,
+            ).model_dump_json(),
+        ),
+    ],
+)
+async def test_webhook_stream_errors_yield_stream_error_and_set_grpc_status(
+    exception: Exception,
+    expected_status_code: grpc.StatusCode,
+    expected_body_factory: Callable,
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+) -> None:
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _make_error_run(exception)
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    assert len(events) == 1
+    assert events[0].WhichOneof("event") == "error"
+    assert events[0].error.action_name == "action_listen"
+
+    mock_grpc_service_context.set_code.assert_called_once_with(expected_status_code)
+    mock_grpc_service_context.set_details.assert_called_once_with(
+        expected_body_factory()
+    )
