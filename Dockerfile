@@ -1,30 +1,39 @@
+# Keep this in sync with the version pinned in poetry.lock
+ARG SETUPTOOLS_VERSION=82.0.1
+# Recompute with: curl -fsSL https://bootstrap.pypa.io/get-pip.py | sha256sum
+ARG GET_PIP_SHA256=feba1c697df45be1b539b40d93c102c9ee9dde1d966303323b830b06f3fbca3c
+
 FROM ubuntu:22.04 AS base
+
+ARG SETUPTOOLS_VERSION
+ARG GET_PIP_SHA256
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3005,DL3008
 RUN apt-get update -qq \
     # Make sure that all security updates are installed
-    && apt-get dist-upgrade -y --no-install-recommends \
+    && apt-get dist-upgrade -y --no-install-recommends --fix-missing \
     && apt-get install -y --no-install-recommends \
       python3 \
       python3-venv \
-      python3-pip \
       python3-dev \
+      curl \
     && apt-get autoremove -y \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
+    && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check --status \
+    && python3 /tmp/get-pip.py \
+    && rm /tmp/get-pip.py \
+    && pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}"
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
-   && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 100
+   && update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3 100
 
 FROM base AS python_builder
 
 ARG POETRY_VERSION=2.1.2
-
-# hadolint ignore=DL3008
-RUN apt-get update -qq \
-   && apt-get install -y --no-install-recommends \
-    curl \
-    && apt-get autoremove -y
 
 # install poetry
 # keep this in sync with the version in pyproject.toml and Dockerfile
@@ -70,9 +79,16 @@ RUN find . -name '*.whl' -maxdepth 1 -exec basename {} \; | awk -F - '{ gsub("_"
 # final image
 FROM base
 
+ARG SETUPTOOLS_VERSION
+
 # copy needed files
 COPY ./entrypoint.sh /app/
 COPY --from=python_builder /opt/venv /opt/venv
+
+RUN /opt/venv/bin/pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}" \
+    && apt-get purge -y curl python3-venv python3-dev \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV PATH="/opt/venv/bin:$PATH"
 
