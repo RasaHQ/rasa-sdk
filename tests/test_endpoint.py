@@ -41,7 +41,7 @@ def test_server_list_actions_returns_200(
 
     # Then the server should return a list of actions
     assert response.status == 200
-    assert len(response.json) == 9
+    assert len(response.json) == 11
     print(response.json)
     expected = [
         # defined in tests/conftest.py
@@ -50,6 +50,9 @@ def test_server_list_actions_returns_200(
         {"name": "custom_action_exception"},
         {"name": "custom_action_with_dialogue_stack"},
         {"name": "subclass_test_action_a"},
+        # defined in tests/test_executor.py
+        {"name": "action_streaming"},
+        {"name": "action_missing_stream_end"},
         {"name": "mock_validation_action"},
         {"name": "mock_form_validation_action"},
         # defined in tests/test_forms.py

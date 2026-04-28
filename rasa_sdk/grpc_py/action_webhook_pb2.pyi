@@ -6,6 +6,58 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class WebhookStreamEvent(_message.Message):
+    __slots__ = ("chunk_start", "chunk", "chunk_end", "final_result", "error")
+    CHUNK_START_FIELD_NUMBER: _ClassVar[int]
+    CHUNK_FIELD_NUMBER: _ClassVar[int]
+    CHUNK_END_FIELD_NUMBER: _ClassVar[int]
+    FINAL_RESULT_FIELD_NUMBER: _ClassVar[int]
+    ERROR_FIELD_NUMBER: _ClassVar[int]
+    chunk_start: ChunkStart
+    chunk: Chunk
+    chunk_end: ChunkEnd
+    final_result: WebhookResponse
+    error: StreamError
+    def __init__(self, chunk_start: _Optional[_Union[ChunkStart, _Mapping]] = ..., chunk: _Optional[_Union[Chunk, _Mapping]] = ..., chunk_end: _Optional[_Union[ChunkEnd, _Mapping]] = ..., final_result: _Optional[_Union[WebhookResponse, _Mapping]] = ..., error: _Optional[_Union[StreamError, _Mapping]] = ...) -> None: ...
+
+class ChunkStart(_message.Message):
+    __slots__ = ("response_id",)
+    RESPONSE_ID_FIELD_NUMBER: _ClassVar[int]
+    response_id: str
+    def __init__(self, response_id: _Optional[str] = ...) -> None: ...
+
+class Chunk(_message.Message):
+    __slots__ = ("response_id", "text", "image", "custom", "attachment", "buttons", "elements")
+    RESPONSE_ID_FIELD_NUMBER: _ClassVar[int]
+    TEXT_FIELD_NUMBER: _ClassVar[int]
+    IMAGE_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_FIELD_NUMBER: _ClassVar[int]
+    ATTACHMENT_FIELD_NUMBER: _ClassVar[int]
+    BUTTONS_FIELD_NUMBER: _ClassVar[int]
+    ELEMENTS_FIELD_NUMBER: _ClassVar[int]
+    response_id: str
+    text: str
+    image: str
+    custom: _struct_pb2.Struct
+    attachment: str
+    buttons: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
+    elements: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
+    def __init__(self, response_id: _Optional[str] = ..., text: _Optional[str] = ..., image: _Optional[str] = ..., custom: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., attachment: _Optional[str] = ..., buttons: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., elements: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ...) -> None: ...
+
+class ChunkEnd(_message.Message):
+    __slots__ = ("response_id",)
+    RESPONSE_ID_FIELD_NUMBER: _ClassVar[int]
+    response_id: str
+    def __init__(self, response_id: _Optional[str] = ...) -> None: ...
+
+class StreamError(_message.Message):
+    __slots__ = ("action_name", "message")
+    ACTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    action_name: str
+    message: str
+    def __init__(self, action_name: _Optional[str] = ..., message: _Optional[str] = ...) -> None: ...
+
 class ActionsRequest(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
