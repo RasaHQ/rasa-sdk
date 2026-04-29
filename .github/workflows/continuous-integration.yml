@@ -61,13 +61,17 @@ jobs:
 
       - name: Checkout target branch to be able to diff
         if: github.event_name == 'pull_request'
+        env:
+          GIT_BASE_REF: ${{ github.base_ref }}
+          GIT_REF: ${{ github.ref }}
         run: |
-          git fetch origin "${{ github.base_ref }}"
-          echo "DOCSTRING_DIFF_BRANCH=origin/${{ github.base_ref }}" >> $GITHUB_ENV
+          # Runner env avoids ${{ github.* }} in run:; do not use GIT_* names (reserved by git).
+          git fetch origin "$GITHUB_BASE_REF"
+          echo "DOCSTRING_DIFF_BRANCH=origin/$GITHUB_BASE_REF" >> $GITHUB_ENV
 
           # Fetch entire history for current branch so that `make lint-docstrings`
           # can calculate the proper diff between the branches
-          git fetch --unshallow origin "${{ github.ref }}"
+          git fetch --unshallow origin "$GITHUB_REF"
 
       - name: Install Dependencies 📦
         run: make install
