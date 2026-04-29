@@ -14,7 +14,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update -qq \
     # Make sure that all security updates are installed \
     && apt-get upgrade -y --no-install-recommends --fix-missing \
-    && apt-get install -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends --fix-missing \
+      ca-certificates \
       python3 \
       python3-venv \
       python3-dev \
@@ -22,7 +23,8 @@ RUN apt-get update -qq \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
+
+RUN curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
     && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check --status \
     && python3 /tmp/get-pip.py \
     && rm /tmp/get-pip.py \
