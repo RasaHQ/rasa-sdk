@@ -12,8 +12,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3005,DL3008
 RUN apt-get update -qq \
-    # Make sure that all security updates are installed
-    && apt-get dist-upgrade -y --no-install-recommends --fix-missing \
+    # Make sure that all security updates are installed \
+    && apt-get upgrade -y --no-install-recommends --fix-missing \
     && apt-get install -y --no-install-recommends \
       python3 \
       python3-venv \

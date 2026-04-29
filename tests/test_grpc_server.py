@@ -358,7 +358,8 @@ async def test_webhook_stream_response_id_is_consistent_across_chunks(
     mock_grpc_service_context: MagicMock,
     executor_response: ActionExecutorRunResult,
 ) -> None:
-    """All chunk messages for a single action call share the same response_id."""
+    """chunk_start, chunk(s), and chunk_end within one stream sequence
+    share the same response_id."""
     mock_grpc_service_context.invocation_metadata.return_value = []
     mock_executor.run.side_effect = _make_streaming_run(
         chunk_events=[
@@ -385,8 +386,51 @@ async def test_webhook_stream_response_id_is_consistent_across_chunks(
         for e in events
         if e.WhichOneof("event") in ("chunk_start", "chunk", "chunk_end")
     }
-    assert len(ids) == 1  # all chunks share the same response_id
+    assert len(ids) == 1  # all events in one sequence share the same response_id
     assert ids.pop() != ""  # and it is non-empty
+
+
+async def test_webhook_stream_each_stream_start_gets_a_distinct_response_id(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """When stream_start() is called twice (e.g. to reset the accumulator), each
+    resulting chunk_start must carry a different response_id so the consumer can
+    distinguish the two sequences."""
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _make_streaming_run(
+        chunk_events=[
+            {"event": "stream_start"},
+            {"event": "stream_chunk", "text": "first"},
+            {"event": "stream_end"},
+            {"event": "stream_start"},
+            {"event": "stream_chunk", "text": "second"},
+            {"event": "stream_end"},
+        ],
+        result=executor_response,
+    )
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    starts = [e for e in events if e.WhichOneof("event") == "chunk_start"]
+    assert len(starts) == 2
+    id_first = starts[0].chunk_start.response_id
+    id_second = starts[1].chunk_start.response_id
+    assert id_first != ""
+    assert id_second != ""
+    assert id_first != id_second  # each stream_start produces a fresh response_id
+
+    # chunks within each sequence carry their sequence's id
+    chunks = [e for e in events if e.WhichOneof("event") == "chunk"]
+    assert chunks[0].chunk.response_id == id_first
+    assert chunks[1].chunk.response_id == id_second
 
 
 # ---------------------------------------------------------------------------

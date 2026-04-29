@@ -228,7 +228,6 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
 
             action_call = MessageToDict(request, preserving_proto_field_name=True)
             action_name = action_call.get("next_action", "")
-            response_id = uuid.uuid4().hex
             sink: asyncio.Queue = asyncio.Queue()
 
             async def _run() -> None:
@@ -264,14 +263,16 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
             run_task = asyncio.ensure_future(_run())
 
             try:
+                current_response_id: str = ""
                 while True:
                     chunk = await sink.get()
                     event_type = chunk.get("event")
 
                     if event_type == "stream_start":
+                        current_response_id = uuid.uuid4().hex
                         yield action_webhook_pb2.WebhookStreamEvent(
                             chunk_start=action_webhook_pb2.ChunkStart(
-                                response_id=response_id
+                                response_id=current_response_id
                             )
                         )
                     elif event_type == "stream_chunk":
@@ -289,13 +290,15 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                                     )
                                     if k in chunk
                                 },
-                                action_webhook_pb2.Chunk(response_id=response_id),
+                                action_webhook_pb2.Chunk(
+                                    response_id=current_response_id
+                                ),
                             )
                         )
                     elif event_type == "stream_end":
                         yield action_webhook_pb2.WebhookStreamEvent(
                             chunk_end=action_webhook_pb2.ChunkEnd(
-                                response_id=response_id
+                                response_id=current_response_id
                             )
                         )
                     elif event_type == "stream_done":

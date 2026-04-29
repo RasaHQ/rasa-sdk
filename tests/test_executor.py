@@ -549,7 +549,7 @@ async def test_stream_chunk_text_and_rich_accumulates():
 
 
 async def test_stream_chunk_omits_none_and_empty_fields():
-    """Only fields with truthy values should appear in the payload."""
+    """Fields passed as None should be omitted from the payload."""
     dispatcher = CollectingDispatcher()
     await dispatcher.stream_chunk(text="hi", image=None, buttons=None)
     assert dispatcher._stream_accumulated_chunks == [{"text": "hi"}]
@@ -760,6 +760,33 @@ async def test_run_streaming_delegates_to_run(streaming_executor: ActionExecutor
     events_a = [e["event"] for e in await _drain_queue(sink_a)]
     events_b = [e["event"] for e in await _drain_queue(sink_b)]
     assert events_a == events_b
+
+
+async def test_executor_run_puts_stream_error_in_sink_when_action_raises(
+    streaming_executor: ActionExecutor,
+):
+    """run() must place stream_error in the sink before re-raising so concurrent
+    consumers on the sink queue are never left blocked."""
+
+    class _BoomAction(Action):
+        def name(self) -> Text:
+            return "action_boom"
+
+        async def run(self, dispatcher, tracker, domain):
+            raise RuntimeError("action exploded")
+
+    streaming_executor.register_action(_BoomAction)
+    action_call = {**MINIMAL_ACTION_CALL, "next_action": "action_boom"}
+    sink: asyncio.Queue = asyncio.Queue()
+
+    with pytest.raises(RuntimeError, match="action exploded"):
+        await streaming_executor.run(action_call, sink=sink)
+
+    events = await _drain_queue(sink)
+    event_types = [e["event"] for e in events]
+    assert "stream_error" in event_types
+    error_event = next(e for e in events if e["event"] == "stream_error")
+    assert isinstance(error_event["exception"], RuntimeError)
 
 
 # ---------------------------------------------------------------------------

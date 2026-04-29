@@ -73,7 +73,8 @@ class CollectingDispatcher:
         self.messages: List[Dict[Text, Any]] = []
         # Injected by the executor when streaming is available.
         # Must be a callable that accepts a chunk dict and returns an awaitable.
-        # When None the streaming methods degrade to a single utter_message call.
+        # When None, streaming chunks are accumulated and stream_end() replays
+        # them as individual utter_message(**chunk) calls.
         self._stream_sink: Optional[Callable[[Dict[Text, Any]], Awaitable[None]]] = None
         # Each entry is a kwargs dict that can be passed directly to utter_message.
         self._stream_accumulated_chunks: List[Dict[Text, Any]] = []
@@ -331,8 +332,9 @@ class ActionExecutor:
     execution path:
 
     * :meth:`run` — unary path.  No sink is attached to the dispatcher, so
-      streaming methods degrade to a single :meth:`~CollectingDispatcher.utter_message`
-      at the end.  All responses are returned together in the result payload.
+      streaming methods buffer their chunks and replay them as one or more
+      :meth:`~CollectingDispatcher.utter_message` calls when streaming ends.
+      All responses are returned together in the result payload.
     * :meth:`run_streaming` — streaming path.  The executor injects an
           :class:`asyncio.Queue` as the dispatcher's sink so that chunks
           produced by :meth:`~CollectingDispatcher.stream_chunk` are forwarded
@@ -717,25 +719,34 @@ class ActionExecutor:
             if sink is not None:
                 dispatcher._stream_sink = sink.put
 
-            events = await utils.call_potential_coroutine(
-                action(dispatcher, tracker, domain)
-            )
-
-            if dispatcher.is_streaming_active:
-                logger.warning(
-                    f"Action '{action_name}' called stream_start() / stream_chunk() "
-                    "but never called stream_end(). Closing the stream automatically."
+            try:
+                events = await utils.call_potential_coroutine(
+                    action(dispatcher, tracker, domain)
                 )
-                await dispatcher.stream_end()
 
-            if not events:
-                # make sure the action did not just return `None`...
-                events = []
+                if dispatcher.is_streaming_active:
+                    logger.warning(
+                        f"Action '{action_name}' called stream_start() / "
+                        f"stream_chunk() but never called stream_end(). "
+                        "Closing the stream automatically."
+                    )
+                    await dispatcher.stream_end()
 
-            validated_events = self.validate_events(events, action_name)
-            result = self._create_api_response(validated_events, dispatcher.messages)
-            if sink is not None:
-                await sink.put({"event": "stream_done", "result": result})
+                if not events:
+                    # make sure the action did not just return `None`...
+                    events = []
+
+                validated_events = self.validate_events(events, action_name)
+                result = self._create_api_response(
+                    validated_events, dispatcher.messages
+                )
+                if sink is not None:
+                    await sink.put({"event": "stream_done", "result": result})
+            except Exception as exc:
+                if sink is not None:
+                    await sink.put({"event": "stream_error", "exception": exc})
+                raise
+
             logger.debug(f"Finished running '{action_name}'")
             return result
 
