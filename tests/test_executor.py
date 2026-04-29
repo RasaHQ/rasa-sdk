@@ -555,6 +555,20 @@ async def test_stream_chunk_omits_none_and_empty_fields():
     assert dispatcher._stream_accumulated_chunks == [{"text": "hi"}]
 
 
+@pytest.mark.parametrize("forbidden_key", ["template", "response"])
+async def test_stream_chunk_raises_on_template_or_response_kwarg(forbidden_key):
+    """template/response must be rejected, not silently forwarded in the payload."""
+    dispatcher = CollectingDispatcher()
+    with pytest.raises(ValueError, match=forbidden_key):
+        await dispatcher.stream_chunk(**{forbidden_key: "utter_greet"})
+
+
+async def test_stream_chunk_raises_when_both_template_and_response_passed():
+    dispatcher = CollectingDispatcher()
+    with pytest.raises(ValueError):
+        await dispatcher.stream_chunk(template="utter_greet", response="utter_greet")
+
+
 async def test_stream_chunk_multiple_chunks_accumulate_in_order():
     dispatcher = CollectingDispatcher()
     await dispatcher.stream_chunk(text="one")

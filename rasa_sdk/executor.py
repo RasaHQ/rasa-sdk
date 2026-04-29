@@ -153,8 +153,9 @@ class CollectingDispatcher:
         """Emit a response chunk — text, rich content, or both.
 
         Any combination of parameters accepted by :meth:`utter_message` can be
-        passed here (except ``template``/``response``, which are for pre-defined
-        template responses and do not apply to streaming).
+        passed here, **except** ``template`` and ``response``: those refer to
+        pre-defined template responses and are meaningless in a streaming
+        context.  Passing either key raises :class:`ValueError`.
 
         The chunk is always accumulated internally so that :meth:`stream_end`
         can replay each chunk as an :meth:`utter_message` call on non-streaming
@@ -168,8 +169,34 @@ class CollectingDispatcher:
             attachment: URL of an attachment to include in this chunk.
             buttons: List of button dicts to include in this chunk.
             elements: List of carousel/card element dicts for this chunk.
-            **kwargs: Additional fields forwarded to the output channel.
+            **kwargs: Extra fields merged into the chunk payload
+                unconditionally (no ``None``/falsy guard like the named
+                parameters above).  What ultimately reaches the client depends
+                on the transport:
+
+                * **gRPC streaming** — the gRPC server serialises only the
+                  fields defined in the ``Chunk`` protobuf message
+                  (``text``, ``image``, ``custom``, ``attachment``,
+                  ``buttons``, ``elements``).  Any extra keys are silently
+                  dropped before the chunk is sent to the client.
+                * **Non-streaming transports** — each chunk is replayed via
+                  :meth:`utter_message` at :meth:`stream_end`, and extra keys
+                  survive that call (they are merged into the message dict).
+
+                In both cases callers should only pass keys that the target
+                transport understands; unknown keys are silently ignored or
+                dropped rather than raising an error.
+
+        Raises:
+            ValueError: If ``template`` or ``response`` is passed via kwargs.
         """
+        forbidden = {"template", "response"} & kwargs.keys()
+        if forbidden:
+            raise ValueError(
+                f"stream_chunk() does not support {sorted(forbidden)!r}. "
+                "Use utter_message() for template-based responses."
+            )
+
         payload: Dict[Text, Any] = {}
         if text is not None:
             payload["text"] = text
@@ -336,9 +363,9 @@ class ActionExecutor:
       :meth:`~CollectingDispatcher.utter_message` calls when streaming ends.
       All responses are returned together in the result payload.
     * :meth:`run_streaming` — streaming path.  The executor injects an
-          :class:`asyncio.Queue` as the dispatcher's sink so that chunks
-          produced by :meth:`~CollectingDispatcher.stream_chunk` are forwarded
-          immediately, before the action finishes.
+      :class:`asyncio.Queue` as the dispatcher's sink so that chunks
+      produced by :meth:`~CollectingDispatcher.stream_chunk` are forwarded
+      immediately, before the action finishes.
 
     The sink is *not* created by :class:`CollectingDispatcher` itself because
     the dispatcher has no knowledge of the transport (HTTP, gRPC, direct
@@ -708,18 +735,18 @@ class ActionExecutor:
         action_name = action_call.get("next_action")
         if action_name:
             logger.debug(f"Received request to run '{action_name}'")
-            action = self.actions.get(action_name)
-            if not action:
-                raise ActionNotFoundException(action_name)
-
-            tracker_json = action_call["tracker"]
-            domain = self.update_and_return_domain(action_call, action_name)
-            tracker = Tracker.from_dict(tracker_json)
-            dispatcher = CollectingDispatcher()
-            if sink is not None:
-                dispatcher._stream_sink = sink.put
-
             try:
+                action = self.actions.get(action_name)
+                if not action:
+                    raise ActionNotFoundException(action_name)
+
+                tracker_json = action_call["tracker"]
+                domain = self.update_and_return_domain(action_call, action_name)
+                tracker = Tracker.from_dict(tracker_json)
+                dispatcher = CollectingDispatcher()
+                if sink is not None:
+                    dispatcher._stream_sink = sink.put
+
                 events = await utils.call_potential_coroutine(
                     action(dispatcher, tracker, domain)
                 )

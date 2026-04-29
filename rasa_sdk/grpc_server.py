@@ -234,12 +234,15 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                 """Run the action and always place a terminal event in the sink.
 
                 Guarantees the consumer loop receives either ``stream_done`` or
-                ``stream_error`` even when:
+                ``stream_error`` even when ``executor.run()`` returns ``None``
+                (missing ``next_action``), in which case it returns without
+                placing ``stream_done``.
 
-                * ``executor.run()`` returns ``None`` (missing ``next_action``),
-                  in which case it returns without placing ``stream_done``.
-                * An unexpected exception escapes that is not one of the known
-                  action-level errors.
+                All exceptions from ``executor.run()`` are suppressed here
+                because ``executor.run()`` already places ``stream_error`` in
+                the sink before re-raising.  Suppressing prevents the
+                ``asyncio.Task`` from becoming an unhandled-exception task.
+                Unexpected errors are still logged with a full traceback.
                 """
                 try:
                     result = await self.executor.run(action_call, sink=sink)
@@ -251,14 +254,14 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                     ActionExecutionRejection,
                     ActionNotFoundException,
                     ActionMissingDomainException,
-                ) as exc:
-                    await sink.put({"event": "stream_error", "exception": exc})
-                except Exception as exc:
+                ):
+                    pass  # stream_error already placed in sink by executor.run()
+                except Exception:
                     logger.exception(
                         f"Unexpected error running action "
                         f"'{action_call.get('next_action')}'"
                     )
-                    await sink.put({"event": "stream_error", "exception": exc})
+                    # stream_error already placed in sink by executor.run()
 
             run_task = asyncio.ensure_future(_run())
 
@@ -276,6 +279,11 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                             )
                         )
                     elif event_type == "stream_chunk":
+                        # Only the fields defined in the Chunk protobuf message
+                        # are serialised. Any extra kwargs passed to
+                        # stream_chunk() arrive in the payload dict but are
+                        # intentionally dropped here because the wire format
+                        # has no place for them.
                         yield action_webhook_pb2.WebhookStreamEvent(
                             chunk=ParseDict(
                                 {

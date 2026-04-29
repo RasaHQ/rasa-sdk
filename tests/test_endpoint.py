@@ -42,7 +42,6 @@ def test_server_list_actions_returns_200(
     # Then the server should return a list of actions
     assert response.status == 200
     assert len(response.json) == 11
-    print(response.json)
     expected = [
         # defined in tests/conftest.py
         {"name": "custom_async_action"},
