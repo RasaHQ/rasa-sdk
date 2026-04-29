@@ -82,6 +82,15 @@ class CollectingDispatcher:
         # decoupled from _stream_accumulated_chunks so that stream_start() with
         # no subsequent stream_chunk() calls is still detected as an open stream.
         self._stream_active: bool = False
+        # Set to True by cancel_stream() when the user interrupts (barge-in).
+        # stream_chunk() checks this flag and silently drops late chunks.
+        self._stream_cancelled: bool = False
+        # Chunks that have been forwarded to the sink (sent to the client).
+        # Only populated when _stream_sink is not None.
+        self._stream_delivered_chunks: List[Dict[Text, Any]] = []
+        # Subset of _stream_delivered_chunks that the user actually heard.
+        # Set by acknowledge_heard_chunks(); None means no ack has arrived yet.
+        self._stream_heard_chunks: Optional[List[Dict[Text, Any]]] = None
 
     @property
     def is_streaming_active(self) -> bool:
@@ -94,6 +103,57 @@ class CollectingDispatcher:
         normally necessary.
         """
         return self._stream_active
+
+    @property
+    def is_streaming_cancelled(self) -> bool:
+        """``True`` after :meth:`cancel_stream` has been called.
+
+        Action authors can inspect this flag after the streaming loop to decide
+        whether to suppress side effects that are irrelevant when the user has
+        already interrupted the assistant::
+
+            await dispatcher.stream_end()
+            if dispatcher.is_streaming_cancelled:
+                return []   # skip slot sets, etc.
+            return [SlotSet("result", value)]
+
+        Checking the flag is optional — not doing so preserves all events by
+        default, which is the right behaviour for most actions.
+        """
+        return self._stream_cancelled
+
+    def cancel_stream(self) -> None:
+        """Signal that the user has interrupted the assistant (barge-in).
+
+        Once called, subsequent :meth:`stream_chunk` calls are silently
+        dropped.  :meth:`stream_end` will record only the *heard* chunks (or,
+        if no acknowledgement has arrived, only the already-*delivered* chunks)
+        to ``dispatcher.messages`` so the tracker stores only what the user
+        actually heard.
+
+        This method is called by the transport layer (e.g. the gRPC server on
+        receipt of a :class:`StreamChunkAck` or on gRPC context cancellation);
+        action authors do not need to call it directly.
+        """
+        self._stream_cancelled = True
+
+    def acknowledge_heard_chunks(self, last_heard_chunk_index: int) -> None:
+        """Record which delivered chunks the user actually heard.
+
+        Called by the transport layer when an ``AckStreamChunks`` RPC arrives
+        from the voice channel.  Slices :attr:`_stream_delivered_chunks` up to
+        and including *last_heard_chunk_index* and stores the result in
+        :attr:`_stream_heard_chunks` so that :meth:`stream_end` can replay only
+        those chunks into the tracker.
+
+        Args:
+            last_heard_chunk_index: Zero-based index of the last chunk the
+                user heard, as reported by the voice channel.  A value of
+                ``-1`` means nothing was heard.
+        """
+        self._stream_heard_chunks = self._stream_delivered_chunks[
+            : last_heard_chunk_index + 1
+        ]
 
     def utter_message(
         self,
@@ -136,6 +196,9 @@ class CollectingDispatcher:
         sink.  Call this before any :meth:`stream_chunk` calls.
         """
         self._stream_accumulated_chunks = []
+        self._stream_delivered_chunks = []
+        self._stream_heard_chunks = None
+        self._stream_cancelled = False
         self._stream_active = True
         if self._stream_sink is not None:
             await self._stream_sink({"event": "stream_start"})
@@ -212,6 +275,10 @@ class CollectingDispatcher:
             payload["elements"] = elements
         payload.update(kwargs)
 
+        if self._stream_cancelled:
+            # Barge-in has occurred; drop this chunk silently.
+            return
+
         if not self._stream_active:
             # Implicit stream_start: keeps the flag and sink protocol consistent
             # when an action skips the explicit stream_start() call.
@@ -219,22 +286,43 @@ class CollectingDispatcher:
 
         self._stream_accumulated_chunks.append(payload)
         if self._stream_sink is not None:
+            self._stream_delivered_chunks.append(payload)
             await self._stream_sink({"event": "stream_chunk", **payload})
 
     async def stream_end(self) -> None:
         """End a streamed response.
 
         When a sink is attached, emits a ``stream_end`` event.
-        When *no* sink is attached (non-streaming transport), each accumulated
-        chunk is replayed as an individual :meth:`utter_message` call so that
-        rich content (buttons, images, …) is preserved and the action works
-        correctly on every transport.
+
+        In all cases, the appropriate chunks are replayed as individual
+        :meth:`utter_message` calls so the tracker receives a faithful record
+        of what was (or could have been) heard:
+
+        * **Normal path** — all accumulated chunks are recorded.
+        * **Cancelled, ack received** — only chunks up to
+          :attr:`_stream_heard_chunks` (set by :meth:`acknowledge_heard_chunks`)
+          are recorded; un-heard trailing chunks are discarded.
+        * **Cancelled, no ack** — :attr:`_stream_delivered_chunks` (everything
+          forwarded to the client before the cancellation) is used as a
+          conservative fallback.
+        * **Non-streaming transport (no sink)** — cancellation cannot occur;
+          the accumulated list is always used.
         """
         if self._stream_sink is not None:
             await self._stream_sink({"event": "stream_end"})
+            # On streaming transports the chunks were already delivered
+            # in-band as they were produced.  The voice channel (or whatever
+            # streaming consumer) is responsible for recording what the user
+            # actually heard to the tracker — rasa-sdk must not replay them
+            # via utter_message() or they would appear twice in final_result
+            # and risk being spoken again.
         else:
+            # Non-streaming / fallback transport: replay all accumulated
+            # chunks as individual utter_message() calls so the action works
+            # correctly on every transport without any branching in action code.
             for chunk in self._stream_accumulated_chunks:
                 self.utter_message(**chunk)
+
         self._stream_accumulated_chunks = []
         self._stream_active = False
 
@@ -694,6 +782,7 @@ class ActionExecutor:
         self,
         action_call: Dict[Text, Any],
         sink: Optional[asyncio.Queue] = None,
+        dispatcher: Optional["CollectingDispatcher"] = None,
     ) -> Optional[ActionExecutorRunResult]:
         """Run the action and return the response.
 
@@ -725,6 +814,11 @@ class ActionExecutor:
             action_call: Request payload containing the action data.
             sink: Optional queue that receives streaming chunk events.
                   Pass an :class:`asyncio.Queue` to enable streaming output.
+            dispatcher: Optional pre-constructed :class:`CollectingDispatcher`
+                to use instead of creating a fresh one.  Callers (such as the
+                gRPC ``WebhookStream`` handler) that need to hold a reference to
+                the dispatcher before the action runs — e.g. to register it in a
+                cancellation registry — should pass it here.
 
         Returns:
             Response containing the events and messages, or ``None`` if no
@@ -743,7 +837,8 @@ class ActionExecutor:
                 tracker_json = action_call["tracker"]
                 domain = self.update_and_return_domain(action_call, action_name)
                 tracker = Tracker.from_dict(tracker_json)
-                dispatcher = CollectingDispatcher()
+                if dispatcher is None:
+                    dispatcher = CollectingDispatcher()
                 if sink is not None:
                     dispatcher._stream_sink = sink.put
 

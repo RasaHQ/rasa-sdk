@@ -2,10 +2,12 @@ syntax = "proto3";
 
 package action_server_webhook;
 import "google/protobuf/struct.proto";
+import "google/protobuf/empty.proto";
 
 service ActionService {
     rpc Webhook (WebhookRequest) returns (WebhookResponse);
     rpc WebhookStream(WebhookRequest) returns (stream WebhookStreamEvent);
+    rpc AckStreamChunks(StreamChunkAck) returns (google.protobuf.Empty);
     rpc Actions (ActionsRequest) returns (ActionsResponse);
 }
 
@@ -30,6 +32,10 @@ message Chunk {
 }
 message ChunkEnd { string response_id = 1; }
 message StreamError { string action_name = 1; string message = 2; }
+message StreamChunkAck {
+    string response_id = 1;
+    optional int32 last_heard_chunk_index = 2;
+}
 
 message ActionsRequest {}
 
