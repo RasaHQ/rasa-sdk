@@ -77,6 +77,10 @@ class CollectingDispatcher:
         self._stream_sink: Optional[Callable[[Dict[Text, Any]], Awaitable[None]]] = None
         # Each entry is a kwargs dict that can be passed directly to utter_message.
         self._stream_accumulated_chunks: List[Dict[Text, Any]] = []
+        # Set to True by stream_start(), False by stream_end().  Deliberately
+        # decoupled from _stream_accumulated_chunks so that stream_start() with
+        # no subsequent stream_chunk() calls is still detected as an open stream.
+        self._stream_active: bool = False
 
     @property
     def is_streaming_active(self) -> bool:
@@ -88,7 +92,7 @@ class CollectingDispatcher:
         against calling :meth:`stream_start` twice, though doing so is not
         normally necessary.
         """
-        return bool(self._stream_accumulated_chunks)
+        return self._stream_active
 
     def utter_message(
         self,
@@ -131,6 +135,7 @@ class CollectingDispatcher:
         sink.  Call this before any :meth:`stream_chunk` calls.
         """
         self._stream_accumulated_chunks = []
+        self._stream_active = True
         if self._stream_sink is not None:
             await self._stream_sink({"event": "stream_start"})
 
@@ -170,7 +175,7 @@ class CollectingDispatcher:
         if image is not None:
             payload["image"] = image
         if json_message:
-            payload["json_message"] = json_message
+            payload["custom"] = json_message
         if attachment is not None:
             payload["attachment"] = attachment
         if buttons:
@@ -178,6 +183,11 @@ class CollectingDispatcher:
         if elements:
             payload["elements"] = elements
         payload.update(kwargs)
+
+        if not self._stream_active:
+            # Implicit stream_start: keeps the flag and sink protocol consistent
+            # when an action skips the explicit stream_start() call.
+            await self.stream_start()
 
         self._stream_accumulated_chunks.append(payload)
         if self._stream_sink is not None:
@@ -198,6 +208,7 @@ class CollectingDispatcher:
             for chunk in self._stream_accumulated_chunks:
                 self.utter_message(**chunk)
         self._stream_accumulated_chunks = []
+        self._stream_active = False
 
     # deprecated
     def utter_custom_message(self, *elements: Dict[Text, Any], **kwargs: Any) -> None:
@@ -662,10 +673,11 @@ class ActionExecutor:
 
         When *sink* is ``None`` (the default, used by unary transports such as
         the standard HTTP and gRPC webhooks) the dispatcher's streaming methods
-        still work: text is accumulated internally and flushed as a single
-        :meth:`~CollectingDispatcher.utter_message` when the action calls
-        :meth:`~CollectingDispatcher.stream_end`.  The final result is returned
-        as usual in :class:`ActionExecutorRunResult`.
+        still work: text is accumulated internally and, when the action calls
+        :meth:`~CollectingDispatcher.stream_end`, the buffered chunks are
+        replayed as individual :meth:`~CollectingDispatcher.utter_message`
+        calls. The final result is returned as usual in
+        :class:`ActionExecutorRunResult`.
 
         When a *sink* queue is provided (streaming transports) the dispatcher
         forwards each chunk to the queue immediately as the action produces it.

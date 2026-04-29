@@ -484,6 +484,26 @@ async def test_stream_chunk_text_only_accumulates():
     assert dispatcher._stream_accumulated_chunks == [{"text": "Hello"}]
 
 
+async def test_stream_chunk_implicitly_starts_stream_when_stream_start_not_called():
+    dispatcher = CollectingDispatcher()
+    assert not dispatcher.is_streaming_active
+    await dispatcher.stream_chunk(text="implicit")
+    assert dispatcher.is_streaming_active
+    assert dispatcher._stream_accumulated_chunks == [{"text": "implicit"}]
+
+
+async def test_stream_chunk_implicit_start_emits_stream_start_event_to_sink():
+    """When stream_chunk() triggers an implicit stream_start, the sink must
+    receive stream_start before stream_chunk so the protocol ordering is correct."""
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_sink = sink.put
+    await dispatcher.stream_chunk(text="hi")
+    events = [sink.get_nowait() for _ in range(sink.qsize())]
+    assert events[0] == {"event": "stream_start"}
+    assert events[1] == {"event": "stream_chunk", "text": "hi"}
+
+
 async def test_stream_chunk_rich_content_accumulates():
     dispatcher = CollectingDispatcher()
     buttons = [{"title": "Yes", "payload": "/yes"}]
@@ -491,6 +511,32 @@ async def test_stream_chunk_rich_content_accumulates():
     assert dispatcher._stream_accumulated_chunks == [
         {"image": "https://example.com/img.png", "buttons": buttons}
     ]
+
+
+async def test_stream_chunk_json_message_forwarded_to_sink_as_custom():
+    d = CollectingDispatcher()
+    sink: asyncio.Queue = asyncio.Queue()
+    d._stream_sink = sink.put
+
+    payload = {"type": "card", "title": "Hello"}
+    await d.stream_start()
+    await sink.get()  # consume stream_start
+    await d.stream_chunk(json_message=payload)
+
+    event = await sink.get()
+    assert event == {"event": "stream_chunk", "custom": payload}
+
+
+async def test_stream_end_no_sink_json_message_replayed_via_utter_message():
+    """On the fallback path, custom JSON ends up in the message dict's
+    'custom' field — the same place utter_message puts it."""
+    d = CollectingDispatcher()
+    await d.stream_start()
+    await d.stream_chunk(json_message={"type": "card"})
+    await d.stream_end()
+
+    assert len(d.messages) == 1
+    assert d.messages[0]["custom"] == {"type": "card"}
 
 
 async def test_stream_chunk_text_and_rich_accumulates():
@@ -523,10 +569,12 @@ async def test_stream_chunk_multiple_chunks_accumulate_in_order():
 
 async def test_stream_start_resets_accumulator():
     dispatcher = CollectingDispatcher()
-    await dispatcher.stream_chunk(text="stale")
-    assert dispatcher.is_streaming_active
     await dispatcher.stream_start()
-    assert not dispatcher.is_streaming_active
+    await dispatcher.stream_chunk(text="stale")
+    assert dispatcher._stream_accumulated_chunks == [{"text": "stale"}]
+    await dispatcher.stream_start()  # second call should clear stale chunks
+    assert dispatcher._stream_accumulated_chunks == []
+    assert dispatcher.is_streaming_active  # flag stays True after the reset
 
 
 async def test_stream_end_no_sink_replays_each_chunk_as_utter_message():
@@ -549,11 +597,13 @@ async def test_is_streaming_active_reflects_stream_lifecycle():
     dispatcher = CollectingDispatcher()
     assert not dispatcher.is_streaming_active  # nothing started yet
     await dispatcher.stream_start()
-    assert not dispatcher.is_streaming_active  # started but no chunks yet
+    assert (
+        dispatcher.is_streaming_active
+    )  # True immediately after stream_start, even with no chunks
     await dispatcher.stream_chunk(text="Hi")
-    assert dispatcher.is_streaming_active  # chunk accumulated → active
+    assert dispatcher.is_streaming_active  # still True with chunks accumulated
     await dispatcher.stream_end()
-    assert not dispatcher.is_streaming_active  # stream_end clears accumulator
+    assert not dispatcher.is_streaming_active  # False after stream_end
 
 
 async def test_stream_end_no_sink_empty_accumulator_adds_no_messages():
@@ -577,6 +627,8 @@ async def test_stream_chunk_with_sink_forwards_immediately():
     sink: asyncio.Queue = asyncio.Queue()
     dispatcher._stream_sink = sink.put
 
+    await dispatcher.stream_start()
+    await sink.get()  # consume stream_start
     await dispatcher.stream_chunk(text="Hi", image="https://example.com/img.png")
 
     event = await sink.get()

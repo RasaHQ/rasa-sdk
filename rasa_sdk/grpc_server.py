@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import signal
 import uuid
 
@@ -231,14 +232,33 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
             sink: asyncio.Queue = asyncio.Queue()
 
             async def _run() -> None:
-                """Run the action and forward any exception into the sink."""
+                """Run the action and always place a terminal event in the sink.
+
+                Guarantees the consumer loop receives either ``stream_done`` or
+                ``stream_error`` even when:
+
+                * ``executor.run()`` returns ``None`` (missing ``next_action``),
+                  in which case it returns without placing ``stream_done``.
+                * An unexpected exception escapes that is not one of the known
+                  action-level errors.
+                """
                 try:
-                    await self.executor.run(action_call, sink=sink)
+                    result = await self.executor.run(action_call, sink=sink)
+                    if result is None:
+                        # next_action was absent; executor.run() returned without
+                        # placing stream_done, so we must do it here.
+                        await sink.put({"event": "stream_done", "result": None})
                 except (
                     ActionExecutionRejection,
                     ActionNotFoundException,
                     ActionMissingDomainException,
                 ) as exc:
+                    await sink.put({"event": "stream_error", "exception": exc})
+                except Exception as exc:
+                    logger.exception(
+                        f"Unexpected error running action "
+                        f"'{action_call.get('next_action')}'"
+                    )
                     await sink.put({"event": "stream_error", "exception": exc})
 
             run_task = asyncio.ensure_future(_run())
@@ -320,6 +340,10 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                                     resource_type=ResourceNotFoundType.DOMAIN,
                                 ).model_dump_json()
                             )
+                        else:
+                            logger.error(exc)
+                            context.set_code(grpc.StatusCode.INTERNAL)
+                            context.set_details(str(exc))
                         yield action_webhook_pb2.WebhookStreamEvent(
                             error=action_webhook_pb2.StreamError(
                                 action_name=action_name,
@@ -330,6 +354,8 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
             finally:
                 if not run_task.done():
                     run_task.cancel()
+                    with contextlib.suppress(asyncio.CancelledError):
+                        await run_task
 
 
 def _set_grpc_span_attributes(

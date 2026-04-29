@@ -491,3 +491,67 @@ async def test_webhook_stream_errors_yield_stream_error_and_set_grpc_status(
     mock_grpc_service_context.set_details.assert_called_once_with(
         expected_body_factory()
     )
+
+
+# ---------------------------------------------------------------------------
+# WebhookStream — terminal-event guarantee (hang prevention)
+# ---------------------------------------------------------------------------
+
+
+async def test_webhook_stream_does_not_hang_when_run_returns_none(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+) -> None:
+    """Stream must terminate even when executor.run() returns None.
+
+    This happens when ``next_action`` is absent: ``executor.run()`` returns
+    ``None`` without placing ``stream_done`` into the sink.  ``_run()`` must
+    detect the ``None`` return value and place the terminal event itself.
+    """
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.return_value = None  # executor returns None, places nothing
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    # stream_done(result=None) → consumer breaks without yielding any event.
+    # If no terminal event were placed the test would hang here, so returning
+    # an empty list *proves* stream_done was received and processed.
+    assert events == []
+    # No error path was taken.
+    mock_grpc_service_context.set_code.assert_not_called()
+
+
+async def test_webhook_stream_does_not_hang_on_unexpected_exception(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+) -> None:
+    """Stream must terminate when executor.run() raises an unexpected exception.
+
+    Any ``Exception`` not in the known action-error set must be caught by
+    ``_run()``, forwarded as a ``stream_error`` event, and result in a single
+    ``error`` proto event and a ``INTERNAL`` gRPC status — not a hung consumer.
+    """
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    boom = RuntimeError("unexpected failure")
+    mock_executor.run.side_effect = _make_error_run(boom)
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    assert len(events) == 1
+    assert events[0].WhichOneof("event") == "error"
+    assert "unexpected failure" in events[0].error.message
+
+    mock_grpc_service_context.set_code.assert_called_once_with(grpc.StatusCode.INTERNAL)
+    mock_grpc_service_context.set_details.assert_called_once_with(str(boom))
