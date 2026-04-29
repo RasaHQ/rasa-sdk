@@ -22,12 +22,12 @@ RUN apt-get update -qq \
       curl \
     && apt-get autoremove -y \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
     && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check --status \
     && python3 /tmp/get-pip.py \
-    && rm /tmp/get-pip.py \
+    && rm -f -- /tmp/get-pip.py \
     && pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}"
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
