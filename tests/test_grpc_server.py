@@ -270,9 +270,17 @@ def _make_streaming_run(
 
 
 def _make_error_run(exception: Exception) -> Callable:
-    """Return an async side effect for `executor.run` that raises *exception*."""
+    """Return an async side effect for ``executor.run`` that raises *exception*.
+
+    Mirrors the real ``executor.run()`` contract: place ``stream_error`` in the
+    sink *before* re-raising so the consumer loop always receives a terminal
+    event (matching the behaviour introduced when the try-block was expanded to
+    cover pre-action setup errors).
+    """
 
     async def _run(action_call: Dict, sink: Optional[asyncio.Queue] = None) -> None:
+        if sink is not None:
+            await sink.put({"event": "stream_error", "exception": exception})
         raise exception
 
     return _run
