@@ -1,7 +1,7 @@
 # Keep this in sync with the version pinned in poetry.lock
 ARG SETUPTOOLS_VERSION=82.0.1
 # Recompute with: curl -fsSL https://bootstrap.pypa.io/get-pip.py | sha256sum
-ARG GET_PIP_SHA256=feba1c697df45be1b539b40d93c102c9ee9dde1d966303323b830b06f3fbca3c
+ARG GET_PIP_SHA256=106ae019e371c7d8cb3699c75607a9b7a4d31e2b95c575362c8bcfe3d41353fd
 
 FROM ubuntu:22.04 AS base
 
@@ -12,20 +12,22 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3005,DL3008
 RUN apt-get update -qq \
-    # Make sure that all security updates are installed
-    && apt-get dist-upgrade -y --no-install-recommends --fix-missing \
-    && apt-get install -y --no-install-recommends \
+    # Make sure that all security updates are installed \
+    && apt-get upgrade -y --no-install-recommends --fix-missing \
+    && apt-get install -y --no-install-recommends --fix-missing \
+      ca-certificates \
       python3 \
       python3-venv \
       python3-dev \
       curl \
     && apt-get autoremove -y \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
     && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check --status \
     && python3 /tmp/get-pip.py \
-    && rm /tmp/get-pip.py \
+    && rm -f -- /tmp/get-pip.py \
     && pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}"
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \

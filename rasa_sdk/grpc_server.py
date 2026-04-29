@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import contextlib
 import signal
+import uuid
 
 import asyncio
 
 import grpc
 import logging
-from typing import Optional, Any, Dict
+from typing import AsyncIterator, Optional, Any, Dict
 from concurrent import futures
 from grpc import aio
 from grpc_health.v1 import health
@@ -57,6 +59,15 @@ logger = logging.getLogger(__name__)
 
 
 GRPC_ACTION_SERVER_NAME = "ActionServer"
+
+
+def _convert_metadata_to_multidict(
+    metadata: Optional[Metadata],
+) -> Optional[MultiDict]:
+    """Convert gRPC invocation metadata (list of 2-tuples) to a MultiDict."""
+    if not metadata:
+        return None
+    return MultiDict(metadata)
 
 
 class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
@@ -122,18 +133,10 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         span_name = "GRPCActionServerWebhook.Webhook"
         invocation_metadata = context.invocation_metadata()
 
-        def convert_metadata_to_multidict(
-            metadata: Optional[Metadata],
-        ) -> Optional[MultiDict]:
-            """Convert list of tuples to multidict."""
-            if not metadata:
-                return None
-            return MultiDict(metadata)
-
         tracer, tracing_context = get_tracer_and_context(
             span_name=span_name,
             tracer_provider=self.tracer_provider,
-            tracing_carrier=convert_metadata_to_multidict(invocation_metadata),
+            tracing_carrier=_convert_metadata_to_multidict(invocation_metadata),
         )
 
         with tracer.start_as_current_span(span_name, context=tracing_context) as span:
@@ -178,6 +181,192 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
             _set_grpc_span_attributes(span, action_call, method_name="Webhook")
             response = action_webhook_pb2.WebhookResponse()
             return ParseDict(result.model_dump(), response)
+
+    async def WebhookStream(
+        self,
+        request: WebhookRequest,
+        context: grpc.aio.ServicerContext,
+    ) -> AsyncIterator[action_webhook_pb2.WebhookStreamEvent]:
+        """Handle streaming RPC request for the webhook.
+
+        Runs the action and yields :class:`WebhookStreamEvent` messages to the
+        client as the action produces text chunks.  The event sequence is:
+
+        1. ``chunk_start``   — action has begun a streaming response.
+        2. ``chunk``         — one or more response chunks from the action (text,
+                               image, buttons, elements, attachment, or custom).
+        3. ``chunk_end``     — the current streaming response is complete.
+        4. ``final_result``  — the full :class:`WebhookResponse` (events +
+                               non-streaming responses) after the action finishes.
+
+        On error a single ``error`` event is yielded and the stream ends with
+        the appropriate gRPC status code set on *context*.
+
+        The ``response_id`` field on chunk messages ties together all chunks
+        that belong to the same streaming response within one action execution.
+
+        Args:
+            request: The webhook request.
+            context: The context of the request.
+
+        Yields:
+            :class:`WebhookStreamEvent` messages.
+        """
+        span_name = "GRPCActionServerWebhook.WebhookStream"
+        invocation_metadata = context.invocation_metadata()
+
+        tracer, tracing_context = get_tracer_and_context(
+            span_name=span_name,
+            tracer_provider=self.tracer_provider,
+            tracing_carrier=_convert_metadata_to_multidict(invocation_metadata),
+        )
+
+        with tracer.start_as_current_span(span_name, context=tracing_context) as span:
+            check_version_compatibility(request.version)
+            if self.auto_reload:
+                self.executor.reload()
+
+            action_call = MessageToDict(request, preserving_proto_field_name=True)
+            action_name = action_call.get("next_action", "")
+            sink: asyncio.Queue = asyncio.Queue()
+
+            async def _run() -> None:
+                """Run the action and always place a terminal event in the sink.
+
+                Guarantees the consumer loop receives either ``stream_done`` or
+                ``stream_error`` even when ``executor.run()`` returns ``None``
+                (missing ``next_action``), in which case it returns without
+                placing ``stream_done``.
+
+                All exceptions from ``executor.run()`` are suppressed here
+                because ``executor.run()`` already places ``stream_error`` in
+                the sink before re-raising.  Suppressing prevents the
+                ``asyncio.Task`` from becoming an unhandled-exception task.
+                Unexpected errors are still logged with a full traceback.
+                """
+                try:
+                    result = await self.executor.run(action_call, sink=sink)
+                    if result is None:
+                        # next_action was absent; executor.run() returned without
+                        # placing stream_done, so we must do it here.
+                        await sink.put({"event": "stream_done", "result": None})
+                except (
+                    ActionExecutionRejection,
+                    ActionNotFoundException,
+                    ActionMissingDomainException,
+                ):
+                    pass  # stream_error already placed in sink by executor.run()
+                except Exception:
+                    logger.exception(
+                        f"Unexpected error running action "
+                        f"'{action_call.get('next_action')}'"
+                    )
+                    # stream_error already placed in sink by executor.run()
+
+            run_task = asyncio.ensure_future(_run())
+
+            try:
+                current_response_id: str = ""
+                while True:
+                    chunk = await sink.get()
+                    event_type = chunk.get("event")
+
+                    if event_type == "stream_start":
+                        current_response_id = uuid.uuid4().hex
+                        yield action_webhook_pb2.WebhookStreamEvent(
+                            chunk_start=action_webhook_pb2.ChunkStart(
+                                response_id=current_response_id
+                            )
+                        )
+                    elif event_type == "stream_chunk":
+                        # Only the fields defined in the Chunk protobuf message
+                        # are serialised. Any extra kwargs passed to
+                        # stream_chunk() arrive in the payload dict but are
+                        # intentionally dropped here because the wire format
+                        # has no place for them.
+                        yield action_webhook_pb2.WebhookStreamEvent(
+                            chunk=ParseDict(
+                                {
+                                    k: chunk[k]
+                                    for k in (
+                                        "text",
+                                        "image",
+                                        "custom",
+                                        "attachment",
+                                        "buttons",
+                                        "elements",
+                                    )
+                                    if k in chunk
+                                },
+                                action_webhook_pb2.Chunk(
+                                    response_id=current_response_id
+                                ),
+                            )
+                        )
+                    elif event_type == "stream_end":
+                        yield action_webhook_pb2.WebhookStreamEvent(
+                            chunk_end=action_webhook_pb2.ChunkEnd(
+                                response_id=current_response_id
+                            )
+                        )
+                    elif event_type == "stream_done":
+                        result = chunk.get("result")
+                        if result:
+                            final_response = action_webhook_pb2.WebhookResponse()
+                            ParseDict(result.model_dump(), final_response)
+                            yield action_webhook_pb2.WebhookStreamEvent(
+                                final_result=final_response
+                            )
+                        _set_grpc_span_attributes(
+                            span, action_call, method_name="WebhookStream"
+                        )
+                        break
+                    elif event_type == "stream_error":
+                        exc = chunk.get("exception")
+                        if isinstance(exc, ActionExecutionRejection):
+                            logger.debug(exc)
+                            context.set_code(grpc.StatusCode.INTERNAL)
+                            context.set_details(
+                                ActionExecutionFailed(
+                                    action_name=exc.action_name, message=exc.message
+                                ).model_dump_json()
+                            )
+                        elif isinstance(exc, ActionNotFoundException):
+                            logger.error(exc)
+                            context.set_code(grpc.StatusCode.NOT_FOUND)
+                            context.set_details(
+                                ResourceNotFound(
+                                    action_name=exc.action_name,
+                                    message=exc.message,
+                                    resource_type=ResourceNotFoundType.ACTION,
+                                ).model_dump_json()
+                            )
+                        elif isinstance(exc, ActionMissingDomainException):
+                            logger.error(exc)
+                            context.set_code(grpc.StatusCode.NOT_FOUND)
+                            context.set_details(
+                                ResourceNotFound(
+                                    action_name=exc.action_name,
+                                    message=exc.message,
+                                    resource_type=ResourceNotFoundType.DOMAIN,
+                                ).model_dump_json()
+                            )
+                        else:
+                            logger.error(exc)
+                            context.set_code(grpc.StatusCode.INTERNAL)
+                            context.set_details(str(exc))
+                        yield action_webhook_pb2.WebhookStreamEvent(
+                            error=action_webhook_pb2.StreamError(
+                                action_name=action_name,
+                                message=str(exc),
+                            )
+                        )
+                        break
+            finally:
+                if not run_task.done():
+                    run_task.cancel()
+                    with contextlib.suppress(asyncio.CancelledError):
+                        await run_task
 
 
 def _set_grpc_span_attributes(

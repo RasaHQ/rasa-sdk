@@ -1,13 +1,17 @@
+import asyncio
 import os
 import shutil
 import random
 import string
 import time
 
-from typing import Text, Optional, Generator
+from typing import Any, Dict, List, Text, Optional, Generator
 
 import pytest
+from rasa_sdk import Action
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
+from rasa_sdk.types import DomainDict
+from rasa_sdk.interfaces import Tracker
 from tests.conftest import SubclassTestActionA, SubclassTestActionB
 
 TEST_PACKAGE_BASE = "tests/executor_test_packages"
@@ -404,3 +408,471 @@ async def test_reload_with_modified_and_new_modules(
     action_2 = executor.actions.get("brand_new_action")
     await action_2(dispatcher, None, None)
     assert dispatcher.messages[0]["text"] == "new action"
+
+
+# ---------------------------------------------------------------------------
+# Helpers shared by the streaming tests
+# ---------------------------------------------------------------------------
+
+MINIMAL_ACTION_CALL = {
+    "next_action": "action_streaming",
+    "tracker": {
+        "sender_id": "test",
+        "slots": {},
+        "latest_message": {},
+        "events": [],
+        "paused": False,
+        "followup_action": None,
+        "active_loop": {},
+        "active_form": {},
+        "latest_action_name": None,
+        "stack": [],
+        "user_id": None,
+    },
+    "domain": {
+        "intents": [],
+        "entities": [],
+        "slots": {},
+        "responses": {},
+        "actions": [],
+        "forms": {},
+    },
+}
+
+
+class StreamingAction(Action):
+    """Action that exercises the full streaming API."""
+
+    def name(self) -> Text:
+        return "action_streaming"
+
+    async def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: DomainDict,
+    ) -> List[Dict[Text, Any]]:
+        await dispatcher.stream_start()
+        await dispatcher.stream_chunk(text="Hello ")
+        await dispatcher.stream_chunk(text="world")
+        await dispatcher.stream_chunk(
+            text="Pick one",
+            buttons=[{"title": "A", "payload": "/a"}, {"title": "B", "payload": "/b"}],
+        )
+        await dispatcher.stream_end()
+        return []
+
+
+@pytest.fixture()
+def streaming_executor() -> ActionExecutor:
+    executor = ActionExecutor()
+    executor.register_action(StreamingAction)
+    return executor
+
+
+async def _drain_queue(sink: asyncio.Queue) -> List[Dict]:
+    """Collect all items currently in *q* without blocking."""
+    items = []
+    while not sink.empty():
+        items.append(await sink.get())
+    return items
+
+
+async def test_stream_chunk_text_only_accumulates():
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_chunk(text="Hello")
+    assert dispatcher._stream_accumulated_chunks == [{"text": "Hello"}]
+
+
+async def test_stream_chunk_implicitly_starts_stream_when_stream_start_not_called():
+    dispatcher = CollectingDispatcher()
+    assert not dispatcher.is_streaming_active
+    await dispatcher.stream_chunk(text="implicit")
+    assert dispatcher.is_streaming_active
+    assert dispatcher._stream_accumulated_chunks == [{"text": "implicit"}]
+
+
+async def test_stream_chunk_implicit_start_emits_stream_start_event_to_sink():
+    """When stream_chunk() triggers an implicit stream_start, the sink must
+    receive stream_start before stream_chunk so the protocol ordering is correct."""
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_sink = sink.put
+    await dispatcher.stream_chunk(text="hi")
+    events = [sink.get_nowait() for _ in range(sink.qsize())]
+    assert events[0] == {"event": "stream_start"}
+    assert events[1] == {"event": "stream_chunk", "text": "hi"}
+
+
+async def test_stream_chunk_rich_content_accumulates():
+    dispatcher = CollectingDispatcher()
+    buttons = [{"title": "Yes", "payload": "/yes"}]
+    await dispatcher.stream_chunk(image="https://example.com/img.png", buttons=buttons)
+    assert dispatcher._stream_accumulated_chunks == [
+        {"image": "https://example.com/img.png", "buttons": buttons}
+    ]
+
+
+async def test_stream_chunk_json_message_forwarded_to_sink_as_custom():
+    d = CollectingDispatcher()
+    sink: asyncio.Queue = asyncio.Queue()
+    d._stream_sink = sink.put
+
+    payload = {"type": "card", "title": "Hello"}
+    await d.stream_start()
+    await sink.get()  # consume stream_start
+    await d.stream_chunk(json_message=payload)
+
+    event = await sink.get()
+    assert event == {"event": "stream_chunk", "custom": payload}
+
+
+async def test_stream_end_no_sink_json_message_replayed_via_utter_message():
+    """On the fallback path, custom JSON ends up in the message dict's
+    'custom' field — the same place utter_message puts it."""
+    d = CollectingDispatcher()
+    await d.stream_start()
+    await d.stream_chunk(json_message={"type": "card"})
+    await d.stream_end()
+
+    assert len(d.messages) == 1
+    assert d.messages[0]["custom"] == {"type": "card"}
+
+
+async def test_stream_chunk_text_and_rich_accumulates():
+    dispatcher = CollectingDispatcher()
+    buttons = [{"title": "OK", "payload": "/ok"}]
+    await dispatcher.stream_chunk(text="Choose:", buttons=buttons)
+    assert dispatcher._stream_accumulated_chunks == [
+        {"text": "Choose:", "buttons": buttons}
+    ]
+
+
+async def test_stream_chunk_omits_none_and_empty_fields():
+    """Fields passed as None should be omitted from the payload."""
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_chunk(text="hi", image=None, buttons=None)
+    assert dispatcher._stream_accumulated_chunks == [{"text": "hi"}]
+
+
+@pytest.mark.parametrize("forbidden_key", ["template", "response"])
+async def test_stream_chunk_raises_on_template_or_response_kwarg(forbidden_key):
+    """template/response must be rejected, not silently forwarded in the payload."""
+    dispatcher = CollectingDispatcher()
+    with pytest.raises(ValueError, match=forbidden_key):
+        await dispatcher.stream_chunk(**{forbidden_key: "utter_greet"})
+
+
+async def test_stream_chunk_raises_when_both_template_and_response_passed():
+    dispatcher = CollectingDispatcher()
+    with pytest.raises(ValueError):
+        await dispatcher.stream_chunk(template="utter_greet", response="utter_greet")
+
+
+async def test_stream_chunk_multiple_chunks_accumulate_in_order():
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_chunk(text="one")
+    await dispatcher.stream_chunk(text="two")
+    await dispatcher.stream_chunk(text="three")
+    assert [c["text"] for c in dispatcher._stream_accumulated_chunks] == [
+        "one",
+        "two",
+        "three",
+    ]
+
+
+async def test_stream_start_resets_accumulator():
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_start()
+    await dispatcher.stream_chunk(text="stale")
+    assert dispatcher._stream_accumulated_chunks == [{"text": "stale"}]
+    await dispatcher.stream_start()  # second call should clear stale chunks
+    assert dispatcher._stream_accumulated_chunks == []
+    assert dispatcher.is_streaming_active  # flag stays True after the reset
+
+
+async def test_stream_end_no_sink_replays_each_chunk_as_utter_message():
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_start()
+    await dispatcher.stream_chunk(text="Hello")
+    await dispatcher.stream_chunk(
+        text="Pick one",
+        buttons=[{"title": "A", "payload": "/a"}],
+    )
+    await dispatcher.stream_end()
+
+    assert len(dispatcher.messages) == 2
+    assert dispatcher.messages[0]["text"] == "Hello"
+    assert dispatcher.messages[1]["text"] == "Pick one"
+    assert dispatcher.messages[1]["buttons"] == [{"title": "A", "payload": "/a"}]
+
+
+async def test_is_streaming_active_reflects_stream_lifecycle():
+    dispatcher = CollectingDispatcher()
+    assert not dispatcher.is_streaming_active  # nothing started yet
+    await dispatcher.stream_start()
+    assert (
+        dispatcher.is_streaming_active
+    )  # True immediately after stream_start, even with no chunks
+    await dispatcher.stream_chunk(text="Hi")
+    assert dispatcher.is_streaming_active  # still True with chunks accumulated
+    await dispatcher.stream_end()
+    assert not dispatcher.is_streaming_active  # False after stream_end
+
+
+async def test_stream_end_no_sink_empty_accumulator_adds_no_messages():
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_start()
+    await dispatcher.stream_end()
+    assert dispatcher.messages == []
+
+
+async def test_stream_start_with_sink_emits_event():
+    dispatcher = CollectingDispatcher()
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher._stream_sink = sink.put
+
+    await dispatcher.stream_start()
+    assert await sink.get() == {"event": "stream_start"}
+
+
+async def test_stream_chunk_with_sink_forwards_immediately():
+    dispatcher = CollectingDispatcher()
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher._stream_sink = sink.put
+
+    await dispatcher.stream_start()
+    await sink.get()  # consume stream_start
+    await dispatcher.stream_chunk(text="Hi", image="https://example.com/img.png")
+
+    event = await sink.get()
+    assert event == {
+        "event": "stream_chunk",
+        "text": "Hi",
+        "image": "https://example.com/img.png",
+    }
+
+
+async def test_stream_end_with_sink_emits_event_and_no_utter_message():
+    dispatcher = CollectingDispatcher()
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher._stream_sink = sink.put
+
+    await dispatcher.stream_start()
+    await sink.get()  # consume stream_start
+    await dispatcher.stream_chunk(text="Hello")
+    await sink.get()  # consume stream_chunk
+    await dispatcher.stream_end()
+
+    assert await sink.get() == {"event": "stream_end"}
+    assert dispatcher.messages == []  # utter_message NOT called on streaming path
+
+
+async def test_stream_full_lifecycle_with_sink_emits_all_events():
+    dispatcher = CollectingDispatcher()
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher._stream_sink = sink.put
+
+    await dispatcher.stream_start()
+    await dispatcher.stream_chunk(text="Hello ")
+    await dispatcher.stream_chunk(
+        text="world", buttons=[{"title": "OK", "payload": "/ok"}]
+    )
+    await dispatcher.stream_end()
+
+    events = await _drain_queue(sink)
+    assert events[0] == {"event": "stream_start"}
+    assert events[1] == {"event": "stream_chunk", "text": "Hello "}
+    assert events[2] == {
+        "event": "stream_chunk",
+        "text": "world",
+        "buttons": [{"title": "OK", "payload": "/ok"}],
+    }
+    assert events[3] == {"event": "stream_end"}
+
+
+async def test_stream_full_lifecycle_no_sink_produces_utter_messages():
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_start()
+    await dispatcher.stream_chunk(text="Hello ")
+    await dispatcher.stream_chunk(image="https://example.com/img.png")
+    await dispatcher.stream_end()
+
+    assert len(dispatcher.messages) == 2
+    assert dispatcher.messages[0]["text"] == "Hello "
+    assert dispatcher.messages[1]["image"] == "https://example.com/img.png"
+
+
+# ---------------------------------------------------------------------------
+# ActionExecutor.run() — streaming integration
+# ---------------------------------------------------------------------------
+
+
+async def test_executor_run_without_sink_streaming_fallback(
+    streaming_executor: ActionExecutor,
+):
+    """Without a sink, stream_end flushes chunks as utter_messages."""
+    result = await streaming_executor.run(MINIMAL_ACTION_CALL)
+    assert result is not None
+    # Three stream_chunk calls → three utter_message entries in responses
+    assert len(result.responses) == 3
+    assert result.responses[0]["text"] == "Hello "
+    assert result.responses[1]["text"] == "world"
+    assert result.responses[2]["text"] == "Pick one"
+    assert result.responses[2]["buttons"] == [
+        {"title": "A", "payload": "/a"},
+        {"title": "B", "payload": "/b"},
+    ]
+
+
+async def test_executor_run_with_sink_streams_events(
+    streaming_executor: ActionExecutor,
+):
+    """With a sink, chunk events arrive in the queue as the action runs."""
+    sink: asyncio.Queue = asyncio.Queue()
+    result = await streaming_executor.run(MINIMAL_ACTION_CALL, sink=sink)
+
+    events = await _drain_queue(sink)
+    event_types = [e["event"] for e in events]
+
+    assert event_types == [
+        "stream_start",
+        "stream_chunk",
+        "stream_chunk",
+        "stream_chunk",
+        "stream_end",
+        "stream_done",
+    ]
+    assert events[1]["text"] == "Hello "
+    assert events[2]["text"] == "world"
+    assert events[3]["text"] == "Pick one"
+    assert events[3]["buttons"] == [
+        {"title": "A", "payload": "/a"},
+        {"title": "B", "payload": "/b"},
+    ]
+    assert events[-1]["result"] is result
+
+
+async def test_executor_run_with_sink_stream_done_carries_result(
+    streaming_executor: ActionExecutor,
+):
+    sink: asyncio.Queue = asyncio.Queue()
+    result = await streaming_executor.run(MINIMAL_ACTION_CALL, sink=sink)
+    events = await _drain_queue(sink)
+    done = next(e for e in events if e["event"] == "stream_done")
+    assert done["result"] is result
+
+
+async def test_run_streaming_delegates_to_run(streaming_executor: ActionExecutor):
+    """`run_streaming` is a thin wrapper; the queue events are identical."""
+    sink_a: asyncio.Queue = asyncio.Queue()
+    sink_b: asyncio.Queue = asyncio.Queue()
+
+    await streaming_executor.run(MINIMAL_ACTION_CALL, sink=sink_a)
+    await streaming_executor.run_streaming(MINIMAL_ACTION_CALL, sink=sink_b)
+
+    events_a = [e["event"] for e in await _drain_queue(sink_a)]
+    events_b = [e["event"] for e in await _drain_queue(sink_b)]
+    assert events_a == events_b
+
+
+async def test_executor_run_puts_stream_error_in_sink_when_action_raises(
+    streaming_executor: ActionExecutor,
+):
+    """run() must place stream_error in the sink before re-raising so concurrent
+    consumers on the sink queue are never left blocked."""
+
+    class _BoomAction(Action):
+        def name(self) -> Text:
+            return "action_boom"
+
+        async def run(self, dispatcher, tracker, domain):
+            raise RuntimeError("action exploded")
+
+    streaming_executor.register_action(_BoomAction)
+    action_call = {**MINIMAL_ACTION_CALL, "next_action": "action_boom"}
+    sink: asyncio.Queue = asyncio.Queue()
+
+    with pytest.raises(RuntimeError, match="action exploded"):
+        await streaming_executor.run(action_call, sink=sink)
+
+    events = await _drain_queue(sink)
+    event_types = [e["event"] for e in events]
+    assert "stream_error" in event_types
+    error_event = next(e for e in events if e["event"] == "stream_error")
+    assert isinstance(error_event["exception"], RuntimeError)
+
+
+# ---------------------------------------------------------------------------
+# Auto-close guard: executor calls stream_end() if action forgets
+# ---------------------------------------------------------------------------
+
+
+class _MissingStreamEndAction(Action):
+    """Action that opens a stream but never calls stream_end()."""
+
+    def name(self) -> Text:
+        return "action_missing_stream_end"
+
+    async def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: DomainDict,
+    ) -> List[Dict[Text, Any]]:
+        await dispatcher.stream_start()
+        await dispatcher.stream_chunk(text="Hello")
+        await dispatcher.stream_chunk(buttons=[{"title": "Yes", "payload": "/yes"}])
+        # stream_end() intentionally omitted
+        return []
+
+
+@pytest.fixture()
+def missing_end_executor() -> ActionExecutor:
+    executor = ActionExecutor()
+    executor.register_action(_MissingStreamEndAction)
+    return executor
+
+
+_MISSING_END_ACTION_CALL = {
+    **MINIMAL_ACTION_CALL,
+    "next_action": "action_missing_stream_end",
+}
+
+
+async def test_executor_auto_closes_stream_when_stream_end_not_called_no_sink(
+    missing_end_executor: ActionExecutor,
+):
+    """Without a sink the accumulated chunks are still flushed as utter_messages."""
+    result = await missing_end_executor.run(_MISSING_END_ACTION_CALL)
+    assert result is not None
+    assert len(result.responses) == 2
+    assert result.responses[0]["text"] == "Hello"
+    assert result.responses[1]["buttons"] == [{"title": "Yes", "payload": "/yes"}]
+
+
+async def test_executor_auto_closes_stream_when_stream_end_not_called_with_sink(
+    missing_end_executor: ActionExecutor,
+):
+    """With a sink the stream_end event is emitted automatically."""
+    sink: asyncio.Queue = asyncio.Queue()
+    await missing_end_executor.run(_MISSING_END_ACTION_CALL, sink=sink)
+
+    events = await _drain_queue(sink)
+    event_types = [e["event"] for e in events]
+    assert "stream_end" in event_types
+    assert "stream_done" in event_types
+    assert event_types.index("stream_end") < event_types.index("stream_done")
+
+
+async def test_executor_auto_close_logs_warning(
+    missing_end_executor: ActionExecutor,
+    caplog: pytest.LogCaptureFixture,
+):
+    """A warning is logged so action authors can find and fix the bug."""
+    import logging
+
+    with caplog.at_level(logging.WARNING, logger="rasa_sdk.executor"):
+        await missing_end_executor.run(_MISSING_END_ACTION_CALL)
+
+    assert any("stream_end" in record.message for record in caplog.records)
