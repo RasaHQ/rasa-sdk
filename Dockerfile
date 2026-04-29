@@ -1,7 +1,7 @@
 # Keep this in sync with the version pinned in poetry.lock
 ARG SETUPTOOLS_VERSION=82.0.1
 # Recompute with: curl -fsSL https://bootstrap.pypa.io/get-pip.py | sha256sum
-ARG GET_PIP_SHA256=feba1c697df45be1b539b40d93c102c9ee9dde1d966303323b830b06f3fbca3c
+ARG GET_PIP_SHA256=106ae019e371c7d8cb3699c75607a9b7a4d31e2b95c575362c8bcfe3d41353fd
 
 FROM ubuntu:22.04 AS base
 
