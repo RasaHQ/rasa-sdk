@@ -319,8 +319,8 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                     # cancels the RPC, so we detect it here and drain the queue
                     # until the action completes, then yield final_result.
                     # A bare context cancellation (network drop, etc.) is also
-                    # caught via context.is_active().
-                    if dispatcher.is_streaming_cancelled or not context.is_active():
+                    # caught via context.cancelled().
+                    if dispatcher.is_streaming_cancelled or context.cancelled():
                         dispatcher.cancel_stream()
                         graceful_cancel = True
                         # Drain the queue; discard in-flight chunk events; yield

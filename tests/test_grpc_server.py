@@ -77,10 +77,10 @@ def mock_executor() -> AsyncMock:
 def mock_grpc_service_context() -> MagicMock:
     """Create a mock gRPC service context."""
     ctx = MagicMock(spec=grpc.aio.ServicerContext)
-    # is_active() is not part of the grpc.aio.ServicerContext public spec in
-    # all versions of grpcio, so add it explicitly.  Default to True (RPC
-    # active) so existing happy-path tests are unaffected.
-    ctx.is_active = MagicMock(return_value=True)
+    # cancelled() must return False (RPC still active) so happy-path tests do
+    # not accidentally trigger the barge-in path.  MagicMock would otherwise
+    # return a truthy Mock object, which would look like a cancellation.
+    ctx.cancelled = MagicMock(return_value=False)
     return ctx
 
 
