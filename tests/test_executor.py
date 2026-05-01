@@ -876,3 +876,119 @@ async def test_executor_auto_close_logs_warning(
         await missing_end_executor.run(_MISSING_END_ACTION_CALL)
 
     assert any("stream_end" in record.message for record in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# Cancellation / barge-in: cancel_stream, acknowledge_heard_chunks, stream_end
+# ---------------------------------------------------------------------------
+
+
+async def test_cancel_stream_sets_flag():
+    dispatcher = CollectingDispatcher()
+    assert not dispatcher.is_streaming_cancelled
+    dispatcher.cancel_stream()
+    assert dispatcher.is_streaming_cancelled
+
+
+async def test_stream_chunk_dropped_after_cancel():
+    """Chunks emitted after cancel_stream() are silently ignored."""
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_start()
+    await dispatcher.stream_chunk(text="before")
+    dispatcher.cancel_stream()
+    await dispatcher.stream_chunk(text="after cancel")
+
+    assert dispatcher._stream_accumulated_chunks == [{"text": "before"}]
+
+
+async def test_stream_chunk_does_not_forward_to_sink_after_cancel():
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_sink = sink.put
+    await dispatcher.stream_start()
+    await sink.get()  # consume stream_start
+    await dispatcher.stream_chunk(text="sent")
+    await sink.get()  # consume stream_chunk
+    dispatcher.cancel_stream()
+    await dispatcher.stream_chunk(text="dropped")
+
+    assert sink.empty()
+
+
+async def test_stream_delivered_chunks_tracks_forwarded_chunks():
+    """Only chunks forwarded to the sink appear in _stream_delivered_chunks."""
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_sink = sink.put
+    await dispatcher.stream_start()
+    await dispatcher.stream_chunk(text="A")
+    await dispatcher.stream_chunk(text="B")
+    dispatcher.cancel_stream()
+    await dispatcher.stream_chunk(text="C")  # dropped
+
+    assert [c["text"] for c in dispatcher._stream_delivered_chunks] == ["A", "B"]
+
+
+async def test_acknowledge_heard_chunks_slices_delivered():
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_delivered_chunks = [
+        {"text": "A"},
+        {"text": "B"},
+        {"text": "C"},
+    ]
+    dispatcher.acknowledge_heard_chunks(last_heard_chunk_index=1)
+    assert dispatcher._stream_heard_chunks == [{"text": "A"}, {"text": "B"}]
+
+
+async def test_acknowledge_heard_chunks_nothing_heard():
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_delivered_chunks = [{"text": "A"}, {"text": "B"}]
+    dispatcher.acknowledge_heard_chunks(last_heard_chunk_index=-1)
+    assert dispatcher._stream_heard_chunks == []
+
+
+async def test_stream_end_cancelled_does_not_replay_chunks_via_utter_message():
+    """On the streaming path, stream_end() never calls utter_message() regardless
+    of cancellation state — the voice channel owns tracker storage for streamed
+    content, not rasa-sdk."""
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_sink = sink.put
+    await dispatcher.stream_start()
+    await dispatcher.stream_chunk(text="heard 1")
+    await dispatcher.stream_chunk(text="heard 2")
+    await dispatcher.stream_chunk(text="not heard")
+    dispatcher.acknowledge_heard_chunks(last_heard_chunk_index=1)
+    dispatcher.cancel_stream()
+    await dispatcher.stream_end()
+
+    assert dispatcher.messages == []  # nothing replayed; voice channel handles it
+
+
+async def test_stream_end_cancelled_without_ack_also_does_not_replay():
+    """Same as above: even without an ack, no utter_message() on streaming path."""
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_sink = sink.put
+    await dispatcher.stream_start()
+    await dispatcher.stream_chunk(text="delivered 1")
+    await dispatcher.stream_chunk(text="delivered 2")
+    dispatcher.cancel_stream()
+    await dispatcher.stream_end()
+
+    assert dispatcher.messages == []
+
+
+async def test_stream_start_resets_cancellation_state():
+    """A second stream_start() clears cancellation so a new sequence can begin."""
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_start()
+    dispatcher.cancel_stream()
+    dispatcher.acknowledge_heard_chunks(0)
+    assert dispatcher.is_streaming_cancelled
+    assert dispatcher._stream_heard_chunks is not None
+
+    await dispatcher.stream_start()  # second sequence begins
+    assert not dispatcher.is_streaming_cancelled
+    assert dispatcher._stream_heard_chunks is None
+    assert dispatcher._stream_delivered_chunks == []

@@ -3,6 +3,7 @@
 import grpc
 import warnings
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from rasa_sdk.grpc_py import action_webhook_pb2 as rasa__sdk_dot_grpc__py_dot_action__webhook__pb2
 
 GRPC_GENERATED_VERSION = '1.66.2'
@@ -44,6 +45,11 @@ class ActionServiceStub(object):
                 request_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookRequest.SerializeToString,
                 response_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookStreamEvent.FromString,
                 _registered_method=True)
+        self.AckStreamChunks = channel.unary_unary(
+                '/action_server_webhook.ActionService/AckStreamChunks',
+                request_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.StreamChunkAck.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
         self.Actions = channel.unary_unary(
                 '/action_server_webhook.ActionService/Actions',
                 request_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.ActionsRequest.SerializeToString,
@@ -61,6 +67,12 @@ class ActionServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def WebhookStream(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AckStreamChunks(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -84,6 +96,11 @@ def add_ActionServiceServicer_to_server(servicer, server):
                     servicer.WebhookStream,
                     request_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookRequest.FromString,
                     response_serializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookStreamEvent.SerializeToString,
+            ),
+            'AckStreamChunks': grpc.unary_unary_rpc_method_handler(
+                    servicer.AckStreamChunks,
+                    request_deserializer=rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.StreamChunkAck.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'Actions': grpc.unary_unary_rpc_method_handler(
                     servicer.Actions,
@@ -145,6 +162,33 @@ class ActionService(object):
             '/action_server_webhook.ActionService/WebhookStream',
             rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookRequest.SerializeToString,
             rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.WebhookStreamEvent.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def AckStreamChunks(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/action_server_webhook.ActionService/AckStreamChunks',
+            rasa__sdk_dot_grpc__py_dot_action__webhook__pb2.StreamChunkAck.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,

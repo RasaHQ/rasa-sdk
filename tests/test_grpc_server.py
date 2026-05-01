@@ -1,5 +1,5 @@
 import asyncio
-from typing import AsyncIterator, Callable, Dict, List, Union, Optional
+from typing import Any, AsyncIterator, Callable, Dict, List, Union, Optional
 from unittest.mock import MagicMock, AsyncMock
 
 import grpc
@@ -76,7 +76,12 @@ def mock_executor() -> AsyncMock:
 @pytest.fixture
 def mock_grpc_service_context() -> MagicMock:
     """Create a mock gRPC service context."""
-    return MagicMock(spec=grpc.aio.ServicerContext)
+    ctx = MagicMock(spec=grpc.aio.ServicerContext)
+    # cancelled() must return False (RPC still active) so happy-path tests do
+    # not accidentally trigger the barge-in path.  MagicMock would otherwise
+    # return a truthy Mock object, which would look like a cancellation.
+    ctx.cancelled = MagicMock(return_value=False)
+    return ctx
 
 
 @pytest.fixture
@@ -258,7 +263,9 @@ def _make_streaming_run(
     """Return an async side effect for `executor.run` that populates the sink."""
 
     async def _run(
-        action_call: Dict, sink: Optional[asyncio.Queue] = None
+        action_call: Dict,
+        sink: Optional[asyncio.Queue] = None,
+        **kwargs: Any,
     ) -> ActionExecutorRunResult:
         if sink is not None:
             for event in chunk_events:
@@ -278,7 +285,11 @@ def _make_error_run(exception: Exception) -> Callable:
     cover pre-action setup errors).
     """
 
-    async def _run(action_call: Dict, sink: Optional[asyncio.Queue] = None) -> None:
+    async def _run(
+        action_call: Dict,
+        sink: Optional[asyncio.Queue] = None,
+        **kwargs: Any,
+    ) -> None:
         if sink is not None:
             await sink.put({"event": "stream_error", "exception": exception})
         raise exception
@@ -607,3 +618,150 @@ async def test_webhook_stream_does_not_hang_on_unexpected_exception(
 
     mock_grpc_service_context.set_code.assert_called_once_with(grpc.StatusCode.INTERNAL)
     mock_grpc_service_context.set_details.assert_called_once_with(str(boom))
+
+
+# ---------------------------------------------------------------------------
+# WebhookStream — barge-in / AckStreamChunks
+# ---------------------------------------------------------------------------
+
+
+async def test_ack_stream_chunks_sets_heard_and_cancels_dispatcher(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    mock_grpc_service_context: MagicMock,
+) -> None:
+    """AckStreamChunks must look up the dispatcher by response_id, slice the
+    heard chunks, and set the cancelled flag so stream_chunk() is a no-op."""
+    from rasa_sdk.executor import CollectingDispatcher
+    from rasa_sdk.grpc_py import action_webhook_pb2
+
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_delivered_chunks = [
+        {"text": "A"},
+        {"text": "B"},
+        {"text": "C"},
+    ]
+    response_id = "test-response-id"
+    grpc_action_server_webhook._dispatcher_registry[response_id] = dispatcher
+
+    ack = action_webhook_pb2.StreamChunkAck(
+        response_id=response_id, last_heard_chunk_index=1
+    )
+    await grpc_action_server_webhook.AckStreamChunks(ack, mock_grpc_service_context)
+
+    assert dispatcher.is_streaming_cancelled
+    assert dispatcher._stream_heard_chunks == [{"text": "A"}, {"text": "B"}]
+
+
+async def test_ack_stream_chunks_unknown_response_id_logs_warning(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    mock_grpc_service_context: MagicMock,
+    caplog: Any,
+) -> None:
+    """AckStreamChunks with an unknown response_id must log a warning and
+    return Empty without raising."""
+    import logging
+    from rasa_sdk.grpc_py import action_webhook_pb2
+
+    ack = action_webhook_pb2.StreamChunkAck(
+        response_id="unknown-id", last_heard_chunk_index=0
+    )
+    with caplog.at_level(logging.WARNING, logger="rasa_sdk.grpc_server"):
+        result = await grpc_action_server_webhook.AckStreamChunks(
+            ack, mock_grpc_service_context
+        )
+
+    assert result is not None  # Empty proto
+    assert any("unknown-id" in r.message for r in caplog.records)
+
+
+async def test_webhook_stream_barge_in_yields_final_result_with_heard_chunks(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """Barge-in: WebhookStream yields exactly the delivered chunks, skips
+    cancelled chunks, and emits final_result (events only) after draining.
+
+    Timeline:
+      1. stream_start          → ChunkStart yielded to client
+      2. stream_chunk "heard"  → Chunk("heard") yielded; no cancellation yet
+      3. asyncio.sleep(0)      → event loop runs; consumer blocks on empty queue
+      4. AckStreamChunks (sim) → heard[0] recorded, dispatcher cancelled
+      5. stream_chunk "not heard" → action respects _stream_cancelled, skips enqueue
+      6. stream_end            → ChunkEnd yielded; cancellation detected → drain
+      7. stream_done           → drained; final_result yielded; loop ends
+    """
+
+    async def _barge_in_run(
+        action_call: Dict,
+        sink: Optional[asyncio.Queue] = None,
+        dispatcher: Any = None,
+        **kwargs: Any,
+    ) -> ActionExecutorRunResult:
+        """Simulates an action that sends two chunks;
+        barge-in cancels after the first."""
+        if sink is not None and dispatcher is not None:
+            await sink.put({"event": "stream_start"})
+            # Track as delivered (real stream_chunk() does this before enqueuing).
+            dispatcher._stream_delivered_chunks.append({"text": "heard"})
+            await sink.put({"event": "stream_chunk", "text": "heard"})
+
+            # Yield to the event loop so the consumer processes stream_start and
+            # stream_chunk("heard"), then blocks on an empty queue.
+            await asyncio.sleep(0)
+
+            # Simulate AckStreamChunks: record what was heard, then cancel.
+            dispatcher.acknowledge_heard_chunks(last_heard_chunk_index=0)
+            dispatcher.cancel_stream()
+
+            # Real CollectingDispatcher.stream_chunk() checks _stream_cancelled and
+            # returns early without enqueuing. Replicate that here.
+            if not dispatcher.is_streaming_cancelled:
+                await sink.put({"event": "stream_chunk", "text": "not heard"})
+
+            await sink.put({"event": "stream_end"})
+            await sink.put({"event": "stream_done", "result": executor_response})
+        return executor_response
+
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _barge_in_run
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    # ── Event sequence ──────────────────────────────────────────────────────
+    event_types = [e.WhichOneof("event") for e in events]
+    assert event_types == [
+        "chunk_start",
+        "chunk",
+        "chunk_end",
+        "final_result",
+    ], f"Unexpected event sequence: {event_types}"
+
+    # ── Consistent response_id across all streaming events ──────────────────
+    response_id = events[0].chunk_start.response_id
+    assert response_id, "response_id must be non-empty"
+    assert events[1].chunk.response_id == response_id
+    assert events[2].chunk_end.response_id == response_id
+
+    # ── Delivered chunk carries the expected text ────────────────────────────
+    assert events[1].chunk.text == "heard"
+
+    # ── "not heard" chunk was never enqueued and must be absent ─────────────
+    chunk_texts = [e.chunk.text for e in events if e.WhichOneof("event") == "chunk"]
+    assert "not heard" not in chunk_texts
+
+    # ── final_result carries Rasa events but no responses ───────────────────
+    # (the voice channel is responsible for recording heard responses to the
+    # tracker; the action server must not replay them here)
+    assert events[3].WhichOneof("event") != "error"
+    final = events[3].final_result
+    assert len(final.events) == len(executor_response.events)
+    assert (
+        MessageToDict(final.events[0])["event"] == executor_response.events[0]["event"]
+    )
