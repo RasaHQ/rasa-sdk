@@ -312,6 +312,12 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                             break
 
                     if event_type == "stream_start":
+                        # If the action calls stream_start() again without a
+                        # preceding stream_end() (a mid-sequence reset), the old
+                        # response_id would never be cleaned up — evict it now so
+                        # AckStreamChunks cannot target a completed sequence.
+                        if current_response_id:
+                            self._dispatcher_registry.pop(current_response_id, None)
                         current_response_id = uuid.uuid4().hex
                         self._dispatcher_registry[current_response_id] = dispatcher
                         yield action_webhook_pb2.WebhookStreamEvent(

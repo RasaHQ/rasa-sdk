@@ -452,6 +452,42 @@ async def test_webhook_stream_each_stream_start_gets_a_distinct_response_id(
     assert chunks[1].chunk.response_id == id_second
 
 
+async def test_webhook_stream_double_stream_start_evicts_old_registry_entry(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """When stream_start() is called twice without an intervening stream_end(),
+    the first response_id must be removed from the dispatcher registry before
+    the second sequence is registered.  Without this, AckStreamChunks could
+    target a stale (completed) response_id."""
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _make_streaming_run(
+        chunk_events=[
+            {"event": "stream_start"},
+            {"event": "stream_chunk", "text": "first"},
+            # No stream_end — action resets mid-sequence
+            {"event": "stream_start"},
+            {"event": "stream_chunk", "text": "second"},
+            {"event": "stream_end"},
+        ],
+        result=executor_response,
+    )
+
+    await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    # After the stream completes the registry must be empty — no stale entries.
+    assert (
+        grpc_action_server_webhook._dispatcher_registry == {}
+    ), "stale response_id left in registry after double stream_start"
+
+
 # ---------------------------------------------------------------------------
 # WebhookStream — rich chunk fields mapped to proto
 # ---------------------------------------------------------------------------
