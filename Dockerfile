@@ -24,7 +24,7 @@ RUN apt-get update -qq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://bootstrap.pypa.io/pip/26.1.1/get-pip.py -o /tmp/get-pip.py \
+RUN curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
     && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check --status \
     && python3 /tmp/get-pip.py \
     && rm -f -- /tmp/get-pip.py \
