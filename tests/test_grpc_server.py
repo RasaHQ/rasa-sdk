@@ -853,3 +853,47 @@ async def test_webhook_stream_context_cancel_breaks_promptly_without_final_resul
 
     # run_task must have been cancelled, not run to completion.
     assert not action_completed, "action must be cancelled, not run to completion"
+
+
+async def test_webhook_stream_context_cancel_at_stream_done_skips_final_result(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """If the client disconnects after all chunks are sent but before stream_done
+    is processed, WebhookStream must not yield final_result (the client is gone).
+
+    Timeline:
+      All non-terminal events are processed with context active.
+      context.cancelled() turns True exactly when stream_done is dequeued.
+    """
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _make_streaming_run(
+        chunk_events=[
+            {"event": "stream_start"},
+            {"event": "stream_chunk", "text": "only chunk"},
+            {"event": "stream_end"},
+        ],
+        result=executor_response,
+    )
+    # context.cancelled() is called once in the pre-yield guard for each
+    # non-terminal event (stream_start, stream_chunk, stream_end = 3 calls),
+    # then once inside the stream_done branch.  The first 3 return False
+    # (client still connected); the 4th returns True (client disconnected
+    # just before stream_done is processed).
+    mock_grpc_service_context.cancelled = MagicMock(
+        side_effect=[False, False, False, True]
+    )
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    event_types = [e.WhichOneof("event") for e in events]
+    assert (
+        "final_result" not in event_types
+    ), "final_result must not be sent to a disconnected client"

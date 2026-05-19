@@ -236,9 +236,9 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
             action_name = action_call.get("next_action", "")
             sink: asyncio.Queue = asyncio.Queue()
 
-            # Pre-construct the dispatcher so we can register it in the
-            # cancellation registry before the action starts running and before
-            # any stream_start event arrives.
+            # Pre-construct the dispatcher so it is ready to be stored in the
+            # cancellation registry once a response_id is available after
+            # consuming the stream_start event.
             dispatcher = CollectingDispatcher()
 
             async def _run() -> None:
@@ -335,17 +335,25 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                             )
                         )
                     elif event_type == "stream_done":
-                        final_event = _build_final_result_event(chunk.get("result"))
-                        if final_event:
-                            yield final_event
-                        _set_grpc_span_attributes(
-                            span, action_call, method_name="WebhookStream"
-                        )
+                        # Skip final_result if the client has disconnected —
+                        # sending on a cancelled RPC is wasteful and may raise.
+                        # The barge-in path (dispatcher.is_streaming_cancelled)
+                        # never reaches here: stream_done is consumed by
+                        # _drain_to_terminal in that path.
+                        if not context.cancelled():
+                            final_event = _build_final_result_event(chunk.get("result"))
+                            if final_event:
+                                yield final_event
+                            _set_grpc_span_attributes(
+                                span, action_call, method_name="WebhookStream"
+                            )
                         break
                     elif event_type == "stream_error":
-                        yield _handle_stream_error_event(
-                            chunk.get("exception"), action_name, context
-                        )
+                        # Same guard: don't attempt to send an error on a dead RPC.
+                        if not context.cancelled():
+                            yield _handle_stream_error_event(
+                                chunk.get("exception"), action_name, context
+                            )
                         break
 
             finally:
@@ -393,8 +401,6 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         Returns:
             ``google.protobuf.Empty``.
         """
-        from google.protobuf.empty_pb2 import Empty
-
         dispatcher = self._dispatcher_registry.get(request.response_id)
         if dispatcher is not None:
             dispatcher.cancel_stream()
@@ -404,7 +410,7 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                 f"response_id='{request.response_id}'. The ack may have arrived "
                 "after stream_end or the response_id is incorrect."
             )
-        return Empty()
+        return empty_pb2.Empty()
 
 
 async def _drain_to_terminal(
