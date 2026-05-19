@@ -680,8 +680,12 @@ async def test_webhook_stream_barge_in_yields_final_result_after_cancel(
       3. asyncio.sleep(0)         → event loop runs; consumer blocks on empty queue
       4. AckStreamChunks (sim)    → dispatcher cancelled
       5. stream_chunk "cancelled" → action respects _stream_cancelled, skips enqueue
-      6. stream_end               → ChunkEnd yielded; cancellation detected → drain
+      6. stream_end               → pre-yield guard fires; cancellation detected → drain
       7. stream_done              → drained; final_result yielded; loop ends
+
+    Note: ChunkEnd is NOT yielded because the pre-yield cancellation guard
+    intercepts stream_end before it is forwarded.  final_result is the terminal
+    signal; ChunkEnd would be redundant after a barge-in.
     """
 
     async def _barge_in_run(
@@ -726,15 +730,13 @@ async def test_webhook_stream_barge_in_yields_final_result_after_cancel(
     assert event_types == [
         "chunk_start",
         "chunk",
-        "chunk_end",
         "final_result",
     ], f"Unexpected event sequence: {event_types}"
 
-    # ── Consistent response_id across all streaming events ──────────────────
+    # ── Consistent response_id across streaming events ───────────────────────
     response_id = events[0].chunk_start.response_id
     assert response_id, "response_id must be non-empty"
     assert events[1].chunk.response_id == response_id
-    assert events[2].chunk_end.response_id == response_id
 
     # ── Delivered chunk carries the expected text ────────────────────────────
     assert events[1].chunk.text == "delivered"
@@ -744,8 +746,8 @@ async def test_webhook_stream_barge_in_yields_final_result_after_cancel(
     assert "cancelled" not in chunk_texts
 
     # ── final_result carries Rasa events but no responses ───────────────────
-    assert events[3].WhichOneof("event") != "error"
-    final = events[3].final_result
+    assert events[2].WhichOneof("event") != "error"
+    final = events[2].final_result
     assert len(final.events) == len(executor_response.events)
     assert (
         MessageToDict(final.events[0])["event"] == executor_response.events[0]["event"]
@@ -778,6 +780,7 @@ async def test_webhook_stream_context_cancel_breaks_promptly_without_final_resul
         if sink is not None:
             await sink.put({"event": "stream_start"})
             await sink.put({"event": "stream_chunk", "text": "chunk"})
+            await sink.put({"event": "stream_chunk", "text": "chunk_2"})
             # Simulate a long-running action; the task must be cancelled before
             # this sleep completes.
             await asyncio.sleep(10)
@@ -787,9 +790,14 @@ async def test_webhook_stream_context_cancel_breaks_promptly_without_final_resul
 
     mock_executor.run.side_effect = _slow_run
     mock_grpc_service_context.invocation_metadata.return_value = []
-    # Simulate a client disconnect that arrives after the first chunk is
-    # delivered: False on the ChunkStart check, True on the Chunk check.
-    mock_grpc_service_context.cancelled = MagicMock(side_effect=[False, True])
+    # Simulate a client disconnect that arrives while a stream_chunk is
+    # already waiting in the queue:
+    #   call 1 — post-yield check after ChunkStart  → False (still connected)
+    #   call 2 — post-yield check on stream_chunk    → False (still connected)
+    #   call 3 — pre-yield guard on stream_chunk    → True  (now disconnected)
+    # With the pre-yield guard the chunk is discarded without being sent,
+    # closing the race window where one extra chunk could leak post-disconnect.
+    mock_grpc_service_context.cancelled = MagicMock(side_effect=[False, False, True])
 
     events = await _collect_stream(
         grpc_action_server_webhook.WebhookStream(

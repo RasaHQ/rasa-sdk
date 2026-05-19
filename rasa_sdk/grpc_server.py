@@ -10,6 +10,8 @@ import grpc
 import logging
 from typing import AsyncIterator, Optional, Any, Dict
 from concurrent import futures
+
+from google.protobuf import empty_pb2
 from grpc import aio
 from grpc_health.v1 import health
 from grpc_health.v1 import health_pb2
@@ -283,6 +285,32 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                     chunk = await sink.get()
                     event_type = chunk.get("event")
 
+                    # Pre-yield cancellation guard.  Checked immediately after
+                    # sink.get() so no already-queued event is forwarded to the
+                    # client once cancellation is detected.  Terminal events
+                    # (stream_done / stream_error) are exempt: intercepting them
+                    # here would cause _drain_to_terminal to await a second
+                    # terminal event on an already-empty queue and hang.
+                    if event_type not in ("stream_done", "stream_error"):
+                        if dispatcher.is_streaming_cancelled:
+                            # Explicit barge-in via AckStreamChunks: the client is
+                            # still connected and expects a final_result so it can
+                            # update the tracker.  Drain the queue, discard in-flight
+                            # chunk events, yield final_result, then wait for the
+                            # action to finish naturally in the finally block.
+                            graceful_cancel = True
+                            async for event in _drain_to_terminal(
+                                sink, action_name, span, action_call, context
+                            ):
+                                yield event
+                            break
+                        elif context.cancelled():
+                            # Client disconnected / network drop: the final_result
+                            # cannot be delivered, so there is no value in letting
+                            # the action run to completion.  Break immediately and
+                            # let the finally block cancel run_task promptly.
+                            break
+
                     if event_type == "stream_start":
                         current_response_id = uuid.uuid4().hex
                         self._dispatcher_registry[current_response_id] = dispatcher
@@ -314,26 +342,6 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                         )
                         break
 
-                    # Check for barge-in / disconnect after every yielded event.
-                    if dispatcher.is_streaming_cancelled:
-                        # Explicit barge-in via AckStreamChunks: the client is
-                        # still connected and expects a final_result so it can
-                        # update the tracker.  Drain the queue, discard in-flight
-                        # chunk events, yield final_result, then wait for the
-                        # action to finish naturally in the finally block.
-                        graceful_cancel = True
-                        async for event in _drain_to_terminal(
-                            sink, action_name, span, action_call, context
-                        ):
-                            yield event
-                        break
-                    elif context.cancelled():
-                        # Client disconnected / network drop: the final_result
-                        # cannot be delivered, so there is no value in letting
-                        # the action run to completion.  Break immediately and
-                        # let the finally block cancel run_task promptly.
-                        break
-
             finally:
                 # Always clean up the registry entry.
                 self._dispatcher_registry.pop(current_response_id, None)
@@ -353,7 +361,7 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         self,
         request: action_webhook_pb2.StreamChunkAck,
         context: grpc.aio.ServicerContext,
-    ) -> Any:
+    ) -> empty_pb2.Empty:
         """Handle a barge-in acknowledgement from the voice channel.
 
         The voice channel calls this RPC when the user interrupts the

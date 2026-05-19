@@ -122,9 +122,13 @@ class CollectingDispatcher:
         Once called, subsequent :meth:`stream_chunk` calls are silently
         dropped.
 
-        This method is called by the transport layer (e.g. the gRPC server on
-        receipt of a :class:`StreamChunkAck` or on gRPC context cancellation);
-        action authors do not need to call it directly.
+        This method is called by the transport layer when it explicitly
+         signals a streaming interruption (for example, on receipt of a
+         :class:`StreamChunkAck`). Transport-level task cancellation may stop
+         the action without calling this method, so
+         :attr:`is_streaming_cancelled` is only guaranteed to be ``True`` after
+         :meth:`cancel_stream` itself has been invoked; action authors do not
+         need to call it directly.
         """
         self._stream_cancelled = True
 
