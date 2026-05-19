@@ -273,9 +273,7 @@ class CollectingDispatcher:
         if self._stream_sink is not None:
             await self._stream_sink({"event": "stream_end"})
             # On streaming transports the chunks were already delivered
-            # in-band as they were produced.  The voice channel (or whatever
-            # streaming consumer) is responsible for recording what the user
-            # actually heard to the tracker — rasa-sdk must not replay them
+            # in-band as they were produced — rasa-sdk must not replay them
             # via utter_message() or they would appear twice in final_result
             # and risk being spoken again.
         else:

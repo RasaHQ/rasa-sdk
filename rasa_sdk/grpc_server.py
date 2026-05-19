@@ -314,22 +314,24 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                         )
                         break
 
-                    # Check for barge-in after every yielded event.
-                    # AckStreamChunks sets _stream_cancelled before the client
-                    # cancels the RPC, so we detect it here and drain the queue
-                    # until the action completes, then yield final_result.
-                    # A bare context cancellation (network drop, etc.) is also
-                    # caught via context.cancelled().
-                    if dispatcher.is_streaming_cancelled or context.cancelled():
-                        dispatcher.cancel_stream()
+                    # Check for barge-in / disconnect after every yielded event.
+                    if dispatcher.is_streaming_cancelled:
+                        # Explicit barge-in via AckStreamChunks: the client is
+                        # still connected and expects a final_result so it can
+                        # update the tracker.  Drain the queue, discard in-flight
+                        # chunk events, yield final_result, then wait for the
+                        # action to finish naturally in the finally block.
                         graceful_cancel = True
-                        # Drain the queue; discard in-flight chunk events; yield
-                        # final_result (Rasa events only) so Rasa-Pro can update
-                        # the tracker correctly.
                         async for event in _drain_to_terminal(
                             sink, action_name, span, action_call, context
                         ):
                             yield event
+                        break
+                    elif context.cancelled():
+                        # Client disconnected / network drop: the final_result
+                        # cannot be delivered, so there is no value in letting
+                        # the action run to completion.  Break immediately and
+                        # let the finally block cancel run_task promptly.
                         break
 
             finally:

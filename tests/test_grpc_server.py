@@ -750,3 +750,62 @@ async def test_webhook_stream_barge_in_yields_final_result_after_cancel(
     assert (
         MessageToDict(final.events[0])["event"] == executor_response.events[0]["event"]
     )
+
+
+async def test_webhook_stream_context_cancel_breaks_promptly_without_final_result(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """When the gRPC context is cancelled (client disconnect / network drop),
+    WebhookStream must break out of the consumer loop immediately, cancel
+    run_task promptly, and NOT yield final_result.
+
+    This is distinct from a barge-in (AckStreamChunks): the client is gone so
+    there is no point waiting for the action to finish or delivering a result.
+    """
+    action_completed = False
+
+    async def _slow_run(
+        action_call: Dict,
+        sink: Optional[asyncio.Queue] = None,
+        dispatcher: Any = None,
+        **kwargs: Any,
+    ) -> ActionExecutorRunResult:
+        nonlocal action_completed
+        if sink is not None:
+            await sink.put({"event": "stream_start"})
+            await sink.put({"event": "stream_chunk", "text": "chunk"})
+            # Simulate a long-running action; the task must be cancelled before
+            # this sleep completes.
+            await asyncio.sleep(10)
+            action_completed = True  # must never be reached
+            await sink.put({"event": "stream_done", "result": executor_response})
+        return executor_response
+
+    mock_executor.run.side_effect = _slow_run
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    # Simulate a client disconnect that arrives after the first chunk is
+    # delivered: False on the ChunkStart check, True on the Chunk check.
+    mock_grpc_service_context.cancelled = MagicMock(side_effect=[False, True])
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    # ChunkStart and the first Chunk are yielded before the disconnect is
+    # detected; nothing after that (no final_result).
+    event_types = [e.WhichOneof("event") for e in events]
+    assert event_types == [
+        "chunk_start",
+        "chunk",
+    ], f"Unexpected event sequence: {event_types}"
+    assert events[1].chunk.text == "chunk"
+    assert "final_result" not in event_types
+
+    # run_task must have been cancelled, not run to completion.
+    assert not action_completed, "action must be cancelled, not run to completion"
