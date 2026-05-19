@@ -879,7 +879,7 @@ async def test_executor_auto_close_logs_warning(
 
 
 # ---------------------------------------------------------------------------
-# Cancellation / barge-in: cancel_stream, acknowledge_heard_chunks, stream_end
+# Cancellation / barge-in: cancel_stream, stream_end
 # ---------------------------------------------------------------------------
 
 
@@ -929,24 +929,6 @@ async def test_stream_delivered_chunks_tracks_forwarded_chunks():
     assert [c["text"] for c in dispatcher._stream_delivered_chunks] == ["A", "B"]
 
 
-async def test_acknowledge_heard_chunks_slices_delivered():
-    dispatcher = CollectingDispatcher()
-    dispatcher._stream_delivered_chunks = [
-        {"text": "A"},
-        {"text": "B"},
-        {"text": "C"},
-    ]
-    dispatcher.acknowledge_heard_chunks(last_heard_chunk_index=1)
-    assert dispatcher._stream_heard_chunks == [{"text": "A"}, {"text": "B"}]
-
-
-async def test_acknowledge_heard_chunks_nothing_heard():
-    dispatcher = CollectingDispatcher()
-    dispatcher._stream_delivered_chunks = [{"text": "A"}, {"text": "B"}]
-    dispatcher.acknowledge_heard_chunks(last_heard_chunk_index=-1)
-    assert dispatcher._stream_heard_chunks == []
-
-
 async def test_stream_end_cancelled_does_not_replay_chunks_via_utter_message():
     """On the streaming path, stream_end() never calls utter_message() regardless
     of cancellation state — the voice channel owns tracker storage for streamed
@@ -955,28 +937,12 @@ async def test_stream_end_cancelled_does_not_replay_chunks_via_utter_message():
     dispatcher = CollectingDispatcher()
     dispatcher._stream_sink = sink.put
     await dispatcher.stream_start()
-    await dispatcher.stream_chunk(text="heard 1")
-    await dispatcher.stream_chunk(text="heard 2")
-    await dispatcher.stream_chunk(text="not heard")
-    dispatcher.acknowledge_heard_chunks(last_heard_chunk_index=1)
+    await dispatcher.stream_chunk(text="chunk 1")
+    await dispatcher.stream_chunk(text="chunk 2")
     dispatcher.cancel_stream()
     await dispatcher.stream_end()
 
     assert dispatcher.messages == []  # nothing replayed; voice channel handles it
-
-
-async def test_stream_end_cancelled_without_ack_also_does_not_replay():
-    """Same as above: even without an ack, no utter_message() on streaming path."""
-    sink: asyncio.Queue = asyncio.Queue()
-    dispatcher = CollectingDispatcher()
-    dispatcher._stream_sink = sink.put
-    await dispatcher.stream_start()
-    await dispatcher.stream_chunk(text="delivered 1")
-    await dispatcher.stream_chunk(text="delivered 2")
-    dispatcher.cancel_stream()
-    await dispatcher.stream_end()
-
-    assert dispatcher.messages == []
 
 
 async def test_stream_start_resets_cancellation_state():
@@ -984,11 +950,8 @@ async def test_stream_start_resets_cancellation_state():
     dispatcher = CollectingDispatcher()
     await dispatcher.stream_start()
     dispatcher.cancel_stream()
-    dispatcher.acknowledge_heard_chunks(0)
     assert dispatcher.is_streaming_cancelled
-    assert dispatcher._stream_heard_chunks is not None
 
     await dispatcher.stream_start()  # second sequence begins
     assert not dispatcher.is_streaming_cancelled
-    assert dispatcher._stream_heard_chunks is None
     assert dispatcher._stream_delivered_chunks == []

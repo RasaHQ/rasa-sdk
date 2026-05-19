@@ -60,12 +60,10 @@ class StreamError(_message.Message):
     def __init__(self, action_name: _Optional[str] = ..., message: _Optional[str] = ...) -> None: ...
 
 class StreamChunkAck(_message.Message):
-    __slots__ = ("response_id", "last_heard_chunk_index")
+    __slots__ = ("response_id",)
     RESPONSE_ID_FIELD_NUMBER: _ClassVar[int]
-    LAST_HEARD_CHUNK_INDEX_FIELD_NUMBER: _ClassVar[int]
     response_id: str
-    last_heard_chunk_index: int
-    def __init__(self, response_id: _Optional[str] = ..., last_heard_chunk_index: _Optional[int] = ...) -> None: ...
+    def __init__(self, response_id: _Optional[str] = ...) -> None: ...
 
 class ActionsRequest(_message.Message):
     __slots__ = ()

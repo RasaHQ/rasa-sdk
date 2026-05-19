@@ -625,31 +625,23 @@ async def test_webhook_stream_does_not_hang_on_unexpected_exception(
 # ---------------------------------------------------------------------------
 
 
-async def test_ack_stream_chunks_sets_heard_and_cancels_dispatcher(
+async def test_ack_stream_chunks_cancels_dispatcher(
     grpc_action_server_webhook: GRPCActionServerWebhook,
     mock_grpc_service_context: MagicMock,
 ) -> None:
-    """AckStreamChunks must look up the dispatcher by response_id, slice the
-    heard chunks, and set the cancelled flag so stream_chunk() is a no-op."""
+    """AckStreamChunks must look up the dispatcher by response_id and set the
+    cancelled flag so subsequent stream_chunk() calls are a no-op."""
     from rasa_sdk.executor import CollectingDispatcher
     from rasa_sdk.grpc_py import action_webhook_pb2
 
     dispatcher = CollectingDispatcher()
-    dispatcher._stream_delivered_chunks = [
-        {"text": "A"},
-        {"text": "B"},
-        {"text": "C"},
-    ]
     response_id = "test-response-id"
     grpc_action_server_webhook._dispatcher_registry[response_id] = dispatcher
 
-    ack = action_webhook_pb2.StreamChunkAck(
-        response_id=response_id, last_heard_chunk_index=1
-    )
+    ack = action_webhook_pb2.StreamChunkAck(response_id=response_id)
     await grpc_action_server_webhook.AckStreamChunks(ack, mock_grpc_service_context)
 
     assert dispatcher.is_streaming_cancelled
-    assert dispatcher._stream_heard_chunks == [{"text": "A"}, {"text": "B"}]
 
 
 async def test_ack_stream_chunks_unknown_response_id_logs_warning(
@@ -662,9 +654,7 @@ async def test_ack_stream_chunks_unknown_response_id_logs_warning(
     import logging
     from rasa_sdk.grpc_py import action_webhook_pb2
 
-    ack = action_webhook_pb2.StreamChunkAck(
-        response_id="unknown-id", last_heard_chunk_index=0
-    )
+    ack = action_webhook_pb2.StreamChunkAck(response_id="unknown-id")
     with caplog.at_level(logging.WARNING, logger="rasa_sdk.grpc_server"):
         result = await grpc_action_server_webhook.AckStreamChunks(
             ack, mock_grpc_service_context
@@ -674,24 +664,24 @@ async def test_ack_stream_chunks_unknown_response_id_logs_warning(
     assert any("unknown-id" in r.message for r in caplog.records)
 
 
-async def test_webhook_stream_barge_in_yields_final_result_with_heard_chunks(
+async def test_webhook_stream_barge_in_yields_final_result_after_cancel(
     grpc_action_server_webhook: GRPCActionServerWebhook,
     grpc_webhook_request: action_webhook_pb2.WebhookRequest,
     mock_executor: AsyncMock,
     mock_grpc_service_context: MagicMock,
     executor_response: ActionExecutorRunResult,
 ) -> None:
-    """Barge-in: WebhookStream yields exactly the delivered chunks, skips
-    cancelled chunks, and emits final_result (events only) after draining.
+    """Barge-in: WebhookStream yields the delivered chunk, skips the cancelled
+    chunk, and emits final_result (events only) after draining.
 
     Timeline:
-      1. stream_start          → ChunkStart yielded to client
-      2. stream_chunk "heard"  → Chunk("heard") yielded; no cancellation yet
-      3. asyncio.sleep(0)      → event loop runs; consumer blocks on empty queue
-      4. AckStreamChunks (sim) → heard[0] recorded, dispatcher cancelled
-      5. stream_chunk "not heard" → action respects _stream_cancelled, skips enqueue
-      6. stream_end            → ChunkEnd yielded; cancellation detected → drain
-      7. stream_done           → drained; final_result yielded; loop ends
+      1. stream_start             → ChunkStart yielded to client
+      2. stream_chunk "delivered" → Chunk yielded; no cancellation yet
+      3. asyncio.sleep(0)         → event loop runs; consumer blocks on empty queue
+      4. AckStreamChunks (sim)    → dispatcher cancelled
+      5. stream_chunk "cancelled" → action respects _stream_cancelled, skips enqueue
+      6. stream_end               → ChunkEnd yielded; cancellation detected → drain
+      7. stream_done              → drained; final_result yielded; loop ends
     """
 
     async def _barge_in_run(
@@ -705,21 +695,20 @@ async def test_webhook_stream_barge_in_yields_final_result_with_heard_chunks(
         if sink is not None and dispatcher is not None:
             await sink.put({"event": "stream_start"})
             # Track as delivered (real stream_chunk() does this before enqueuing).
-            dispatcher._stream_delivered_chunks.append({"text": "heard"})
-            await sink.put({"event": "stream_chunk", "text": "heard"})
+            dispatcher._stream_delivered_chunks.append({"text": "delivered"})
+            await sink.put({"event": "stream_chunk", "text": "delivered"})
 
             # Yield to the event loop so the consumer processes stream_start and
-            # stream_chunk("heard"), then blocks on an empty queue.
+            # stream_chunk("delivered"), then blocks on an empty queue.
             await asyncio.sleep(0)
 
-            # Simulate AckStreamChunks: record what was heard, then cancel.
-            dispatcher.acknowledge_heard_chunks(last_heard_chunk_index=0)
+            # Simulate AckStreamChunks arriving: cancel the stream.
             dispatcher.cancel_stream()
 
             # Real CollectingDispatcher.stream_chunk() checks _stream_cancelled and
             # returns early without enqueuing. Replicate that here.
-            if not dispatcher.is_streaming_cancelled:
-                await sink.put({"event": "stream_chunk", "text": "not heard"})
+            if not dispatcher.is_streaming_cancelled:  # pragma: no cover
+                await sink.put({"event": "stream_chunk", "text": "cancelled"})
 
             await sink.put({"event": "stream_end"})
             await sink.put({"event": "stream_done", "result": executor_response})
@@ -750,15 +739,13 @@ async def test_webhook_stream_barge_in_yields_final_result_with_heard_chunks(
     assert events[2].chunk_end.response_id == response_id
 
     # ── Delivered chunk carries the expected text ────────────────────────────
-    assert events[1].chunk.text == "heard"
+    assert events[1].chunk.text == "delivered"
 
-    # ── "not heard" chunk was never enqueued and must be absent ─────────────
+    # ── Cancelled chunk was never enqueued and must be absent ───────────────
     chunk_texts = [e.chunk.text for e in events if e.WhichOneof("event") == "chunk"]
-    assert "not heard" not in chunk_texts
+    assert "cancelled" not in chunk_texts
 
     # ── final_result carries Rasa events but no responses ───────────────────
-    # (the voice channel is responsible for recording heard responses to the
-    # tracker; the action server must not replay them here)
     assert events[3].WhichOneof("event") != "error"
     final = events[3].final_result
     assert len(final.events) == len(executor_response.events)

@@ -356,26 +356,22 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
 
         The voice channel calls this RPC when the user interrupts the
         assistant.  It supplies the ``response_id`` of the active streaming
-        response and the index of the last chunk the user actually heard.
+        response.
 
         The handler:
 
         1. Looks up the active :class:`CollectingDispatcher` for that
            ``response_id`` in the registry.
-        2. Calls :meth:`~CollectingDispatcher.acknowledge_heard_chunks` so that
-           :meth:`~CollectingDispatcher.stream_end` will record only the heard
-           chunks to the tracker.
-        3. Calls :meth:`~CollectingDispatcher.cancel_stream` to stop the action
+        2. Calls :meth:`~CollectingDispatcher.cancel_stream` to stop the action
            from producing further chunks.
 
         The ``WebhookStream`` consumer loop detects the cancellation flag on the
         next iteration and performs a graceful drain: it waits for the action to
-        finish, then yields ``final_result`` (containing the heard responses and
-        all Rasa events) to the client.
+        finish, then yields ``final_result`` (containing all Rasa events) to the
+        client.
 
         Args:
-            request: The acknowledgement request carrying ``response_id`` and
-                ``last_heard_chunk_index``.
+            request: The acknowledgement request carrying ``response_id``.
             context: The gRPC context (unused but required by the servicer API).
 
         Returns:
@@ -385,8 +381,6 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
 
         dispatcher = self._dispatcher_registry.get(request.response_id)
         if dispatcher is not None:
-            if request.HasField("last_heard_chunk_index"):
-                dispatcher.acknowledge_heard_chunks(request.last_heard_chunk_index)
             dispatcher.cancel_stream()
         else:
             logger.warning(

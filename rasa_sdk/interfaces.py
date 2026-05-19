@@ -401,18 +401,20 @@ class ActionNotFoundException(Exception):
         return self.message
 
 
+ACTION_MISSING_DOMAIN_DEFAULT_MESSAGE = (
+    "Missing domain context, assistant will retry the request and include "
+    "the domain in the request payload. For more information please see "
+    "https://rasa.com/docs/action-server/"
+)
+
+
 class ActionMissingDomainException(Exception):
     """Raising this exception when the domain is missing."""
 
     def __init__(self, action_name: Text, message: Optional[Text] = None) -> None:
         """Create an exception for when the domain is missing."""
         self.action_name = action_name
-        self.message = (
-            message
-            or "Missing domain context, assistant will retry the request and include "
-            "the domain in the request payload. For more information please see "
-            "https://rasa.com/docs/action-server/"
-        )
+        self.message = message or ACTION_MISSING_DOMAIN_DEFAULT_MESSAGE
 
     def __str__(self) -> Text:
         """Return the string representation of the exception."""
