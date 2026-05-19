@@ -894,11 +894,13 @@ async def test_stream_chunk_dropped_after_cancel():
     """Chunks emitted after cancel_stream() are silently ignored."""
     dispatcher = CollectingDispatcher()
     await dispatcher.stream_start()
-    await dispatcher.stream_chunk(text="before")
+    await dispatcher.stream_chunk(text="before cancel")
     dispatcher.cancel_stream()
-    await dispatcher.stream_chunk(text="after cancel")
+    await dispatcher.stream_chunk(text="after cancel")  # must be dropped
 
-    assert dispatcher._stream_accumulated_chunks == [{"text": "before"}]
+    accumulated_texts = [c["text"] for c in dispatcher._stream_accumulated_chunks]
+    assert "before cancel" in accumulated_texts
+    assert "after cancel" not in accumulated_texts
 
 
 async def test_stream_chunk_does_not_forward_to_sink_after_cancel():
@@ -908,25 +910,14 @@ async def test_stream_chunk_does_not_forward_to_sink_after_cancel():
     await dispatcher.stream_start()
     await sink.get()  # consume stream_start
     await dispatcher.stream_chunk(text="sent")
-    await sink.get()  # consume stream_chunk
+    sent_event = await sink.get()  # consume stream_chunk
     dispatcher.cancel_stream()
-    await dispatcher.stream_chunk(text="dropped")
+    await dispatcher.stream_chunk(text="dropped")  # must not reach sink
 
-    assert sink.empty()
-
-
-async def test_stream_delivered_chunks_tracks_forwarded_chunks():
-    """Only chunks forwarded to the sink appear in _stream_delivered_chunks."""
-    sink: asyncio.Queue = asyncio.Queue()
-    dispatcher = CollectingDispatcher()
-    dispatcher._stream_sink = sink.put
-    await dispatcher.stream_start()
-    await dispatcher.stream_chunk(text="A")
-    await dispatcher.stream_chunk(text="B")
-    dispatcher.cancel_stream()
-    await dispatcher.stream_chunk(text="C")  # dropped
-
-    assert [c["text"] for c in dispatcher._stream_delivered_chunks] == ["A", "B"]
+    assert sink.empty(), "cancelled chunk must not be forwarded to the sink"
+    assert sent_event.get("text") == "sent"
+    accumulated_texts = [c["text"] for c in dispatcher._stream_accumulated_chunks]
+    assert "dropped" not in accumulated_texts
 
 
 async def test_stream_end_cancelled_does_not_replay_chunks_via_utter_message():
@@ -954,4 +945,3 @@ async def test_stream_start_resets_cancellation_state():
 
     await dispatcher.stream_start()  # second sequence begins
     assert not dispatcher.is_streaming_cancelled
-    assert dispatcher._stream_delivered_chunks == []

@@ -85,9 +85,6 @@ class CollectingDispatcher:
         # Set to True by cancel_stream() when the user interrupts (barge-in).
         # stream_chunk() checks this flag and silently drops late chunks.
         self._stream_cancelled: bool = False
-        # Chunks that have been forwarded to the sink (sent to the client).
-        # Only populated when _stream_sink is not None.
-        self._stream_delivered_chunks: List[Dict[Text, Any]] = []
 
     @property
     def is_streaming_active(self) -> bool:
@@ -172,7 +169,6 @@ class CollectingDispatcher:
         sink.  Call this before any :meth:`stream_chunk` calls.
         """
         self._stream_accumulated_chunks = []
-        self._stream_delivered_chunks = []
         self._stream_cancelled = False
         self._stream_active = True
         if self._stream_sink is not None:
@@ -261,7 +257,6 @@ class CollectingDispatcher:
 
         self._stream_accumulated_chunks.append(payload)
         if self._stream_sink is not None:
-            self._stream_delivered_chunks.append(payload)
             await self._stream_sink({"event": "stream_chunk", **payload})
 
     async def stream_end(self) -> None:

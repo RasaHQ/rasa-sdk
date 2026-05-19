@@ -694,8 +694,6 @@ async def test_webhook_stream_barge_in_yields_final_result_after_cancel(
         barge-in cancels after the first."""
         if sink is not None and dispatcher is not None:
             await sink.put({"event": "stream_start"})
-            # Track as delivered (real stream_chunk() does this before enqueuing).
-            dispatcher._stream_delivered_chunks.append({"text": "delivered"})
             await sink.put({"event": "stream_chunk", "text": "delivered"})
 
             # Yield to the event loop so the consumer processes stream_start and

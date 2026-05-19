@@ -338,8 +338,8 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                 if not run_task.done():
                     if graceful_cancel:
                         # Barge-in: wait for the action to finish naturally so
-                        # stream_end() writes the correct heard chunks to
-                        # dispatcher.messages before the result is discarded.
+                        # stream_end() and any return events are processed
+                        # before the result is discarded.
                         with contextlib.suppress(Exception):
                             await run_task
                     else:
