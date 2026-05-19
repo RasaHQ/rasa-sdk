@@ -1,7 +1,7 @@
 # Keep this in sync with the version pinned in poetry.lock
 ARG SETUPTOOLS_VERSION=82.0.1
 # Recompute with: curl -fsSL https://bootstrap.pypa.io/get-pip.py | sha256sum
-ARG GET_PIP_SHA256=106ae019e371c7d8cb3699c75607a9b7a4d31e2b95c575362c8bcfe3d41353fd
+ARG GET_PIP_SHA256=66904bccb878e363db6236ea900e6935e507dcb887e9f178f6212edfe7f46a76
 
 FROM ubuntu:22.04 AS base
 
@@ -24,7 +24,7 @@ RUN apt-get update -qq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
+RUN curl -fsSL https://bootstrap.pypa.io/pip/26.1.1/get-pip.py -o /tmp/get-pip.py \
     && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check --status \
     && python3 /tmp/get-pip.py \
     && rm -f -- /tmp/get-pip.py \
