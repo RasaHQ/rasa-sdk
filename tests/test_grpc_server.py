@@ -680,24 +680,27 @@ async def test_ack_stream_chunks_cancels_dispatcher(
     assert dispatcher.is_streaming_cancelled
 
 
-async def test_ack_stream_chunks_unknown_response_id_logs_warning(
+async def test_ack_stream_chunks_unknown_response_id_logs_debug(
     grpc_action_server_webhook: GRPCActionServerWebhook,
     mock_grpc_service_context: MagicMock,
     caplog: Any,
 ) -> None:
-    """AckStreamChunks with an unknown response_id must log a warning and
-    return Empty without raising."""
+    """AckStreamChunks with an unknown response_id must log at DEBUG (it is a
+    normal race condition when the ack arrives after stream_end) and return
+    Empty without raising."""
     import logging
     from rasa_sdk.grpc_py import action_webhook_pb2
 
     ack = action_webhook_pb2.StreamChunkAck(response_id="unknown-id")
-    with caplog.at_level(logging.WARNING, logger="rasa_sdk.grpc_server"):
+    with caplog.at_level(logging.DEBUG, logger="rasa_sdk.grpc_server"):
         result = await grpc_action_server_webhook.AckStreamChunks(
             ack, mock_grpc_service_context
         )
 
     assert result is not None  # Empty proto
-    assert any("unknown-id" in r.message for r in caplog.records)
+    matching = [r for r in caplog.records if "unknown-id" in r.message]
+    assert matching, "expected a log record mentioning the unknown response_id"
+    assert all(r.levelno == logging.DEBUG for r in matching)
 
 
 async def test_webhook_stream_barge_in_yields_final_result_after_cancel(

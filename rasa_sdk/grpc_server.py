@@ -405,10 +405,10 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         if dispatcher is not None:
             dispatcher.cancel_stream()
         else:
-            logger.warning(
+            logger.debug(
                 f"AckStreamChunks: no active stream found for "
-                f"response_id='{request.response_id}'. The ack may have arrived "
-                "after stream_end or the response_id is incorrect."
+                f"response_id='{request.response_id}'. This is normal when the "
+                "action finished streaming before the barge-in ack arrived."
             )
         return empty_pb2.Empty()
 
