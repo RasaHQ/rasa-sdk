@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import Any, AsyncIterator, Callable, Dict, List, Union, Optional
 from unittest.mock import MagicMock, AsyncMock
 
@@ -88,6 +89,24 @@ def mock_grpc_service_context() -> MagicMock:
 def grpc_action_server_webhook(mock_executor: AsyncMock) -> GRPCActionServerWebhook:
     """Create a GRPCActionServerWebhook instance with a mock executor."""
     return GRPCActionServerWebhook(executor=mock_executor)
+
+
+def test_grpc_webhook_stream_barge_in_timeout_from_env(
+    mock_executor: AsyncMock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS", "12.5")
+    webhook = GRPCActionServerWebhook(executor=mock_executor)
+    assert webhook._stream_barge_in_timeout_seconds == 12.5
+
+
+def test_grpc_webhook_stream_barge_in_timeout_explicit_overrides_env(
+    mock_executor: AsyncMock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS", "12.5")
+    webhook = GRPCActionServerWebhook(
+        executor=mock_executor, stream_barge_in_timeout_seconds=3.0
+    )
+    assert webhook._stream_barge_in_timeout_seconds == 3.0
 
 
 @pytest.fixture
@@ -793,6 +812,55 @@ async def test_webhook_stream_barge_in_yields_final_result_after_cancel(
     )
 
 
+async def test_webhook_stream_barge_in_timeout_cancels_hung_action(
+    mock_executor: AsyncMock,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_grpc_service_context: MagicMock,
+) -> None:
+    """If the action does not finish within the barge-in timeout, drain yields
+    an empty final_result so Rasa Pro can complete normally, then run_task is
+    cancelled instead of blocking forever."""
+    action_reached_hang = False
+
+    async def _hung_after_barge_in_run(
+        action_call: Dict,
+        sink: Optional[asyncio.Queue] = None,
+        dispatcher: Any = None,
+        **kwargs: Any,
+    ) -> ActionExecutorRunResult:
+        nonlocal action_reached_hang
+        if sink is not None and dispatcher is not None:
+            await sink.put({"event": "stream_start"})
+            await sink.put({"event": "stream_chunk", "text": "partial"})
+            await asyncio.sleep(0)
+            dispatcher.cancel_stream()
+            await sink.put({"event": "stream_end"})
+            action_reached_hang = True
+            await asyncio.sleep(3600)
+        return ActionExecutorRunResult(events=[], responses=[])
+
+    webhook = GRPCActionServerWebhook(
+        executor=mock_executor,
+        stream_barge_in_timeout_seconds=0.05,
+    )
+    mock_executor.run.side_effect = _hung_after_barge_in_run
+    mock_grpc_service_context.invocation_metadata.return_value = []
+
+    start = time.monotonic()
+    events = await _collect_stream(
+        webhook.WebhookStream(grpc_webhook_request, mock_grpc_service_context)
+    )
+    elapsed = time.monotonic() - start
+
+    assert action_reached_hang
+    assert elapsed < 2.0, "stream must not block waiting for a hung action"
+    event_types = [e.WhichOneof("event") for e in events]
+    assert event_types == ["chunk_start", "chunk", "final_result"]
+    final = events[2].final_result
+    assert len(final.events) == 0
+    assert len(final.responses) == 0
+
+
 async def test_webhook_stream_context_cancel_breaks_promptly_without_final_result(
     grpc_action_server_webhook: GRPCActionServerWebhook,
     grpc_webhook_request: action_webhook_pb2.WebhookRequest,
@@ -831,11 +899,11 @@ async def test_webhook_stream_context_cancel_breaks_promptly_without_final_resul
     mock_grpc_service_context.invocation_metadata.return_value = []
     # Simulate a client disconnect that arrives while a stream_chunk is
     # already waiting in the queue:
-    #   call 1 — post-yield check after ChunkStart  → False (still connected)
-    #   call 2 — post-yield check on stream_chunk    → False (still connected)
-    #   call 3 — pre-yield guard on stream_chunk    → True  (now disconnected)
-    # With the pre-yield guard the chunk is discarded without being sent,
-    # closing the race window where one extra chunk could leak post-disconnect.
+    #   call 1 — pre-yield guard on stream_start  → False (still connected)
+    #   call 2 — pre-yield guard on stream_chunk   → False (still connected)
+    #   call 3 — pre-yield guard on stream_chunk   → True  (now disconnected)
+    # The second chunk is discarded without being sent, closing the race
+    # window where one extra chunk could leak post-disconnect.
     mock_grpc_service_context.cancelled = MagicMock(side_effect=[False, False, True])
 
     events = await _collect_stream(

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import contextlib
+import os
 import signal
+import time
 import uuid
 
 import asyncio
@@ -23,6 +25,8 @@ from multidict import MultiDict
 from rasa_sdk.constants import (
     DEFAULT_SERVER_PORT,
     DEFAULT_ENDPOINTS_PATH,
+    DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS,
+    ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS_ENV_VAR,
     NO_GRACE_PERIOD,
 )
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
@@ -63,6 +67,40 @@ logger = logging.getLogger(__name__)
 GRPC_ACTION_SERVER_NAME = "ActionServer"
 
 
+def _resolve_stream_barge_in_timeout_seconds(
+    timeout_seconds: Optional[float],
+) -> float:
+    """Return the barge-in timeout, preferring an explicit value over the env var."""
+    if timeout_seconds is not None:
+        return timeout_seconds
+
+    raw = os.getenv(
+        ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS_ENV_VAR,
+        DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS,
+    )
+    try:
+        value = float(raw)
+    except ValueError:
+        logger.warning(
+            f"Cannot convert environment variable "
+            f"'{ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS_ENV_VAR}' "
+            f"to float ('{raw}'); "
+            f"using default ({DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS}s)."
+        )
+        return DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS
+
+    if value <= 0:
+        logger.warning(
+            f"Environment variable "
+            f"'{ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS_ENV_VAR}' must be "
+            f"positive ('{raw}'); using default "
+            f"({DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS}s)."
+        )
+        return DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS
+
+    return value
+
+
 def _convert_metadata_to_multidict(
     metadata: Optional[Metadata],
 ) -> Optional[MultiDict]:
@@ -80,6 +118,7 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         executor: ActionExecutor,
         auto_reload: bool = False,
         tracer_provider: Optional[TracerProvider] = None,
+        stream_barge_in_timeout_seconds: Optional[float] = None,
     ) -> None:
         """Initializes the ActionServerWebhook.
 
@@ -87,10 +126,17 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
             tracer_provider: The tracer provider.
             auto_reload: Enable auto-reloading of modules containing Action subclasses.
             executor: The action executor.
+            stream_barge_in_timeout_seconds: Maximum time to wait for a streaming
+                action to finish after a barge-in before the task is cancelled.
+                When omitted, reads from the environment variable
+                ``ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS`` (default 30s).
         """
         self.tracer_provider = tracer_provider
         self.auto_reload = auto_reload
         self.executor = executor
+        self._stream_barge_in_timeout_seconds = (
+            _resolve_stream_barge_in_timeout_seconds(stream_barge_in_timeout_seconds)
+        )
         # Maps response_id → CollectingDispatcher for in-flight streaming RPCs.
         # Used by AckStreamChunks to reach the active dispatcher without
         # coupling the RPC handler to the WebhookStream coroutine.
@@ -278,6 +324,7 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
 
             run_task = asyncio.ensure_future(_run())
             graceful_cancel = False
+            barge_in_deadline: Optional[float] = None
             current_response_id: str = ""
 
             try:
@@ -299,8 +346,16 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                             # chunk events, yield final_result, then wait for the
                             # action to finish naturally in the finally block.
                             graceful_cancel = True
+                            barge_in_deadline = (
+                                time.monotonic() + self._stream_barge_in_timeout_seconds
+                            )
                             async for event in _drain_to_terminal(
-                                sink, action_name, span, action_call, context
+                                sink,
+                                action_name,
+                                span,
+                                action_call,
+                                context,
+                                deadline=barge_in_deadline,
                             ):
                                 yield event
                             break
@@ -360,12 +415,10 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                 # Always clean up the registry entry.
                 self._dispatcher_registry.pop(current_response_id, None)
                 if not run_task.done():
-                    if graceful_cancel:
-                        # Barge-in: wait for the action to finish naturally so
-                        # stream_end() and any return events are processed
-                        # before the result is discarded.
-                        with contextlib.suppress(Exception):
-                            await run_task
+                    if graceful_cancel and barge_in_deadline is not None:
+                        await _await_barge_in_run_task(
+                            run_task, action_name, barge_in_deadline
+                        )
                     else:
                         run_task.cancel()
                         with contextlib.suppress(asyncio.CancelledError):
@@ -419,6 +472,7 @@ async def _drain_to_terminal(
     span: Any,
     action_call: Dict[str, Any],
     context: grpc.aio.ServicerContext,
+    deadline: float,
 ) -> AsyncIterator[action_webhook_pb2.WebhookStreamEvent]:
     """Drain *sink* until a terminal event arrives, yielding the final result.
 
@@ -426,21 +480,84 @@ async def _drain_to_terminal(
     ``stream_end`` events are discarded; ``stream_done`` triggers a
     ``final_result`` yield and ``stream_error`` triggers an ``error`` yield.
     Either way the generator returns after the first terminal event.
+
+    If no terminal event arrives before *deadline*, yields an empty
+    ``final_result`` so the client (Rasa Pro) can complete the barge-in
+    handler normally, then returns so the caller can cancel the action task.
+
+    ``final_result`` and ``error`` events are skipped when *context* is
+    already cancelled (client disconnected mid-drain), matching the main-loop
+    behaviour for ``stream_done``.
     """
     while True:
-        drained = await sink.get()
+        if context.cancelled():
+            return
+
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+
+        try:
+            drained = await asyncio.wait_for(sink.get(), timeout=remaining)
+        except asyncio.TimeoutError:
+            break
+
         drained_type = drained.get("event")
+        if drained_type not in ("stream_done", "stream_error"):
+            continue
+
+        if context.cancelled():
+            return
         if drained_type == "stream_done":
             final_event = _build_final_result_event(drained.get("result"))
             if final_event:
                 yield final_event
-            _set_grpc_span_attributes(span, action_call, method_name="WebhookStream")
-            return
-        elif drained_type == "stream_error":
+        else:
             yield _handle_stream_error_event(
                 drained.get("exception"), action_name, context
             )
-            return
+        _set_grpc_span_attributes(span, action_call, method_name="WebhookStream")
+        return
+
+    logger.warning(
+        f"Timed out waiting for action '{action_name}' to finish after "
+        "barge-in while draining the stream queue; cancelling the task."
+    )
+    if context.cancelled():
+        return
+    yield _build_empty_final_result_event()
+    _set_grpc_span_attributes(span, action_call, method_name="WebhookStream")
+
+
+async def _await_barge_in_run_task(
+    run_task: asyncio.Task[Any],
+    action_name: str,
+    deadline: float,
+) -> None:
+    """Wait for the action task to finish after barge-in, bounded by *deadline*."""
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        logger.warning(
+            f"Action '{action_name}' did not finish within the barge-in timeout; "
+            "cancelling the task."
+        )
+        run_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await run_task
+        return
+
+    try:
+        await asyncio.wait_for(run_task, timeout=remaining)
+    except asyncio.TimeoutError:
+        logger.warning(
+            f"Action '{action_name}' did not finish within the barge-in timeout; "
+            "cancelling the task."
+        )
+        run_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await run_task
+    except asyncio.CancelledError:
+        pass
 
 
 def _build_chunk_event(
@@ -469,6 +586,17 @@ def _build_chunk_event(
             },
             action_webhook_pb2.Chunk(response_id=response_id),
         )
+    )
+
+
+def _build_empty_final_result_event() -> action_webhook_pb2.WebhookStreamEvent:
+    """Build a ``final_result`` event with no events or responses.
+
+    Used when a barge-in drain times out: Rasa Pro requires a terminal
+    ``final_result`` to complete the streaming RPC cleanly.
+    """
+    return action_webhook_pb2.WebhookStreamEvent(
+        final_result=action_webhook_pb2.WebhookResponse()
     )
 
 
