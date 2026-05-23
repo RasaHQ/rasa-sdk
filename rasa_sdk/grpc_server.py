@@ -557,7 +557,15 @@ async def _await_barge_in_run_task(
         with contextlib.suppress(asyncio.CancelledError):
             await run_task
     except asyncio.CancelledError:
-        pass
+        logger.debug(
+            f"WebhookStream cancelled while waiting for action '{action_name}' "
+            "to finish after barge-in."
+        )
+    except Exception as exc:
+        logger.exception(
+            f"Unexpected error while waiting for action '{action_name}' "
+            f"to finish after barge-in: {exc}"
+        )
 
 
 def _build_chunk_event(
