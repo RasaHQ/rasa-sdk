@@ -1,5 +1,6 @@
 import asyncio
-from typing import AsyncIterator, Callable, Dict, List, Union, Optional
+import time
+from typing import Any, AsyncIterator, Callable, Dict, List, Union, Optional
 from unittest.mock import MagicMock, AsyncMock
 
 import grpc
@@ -76,13 +77,36 @@ def mock_executor() -> AsyncMock:
 @pytest.fixture
 def mock_grpc_service_context() -> MagicMock:
     """Create a mock gRPC service context."""
-    return MagicMock(spec=grpc.aio.ServicerContext)
+    ctx = MagicMock(spec=grpc.aio.ServicerContext)
+    # cancelled() must return False (RPC still active) so happy-path tests do
+    # not accidentally trigger the barge-in path.  MagicMock would otherwise
+    # return a truthy Mock object, which would look like a cancellation.
+    ctx.cancelled = MagicMock(return_value=False)
+    return ctx
 
 
 @pytest.fixture
 def grpc_action_server_webhook(mock_executor: AsyncMock) -> GRPCActionServerWebhook:
     """Create a GRPCActionServerWebhook instance with a mock executor."""
     return GRPCActionServerWebhook(executor=mock_executor)
+
+
+def test_grpc_webhook_stream_barge_in_timeout_from_env(
+    mock_executor: AsyncMock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS", "12.5")
+    webhook = GRPCActionServerWebhook(executor=mock_executor)
+    assert webhook._stream_barge_in_timeout_seconds == 12.5
+
+
+def test_grpc_webhook_stream_barge_in_timeout_explicit_overrides_env(
+    mock_executor: AsyncMock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS", "12.5")
+    webhook = GRPCActionServerWebhook(
+        executor=mock_executor, stream_barge_in_timeout_seconds=3.0
+    )
+    assert webhook._stream_barge_in_timeout_seconds == 3.0
 
 
 @pytest.fixture
@@ -258,7 +282,9 @@ def _make_streaming_run(
     """Return an async side effect for `executor.run` that populates the sink."""
 
     async def _run(
-        action_call: Dict, sink: Optional[asyncio.Queue] = None
+        action_call: Dict,
+        sink: Optional[asyncio.Queue] = None,
+        **kwargs: Any,
     ) -> ActionExecutorRunResult:
         if sink is not None:
             for event in chunk_events:
@@ -278,7 +304,11 @@ def _make_error_run(exception: Exception) -> Callable:
     cover pre-action setup errors).
     """
 
-    async def _run(action_call: Dict, sink: Optional[asyncio.Queue] = None) -> None:
+    async def _run(
+        action_call: Dict,
+        sink: Optional[asyncio.Queue] = None,
+        **kwargs: Any,
+    ) -> None:
         if sink is not None:
             await sink.put({"event": "stream_error", "exception": exception})
         raise exception
@@ -439,6 +469,42 @@ async def test_webhook_stream_each_stream_start_gets_a_distinct_response_id(
     chunks = [e for e in events if e.WhichOneof("event") == "chunk"]
     assert chunks[0].chunk.response_id == id_first
     assert chunks[1].chunk.response_id == id_second
+
+
+async def test_webhook_stream_double_stream_start_evicts_old_registry_entry(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """When stream_start() is called twice without an intervening stream_end(),
+    the first response_id must be removed from the dispatcher registry before
+    the second sequence is registered.  Without this, AckStreamChunks could
+    target a stale (completed) response_id."""
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _make_streaming_run(
+        chunk_events=[
+            {"event": "stream_start"},
+            {"event": "stream_chunk", "text": "first"},
+            # No stream_end — action resets mid-sequence
+            {"event": "stream_start"},
+            {"event": "stream_chunk", "text": "second"},
+            {"event": "stream_end"},
+        ],
+        result=executor_response,
+    )
+
+    await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    # After the stream completes the registry must be empty — no stale entries.
+    assert (
+        grpc_action_server_webhook._dispatcher_registry == {}
+    ), "stale response_id left in registry after double stream_start"
 
 
 # ---------------------------------------------------------------------------
@@ -607,3 +673,298 @@ async def test_webhook_stream_does_not_hang_on_unexpected_exception(
 
     mock_grpc_service_context.set_code.assert_called_once_with(grpc.StatusCode.INTERNAL)
     mock_grpc_service_context.set_details.assert_called_once_with(str(boom))
+
+
+# ---------------------------------------------------------------------------
+# WebhookStream — barge-in / AckStreamChunks
+# ---------------------------------------------------------------------------
+
+
+async def test_ack_stream_chunks_cancels_dispatcher(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    mock_grpc_service_context: MagicMock,
+) -> None:
+    """AckStreamChunks must look up the dispatcher by response_id and set the
+    cancelled flag so subsequent stream_chunk() calls are a no-op."""
+    from rasa_sdk.executor import CollectingDispatcher
+    from rasa_sdk.grpc_py import action_webhook_pb2
+
+    dispatcher = CollectingDispatcher()
+    response_id = "test-response-id"
+    grpc_action_server_webhook._dispatcher_registry[response_id] = dispatcher
+
+    ack = action_webhook_pb2.StreamChunkAck(response_id=response_id)
+    await grpc_action_server_webhook.AckStreamChunks(ack, mock_grpc_service_context)
+
+    assert dispatcher.is_streaming_cancelled
+
+
+async def test_ack_stream_chunks_unknown_response_id_logs_debug(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    mock_grpc_service_context: MagicMock,
+    caplog: Any,
+) -> None:
+    """AckStreamChunks with an unknown response_id must log at DEBUG (it is a
+    normal race condition when the ack arrives after stream_end) and return
+    Empty without raising."""
+    import logging
+    from rasa_sdk.grpc_py import action_webhook_pb2
+
+    ack = action_webhook_pb2.StreamChunkAck(response_id="unknown-id")
+    with caplog.at_level(logging.DEBUG, logger="rasa_sdk.grpc_server"):
+        result = await grpc_action_server_webhook.AckStreamChunks(
+            ack, mock_grpc_service_context
+        )
+
+    assert result is not None  # Empty proto
+    matching = [r for r in caplog.records if "unknown-id" in r.message]
+    assert matching, "expected a log record mentioning the unknown response_id"
+    assert all(r.levelno == logging.DEBUG for r in matching)
+
+
+async def test_webhook_stream_barge_in_yields_final_result_after_cancel(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """Barge-in: WebhookStream yields the delivered chunk, skips the cancelled
+    chunk, and emits final_result (events only) after draining.
+
+    Timeline:
+      1. stream_start             → ChunkStart yielded to client
+      2. stream_chunk "delivered" → Chunk yielded; no cancellation yet
+      3. asyncio.sleep(0)         → event loop runs; consumer blocks on empty queue
+      4. AckStreamChunks (sim)    → dispatcher cancelled
+      5. stream_chunk "cancelled" → action respects _stream_cancelled, skips enqueue
+      6. stream_end               → pre-yield guard fires; cancellation detected → drain
+      7. stream_done              → drained; final_result yielded; loop ends
+
+    Note: ChunkEnd is NOT yielded because the pre-yield cancellation guard
+    intercepts stream_end before it is forwarded.  final_result is the terminal
+    signal; ChunkEnd would be redundant after a barge-in.
+    """
+
+    async def _barge_in_run(
+        action_call: Dict,
+        sink: Optional[asyncio.Queue] = None,
+        dispatcher: Any = None,
+        **kwargs: Any,
+    ) -> ActionExecutorRunResult:
+        """Simulates an action that sends two chunks;
+        barge-in cancels after the first."""
+        if sink is not None and dispatcher is not None:
+            await sink.put({"event": "stream_start"})
+            await sink.put({"event": "stream_chunk", "text": "delivered"})
+
+            # Yield to the event loop so the consumer processes stream_start and
+            # stream_chunk("delivered"), then blocks on an empty queue.
+            await asyncio.sleep(0)
+
+            # Simulate AckStreamChunks arriving: cancel the stream.
+            dispatcher.cancel_stream()
+
+            # Real CollectingDispatcher.stream_chunk() checks _stream_cancelled and
+            # returns early without enqueuing. Replicate that here.
+            if not dispatcher.is_streaming_cancelled:  # pragma: no cover
+                await sink.put({"event": "stream_chunk", "text": "cancelled"})
+
+            await sink.put({"event": "stream_end"})
+            await sink.put({"event": "stream_done", "result": executor_response})
+        return executor_response
+
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _barge_in_run
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    # ── Event sequence ──────────────────────────────────────────────────────
+    event_types = [e.WhichOneof("event") for e in events]
+    assert event_types == [
+        "chunk_start",
+        "chunk",
+        "final_result",
+    ], f"Unexpected event sequence: {event_types}"
+
+    # ── Consistent response_id across streaming events ───────────────────────
+    response_id = events[0].chunk_start.response_id
+    assert response_id, "response_id must be non-empty"
+    assert events[1].chunk.response_id == response_id
+
+    # ── Delivered chunk carries the expected text ────────────────────────────
+    assert events[1].chunk.text == "delivered"
+
+    # ── Cancelled chunk was never enqueued and must be absent ───────────────
+    chunk_texts = [e.chunk.text for e in events if e.WhichOneof("event") == "chunk"]
+    assert "cancelled" not in chunk_texts
+
+    # ── final_result carries Rasa events but no responses ───────────────────
+    assert events[2].WhichOneof("event") != "error"
+    final = events[2].final_result
+    assert len(final.events) == len(executor_response.events)
+    assert (
+        MessageToDict(final.events[0])["event"] == executor_response.events[0]["event"]
+    )
+
+
+async def test_webhook_stream_barge_in_timeout_cancels_hung_action(
+    mock_executor: AsyncMock,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_grpc_service_context: MagicMock,
+) -> None:
+    """If the action does not finish within the barge-in timeout, drain yields
+    an empty final_result so Rasa Pro can complete normally, then run_task is
+    cancelled instead of blocking forever."""
+    action_reached_hang = False
+
+    async def _hung_after_barge_in_run(
+        action_call: Dict,
+        sink: Optional[asyncio.Queue] = None,
+        dispatcher: Any = None,
+        **kwargs: Any,
+    ) -> ActionExecutorRunResult:
+        nonlocal action_reached_hang
+        if sink is not None and dispatcher is not None:
+            await sink.put({"event": "stream_start"})
+            await sink.put({"event": "stream_chunk", "text": "partial"})
+            await asyncio.sleep(0)
+            dispatcher.cancel_stream()
+            await sink.put({"event": "stream_end"})
+            action_reached_hang = True
+            await asyncio.sleep(3600)
+        return ActionExecutorRunResult(events=[], responses=[])
+
+    webhook = GRPCActionServerWebhook(
+        executor=mock_executor,
+        stream_barge_in_timeout_seconds=0.05,
+    )
+    mock_executor.run.side_effect = _hung_after_barge_in_run
+    mock_grpc_service_context.invocation_metadata.return_value = []
+
+    start = time.monotonic()
+    events = await _collect_stream(
+        webhook.WebhookStream(grpc_webhook_request, mock_grpc_service_context)
+    )
+    elapsed = time.monotonic() - start
+
+    assert action_reached_hang
+    assert elapsed < 2.0, "stream must not block waiting for a hung action"
+    event_types = [e.WhichOneof("event") for e in events]
+    assert event_types == ["chunk_start", "chunk", "final_result"]
+    final = events[2].final_result
+    assert len(final.events) == 0
+    assert len(final.responses) == 0
+
+
+async def test_webhook_stream_context_cancel_breaks_promptly_without_final_result(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """When the gRPC context is cancelled (client disconnect / network drop),
+    WebhookStream must break out of the consumer loop immediately, cancel
+    run_task promptly, and NOT yield final_result.
+
+    This is distinct from a barge-in (AckStreamChunks): the client is gone so
+    there is no point waiting for the action to finish or delivering a result.
+    """
+    action_completed = False
+
+    async def _slow_run(
+        action_call: Dict,
+        sink: Optional[asyncio.Queue] = None,
+        dispatcher: Any = None,
+        **kwargs: Any,
+    ) -> ActionExecutorRunResult:
+        nonlocal action_completed
+        if sink is not None:
+            await sink.put({"event": "stream_start"})
+            await sink.put({"event": "stream_chunk", "text": "chunk"})
+            await sink.put({"event": "stream_chunk", "text": "chunk_2"})
+            # Simulate a long-running action; the task must be cancelled before
+            # this sleep completes.
+            await asyncio.sleep(10)
+            action_completed = True  # must never be reached
+            await sink.put({"event": "stream_done", "result": executor_response})
+        return executor_response
+
+    mock_executor.run.side_effect = _slow_run
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    # Simulate a client disconnect that arrives while a stream_chunk is
+    # already waiting in the queue:
+    #   call 1 — pre-yield guard on stream_start  → False (still connected)
+    #   call 2 — pre-yield guard on stream_chunk   → False (still connected)
+    #   call 3 — pre-yield guard on stream_chunk   → True  (now disconnected)
+    # The second chunk is discarded without being sent, closing the race
+    # window where one extra chunk could leak post-disconnect.
+    mock_grpc_service_context.cancelled = MagicMock(side_effect=[False, False, True])
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    # ChunkStart and the first Chunk are yielded before the disconnect is
+    # detected; nothing after that (no final_result).
+    event_types = [e.WhichOneof("event") for e in events]
+    assert event_types == [
+        "chunk_start",
+        "chunk",
+    ], f"Unexpected event sequence: {event_types}"
+    assert events[1].chunk.text == "chunk"
+    assert "final_result" not in event_types
+
+    # run_task must have been cancelled, not run to completion.
+    assert not action_completed, "action must be cancelled, not run to completion"
+
+
+async def test_webhook_stream_context_cancel_at_stream_done_skips_final_result(
+    grpc_action_server_webhook: GRPCActionServerWebhook,
+    grpc_webhook_request: action_webhook_pb2.WebhookRequest,
+    mock_executor: AsyncMock,
+    mock_grpc_service_context: MagicMock,
+    executor_response: ActionExecutorRunResult,
+) -> None:
+    """If the client disconnects after all chunks are sent but before stream_done
+    is processed, WebhookStream must not yield final_result (the client is gone).
+
+    Timeline:
+      All non-terminal events are processed with context active.
+      context.cancelled() turns True exactly when stream_done is dequeued.
+    """
+    mock_grpc_service_context.invocation_metadata.return_value = []
+    mock_executor.run.side_effect = _make_streaming_run(
+        chunk_events=[
+            {"event": "stream_start"},
+            {"event": "stream_chunk", "text": "only chunk"},
+            {"event": "stream_end"},
+        ],
+        result=executor_response,
+    )
+    # context.cancelled() is called once in the pre-yield guard for each
+    # non-terminal event (stream_start, stream_chunk, stream_end = 3 calls),
+    # then once inside the stream_done branch.  The first 3 return False
+    # (client still connected); the 4th returns True (client disconnected
+    # just before stream_done is processed).
+    mock_grpc_service_context.cancelled = MagicMock(
+        side_effect=[False, False, False, True]
+    )
+
+    events = await _collect_stream(
+        grpc_action_server_webhook.WebhookStream(
+            grpc_webhook_request, mock_grpc_service_context
+        )
+    )
+
+    event_types = [e.WhichOneof("event") for e in events]
+    assert (
+        "final_result" not in event_types
+    ), "final_result must not be sent to a disconnected client"

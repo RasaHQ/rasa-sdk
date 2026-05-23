@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import contextlib
+import os
 import signal
+import time
 import uuid
 
 import asyncio
@@ -10,6 +12,8 @@ import grpc
 import logging
 from typing import AsyncIterator, Optional, Any, Dict
 from concurrent import futures
+
+from google.protobuf import empty_pb2
 from grpc import aio
 from grpc_health.v1 import health
 from grpc_health.v1 import health_pb2
@@ -21,9 +25,11 @@ from multidict import MultiDict
 from rasa_sdk.constants import (
     DEFAULT_SERVER_PORT,
     DEFAULT_ENDPOINTS_PATH,
+    DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS,
+    ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS_ENV_VAR,
     NO_GRACE_PERIOD,
 )
-from rasa_sdk.executor import ActionExecutor
+from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
 from rasa_sdk.grpc_errors import (
     ResourceNotFound,
     ResourceNotFoundType,
@@ -61,6 +67,40 @@ logger = logging.getLogger(__name__)
 GRPC_ACTION_SERVER_NAME = "ActionServer"
 
 
+def _resolve_stream_barge_in_timeout_seconds(
+    timeout_seconds: Optional[float],
+) -> float:
+    """Return the barge-in timeout, preferring an explicit value over the env var."""
+    if timeout_seconds is not None:
+        return timeout_seconds
+
+    raw = os.getenv(
+        ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS_ENV_VAR,
+        DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS,
+    )
+    try:
+        value = float(raw)
+    except ValueError:
+        logger.warning(
+            f"Cannot convert environment variable "
+            f"'{ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS_ENV_VAR}' "
+            f"to float ('{raw}'); "
+            f"using default ({DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS}s)."
+        )
+        return DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS
+
+    if value <= 0:
+        logger.warning(
+            f"Environment variable "
+            f"'{ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS_ENV_VAR}' must be "
+            f"positive ('{raw}'); using default "
+            f"({DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS}s)."
+        )
+        return DEFAULT_STREAM_BARGE_IN_TIMEOUT_SECONDS
+
+    return value
+
+
 def _convert_metadata_to_multidict(
     metadata: Optional[Metadata],
 ) -> Optional[MultiDict]:
@@ -78,6 +118,7 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         executor: ActionExecutor,
         auto_reload: bool = False,
         tracer_provider: Optional[TracerProvider] = None,
+        stream_barge_in_timeout_seconds: Optional[float] = None,
     ) -> None:
         """Initializes the ActionServerWebhook.
 
@@ -85,10 +126,21 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
             tracer_provider: The tracer provider.
             auto_reload: Enable auto-reloading of modules containing Action subclasses.
             executor: The action executor.
+            stream_barge_in_timeout_seconds: Maximum time to wait for a streaming
+                action to finish after a barge-in before the task is cancelled.
+                When omitted, reads from the environment variable
+                ``ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS`` (default 30s).
         """
         self.tracer_provider = tracer_provider
         self.auto_reload = auto_reload
         self.executor = executor
+        self._stream_barge_in_timeout_seconds = (
+            _resolve_stream_barge_in_timeout_seconds(stream_barge_in_timeout_seconds)
+        )
+        # Maps response_id → CollectingDispatcher for in-flight streaming RPCs.
+        # Used by AckStreamChunks to reach the active dispatcher without
+        # coupling the RPC handler to the WebhookStream coroutine.
+        self._dispatcher_registry: Dict[str, "CollectingDispatcher"] = {}
 
     async def Actions(
         self,
@@ -230,6 +282,11 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
             action_name = action_call.get("next_action", "")
             sink: asyncio.Queue = asyncio.Queue()
 
+            # Pre-construct the dispatcher so it is ready to be stored in the
+            # cancellation registry once a response_id is available after
+            # consuming the stream_start event.
+            dispatcher = CollectingDispatcher()
+
             async def _run() -> None:
                 """Run the action and always place a terminal event in the sink.
 
@@ -245,7 +302,9 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                 Unexpected errors are still logged with a full traceback.
                 """
                 try:
-                    result = await self.executor.run(action_call, sink=sink)
+                    result = await self.executor.run(
+                        action_call, sink=sink, dispatcher=dispatcher
+                    )
                     if result is None:
                         # next_action was absent; executor.run() returned without
                         # placing stream_done, so we must do it here.
@@ -264,109 +323,355 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                     # stream_error already placed in sink by executor.run()
 
             run_task = asyncio.ensure_future(_run())
+            graceful_cancel = False
+            barge_in_deadline: Optional[float] = None
+            current_response_id: str = ""
 
             try:
-                current_response_id: str = ""
                 while True:
                     chunk = await sink.get()
                     event_type = chunk.get("event")
 
+                    # Pre-yield cancellation guard.  Checked immediately after
+                    # sink.get() so no already-queued event is forwarded to the
+                    # client once cancellation is detected.  Terminal events
+                    # (stream_done / stream_error) are exempt: intercepting them
+                    # here would cause _drain_to_terminal to await a second
+                    # terminal event on an already-empty queue and hang.
+                    if event_type not in ("stream_done", "stream_error"):
+                        if dispatcher.is_streaming_cancelled:
+                            # Explicit barge-in via AckStreamChunks: the client is
+                            # still connected and expects a final_result so it can
+                            # update the tracker.  Drain the queue, discard in-flight
+                            # chunk events, yield final_result, then wait for the
+                            # action to finish naturally in the finally block.
+                            graceful_cancel = True
+                            barge_in_deadline = (
+                                time.monotonic() + self._stream_barge_in_timeout_seconds
+                            )
+                            async for event in _drain_to_terminal(
+                                sink,
+                                action_name,
+                                span,
+                                action_call,
+                                context,
+                                deadline=barge_in_deadline,
+                            ):
+                                yield event
+                            break
+                        elif context.cancelled():
+                            # Client disconnected / network drop: the final_result
+                            # cannot be delivered, so there is no value in letting
+                            # the action run to completion.  Break immediately and
+                            # let the finally block cancel run_task promptly.
+                            break
+
                     if event_type == "stream_start":
+                        # If the action calls stream_start() again without a
+                        # preceding stream_end() (a mid-sequence reset), the old
+                        # response_id would never be cleaned up — evict it now so
+                        # AckStreamChunks cannot target a completed sequence.
+                        if current_response_id:
+                            self._dispatcher_registry.pop(current_response_id, None)
                         current_response_id = uuid.uuid4().hex
+                        self._dispatcher_registry[current_response_id] = dispatcher
                         yield action_webhook_pb2.WebhookStreamEvent(
                             chunk_start=action_webhook_pb2.ChunkStart(
                                 response_id=current_response_id
                             )
                         )
                     elif event_type == "stream_chunk":
-                        # Only the fields defined in the Chunk protobuf message
-                        # are serialised. Any extra kwargs passed to
-                        # stream_chunk() arrive in the payload dict but are
-                        # intentionally dropped here because the wire format
-                        # has no place for them.
-                        yield action_webhook_pb2.WebhookStreamEvent(
-                            chunk=ParseDict(
-                                {
-                                    k: chunk[k]
-                                    for k in (
-                                        "text",
-                                        "image",
-                                        "custom",
-                                        "attachment",
-                                        "buttons",
-                                        "elements",
-                                    )
-                                    if k in chunk
-                                },
-                                action_webhook_pb2.Chunk(
-                                    response_id=current_response_id
-                                ),
-                            )
-                        )
+                        yield _build_chunk_event(chunk, current_response_id)
                     elif event_type == "stream_end":
+                        self._dispatcher_registry.pop(current_response_id, None)
                         yield action_webhook_pb2.WebhookStreamEvent(
                             chunk_end=action_webhook_pb2.ChunkEnd(
                                 response_id=current_response_id
                             )
                         )
                     elif event_type == "stream_done":
-                        result = chunk.get("result")
-                        if result:
-                            final_response = action_webhook_pb2.WebhookResponse()
-                            ParseDict(result.model_dump(), final_response)
-                            yield action_webhook_pb2.WebhookStreamEvent(
-                                final_result=final_response
+                        # Skip final_result if the client has disconnected —
+                        # sending on a cancelled RPC is wasteful and may raise.
+                        # The barge-in path (dispatcher.is_streaming_cancelled)
+                        # never reaches here: stream_done is consumed by
+                        # _drain_to_terminal in that path.
+                        if not context.cancelled():
+                            final_event = _build_final_result_event(chunk.get("result"))
+                            if final_event:
+                                yield final_event
+                            _set_grpc_span_attributes(
+                                span, action_call, method_name="WebhookStream"
                             )
-                        _set_grpc_span_attributes(
-                            span, action_call, method_name="WebhookStream"
-                        )
                         break
                     elif event_type == "stream_error":
-                        exc = chunk.get("exception")
-                        if isinstance(exc, ActionExecutionRejection):
-                            logger.debug(exc)
-                            context.set_code(grpc.StatusCode.INTERNAL)
-                            context.set_details(
-                                ActionExecutionFailed(
-                                    action_name=exc.action_name, message=exc.message
-                                ).model_dump_json()
+                        # Same guard: don't attempt to send an error on a dead RPC.
+                        if not context.cancelled():
+                            yield _handle_stream_error_event(
+                                chunk.get("exception"), action_name, context
                             )
-                        elif isinstance(exc, ActionNotFoundException):
-                            logger.error(exc)
-                            context.set_code(grpc.StatusCode.NOT_FOUND)
-                            context.set_details(
-                                ResourceNotFound(
-                                    action_name=exc.action_name,
-                                    message=exc.message,
-                                    resource_type=ResourceNotFoundType.ACTION,
-                                ).model_dump_json()
-                            )
-                        elif isinstance(exc, ActionMissingDomainException):
-                            logger.error(exc)
-                            context.set_code(grpc.StatusCode.NOT_FOUND)
-                            context.set_details(
-                                ResourceNotFound(
-                                    action_name=exc.action_name,
-                                    message=exc.message,
-                                    resource_type=ResourceNotFoundType.DOMAIN,
-                                ).model_dump_json()
-                            )
-                        else:
-                            logger.error(exc)
-                            context.set_code(grpc.StatusCode.INTERNAL)
-                            context.set_details(str(exc))
-                        yield action_webhook_pb2.WebhookStreamEvent(
-                            error=action_webhook_pb2.StreamError(
-                                action_name=action_name,
-                                message=str(exc),
-                            )
-                        )
                         break
+
             finally:
+                # Always clean up the registry entry.
+                self._dispatcher_registry.pop(current_response_id, None)
                 if not run_task.done():
-                    run_task.cancel()
-                    with contextlib.suppress(asyncio.CancelledError):
-                        await run_task
+                    if graceful_cancel and barge_in_deadline is not None:
+                        await _await_barge_in_run_task(
+                            run_task, action_name, barge_in_deadline
+                        )
+                    else:
+                        run_task.cancel()
+                        with contextlib.suppress(asyncio.CancelledError):
+                            await run_task
+
+    async def AckStreamChunks(
+        self,
+        request: action_webhook_pb2.StreamChunkAck,
+        context: grpc.aio.ServicerContext,
+    ) -> empty_pb2.Empty:
+        """Handle a barge-in acknowledgement from the voice channel.
+
+        The voice channel calls this RPC when the user interrupts the
+        assistant.  It supplies the ``response_id`` of the active streaming
+        response.
+
+        The handler:
+
+        1. Looks up the active :class:`CollectingDispatcher` for that
+           ``response_id`` in the registry.
+        2. Calls :meth:`~CollectingDispatcher.cancel_stream` to stop the action
+           from producing further chunks.
+
+        The ``WebhookStream`` consumer loop detects the cancellation flag on the
+        next iteration and performs a graceful drain: it waits for the action to
+        finish, then yields ``final_result`` (containing all Rasa events) to the
+        client.
+
+        Args:
+            request: The acknowledgement request carrying ``response_id``.
+            context: The gRPC context (unused but required by the servicer API).
+
+        Returns:
+            ``google.protobuf.Empty``.
+        """
+        dispatcher = self._dispatcher_registry.get(request.response_id)
+        if dispatcher is not None:
+            dispatcher.cancel_stream()
+        else:
+            logger.debug(
+                f"AckStreamChunks: no active stream found for "
+                f"response_id='{request.response_id}'. This is normal when the "
+                "action finished streaming before the barge-in ack arrived."
+            )
+        return empty_pb2.Empty()
+
+
+async def _drain_to_terminal(
+    sink: asyncio.Queue,
+    action_name: str,
+    span: Any,
+    action_call: Dict[str, Any],
+    context: grpc.aio.ServicerContext,
+    deadline: float,
+) -> AsyncIterator[action_webhook_pb2.WebhookStreamEvent]:
+    """Drain *sink* until a terminal event arrives, yielding the final result.
+
+    Called after a barge-in is detected.  In-flight ``stream_chunk`` and
+    ``stream_end`` events are discarded; ``stream_done`` triggers a
+    ``final_result`` yield and ``stream_error`` triggers an ``error`` yield.
+    Either way the generator returns after the first terminal event.
+
+    If no terminal event arrives before *deadline*, yields an empty
+    ``final_result`` so the client (Rasa Pro) can complete the barge-in
+    handler normally, then returns so the caller can cancel the action task.
+
+    ``final_result`` and ``error`` events are skipped when *context* is
+    already cancelled (client disconnected mid-drain), matching the main-loop
+    behaviour for ``stream_done``.
+    """
+    while True:
+        if context.cancelled():
+            return
+
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+
+        try:
+            drained = await asyncio.wait_for(sink.get(), timeout=remaining)
+        except asyncio.TimeoutError:
+            break
+
+        drained_type = drained.get("event")
+        if drained_type not in ("stream_done", "stream_error"):
+            continue
+
+        if context.cancelled():
+            return
+        if drained_type == "stream_done":
+            final_event = _build_final_result_event(drained.get("result"))
+            if final_event:
+                yield final_event
+        else:
+            yield _handle_stream_error_event(
+                drained.get("exception"), action_name, context
+            )
+        _set_grpc_span_attributes(span, action_call, method_name="WebhookStream")
+        return
+
+    logger.warning(
+        f"Timed out waiting for action '{action_name}' to finish after "
+        "barge-in while draining the stream queue; cancelling the task."
+    )
+    if context.cancelled():
+        return
+    yield _build_empty_final_result_event()
+    _set_grpc_span_attributes(span, action_call, method_name="WebhookStream")
+
+
+async def _await_barge_in_run_task(
+    run_task: asyncio.Task[Any],
+    action_name: str,
+    deadline: float,
+) -> None:
+    """Wait for the action task to finish after barge-in, bounded by *deadline*."""
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        logger.warning(
+            f"Action '{action_name}' did not finish within the barge-in timeout; "
+            "cancelling the task."
+        )
+        run_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await run_task
+        return
+
+    try:
+        await asyncio.wait_for(run_task, timeout=remaining)
+    except asyncio.TimeoutError:
+        logger.warning(
+            f"Action '{action_name}' did not finish within the barge-in timeout; "
+            "cancelling the task."
+        )
+        run_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await run_task
+    except asyncio.CancelledError:
+        logger.debug(
+            f"WebhookStream cancelled while waiting for action '{action_name}' "
+            "to finish after barge-in."
+        )
+    except Exception as exc:
+        logger.exception(
+            f"Unexpected error while waiting for action '{action_name}' "
+            f"to finish after barge-in: {exc}"
+        )
+
+
+def _build_chunk_event(
+    chunk_payload: Dict[str, Any],
+    response_id: str,
+) -> action_webhook_pb2.WebhookStreamEvent:
+    """Build a ``WebhookStreamEvent`` carrying a single ``Chunk`` message.
+
+    Only the fields defined in the ``Chunk`` protobuf message are forwarded;
+    any extra kwargs present in *chunk_payload* are silently dropped because
+    the wire format has no place for them.
+    """
+    return action_webhook_pb2.WebhookStreamEvent(
+        chunk=ParseDict(
+            {
+                k: chunk_payload[k]
+                for k in (
+                    "text",
+                    "image",
+                    "custom",
+                    "attachment",
+                    "buttons",
+                    "elements",
+                )
+                if k in chunk_payload
+            },
+            action_webhook_pb2.Chunk(response_id=response_id),
+        )
+    )
+
+
+def _build_empty_final_result_event() -> action_webhook_pb2.WebhookStreamEvent:
+    """Build a ``final_result`` event with no events or responses.
+
+    Used when a barge-in drain times out: Rasa Pro requires a terminal
+    ``final_result`` to complete the streaming RPC cleanly.
+    """
+    return action_webhook_pb2.WebhookStreamEvent(
+        final_result=action_webhook_pb2.WebhookResponse()
+    )
+
+
+def _build_final_result_event(
+    result: Any,
+) -> Optional[action_webhook_pb2.WebhookStreamEvent]:
+    """Build a ``WebhookStreamEvent`` carrying the ``final_result`` webhook response.
+
+    Returns ``None`` when *result* is falsy (e.g. ``None`` when no action name
+    was provided), in which case the caller should not yield anything.
+    """
+    if not result:
+        return None
+    final_response = action_webhook_pb2.WebhookResponse()
+    ParseDict(result.model_dump(), final_response)
+    return action_webhook_pb2.WebhookStreamEvent(final_result=final_response)
+
+
+def _handle_stream_error_event(
+    exc: Any,
+    action_name: str,
+    context: grpc.aio.ServicerContext,
+) -> action_webhook_pb2.WebhookStreamEvent:
+    """Set the appropriate gRPC status code/details for *exc* on *context* and
+    return the corresponding ``WebhookStreamEvent`` error message.
+
+    Handles the three known action-level exceptions with specific status codes;
+    any other exception falls back to ``INTERNAL``.
+    """
+    if isinstance(exc, ActionExecutionRejection):
+        logger.debug(exc)
+        context.set_code(grpc.StatusCode.INTERNAL)
+        context.set_details(
+            ActionExecutionFailed(
+                action_name=exc.action_name, message=exc.message
+            ).model_dump_json()
+        )
+    elif isinstance(exc, ActionNotFoundException):
+        logger.error(exc)
+        context.set_code(grpc.StatusCode.NOT_FOUND)
+        context.set_details(
+            ResourceNotFound(
+                action_name=exc.action_name,
+                message=exc.message,
+                resource_type=ResourceNotFoundType.ACTION,
+            ).model_dump_json()
+        )
+    elif isinstance(exc, ActionMissingDomainException):
+        logger.error(exc)
+        context.set_code(grpc.StatusCode.NOT_FOUND)
+        context.set_details(
+            ResourceNotFound(
+                action_name=exc.action_name,
+                message=exc.message,
+                resource_type=ResourceNotFoundType.DOMAIN,
+            ).model_dump_json()
+        )
+    else:
+        logger.error(exc)
+        context.set_code(grpc.StatusCode.INTERNAL)
+        context.set_details(str(exc))
+    return action_webhook_pb2.WebhookStreamEvent(
+        error=action_webhook_pb2.StreamError(
+            action_name=action_name,
+            message=str(exc),
+        )
+    )
 
 
 def _set_grpc_span_attributes(

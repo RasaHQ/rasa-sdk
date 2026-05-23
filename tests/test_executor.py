@@ -876,3 +876,72 @@ async def test_executor_auto_close_logs_warning(
         await missing_end_executor.run(_MISSING_END_ACTION_CALL)
 
     assert any("stream_end" in record.message for record in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# Cancellation / barge-in: cancel_stream, stream_end
+# ---------------------------------------------------------------------------
+
+
+async def test_cancel_stream_sets_flag():
+    dispatcher = CollectingDispatcher()
+    assert not dispatcher.is_streaming_cancelled
+    dispatcher.cancel_stream()
+    assert dispatcher.is_streaming_cancelled
+
+
+async def test_stream_chunk_dropped_after_cancel():
+    """Chunks emitted after cancel_stream() are silently ignored."""
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_start()
+    await dispatcher.stream_chunk(text="before cancel")
+    dispatcher.cancel_stream()
+    await dispatcher.stream_chunk(text="after cancel")  # must be dropped
+
+    accumulated_texts = [c["text"] for c in dispatcher._stream_accumulated_chunks]
+    assert "before cancel" in accumulated_texts
+    assert "after cancel" not in accumulated_texts
+
+
+async def test_stream_chunk_does_not_forward_to_sink_after_cancel():
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_sink = sink.put
+    await dispatcher.stream_start()
+    await sink.get()  # consume stream_start
+    await dispatcher.stream_chunk(text="sent")
+    sent_event = await sink.get()  # consume stream_chunk
+    dispatcher.cancel_stream()
+    await dispatcher.stream_chunk(text="dropped")  # must not reach sink
+
+    assert sink.empty(), "cancelled chunk must not be forwarded to the sink"
+    assert sent_event.get("text") == "sent"
+    accumulated_texts = [c["text"] for c in dispatcher._stream_accumulated_chunks]
+    assert "dropped" not in accumulated_texts
+
+
+async def test_stream_end_cancelled_does_not_replay_chunks_via_utter_message():
+    """On the streaming path, stream_end() never calls utter_message() regardless
+    of cancellation state — the voice channel owns tracker storage for streamed
+    content, not rasa-sdk."""
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_sink = sink.put
+    await dispatcher.stream_start()
+    await dispatcher.stream_chunk(text="chunk 1")
+    await dispatcher.stream_chunk(text="chunk 2")
+    dispatcher.cancel_stream()
+    await dispatcher.stream_end()
+
+    assert dispatcher.messages == []  # nothing replayed; voice channel handles it
+
+
+async def test_stream_start_resets_cancellation_state():
+    """A second stream_start() clears cancellation so a new sequence can begin."""
+    dispatcher = CollectingDispatcher()
+    await dispatcher.stream_start()
+    dispatcher.cancel_stream()
+    assert dispatcher.is_streaming_cancelled
+
+    await dispatcher.stream_start()  # second sequence begins
+    assert not dispatcher.is_streaming_cancelled
