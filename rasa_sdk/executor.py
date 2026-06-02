@@ -633,8 +633,7 @@ class ActionExecutor:
                     any_module_reloaded = True
             except ImportError:
                 logger.exception(
-                    f"Error while scanning package "
-                    f"'{package_name}' for new modules:"
+                    f"Error while scanning package '{package_name}' for new modules:"
                 )
 
         if any_module_reloaded:

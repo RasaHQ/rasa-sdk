@@ -34,7 +34,7 @@ def read_endpoint_config(
         return EndpointConfig.from_dict(content[endpoint_type])
     except FileNotFoundError:
         logger.error(
-            "Failed to read endpoint configuration " "from {}. No such file.".format(
+            "Failed to read endpoint configuration from {}. No such file.".format(
                 os.path.abspath(filename)
             )
         )

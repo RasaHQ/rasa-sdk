@@ -502,9 +502,9 @@ async def test_webhook_stream_double_stream_start_evicts_old_registry_entry(
     )
 
     # After the stream completes the registry must be empty — no stale entries.
-    assert (
-        grpc_action_server_webhook._dispatcher_registry == {}
-    ), "stale response_id left in registry after double stream_start"
+    assert grpc_action_server_webhook._dispatcher_registry == {}, (
+        "stale response_id left in registry after double stream_start"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -965,6 +965,6 @@ async def test_webhook_stream_context_cancel_at_stream_done_skips_final_result(
     )
 
     event_types = [e.WhichOneof("event") for e in events]
-    assert (
-        "final_result" not in event_types
-    ), "final_result must not be sent to a disconnected client"
+    assert "final_result" not in event_types, (
+        "final_result must not be sent to a disconnected client"
+    )
