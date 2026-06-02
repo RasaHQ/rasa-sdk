@@ -45,7 +45,7 @@ WORKDIR /app
 # install dependencies and build wheels
 RUN python -m venv /opt/venv && \
   . /opt/venv/bin/activate && \
-  pip install --no-cache-dir -U pip && \
+  pip install --no-cache-dir "pip>=26.1" && \
   pip install --no-cache-dir wheel && \
   poetry install --no-root --no-interaction
 
