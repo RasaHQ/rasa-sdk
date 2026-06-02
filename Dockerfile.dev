@@ -1,4 +1,9 @@
+# Minimum pip version (CVE-2026-3219, CVE-2026-6357)
+ARG PIP_MIN_VERSION=26.1
+
 FROM ubuntu:22.04 AS base
+
+ARG PIP_MIN_VERSION
 
 # hadolint ignore=DL3005,DL3008
 RUN apt-get update -qq \
@@ -11,13 +16,15 @@ RUN apt-get update -qq \
       python3-dev \
     && apt-get autoremove -y \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m pip install --no-cache-dir "pip>=${PIP_MIN_VERSION}"
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 100
 
 FROM base AS python_builder
 
+ARG PIP_MIN_VERSION
 ARG POETRY_VERSION=2.1.2
 
 # hadolint ignore=DL3008
@@ -45,7 +52,7 @@ WORKDIR /app
 # install dependencies and build wheels
 RUN python -m venv /opt/venv && \
   . /opt/venv/bin/activate && \
-  pip install --no-cache-dir -U pip && \
+  pip install --no-cache-dir "pip>=${PIP_MIN_VERSION}" && \
   pip install --no-cache-dir wheel && \
   poetry install --no-root --no-interaction
 

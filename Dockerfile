@@ -1,11 +1,14 @@
 # Keep this in sync with the version pinned in poetry.lock
 ARG SETUPTOOLS_VERSION=82.0.1
+# Minimum pip version
+ARG PIP_MIN_VERSION=26.1
 # Recompute with: curl -fsSL https://bootstrap.pypa.io/get-pip.py | sha256sum
-ARG GET_PIP_SHA256=feba1c697df45be1b539b40d93c102c9ee9dde1d966303323b830b06f3fbca3c
+ARG GET_PIP_SHA256=a341e1a43e38001c551a1508a73ff23636a11970b61d901d9a1cad2a18f57055
 
 FROM ubuntu:22.04 AS base
 
 ARG SETUPTOOLS_VERSION
+ARG PIP_MIN_VERSION
 ARG GET_PIP_SHA256
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -25,6 +28,7 @@ RUN apt-get update -qq \
     && curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
     && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check --status \
     && python3 /tmp/get-pip.py \
+    && pip install --no-cache-dir "pip>=${PIP_MIN_VERSION}" \
     && rm /tmp/get-pip.py \
     && pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}"
 
@@ -33,6 +37,7 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
 
 FROM base AS python_builder
 
+ARG PIP_MIN_VERSION
 ARG POETRY_VERSION=2.1.2
 
 # install poetry
@@ -50,7 +55,7 @@ WORKDIR /app
 # hadolint ignore=SC1091,DL3013
 RUN python -m venv /opt/venv && \
   . /opt/venv/bin/activate && \
-  pip install --no-cache-dir -U pip && \
+  pip install --no-cache-dir "pip>=${PIP_MIN_VERSION}" && \
   pip install --no-cache-dir wheel && \
   poetry install --without dev --no-root --no-interaction
 
@@ -70,7 +75,7 @@ RUN find . -name '*.whl' -maxdepth 1 -exec basename {} \; | awk -F - '{ gsub("_"
   && rm -rf /opt/venv \
   && python -m venv /opt/venv \
   && . /opt/venv/bin/activate \
-  && pip install --no-cache-dir -U pip \
+  && pip install --no-cache-dir "pip>=${PIP_MIN_VERSION}" \
   && pip install --no-cache-dir --no-index --find-links=/wheels -r /wheels/requirements.txt \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
   && rm -rf /wheels \
