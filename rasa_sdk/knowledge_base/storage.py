@@ -201,10 +201,10 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         if attributes:
             objects = list(
                 filter(
-                    lambda obj: [
-                        obj[a["name"]] == a["value"] for a in attributes
-                    ].count(False)
-                    == 0,
+                    lambda obj: (
+                        [obj[a["name"]] == a["value"] for a in attributes].count(False)
+                        == 0
+                    ),
                     objects,
                 )
             )
@@ -236,8 +236,9 @@ class InMemoryKnowledgeBase(KnowledgeBase):
         # filter the objects by its key attribute, for example, 'id'
         objects_of_interest = list(
             filter(
-                lambda obj: str(obj[key_attribute]).lower()
-                == str(object_identifier).lower(),
+                lambda obj: (
+                    str(obj[key_attribute]).lower() == str(object_identifier).lower()
+                ),
                 objects,
             )
         )
@@ -251,8 +252,10 @@ class InMemoryKnowledgeBase(KnowledgeBase):
 
             objects_of_interest = list(
                 filter(
-                    lambda obj: str(object_identifier).lower()
-                    in str(repr_function(obj)).lower(),
+                    lambda obj: (
+                        str(object_identifier).lower()
+                        in str(repr_function(obj)).lower()
+                    ),
                     objects,
                 )
             )

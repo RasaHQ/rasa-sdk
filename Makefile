@@ -8,11 +8,11 @@ help:  ## show help message
 	@grep -hE '^[A-Za-z0-9_ \-]*?:.*##.*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 install: ## install dependencies
-	poetry run python -m pip install -U pip
+	poetry run python -m pip install -U "pip>=26.1"
 	poetry install
 
 install-dev: ## install dependencies for development
-	poetry run python -m pip install -U pip
+	poetry run python -m pip install -U "pip>=26.1"
 	poetry install --with dev
 
 clean: ## remove all build, test, coverage and Python artifacts

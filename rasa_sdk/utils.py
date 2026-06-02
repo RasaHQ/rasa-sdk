@@ -352,7 +352,7 @@ def read_file(filename: Union[Text, Path], encoding: Text = DEFAULT_ENCODING) ->
             return f.read()
     except FileNotFoundError:
         raise FileNotFoundException(
-            f"Failed to read file, " f"'{os.path.abspath(filename)}' does not exist."
+            f"Failed to read file, '{os.path.abspath(filename)}' does not exist."
         )
     except UnicodeDecodeError:
         raise FileIOException(
@@ -427,5 +427,5 @@ def file_as_bytes(file_path: Text) -> bytes:
             return f.read()
     except FileNotFoundError:
         raise FileNotFoundException(
-            f"Failed to read file, " f"'{os.path.abspath(file_path)}' does not exist."
+            f"Failed to read file, '{os.path.abspath(file_path)}' does not exist."
         )

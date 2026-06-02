@@ -27,7 +27,7 @@ def sanic_app(action_executor: ep.ActionExecutor) -> Sanic:
 
 
 def test_server_health_returns_200(sanic_app: Sanic):
-    request, response = sanic_app.test_client.get("/health")
+    _request, response = sanic_app.test_client.get("/health")
     assert response.status == 200
     assert response.json == {"status": "ok"}
 
@@ -37,7 +37,7 @@ def test_server_list_actions_returns_200(
 ):
     """Test that the server returns a list of actions."""
     # When we request the list of actions
-    request, response = sanic_app.test_client.get("/actions")
+    _request, response = sanic_app.test_client.get("/actions")
 
     # Then the server should return a list of actions
     assert response.status == 200
@@ -69,7 +69,7 @@ def test_server_webhook_unknown_action_returns_404(
         "next_action": "non_existing_action",
         "tracker": {"sender_id": "1", "conversation_id": "default"},
     }
-    request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
+    _request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     assert response.status == 404
 
 
@@ -81,7 +81,7 @@ def test_server_webhook_handles_action_exception(
         "tracker": {"sender_id": "1", "conversation_id": "default"},
         "domain": {},
     }
-    request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
+    _request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     assert response.status == 500
     assert response.json.get("error") == "test exception"
     assert response.json.get("request_body") == data
@@ -95,7 +95,7 @@ def test_server_webhook_custom_action_returns_200(
         "tracker": {"sender_id": "1", "conversation_id": "default"},
         "domain": {},
     }
-    request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
+    _request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     events = response.json.get("events")
 
     assert events == [SlotSet("test", "bar")]
@@ -108,7 +108,7 @@ def test_server_webhook_custom_async_action_returns_200(sanic_app: Sanic):
         "tracker": {"sender_id": "1", "conversation_id": "default"},
         "domain": {},
     }
-    request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
+    _request, response = sanic_app.test_client.post("/webhook", data=json.dumps(data))
     events = response.json.get("events")
 
     assert events == [SlotSet("test", "foo"), SlotSet("test2", "boo")]
@@ -141,7 +141,7 @@ def test_server_webhook_custom_action_encoded_data_returns_200(sanic_app: Sanic)
         "domain": {"intents": ["greet", "goodbye"]},
     }
 
-    request, response = sanic_app.test_client.post(
+    _request, response = sanic_app.test_client.post(
         "/webhook",
         data=zlib.compress(json.dumps(data).encode()),
         headers={"Content-encoding": "deflate"},
