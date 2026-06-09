@@ -6,8 +6,8 @@
 #
 # 1. Trivy - Detects hardcoded secrets in the repository.
 # 2. Gitleaks - Scans for potential secrets using a reusable workflow.
-# 3. Slack Alert - Sends a notification to #infrasec-alert if any
-#    security job fails.
+# 3. Slack Alert - Sends a notification to #infrasec-alert and #rasa-pro-alerts
+#    if any security job fails.
 #
 # Jobs:
 #   - trivy: Runs a local filesystem scan for secrets.
@@ -26,6 +26,11 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+        with:
+          egress-policy: audit
+
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -57,25 +62,38 @@ jobs:
   gitleaks:
     name: Run Gitleaks secret scan
     runs-on: ubuntu-24.04
+    # Using the official public gitleaks-action directly instead of the internal
+    # reusable workflow (RasaHQ/infrasec-workflows) because reusable workflows in
+    # private/internal repos are not accessible from public repositories.
     steps:
-      - name: Checkout code
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-
-      - name: Run Gitleaks Scan
+  
+      - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   alert_on_failures:
-    name: Alert on failures (Slack on #infrasec-alert)
+    name: Alert on failures
     needs: [trivy, gitleaks]
     runs-on: ubuntu-24.04
     if: always()
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+        with:
+          egress-policy: audit
+
       - name: Check job failures and create summary
         id: summary
         run: |
@@ -104,22 +122,33 @@ jobs:
             echo "summary=All security scans passed successfully" >> $GITHUB_OUTPUT
           fi
 
-      - name: Send Slack notification
+      - name: Send Slack notification to infrasec-alert channel
         if: steps.summary.outputs.failed == 'true'
         uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02d # v2.0.0
         with:
-          webhook: ${{ secrets.SLACK_CODESECURITY_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            {
-              "text": "*Security scans:* some jobs failed :rotating_light:\nRepository: ${{ github.repository }}\nRun: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Open run>\n\n${{ steps.summary.outputs.summary }}",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Security scans:* some jobs failed :rotating_light:\n*Repository:* `${{ github.repository }}`\n*Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Open run>\n\n${{ steps.summary.outputs.summary }}"
-                  }
-                }
-              ]
-            }
+            channel: "C0351QXJ5CP"
+            text: |
+              *Security scans:* some jobs failed :rotating_light:
+              ${{ steps.summary.outputs.summary }}
+              *Repository:* `${{ github.repository }}`
+              *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Open run>
+              *Remedy guide:* <https://www.notion.so/rasa/Guide-How-to-Remove-a-Committed-Security-Key-From-GitHub-and-Clean-Repo-History-2afb9c0d544a8080bee6f5380b8e22e0|How to remove a committed security key>
+              _This notification was also sent to #rasa-pro-alerts._
+
+      - name: Send Slack notification to rasa-pro-alerts channel
+        if: steps.summary.outputs.failed == 'true'
+        uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02d # v2.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channel: "C01M5TAHDHA"
+            text: |
+              *Security scans:* some jobs failed :rotating_light:
+              *Repository:* `${{ github.repository }}`
+              *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Open run>
+              ${{ steps.summary.outputs.summary }}
+              *Remedy guide:* <https://www.notion.so/rasa/Guide-How-to-Remove-a-Committed-Security-Key-From-GitHub-and-Clean-Repo-History-2afb9c0d544a8080bee6f5380b8e22e0|How to remove a committed security key>

@@ -1,13 +1,25 @@
 name: Scan Rasa SDK App Dependencies
 
 on:
+  schedule:
+      # Runs at 8AM on Monday.
+      - cron: '0 8 * * MON'
   workflow_dispatch:
+
+
+permissions:
+  contents: read
 
 jobs:
   scan_and_alert:
     runs-on: ubuntu-24.04
 
     steps:
+    - name: Harden the runner (Audit all outbound calls)
+      uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+      with:
+        egress-policy: audit
+
     - name: Checkout repository to check tags
       uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
 
@@ -19,8 +31,11 @@ jobs:
 
     - name: Scan image for language dependency vulnerabilities
       id: trivy
-      uses: aquasecurity/trivy-action@d63413b0a4a4482237085319f7f4a1ce99a8f2ac
+      uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478 # v0.34.2
       continue-on-error: true
+      env:
+        TRIVY_TABLE_MODE: detailed
+        TRIVY_DISABLE_VEX_NOTICE: foo
       with:
         exit-code: '1'
         format: 'table'
@@ -31,6 +46,7 @@ jobs:
         vuln-type: 'library'
         scan-type: 'image'
         output: scan-result.txt  
+        version: v0.69.3
     
     - id: auth-security-reports
       name: Authenticate with gcloud for saving report 🎫
@@ -53,7 +69,7 @@ jobs:
       if: steps.trivy.outcome == 'failure'
       uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
       with:
-        channel-id: 'C01M5TAHDHA,C04Q26JSD6U'
+        channel-id: ${{ secrets.SLACK_VULN_REPORT_CHANNEL_ID }}
         payload: |
           {
             "text": "Dependency vulnerabilities have been found in the Docker image for Rasa SDK ${{ steps.find-tag.outputs.tag }} that could impact customer deployments. Please schedule these for resolution.",
