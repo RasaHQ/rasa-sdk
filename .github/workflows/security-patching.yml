@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         with:
           repository: RasaHQ/get-release-records-from-cms-gha
-          ref: main
+          ref: 822cff242ec228aa365a40c2bd0c5ace5599684e
           token: ${{ secrets.CLONE_CMS_CHECKER }}
           path: .github/get-release-records-from-cms-gha
 
