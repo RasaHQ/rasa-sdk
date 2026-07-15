@@ -135,6 +135,22 @@ def dispatcher() -> CollectingDispatcher:
     return CollectingDispatcher()
 
 
+@pytest.fixture()
+def shadow_package_name() -> Generator[Text, None, None]:
+    """Unique package name for collision testing.
+
+    On teardown, clears any modules it leaked into ``sys.modules`` (import
+    state is global and would pollute other tests).
+    """
+    name = "agentsshadow_" + "".join(
+        random.choice(string.ascii_lowercase) for _ in range(10)
+    )
+    yield name
+    for module_name in list(sys.modules):
+        if module_name == name or module_name.startswith(f"{name}."):
+            del sys.modules[module_name]
+
+
 def test_load_action_from_init(executor: ActionExecutor, package_path: Text):
     # Actions should be loaded from packages
     _write_action_file(package_path, "__init__.py", "InitAction", "init_action")
@@ -174,6 +190,7 @@ def test_submodule_name_not_shadowed_by_top_level_package(
     package_path: Text,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    shadow_package_name: Text,
 ) -> None:
     """A subpackage must not be shadowed by a same-named top-level package.
 
@@ -184,12 +201,7 @@ def test_submodule_name_not_shadowed_by_top_level_package(
     (``_config`` etc.) and then try to import ``actions.agents._config``,
     crashing the action server with ``ModuleNotFoundError``.
     """
-    # A unique name shared by an installed top-level package and a subpackage
-    # of the registered package, so the test reproduces the collision
-    # deterministically without depending on ``openai-agents`` being installed.
-    shadow = "agentsshadow_" + "".join(
-        random.choice(string.ascii_lowercase) for _ in range(10)
-    )
+    shadow = shadow_package_name
 
     # 1. A top-level package with the same name, importable via sys.path,
     #    exposing a ``_config`` submodule that the local subpackage does NOT
@@ -208,21 +220,14 @@ def test_submodule_name_not_shadowed_by_top_level_package(
 
     package_name = package_path.replace("/", ".")
 
-    try:
-        # Exercise the importer directly for a crisp failure on the root cause:
-        # before the fix this raises ``ModuleNotFoundError`` for
-        # ``<package>.<shadow>._config`` (register_package would instead
-        # swallow it into a sys.exit(1)).
-        executor._import_submodules(package_name)
+    # Exercise the importer directly for a crisp failure on the root cause:
+    # before the fix this raises ``ModuleNotFoundError`` for
+    # ``<package>.<shadow>._config`` (register_package would instead
+    # swallow it into a sys.exit(1)).
+    executor._import_submodules(package_name)
 
-        # register_package is the real entrypoint and must not sys.exit.
-        executor.register_package(package_name)
-    finally:
-        # monkeypatch restores sys.path automatically; drop the leaked
-        # top-level modules so they can't affect other tests.
-        for module_name in list(sys.modules):
-            if module_name == shadow or module_name.startswith(f"{shadow}."):
-                del sys.modules[module_name]
+    # register_package is the real entrypoint and must not sys.exit.
+    executor.register_package(package_name)
 
     # The local subpackage's action loads instead of the shadow being walked.
     assert "agents_action" in executor.actions
