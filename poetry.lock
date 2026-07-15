@@ -520,6 +520,7 @@ description = "Protobuf code generator for gRPC"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "python_version < \"3.14\""
 files = [
     {file = "grpcio_tools-1.66.2-cp310-cp310-linux_armv7l.whl", hash = "sha256:40b7ad804ff78490408177cfe87427d5a67224f82a2bdfabe9d8d6ac6239733b"},
     {file = "grpcio_tools-1.66.2-cp310-cp310-macosx_12_0_universal2.whl", hash = "sha256:a886fa2ff9e897b35489557d1c61cbc0e4efc42c4dc0d120a9516f294fefb107"},
@@ -1939,6 +1940,7 @@ description = "Most extensible Python build backend with support for C/C++ exten
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "python_version < \"3.14\""
 files = [
     {file = "setuptools-83.0.0-py3-none-any.whl", hash = "sha256:29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3"},
     {file = "setuptools-83.0.0.tar.gz", hash = "sha256:025bccbbf0fa05b6192bc64ae1e7b16e001fd6d6d4d5de03c97b1c1ade523bef"},
@@ -2457,4 +2459,4 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.15"
-content-hash = "5701061a396ee9d49a2d797c6da035d30668ba71d319bac0a8420a6e07f381d0"
+content-hash = "4ad56cb4245ba3b07f2743a23166641fbaaef1dc7bd8dd2b86862bd4c7634525"
