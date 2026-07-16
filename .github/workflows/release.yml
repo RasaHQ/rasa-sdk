@@ -19,7 +19,7 @@ on:
 
 env:
   COMMIT_EMAIL: sara-tagger@users.noreply.github.com
-  DEFAULT_PYTHON_VERSION: "3.10"
+  DEFAULT_PYTHON_VERSION: "3.11"
   GITHUB_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
   INPUT_VERSION: ${{ github.event.inputs.version }}
   RELEASE_FOM_MAIN: ${{ github.event.inputs.fromMain }}

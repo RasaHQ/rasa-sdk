@@ -66,11 +66,11 @@ exclude = "rasa_sdk/grpc_py"
 
 [tool.ruff]
 line-length = 88
-target-version = "py38"
+target-version = "py311"
 exclude = [ "rasa_sdk/grpc_py", "eggs", ".git", ".pytest_cache", "build", "dist", ".DS_Store",]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.14"
+python = ">=3.11,<3.15"
 coloredlogs = ">=10,<16"
 sanic = "^22.12"
 typing-extensions = "~4.15.0"
@@ -85,7 +85,12 @@ opentelemetry-exporter-otlp = "~1.33.0"
 opentelemetry-api = "~1.33.0"
 grpcio = "~1.80.0"
 protobuf = "~5.29.5"
-grpcio-tools = "~1.66.2"
+# grpcio-tools is codegen-only (used by `make generate-grpc`, not imported at
+# runtime). It has no cp314 wheels below 1.75.1, and 1.75.1+ require protobuf 6.x
+# (incompatible with our protobuf ~5.29.5). Restrict it to <3.14 so runtime installs
+# on 3.14; gRPC code generation runs on the 3.11 quality job. Lifting this needs the
+# protobuf 5.x -> 6.x migration (see PR follow-ups).
+grpcio-tools = { version = "~1.66.2", python = "<3.14" }
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
@@ -108,7 +113,11 @@ pytest = "^7.4.0"
 questionary = ">=1.5.1,<2.1.0"
 towncrier = "~25.8.0"
 toml = "^0.10.0"
-pep440-version-utils = "~1.2.0"
+# pep440-version-utils has no release supporting Python 3.14 (1.2.0 caps <3.14).
+# It is only used by the release scripts (scripts/release.py,
+# scripts/publish_gh_release_notes.py), which run on the pinned release Python,
+# so it is restricted to <3.14 rather than blocking the 3.14 lock. See PR follow-ups.
+pep440-version-utils = { version = "~1.2.0", python = "<3.14" }
 semantic_version = "^2.8.5"
 mypy = "~2.1.0"
 sanic-testing = "~23.6.0"

@@ -700,7 +700,7 @@ def _initialise_interrupts(server: grpc.Server) -> None:
         await server.stop(NO_GRACE_PERIOD)
         logger.info("gRPC server stopped.")
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     loop.add_signal_handler(
         signal.SIGINT, lambda: asyncio.create_task(handle_sigint(signal.SIGINT))
     )
