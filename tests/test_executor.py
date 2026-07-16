@@ -6,7 +6,7 @@ import sys
 import time
 
 from pathlib import Path
-from typing import Any, Dict, List, Text, Optional, Generator
+from typing import Text, Optional, Generator
 
 import pytest
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
