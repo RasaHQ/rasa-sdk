@@ -496,12 +496,23 @@ class ActionExecutor:
         if not getattr(package, "__path__", None):
             return
 
-        for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
-            full_name = package.__name__ + "." + name
-            self._import_module(full_name)
+        # Use `iter_modules` (which only lists the immediate children of the
+        # package path) rather than `walk_packages`. Given a `prefix`,
+        # `iter_modules` yields fully qualified names and does not import any
+        # subpackage itself. `walk_packages` instead imports each subpackage by
+        # its bare leaf name to recurse into it, so a subpackage such as
+        # `actions.agents` would resolve to an unrelated top-level `agents`
+        # package (e.g. the one installed by `openai-agents`) and its submodules
+        # would be mistaken for `actions.agents.*`, crashing with a
+        # `ModuleNotFoundError`. The recursion below descends explicitly using
+        # the fully qualified names.
+        for loader, name, is_pkg in pkgutil.iter_modules(
+            package.__path__, prefix=package.__name__ + "."
+        ):
+            self._import_module(name)
 
             if recursive and is_pkg:
-                self._import_submodules(full_name)
+                self._import_submodules(name)
 
     def _import_module(self, name: Text) -> types.ModuleType:
         """Import a Python module. If possible, register the file where it came from.
