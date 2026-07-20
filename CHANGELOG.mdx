@@ -17,6 +17,51 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 <!-- TOWNCRIER -->
 
+## [3.18.0] - 2026-07-20
+                        
+Rasa_Sdk 3.18.0 (2026-07-20)                             
+### Features
+- [#1314](https://github.com/rasahq/rasa-sdk/issues/1314): Added streaming support to `CollectingDispatcher` and `ActionExecutor`.
+
+  Custom actions can now emit responses incrementally using three new async methods on `CollectingDispatcher`:
+
+  - `stream_start()` — begins a streaming response.
+  - `stream_chunk(text, image, buttons, elements, attachment, json_message)` — emits a response fragment; accepts the same rich-content fields as `utter_message()`.
+  - `stream_end()` — ends the streaming response.
+
+  Whether actual streaming occurs is determined by the transport, not the action. The supported transports are gRPC and direct custom action execution.
+  On streaming transports, chunks are forwarded to the caller immediately as they are produced.
+  On non-streaming transports, the same action code works unchanged: chunks are accumulated
+  and replayed as individual `utter_message()` calls when `stream_end()` is called, so no branching or conditional logic is needed in action code.
+
+  `ActionExecutor.run()` accepts an optional `sink: asyncio.Queue` parameter. When provided,
+  each streaming event (`stream_start`, `stream_chunk`, `stream_end`, `stream_done`) is placed in the queue
+  as the action runs. Omitting `sink` keeps the existing unary behaviour. A convenience wrapper `run_streaming(action_call, sink)` is also available.
+
+  The gRPC transport now implements the `WebhookStream` server-streaming RPC, yielding `WebhookStreamEvent` messages (`ChunkStart`, `Chunk`, `ChunkEnd`, `final_result`, `error`) as the action produces them. The `Chunk` proto message has been extended to carry rich content fields (`image`, `custom`, `attachment`, `buttons`, `elements`) in addition to `text`.
+
+  If an action calls `stream_start()` and `stream_chunk()` but forgets to call `stream_end()`, the executor closes the stream automatically and logs a warning.
+  The `CollectingDispatcher.is_streaming_active` property returns `True` when a stream has been opened but not yet closed.
+- [#1320](https://github.com/rasahq/rasa-sdk/issues/1320): Added graceful barge-in support to streaming custom actions.
+
+  When a user speaks over a streaming assistant response (barge-in), the voice channel can signal the action server via the new `AckStreamChunks` gRPC RPC. The action server stops producing chunks immediately and waits for the action to finish naturally so that any Rasa events (slot sets, etc.) are still returned.
+
+  New `CollectingDispatcher` API:
+
+  - `cancel_stream()` — called by the transport layer on receipt of `AckStreamChunks`. Sets `is_streaming_cancelled` to `True` and causes all subsequent `stream_chunk()` calls to be silently dropped, so the action stops producing output without needing to be forcefully interrupted.
+  - `is_streaming_cancelled` property — `True` after `cancel_stream()` has been called. Action authors can optionally inspect this after `stream_end()` to suppress side effects that are irrelevant when the response was cut short.
+
+  New gRPC RPC in `ActionService`:
+
+  - `AckStreamChunks(StreamChunkAck) returns (google.protobuf.Empty)` — the voice channel sends the `response_id` of the active streaming response. The action server looks up the dispatcher in its internal registry, cancels the stream, and returns immediately. `WebhookStream` detects the cancellation on the next iteration, drains the internal queue until the action finishes, and yields a `final_result` (containing all Rasa events) to the client.
+
+  The `response_id` field already present on `ChunkStart`, `Chunk`, and `ChunkEnd` events serves as the correlation key between the outbound stream and the inbound `AckStreamChunks` call.
+
+  After a barge-in, `WebhookStream` waits up to 30 seconds for the action to finish and deliver `final_result`. The timeout can be configured via the `ACTION_SERVER_STREAM_BARGE_IN_TIMEOUT_SECONDS` environment variable. If the action does not complete within that window, an empty `final_result` is yielded so Rasa Pro can finish the barge-in handler normally, and the task is cancelled so a hung action cannot block the stream indefinitely.
+
+### Bugfixes
+- [#1341](https://github.com/rasahq/rasa-sdk/issues/1341), [#1342](https://github.com/rasahq/rasa-sdk/issues/1342): Widened the `websockets` dependency constraint from `>=10.0,<12.0` to `>=10.0,<16` to allow compatibility with newer `websockets` releases.
+- [#1360](https://github.com/rasahq/rasa-sdk/issues/1360): Custom actions placed in a subpackage whose name collides with an installed top-level package (for example `actions/agents/` alongside the `agents` package pulled in by `openai-agents`) are now imported correctly. Previously the action server failed to start with a `ModuleNotFoundError`.
 ## [3.16.1] - 2026-04-16
                         
 Rasa_Sdk 3.16.1 (2026-04-16)                             
