@@ -28,7 +28,7 @@ RUN apt-get update -qq \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
-    && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check \
+    && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check --status \
     && python3 /tmp/get-pip.py \
     && rm -f -- /tmp/get-pip.py \
     && pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}"
