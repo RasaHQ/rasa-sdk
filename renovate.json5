@@ -1,4 +1,4 @@
-// Renovate configuration for rasa-sdk (Studio/rasa-private-adapted, poetry-only).
+// Renovate configuration for rasa-sdk (Studio-adapted, poetry-only).
 // Groups all minor/patch updates into a single PR,
 // proposed 3 times during work week, after a 3-day supply-chain release cooldown.
 // Skips majors, 0.x (unstable) packages.
@@ -7,8 +7,6 @@
 // cooldown. They may still be constrained by packageRules below (e.g. majors /
 // 0.x disabled) unless Renovate's vulnerability path overrides those rules.
 // ENG-2854 / epic PF-1454. Dependabot remains until PF-1465.
-// Org-level Mend config supplies GitHub auth + FontAwesome token for onboarded
-// repos — no per-repo InfraSec ticket or hostRules needed here.
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: ["config:recommended"],
