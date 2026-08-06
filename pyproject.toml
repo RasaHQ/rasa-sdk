@@ -66,11 +66,11 @@ exclude = "rasa_sdk/grpc_py"
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py310"
 exclude = [ "rasa_sdk/grpc_py", "eggs", ".git", ".pytest_cache", "build", "dist", ".DS_Store",]
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.15"
+python = ">=3.10,<3.15"
 coloredlogs = ">=10,<16"
 sanic = "^22.12"
 typing-extensions = "~4.15.0"
