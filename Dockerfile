@@ -3,7 +3,7 @@ ARG SETUPTOOLS_VERSION=82.0.1
 # Minimum pip version
 ARG PIP_MIN_VERSION=26.1
 # Recompute with: curl -fsSL https://bootstrap.pypa.io/get-pip.py | sha256sum
-ARG GET_PIP_SHA256=25b5c39ade96bab5eabe6404ce83cab6da2deb5fe3c07d9881f43803edb6f9c8
+ARG GET_PIP_SHA256=fb24e693bab954209a063d90953621412ccad4a500905a726286e038f508ddf6
 
 FROM ubuntu:22.04 AS base
 
