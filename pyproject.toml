@@ -95,7 +95,7 @@ certifi = "^2024.8"
 googleapis-common-protos = "^1.65"
 h11 = "0.16.0"
 httpcore = "^1"
-httpx  = "^0.27"
+httpx  = "^0.28"
 
 [tool.poetry.dev-dependencies]
 pytest-cov = "^4.1.0"
