@@ -137,6 +137,25 @@ by GitHub Actions.
     git push origin 1.2.x
     ```
 
+### Auto patch after Renovate (supported `3.N.x` lines)
+
+When a Renovate dependency PR is merged into a supported SDK release line (`3.N.x`, never `main`),
+[Auto Release Renovate](.github/workflows/auto_release_renovate.yml) prepares the next micro/patch
+(via `scripts/release.py`) and opens a `prepare-release-<version>` PR against that same line.
+
+**Operator steps:**
+
+1. Confirm the prepare PR appeared (Actions also supports manual `workflow_dispatch` with
+   `base_branch` like `3.16.x` if you need to re-run).
+2. Review CI, changelog, and version on the prepare PR.
+3. Approve and merge it yourself.
+4. Existing [Release workflow](.github/workflows/release.yml) tags on `prepare-release-*` merge; publish
+   continues as usual.
+
+If an open `prepare-release-*` already targets that `3.N.x`, further Renovate merges on the same line
+do not open another competing prepare PR. Manual `make release` / Release workflow dispatch remains
+available. Merges to `main` and non-Renovate merges on `3.N.x` do not start this path.
+
 ## License
 Licensed under the Apache License, Version 2.0. Copyright 2021 Rasa
 Technologies GmbH. [Copy of the license](LICENSE.txt).

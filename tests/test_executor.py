@@ -3,8 +3,10 @@ import os
 import shutil
 import random
 import string
+import sys
 import time
 
+from pathlib import Path
 from typing import Any, Dict, List, Text, Optional, Generator
 
 import pytest
@@ -133,6 +135,22 @@ def dispatcher() -> CollectingDispatcher:
     return CollectingDispatcher()
 
 
+@pytest.fixture()
+def shadow_package_name() -> Generator[Text, None, None]:
+    """Unique package name for collision testing.
+
+    On teardown, clears any modules it leaked into ``sys.modules`` (import
+    state is global and would pollute other tests).
+    """
+    name = "agentsshadow_" + "".join(
+        random.choice(string.ascii_lowercase) for _ in range(10)
+    )
+    yield name
+    for module_name in list(sys.modules):
+        if module_name == name or module_name.startswith(f"{name}."):
+            del sys.modules[module_name]
+
+
 def test_load_action_from_init(executor: ActionExecutor, package_path: Text):
     # Actions should be loaded from packages
     _write_action_file(package_path, "__init__.py", "InitAction", "init_action")
@@ -165,6 +183,54 @@ def test_load_submodules_in_namespace_package(
 
     for name in ["foo_action", "bar_action"]:
         assert name in executor.actions
+
+
+def test_submodule_name_not_shadowed_by_top_level_package(
+    executor: ActionExecutor,
+    package_path: Text,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    shadow_package_name: Text,
+) -> None:
+    """A subpackage must not be shadowed by a same-named top-level package.
+
+    Regression test for ENG-2917: when custom actions live under e.g.
+    ``actions/agents/`` and an unrelated top-level ``agents`` package is
+    importable (installed by ``openai-agents``), the importer used to resolve
+    the bare name ``agents`` to the top-level package, walk *its* submodules
+    (``_config`` etc.) and then try to import ``actions.agents._config``,
+    crashing the action server with ``ModuleNotFoundError``.
+    """
+    shadow = shadow_package_name
+
+    # 1. A top-level package with the same name, importable via sys.path,
+    #    exposing a ``_config`` submodule that the local subpackage does NOT
+    #    have. This mirrors the top-level ``agents`` package from openai-agents.
+    top_level = tmp_path / shadow
+    top_level.mkdir()
+    (top_level / "__init__.py").write_text("")
+    (top_level / "_config.py").write_text("")
+    monkeypatch.syspath_prepend(str(tmp_path))
+
+    # 2. The registered package contains a subpackage of the same name holding
+    #    an action, and deliberately no ``_config`` submodule.
+    subpackage_path = os.path.join(package_path, shadow)
+    os.makedirs(subpackage_path)
+    _write_action_file(subpackage_path, "__init__.py", "AgentsAction", "agents_action")
+
+    package_name = package_path.replace("/", ".")
+
+    # Exercise the importer directly for a crisp failure on the root cause:
+    # before the fix this raises ``ModuleNotFoundError`` for
+    # ``<package>.<shadow>._config`` (register_package would instead
+    # swallow it into a sys.exit(1)).
+    executor._import_submodules(package_name)
+
+    # register_package is the real entrypoint and must not sys.exit.
+    executor.register_package(package_name)
+
+    # The local subpackage's action loads instead of the shadow being walked.
+    assert "agents_action" in executor.actions
 
 
 def test_load_module_directly(executor: ActionExecutor, package_path: Text):

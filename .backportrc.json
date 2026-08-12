@@ -1,0 +1,23 @@
+{
+  "repoOwner": "RasaHQ",
+  "repoName": "rasa-sdk",
+  "targetBranchChoices": [
+    "main",
+    "3.12.x",
+    "3.13.x",
+    "3.14.x",
+    "3.15.x",
+    "3.16.x",
+    "3.17.x",
+    "3.18.x"
+  ],
+  "commitConflicts": true,
+  "branchLabelMapping": {
+    "^backport-to-(.+)$": "$1"
+  },
+  "prTitle": "Backport PR #{{sourcePullRequest.number}} '{{sourcePullRequest.title}}' to {{targetBranch}}",
+  "prDescription": "This PR was created by the Backporting workflow.\n\nSource PR description:\n{{defaultPrDescription}}.",
+  "publishStatusCommentOnSuccess": true,
+  "publishStatusCommentOnFailure": true,
+  "backportBranchName": "backport-pr-{{sourcePullRequest.number}}-to-{{targetBranch}}"
+}

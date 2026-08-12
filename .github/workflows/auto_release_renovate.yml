@@ -1,0 +1,285 @@
+# Auto-release after a Renovate dependency PR is merged into a supported
+# SDK release line (`3.N.x`).
+#
+# Live flow:
+# 1. Detect merged Renovate PR on `3.N.x` (never `main`).
+# 2. Dedupe if an open prepare-release-* PR already targets that base.
+# 3. Run `scripts/release.py --next_version` for the next micro/patch.
+# 4. Open `prepare-release-<version>` as rasabot via `gh pr create`.
+# 5. Human reviews and merges; `release.yml` tags on merge.
+#
+# v1 human gate: the prepare PR stays open until a person merges it.
+# Auto-merge of prepare PRs is out of scope for now.
+#
+# Security (pull_request_target):
+# - Job only runs for merged renovate[bot] PRs with renovate/ heads onto *.x.
+# - Checkout is always the base branch (trusted), never the PR head.
+# - Mutating git / opening the PR uses RASASDK_GITHUB_TOKEN.
+
+name: Auto Release Renovate
+
+on:
+  pull_request_target:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      base_branch:
+        description: >
+          Supported SDK release line to target (e.g. 3.16.x). Must match
+          ^[0-9]+.[0-9]+.x$ — never main.
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  # Serialize per base branch so the dedupe step can't race a concurrent prepare;
+  # never cancel an in-flight prepare (it pushes a branch before opening the PR).
+  group: auto-release-renovate-${{ github.event.pull_request.base.ref || inputs.base_branch || github.ref }}
+  cancel-in-progress: false
+
+env:
+  DEFAULT_PYTHON_VERSION: "3.10"
+  RELEASE_BRANCH_PATTERN: '^[0-9]+\.[0-9]+\.x$'
+
+jobs:
+  prepare-auto-release:
+    name: Prepare patch after Renovate
+    runs-on: ubuntu-24.04
+    # Live path: only merged Renovate PRs onto a *.x base. Dispatch always runs.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'pull_request_target' &&
+        github.event.action == 'closed' &&
+        github.event.pull_request.merged == true &&
+        startsWith(github.event.pull_request.head.ref, 'renovate/') &&
+        github.event.pull_request.user.login == 'renovate[bot]' &&
+        endsWith(github.event.pull_request.base.ref, '.x')
+      )
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+        with:
+          egress-policy: audit
+
+      - name: Resolve base branch
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_BASE_BRANCH: ${{ inputs.base_branch }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -eu
+
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            base_branch="${INPUT_BASE_BRANCH}"
+          else
+            base_branch="${PR_BASE_REF}"
+          fi
+
+          # Reject newlines before writing GITHUB_OUTPUT (Actions output injection).
+          case "${base_branch}" in
+            *$'\n'*|*$'\r'*)
+              echo "::error::base_branch must not contain newlines"
+              exit 1
+              ;;
+          esac
+
+          printf 'base_branch=%s\n' "${base_branch}" >> "$GITHUB_OUTPUT"
+          echo "Resolved base_branch=${base_branch} (event=${EVENT_NAME})"
+
+      - name: Validate base branch
+        id: validate
+        env:
+          BASE_BRANCH: ${{ steps.resolve.outputs.base_branch }}
+          RELEASE_BRANCH_PATTERN: ${{ env.RELEASE_BRANCH_PATTERN }}
+        run: |
+          set -eu
+
+          if [[ -z "${BASE_BRANCH}" ]]; then
+            echo "::error::base_branch is required"
+            exit 1
+          fi
+
+          if [[ "${BASE_BRANCH}" == "main" ]]; then
+            echo "::error::Auto-release must never target main."
+            exit 1
+          fi
+
+          if [[ "${BASE_BRANCH}" == prepare-release-* ]]; then
+            echo "::error::base_branch must be a release line (N.N.x), not a prepare-release head."
+            exit 1
+          fi
+
+          if ! [[ "${BASE_BRANCH}" =~ ${RELEASE_BRANCH_PATTERN} ]]; then
+            echo "::error::base_branch '${BASE_BRANCH}' does not match ${RELEASE_BRANCH_PATTERN}"
+            exit 1
+          fi
+
+          echo "Base branch '${BASE_BRANCH}' is valid."
+
+      # Always checkout the trusted base branch — never the Renovate PR head.
+      - name: Checkout base branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ steps.resolve.outputs.base_branch }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Dedupe open prepare-release PRs
+        id: dedupe
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BASE_BRANCH: ${{ steps.resolve.outputs.base_branch }}
+        run: |
+          set -euo pipefail
+
+          prepare_prs="$(
+            gh pr list \
+              --base "${BASE_BRANCH}" \
+              --state open \
+              --json number,url,title,headRefName \
+              --jq '[.[] | select(.headRefName | startswith("prepare-release-"))]'
+          )"
+
+          prepare_count="$(echo "${prepare_prs}" | jq 'length')"
+
+          echo "Open prepare-release-* PRs on ${BASE_BRANCH}: ${prepare_count}"
+          echo "${prepare_prs}" | jq -r '.[] | "  - #\(.number) \(.headRefName) \(.url)"' || true
+
+          if [[ "${prepare_count}" -gt 0 ]]; then
+            printf 'skip=%s\n' "true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Dedupe hit — skipping prepare while an open prepare-release-* PR targets ${BASE_BRANCH}."
+          else
+            printf 'skip=%s\n' "false" >> "$GITHUB_OUTPUT"
+            echo "No conflicting open prepare-release PRs; prepare may proceed."
+          fi
+
+      - name: Get current version
+        id: get-current-version
+        if: steps.dedupe.outputs.skip != 'true'
+        shell: python
+        run: |
+          import os
+          import re
+          from pathlib import Path
+
+          text = Path("rasa_sdk/version.py").read_text(encoding="utf-8")
+          match = re.search(r'__version__\s*=\s*"([^"]+)"', text)
+          if not match:
+              raise SystemExit("Could not parse __version__ from rasa_sdk/version.py")
+          current_version = match.group(1)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as github_output:
+              github_output.write(f"current_version={current_version}\n")
+
+      - name: Get next version
+        id: get-next-version
+        if: steps.dedupe.outputs.skip != 'true'
+        env:
+          CURRENT_VERSION: ${{ steps.get-current-version.outputs.current_version }}
+        shell: python
+        run: |
+          import os
+
+          version = os.environ["CURRENT_VERSION"]
+          parts = version.split(".")
+          if len(parts) < 3 or not all(part.isdigit() for part in parts[:3]):
+              raise SystemExit(
+                  f"Expected stable X.Y.Z on release line, got '{version}'"
+              )
+          major, minor, micro = (int(parts[0]), int(parts[1]), int(parts[2]))
+          next_version = f"{major}.{minor}.{micro + 1}"
+          prepare_branch = f"prepare-release-{next_version}"
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as github_output:
+              github_output.write(f"next_version={next_version}\n")
+              github_output.write(f"prepare_branch={prepare_branch}\n")
+
+      - name: Prepare release plan
+        id: plan
+        if: steps.dedupe.outputs.skip != 'true'
+        env:
+          BASE_BRANCH: ${{ steps.resolve.outputs.base_branch }}
+          CURRENT_VERSION: ${{ steps.get-current-version.outputs.current_version }}
+          NEXT_VERSION: ${{ steps.get-next-version.outputs.next_version }}
+          PREPARE_BRANCH: ${{ steps.get-next-version.outputs.prepare_branch }}
+        run: |
+          set -eu
+          echo "Prepare plan for ${BASE_BRANCH}:"
+          echo "  current_version=${CURRENT_VERSION}"
+          echo "  next_version=${NEXT_VERSION}"
+          echo "  prepare_branch=${PREPARE_BRANCH}"
+
+      - name: Setup Python Environment
+        if: steps.dedupe.outputs.skip != 'true'
+        uses: ./.github/actions/setup-python-env
+        with:
+          PYTHON_VERSION: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      # setup-python-env installs main deps only; towncrier (dev dep) is needed by release prepare.
+      - name: Install towncrier for changelog generation
+        if: steps.dedupe.outputs.skip != 'true'
+        run: poetry run pip install "towncrier~=25.8.0"
+
+      - name: Prepare the release
+        if: steps.dedupe.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
+          NEXT_VERSION: ${{ steps.get-next-version.outputs.next_version }}
+        run: |
+          set -eu
+          # Authenticate only the mutating git operation as rasabot.
+          gh auth setup-git
+          git config user.name "rasabot"
+          git config user.email "rasabot@rasa.com"
+          # Creates prepare-release-<version>, bumps version/changelog, pushes.
+          poetry run python scripts/release.py --next_version "${NEXT_VERSION}"
+
+      - name: Open prepare-release pull request
+        if: steps.dedupe.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BASE_BRANCH: ${{ steps.resolve.outputs.base_branch }}
+          NEXT_VERSION: ${{ steps.get-next-version.outputs.next_version }}
+          PREPARE_BRANCH: ${{ steps.get-next-version.outputs.prepare_branch }}
+          EVENT_NAME: ${{ github.event_name }}
+          RENOVATE_PR: ${{ github.event.pull_request.html_url }}
+        run: |
+          set -eu
+
+          body="**Automated prepare-release after Renovate.**
+
+          - Base: \`${BASE_BRANCH}\`
+          - Version: \`${NEXT_VERSION}\`
+          - Trigger: \`${EVENT_NAME}\`
+          "
+
+          if [[ -n "${RENOVATE_PR}" && "${EVENT_NAME}" == "pull_request_target" ]]; then
+            body+=$'\n'"- Renovate PR: ${RENOVATE_PR}"
+          fi
+
+          body+=$'\n\n'"Please review CI, then approve and merge. Tagging/publish runs via the existing Release workflow after merge."
+
+          pr_url="$(
+            gh pr create \
+              --base "${BASE_BRANCH}" \
+              --head "${PREPARE_BRANCH}" \
+              --title "Release ${NEXT_VERSION}" \
+              --body "${body}"
+          )"
+
+          echo "Opened prepare PR: ${pr_url}"
+          echo "::notice::Opened ${pr_url} — human merge required before tag/publish."
+
+      - name: Skipped due to dedupe
+        if: steps.dedupe.outputs.skip == 'true'
+        run: |
+          set -eu
+          echo "Job finished without prepare because an open prepare-release-* PR already targets this base."
