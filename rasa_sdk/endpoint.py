@@ -225,39 +225,42 @@ def run(
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
-    loader = AppLoader(
-        factory=partial(
-            create_app,
+
+    def _app_factory() -> Sanic:
+        """Build a Sanic app for the primary process and each worker."""
+        app = create_app(
             action_executor,
             cors_origins=cors_origins,
             auto_reload=auto_reload,
-        ),
-    )
+        )
+        app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
+        app.register_listener(
+            partial(load_tracer_provider, endpoints),
+            "before_server_start",
+        )
+        logger.info("Starting plugins...")
+        # Attach additional sanic extensions: listeners, middleware and routing
+        plugin_manager().hook.attach_sanic_app_extensions(app=app)
+        return app
+
+    loader = AppLoader(factory=_app_factory)
     app = loader.load()
-
-    app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
-
-    app.register_listener(
-        partial(load_tracer_provider, endpoints),
-        "before_server_start",
-    )
-
-    # Attach additional sanic extensions: listeners, middleware and routing
-    logger.info("Starting plugins...")
-    plugin_manager().hook.attach_sanic_app_extensions(app=app)
 
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
     protocol = "https" if ssl_context else "http"
     host = os.environ.get("SANIC_HOST", "0.0.0.0")
 
     logger.info(f"Action endpoint is up and running on {protocol}://{host}:{port}")
-    app.run(
+
+    # Sanic 25 removed ``legacy=True`` from ``app.run``. Use prepare + serve so
+    # AppLoader recreates the app (listeners, plugins, config) in each worker.
+    app.prepare(
         host=host,
         port=port,
         ssl=ssl_context,
         workers=utils.number_of_sanic_workers(),
-        legacy=True,
     )
+    Sanic.serve(primary=app, app_loader=loader)
 
 
 def set_http_span_attributes(
