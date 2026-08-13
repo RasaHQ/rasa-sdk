@@ -12,10 +12,19 @@ from sanic.http.tls.context import SanicSSLContext
 
 import rasa_sdk.endpoint as ep
 from rasa_sdk.events import SlotSet
+from rasa_sdk.plugin import plugin_manager
 from tests.conftest import get_stack
 
 
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture(autouse=True)
+def _reset_plugin_manager_cache() -> Any:
+    """Keep the cached plugin manager from leaking into other test modules."""
+    yield
+    plugin_manager.cache_clear()
+
 
 # Shared by gRPC TLS integration tests; reused here for HTTPS startup pickling.
 _SSL_CERT = Path("integration_tests/grpc_server/setup/certs/server.pem")
@@ -237,10 +246,10 @@ def test_run_ssl_config_is_picklable(
 ) -> None:
     """Sanic.serve pickles server SSL settings when spawning workers.
 
-    A live ``ssl.SSLContext`` from ``create_ssl_context()`` is not picklable and
-    crashes HTTPS action-server startup
-    (``TypeError: cannot pickle 'SSLContext' object``). Sanic only rewrites the
-    value to a picklable cert/key dict when it is already a ``SanicSSLContext``.
+    A live ``ssl.SSLContext`` is not picklable and crashes HTTPS action-server
+    startup (``TypeError: cannot pickle 'SSLContext' object``). Sanic only
+    rewrites the value to a picklable cert/key dict when it is already a
+    ``SanicSSLContext``, which requires passing cert/key paths to ``prepare()``.
     """
     assert _SSL_CERT.is_file(), f"missing test cert: {_SSL_CERT}"
     assert _SSL_KEY.is_file(), f"missing test key: {_SSL_KEY}"
