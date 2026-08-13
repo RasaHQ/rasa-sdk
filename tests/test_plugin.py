@@ -34,6 +34,10 @@ def test_plugin_attach_sanic_app_extension(
     monkeypatch.setattr(
         manager.hook, "attach_sanic_app_extensions", MagicMock(return_value=None)
     )
+    # Default workers=1 uses serve_single; multi-worker uses Sanic.serve.
+    monkeypatch.setattr(
+        "rasa_sdk.endpoint.Sanic.serve_single", MagicMock(return_value=None)
+    )
     monkeypatch.setattr("rasa_sdk.endpoint.Sanic.serve", MagicMock(return_value=None))
     app_mock = MagicMock()
 

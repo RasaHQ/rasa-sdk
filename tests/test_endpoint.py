@@ -174,3 +174,58 @@ def test_server_webhook_custom_action_with_dialogue_stack_returns_200(
 
     assert events == [SlotSet("stack", dialogue_stack)]
     assert response.status == 200
+
+
+def test_create_configured_app_factory_is_module_level_picklable() -> None:
+    """AppLoader factories must be picklable; nested closures are not."""
+    import pickle
+
+    # Module-level callable is picklable (required by Sanic 25 spawn workers).
+    pickle.dumps(ep.create_configured_app)
+
+    def _nested_app_factory() -> None:
+        return None
+
+    with pytest.raises(AttributeError, match="local object"):
+        pickle.dumps(_nested_app_factory)
+
+
+def test_run_uses_serve_single_for_default_worker_count(
+    action_executor: ep.ActionExecutor,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Default ACTION_SERVER_SANIC_WORKERS=1 must avoid Sanic.serve spawn/pickle."""
+    from unittest.mock import MagicMock
+
+    serve_single = MagicMock(return_value=None)
+    serve = MagicMock(return_value=None)
+    monkeypatch.setattr("rasa_sdk.endpoint.Sanic.serve_single", serve_single)
+    monkeypatch.setattr("rasa_sdk.endpoint.Sanic.serve", serve)
+
+    ep.run(action_executor, port=5055)
+
+    serve_single.assert_called_once()
+    serve.assert_not_called()
+    assert serve_single.call_args.kwargs.get("primary") is not None
+
+
+def test_run_uses_serve_for_multiple_workers(
+    action_executor: ep.ActionExecutor,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Multi-worker startup must use Sanic.serve with the AppLoader."""
+    from unittest.mock import MagicMock
+
+    from rasa_sdk.constants import ENV_SANIC_WORKERS
+
+    monkeypatch.setenv(ENV_SANIC_WORKERS, "2")
+    serve_single = MagicMock(return_value=None)
+    serve = MagicMock(return_value=None)
+    monkeypatch.setattr("rasa_sdk.endpoint.Sanic.serve_single", serve_single)
+    monkeypatch.setattr("rasa_sdk.endpoint.Sanic.serve", serve)
+
+    ep.run(action_executor, port=5055)
+
+    serve.assert_called_once()
+    serve_single.assert_not_called()
+    assert "app_loader" in serve.call_args.kwargs

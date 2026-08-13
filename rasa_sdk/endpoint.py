@@ -212,6 +212,36 @@ def create_app(
     return app
 
 
+def create_configured_app(
+    action_executor: ActionExecutor,
+    cors_origins: Union[Text, List[Text], None] = "*",
+    auto_reload: bool = False,
+    endpoints: str = DEFAULT_ENDPOINTS_PATH,
+    keep_alive_timeout: int = DEFAULT_KEEP_ALIVE_TIMEOUT,
+) -> Sanic:
+    """Build a Sanic app with tracing listeners and plugin extensions attached.
+
+    This is a module-level factory so ``AppLoader`` can pickle it into Sanic
+    worker processes under the spawn start method (Sanic 25+). Nested closures
+    are not picklable and crash startup with
+    ``AttributeError: Can't pickle local object 'run.<locals>._app_factory'``.
+    """
+    app = create_app(
+        action_executor,
+        cors_origins=cors_origins,
+        auto_reload=auto_reload,
+    )
+    app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
+    app.register_listener(
+        partial(load_tracer_provider, endpoints),
+        "before_server_start",
+    )
+    logger.info("Starting plugins...")
+    # Attach additional sanic extensions: listeners, middleware and routing
+    plugin_manager().hook.attach_sanic_app_extensions(app=app)
+    return app
+
+
 def run(
     action_executor: ActionExecutor,
     port: int = DEFAULT_SERVER_PORT,
@@ -226,41 +256,47 @@ def run(
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
 
-    def _app_factory() -> Sanic:
-        """Build a Sanic app for the primary process and each worker."""
-        app = create_app(
+    # ``functools.partial`` of a module-level function is picklable; a nested
+    # ``def`` inside ``run`` is not. Sanic 25's multi-process serve path uses
+    # spawn and pickles the AppLoader factory into each worker.
+    loader = AppLoader(
+        factory=partial(
+            create_configured_app,
             action_executor,
             cors_origins=cors_origins,
             auto_reload=auto_reload,
-        )
-        app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
-        app.register_listener(
-            partial(load_tracer_provider, endpoints),
-            "before_server_start",
-        )
-        logger.info("Starting plugins...")
-        # Attach additional sanic extensions: listeners, middleware and routing
-        plugin_manager().hook.attach_sanic_app_extensions(app=app)
-        return app
-
-    loader = AppLoader(factory=_app_factory)
+            endpoints=endpoints,
+            keep_alive_timeout=keep_alive_timeout,
+        ),
+    )
     app = loader.load()
 
     ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
     protocol = "https" if ssl_context else "http"
     host = os.environ.get("SANIC_HOST", "0.0.0.0")
+    workers = utils.number_of_sanic_workers()
 
     logger.info(f"Action endpoint is up and running on {protocol}://{host}:{port}")
 
-    # Sanic 25 removed ``legacy=True`` from ``app.run``. Use prepare + serve so
-    # AppLoader recreates the app (listeners, plugins, config) in each worker.
-    app.prepare(
-        host=host,
-        port=port,
-        ssl=ssl_context,
-        workers=utils.number_of_sanic_workers(),
-    )
-    Sanic.serve(primary=app, app_loader=loader)
+    # Sanic 25 removed ``legacy=True`` from ``app.run``. Prefer the single-process
+    # path when workers=1 (the default) so startup never needs to pickle the
+    # loader. Multi-worker uses prepare + serve with the picklable AppLoader.
+    if workers == 1:
+        app.prepare(
+            host=host,
+            port=port,
+            ssl=ssl_context,
+            single_process=True,
+        )
+        Sanic.serve_single(primary=app)
+    else:
+        app.prepare(
+            host=host,
+            port=port,
+            ssl=ssl_context,
+            workers=workers,
+        )
+        Sanic.serve(primary=app, app_loader=loader)
 
 
 def set_http_span_attributes(
