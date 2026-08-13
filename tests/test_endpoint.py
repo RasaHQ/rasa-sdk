@@ -1,9 +1,11 @@
-from typing import Any, Dict, List, Text
+from typing import Any, Dict, List, Optional, Text
 import json
 import logging
+import pickle
 import zlib
 
 import pytest
+from pytest import MonkeyPatch
 from sanic import Sanic
 
 import rasa_sdk.endpoint as ep
@@ -174,3 +176,36 @@ def test_server_webhook_custom_action_with_dialogue_stack_returns_200(
 
     assert events == [SlotSet("stack", dialogue_stack)]
     assert response.status == 200
+
+
+def test_run_app_loader_factory_is_picklable(
+    monkeypatch: MonkeyPatch,
+    action_executor: ep.ActionExecutor,
+) -> None:
+    """Sanic.serve pickles AppLoader when spawning workers.
+
+    Nested factories defined inside ``run()`` are not picklable and crash
+    action-server startup (``Can't pickle local object 'run.<locals>._app_factory'``).
+    """
+    captured: Dict[Text, Any] = {}
+
+    def fake_serve(
+        *,
+        primary: Optional[Sanic] = None,
+        app_loader: Any = None,
+        **_kwargs: Any,
+    ) -> None:
+        captured["app_loader"] = app_loader
+
+    monkeypatch.setattr(ep.Sanic, "serve", fake_serve)
+
+    ep.run(action_executor, port=5099)
+
+    app_loader = captured.get("app_loader")
+    assert app_loader is not None
+    assert app_loader.factory is not None
+
+    # Round-trip through pickle the same way Sanic's multiprocess manager does.
+    restored_loader = pickle.loads(pickle.dumps(app_loader))
+    restored_app = restored_loader.load()
+    assert restored_app.name == "rasa_sdk"
