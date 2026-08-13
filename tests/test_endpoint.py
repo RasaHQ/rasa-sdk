@@ -1,17 +1,58 @@
-from typing import Any, Dict, List, Text
+from typing import Any, Dict, List, Optional, Text
 import json
 import logging
+import pickle
 import zlib
+from pathlib import Path
 
 import pytest
+from pytest import MonkeyPatch
 from sanic import Sanic
+from sanic.http.tls.context import SanicSSLContext
 
 import rasa_sdk.endpoint as ep
 from rasa_sdk.events import SlotSet
+from rasa_sdk.plugin import plugin_manager
 from tests.conftest import get_stack
 
 
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture(autouse=True)
+def _reset_plugin_manager_cache() -> Any:
+    """Keep the cached plugin manager from leaking into other test modules."""
+    yield
+    plugin_manager.cache_clear()
+
+
+# Shared by gRPC TLS integration tests; reused here for HTTPS startup pickling.
+_SSL_CERT = Path("integration_tests/grpc_server/setup/certs/server.pem")
+_SSL_KEY = Path("integration_tests/grpc_server/setup/certs/server-key.pem")
+
+
+def _capture_sanic_serve(monkeypatch: MonkeyPatch) -> Dict[Text, Any]:
+    """Stub ``Sanic.serve`` and return a dict of captured kwargs."""
+    captured: Dict[Text, Any] = {}
+
+    def fake_serve(
+        *,
+        primary: Optional[Sanic] = None,
+        app_loader: Any = None,
+        **_kwargs: Any,
+    ) -> None:
+        captured["primary"] = primary
+        captured["app_loader"] = app_loader
+
+    monkeypatch.setattr(ep.Sanic, "serve", fake_serve)
+    return captured
+
+
+def _ssl_payload_sanic_would_pickle(ssl_config: Any) -> Any:
+    """Apply the same SSL rewrite Sanic.serve does before spawning workers."""
+    if isinstance(ssl_config, SanicSSLContext):
+        return ssl_config.sanic
+    return ssl_config
 
 
 @pytest.fixture
@@ -174,3 +215,57 @@ def test_server_webhook_custom_action_with_dialogue_stack_returns_200(
 
     assert events == [SlotSet("stack", dialogue_stack)]
     assert response.status == 200
+
+
+def test_run_app_loader_factory_is_picklable(
+    monkeypatch: MonkeyPatch,
+    action_executor: ep.ActionExecutor,
+) -> None:
+    """Sanic.serve pickles AppLoader when spawning workers.
+
+    Nested factories defined inside ``run()`` are not picklable and crash
+    action-server startup (``Can't pickle local object 'run.<locals>._app_factory'``).
+    """
+    captured = _capture_sanic_serve(monkeypatch)
+
+    ep.run(action_executor, port=5099)
+
+    app_loader = captured.get("app_loader")
+    assert app_loader is not None
+    assert app_loader.factory is not None
+
+    # Round-trip through pickle the same way Sanic's multiprocess manager does.
+    restored_loader = pickle.loads(pickle.dumps(app_loader))
+    restored_app = restored_loader.load()
+    assert restored_app.name == "rasa_sdk"
+
+
+def test_run_ssl_config_is_picklable(
+    monkeypatch: MonkeyPatch,
+    action_executor: ep.ActionExecutor,
+) -> None:
+    """Sanic.serve pickles server SSL settings when spawning workers.
+
+    A live ``ssl.SSLContext`` is not picklable and crashes HTTPS action-server
+    startup (``TypeError: cannot pickle 'SSLContext' object``). Sanic only
+    rewrites the value to a picklable cert/key dict when it is already a
+    ``SanicSSLContext``, which requires passing cert/key paths to ``prepare()``.
+    """
+    assert _SSL_CERT.is_file(), f"missing test cert: {_SSL_CERT}"
+    assert _SSL_KEY.is_file(), f"missing test key: {_SSL_KEY}"
+
+    captured = _capture_sanic_serve(monkeypatch)
+
+    ep.run(
+        action_executor,
+        port=5099,
+        ssl_certificate=str(_SSL_CERT),
+        ssl_keyfile=str(_SSL_KEY),
+    )
+
+    primary = captured.get("primary")
+    assert primary is not None
+    assert primary.state.ssl is not None
+
+    ssl_payload = _ssl_payload_sanic_would_pickle(primary.state.ssl)
+    pickle.loads(pickle.dumps(ssl_payload))
