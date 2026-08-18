@@ -5,7 +5,8 @@ import warnings
 import zlib
 import json
 from functools import partial
-from typing import Dict, List, Text, Union, Optional, Any
+from typing import List, Text, Union, Optional, Any
+from ssl import SSLContext
 
 from multidict import MultiDict
 from sanic import Sanic, response
@@ -61,20 +62,22 @@ def configure_cors(
     )
 
 
-def create_ssl_config(
+def create_ssl_context(
     ssl_certificate: Optional[Text],
     ssl_keyfile: Optional[Text],
     ssl_password: Optional[Text] = None,
-) -> Optional[Dict[Text, Optional[Text]]]:
-    """Create a Sanic SSL config if a certificate is passed.
+) -> Optional[SSLContext]:
+    """Create a SSL context if a certificate is passed."""
+    if ssl_certificate:
+        import ssl
 
-    Returns cert and key paths rather than an ``ssl.SSLContext`` so each spawned
-    worker can rebuild the context; ``SSLContext`` objects are not picklable.
-    """
-    if not ssl_certificate:
+        ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
+        ssl_context.load_cert_chain(
+            ssl_certificate, keyfile=ssl_keyfile, password=ssl_password
+        )
+        return ssl_context
+    else:
         return None
-
-    return {"cert": ssl_certificate, "key": ssl_keyfile, "password": ssl_password}
 
 
 def create_argument_parser():
@@ -209,32 +212,6 @@ def create_app(
     return app
 
 
-def create_app_for_serve(
-    action_executor: ActionExecutor,
-    cors_origins: Union[Text, List[Text], None] = "*",
-    auto_reload: bool = False,
-    endpoints: str = DEFAULT_ENDPOINTS_PATH,
-    keep_alive_timeout: int = DEFAULT_KEEP_ALIVE_TIMEOUT,
-) -> Sanic:
-    """Build a Sanic app for the primary process and each worker.
-
-    Must be module-level so ``Sanic.serve`` can pickle it via ``AppLoader``.
-    """
-    app = create_app(
-        action_executor,
-        cors_origins=cors_origins,
-        auto_reload=auto_reload,
-    )
-    app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
-    app.register_listener(
-        partial(load_tracer_provider, endpoints),
-        "before_server_start",
-    )
-    logger.info("Starting plugins...")
-    plugin_manager().hook.attach_sanic_app_extensions(app=app)
-    return app
-
-
 def run(
     action_executor: ActionExecutor,
     port: int = DEFAULT_SERVER_PORT,
@@ -248,34 +225,39 @@ def run(
 ) -> None:
     """Starts the action endpoint server with given config values."""
     logger.info("Starting action endpoint server...")
-
     loader = AppLoader(
         factory=partial(
-            create_app_for_serve,
+            create_app,
             action_executor,
             cors_origins=cors_origins,
             auto_reload=auto_reload,
-            endpoints=endpoints,
-            keep_alive_timeout=keep_alive_timeout,
-        )
+        ),
     )
     app = loader.load()
 
-    ssl_config = create_ssl_config(ssl_certificate, ssl_keyfile, ssl_password)
-    protocol = "https" if ssl_config else "http"
+    app.config.KEEP_ALIVE_TIMEOUT = keep_alive_timeout
+
+    app.register_listener(
+        partial(load_tracer_provider, endpoints),
+        "before_server_start",
+    )
+
+    # Attach additional sanic extensions: listeners, middleware and routing
+    logger.info("Starting plugins...")
+    plugin_manager().hook.attach_sanic_app_extensions(app=app)
+
+    ssl_context = create_ssl_context(ssl_certificate, ssl_keyfile, ssl_password)
+    protocol = "https" if ssl_context else "http"
     host = os.environ.get("SANIC_HOST", "0.0.0.0")
 
     logger.info(f"Action endpoint is up and running on {protocol}://{host}:{port}")
-
-    # Sanic 25 removed ``legacy=True`` from ``app.run``. Use prepare + serve so
-    # AppLoader recreates the app (listeners, plugins, config) in each worker.
-    app.prepare(
+    app.run(
         host=host,
         port=port,
-        ssl=ssl_config,
+        ssl=ssl_context,
         workers=utils.number_of_sanic_workers(),
+        legacy=True,
     )
-    Sanic.serve(primary=app, app_loader=loader)
 
 
 def set_http_span_attributes(

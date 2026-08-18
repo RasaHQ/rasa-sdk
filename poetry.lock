@@ -596,7 +596,6 @@ description = "Protobuf code generator for gRPC"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "python_version < \"3.14\""
 files = [
     {file = "grpcio_tools-1.66.2-cp310-cp310-linux_armv7l.whl", hash = "sha256:40b7ad804ff78490408177cfe87427d5a67224f82a2bdfabe9d8d6ac6239733b"},
     {file = "grpcio_tools-1.66.2-cp310-cp310-macosx_12_0_universal2.whl", hash = "sha256:a886fa2ff9e897b35489557d1c61cbc0e4efc42c4dc0d120a9516f294fefb107"},
@@ -670,18 +669,6 @@ groups = ["dev"]
 files = [
     {file = "h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"},
     {file = "h11-0.16.0.tar.gz", hash = "sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1"},
-]
-
-[[package]]
-name = "html5tagger"
-version = "2.0.0"
-description = "Pythonic HTML generation/templating (no template files)"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "html5tagger-2.0.0-py3-none-any.whl", hash = "sha256:c7a46fa74c81fdbd33b7e4a9630f4d592ec818181fc58702585e9bad0b76f891"},
-    {file = "html5tagger-2.0.0.tar.gz", hash = "sha256:0dee3c9054443930e9a3225edcc810b6df76c0aeabfee463e9437a90a1ac1624"},
 ]
 
 [[package]]
@@ -1556,7 +1543,6 @@ description = "Utilities to deal with pep440 versioning"
 optional = false
 python-versions = "<3.14,>=3.8"
 groups = ["dev"]
-markers = "python_version < \"3.14\""
 files = [
     {file = "pep440_version_utils-1.2.0-py3-none-any.whl", hash = "sha256:35215cb9b799b2aef67e769936b3d99a38247e8c81fe90e6407b31d994b6a2a6"},
     {file = "pep440_version_utils-1.2.0.tar.gz", hash = "sha256:9a663947b7323e75cda489ed7df0c7b6b4eb2d55ce9d123f2f81f89e66bb2c0d"},
@@ -1968,36 +1954,32 @@ files = [
 
 [[package]]
 name = "sanic"
-version = "25.12.1"
+version = "22.12.0"
 description = "A web server and web framework that's written to go fast. Build fast. Run fast."
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "sanic-25.12.1-py3-none-any.whl", hash = "sha256:3874f1fe0442e3b12ce4a3f6524f676d5d3c43839c6a4967d1b82fd8db53c0f3"},
-    {file = "sanic-25.12.1.tar.gz", hash = "sha256:7b51bf608e4030f06a6c002cd08fed2872e4936527e63c9a8a97d5cd06a2b47f"},
+    {file = "sanic-22.12.0-py3-none-any.whl", hash = "sha256:84edf46cc17d13264ccec0ae6622e43087498f95644dc336ade74a2d5e6c88cb"},
+    {file = "sanic-22.12.0.tar.gz", hash = "sha256:e5f81115f838956957046b6c52e7a08c1bd6e8ff530ee1376471eaf1579bfffa"},
 ]
 
 [package.dependencies]
 aiofiles = ">=0.6.0"
-html5tagger = ">=1.2.1"
 httptools = ">=0.0.10"
 multidict = ">=5.0,<7.0"
-sanic-routing = ">=23.12.0"
-setuptools = ">=70.1.0"
-tracerite = ">=2.2.0"
-typing-extensions = ">=4.4.0"
+sanic-routing = ">=22.8.0"
 ujson = {version = ">=1.35", markers = "sys_platform != \"win32\" and implementation_name == \"cpython\""}
 uvloop = {version = ">=0.15.0", markers = "sys_platform != \"win32\" and implementation_name == \"cpython\""}
 websockets = ">=10.0"
 
 [package.extras]
-all = ["autodocsumm (>=0.2.11)", "bandit", "beautifulsoup4", "chardet (==3.*)", "coverage", "cryptography", "docstring-parser", "docutils", "enum-tools[sphinx]", "libsass", "m2r2", "mistune (>=2.0.0)", "msgspec", "mypy", "pygments", "pytest (>=8.2.2)", "pytest-benchmark", "pytest-cov (>=4.0.0)", "pytest-sanic", "pytest-xdist (>=3.5.0)", "python-frontmatter", "ruff", "sanic-testing (>=23.6.0)", "slotscheck (>=0.8.0,<1)", "sphinx (>=2.1.2)", "sphinx_rtd_theme (>=0.4.3)", "towncrier", "tox", "types-ujson ; sys_platform != \"win32\" and implementation_name == \"cpython\"", "uvicorn"]
-dev = ["bandit", "beautifulsoup4", "chardet (==3.*)", "coverage", "cryptography", "docutils", "mypy", "pygments", "pytest (>=8.2.2)", "pytest-benchmark", "pytest-cov (>=4.0.0)", "pytest-sanic", "pytest-xdist (>=3.5.0)", "ruff", "sanic-testing (>=23.6.0)", "slotscheck (>=0.8.0,<1)", "towncrier", "tox", "types-ujson ; sys_platform != \"win32\" and implementation_name == \"cpython\"", "uvicorn"]
-docs = ["autodocsumm (>=0.2.11)", "docstring-parser", "docutils", "enum-tools[sphinx]", "libsass", "m2r2", "mistune (>=2.0.0)", "msgspec", "pygments", "python-frontmatter", "sphinx (>=2.1.2)", "sphinx_rtd_theme (>=0.4.3)"]
+all = ["bandit", "beautifulsoup4", "black", "chardet (==3.*)", "coverage", "cryptography", "docutils", "enum-tools[sphinx]", "flake8", "isort (>=5.0.0)", "m2r2", "mistune (<2.0.0)", "mypy (>=0.901,<0.910)", "pygments", "pytest (==7.1.*)", "pytest-benchmark", "pytest-sanic", "sanic-testing (>=22.9.0)", "slotscheck (>=0.8.0,<1)", "sphinx (>=2.1.2)", "sphinx-rtd-theme (>=0.4.3)", "towncrier", "tox", "types-ujson ; sys_platform != \"win32\" and implementation_name == \"cpython\"", "uvicorn (<0.15.0)"]
+dev = ["bandit", "beautifulsoup4", "black", "chardet (==3.*)", "coverage", "cryptography", "docutils", "flake8", "isort (>=5.0.0)", "mypy (>=0.901,<0.910)", "pygments", "pytest (==7.1.*)", "pytest-benchmark", "pytest-sanic", "sanic-testing (>=22.9.0)", "slotscheck (>=0.8.0,<1)", "towncrier", "tox", "types-ujson ; sys_platform != \"win32\" and implementation_name == \"cpython\"", "uvicorn (<0.15.0)"]
+docs = ["docutils", "enum-tools[sphinx]", "m2r2", "mistune (<2.0.0)", "pygments", "sphinx (>=2.1.2)", "sphinx-rtd-theme (>=0.4.3)"]
 ext = ["sanic-ext"]
 http3 = ["aioquic"]
-test = ["bandit", "beautifulsoup4", "chardet (==3.*)", "coverage", "docutils", "mypy", "pygments", "pytest (>=8.2.2)", "pytest-benchmark", "pytest-cov (>=4.0.0)", "pytest-sanic", "pytest-xdist (>=3.5.0)", "ruff", "sanic-testing (>=23.6.0)", "slotscheck (>=0.8.0,<1)", "types-ujson ; sys_platform != \"win32\" and implementation_name == \"cpython\"", "uvicorn"]
+test = ["bandit", "beautifulsoup4", "black", "chardet (==3.*)", "coverage", "docutils", "flake8", "isort (>=5.0.0)", "mypy (>=0.901,<0.910)", "pygments", "pytest (==7.1.*)", "pytest-benchmark", "pytest-sanic", "sanic-testing (>=22.9.0)", "slotscheck (>=0.8.0,<1)", "types-ujson ; sys_platform != \"win32\" and implementation_name == \"cpython\"", "uvicorn (<0.15.0)"]
 
 [[package]]
 name = "sanic-cors"
@@ -2029,21 +2011,18 @@ files = [
 
 [[package]]
 name = "sanic-testing"
-version = "24.6.0"
+version = "23.6.0"
 description = "Core testing clients for Sanic"
 optional = false
 python-versions = "*"
 groups = ["dev"]
 files = [
-    {file = "sanic_testing-24.6.0-py3-none-any.whl", hash = "sha256:b1027184735e88230891aa0461fff84093abfa3bff0f4d29c0f78f42e59efada"},
-    {file = "sanic_testing-24.6.0.tar.gz", hash = "sha256:7591ce537e2a651efb6dc01b458e7e4ea5347f6d91438676774c6f505a124731"},
+    {file = "sanic-testing-23.6.0.tar.gz", hash = "sha256:8617fe61f3657259a7d461c548a9c6eaa040bc2cfc3d5d0d5d064659f58c105b"},
+    {file = "sanic_testing-23.6.0-py3-none-any.whl", hash = "sha256:c74a5e2393ae17a960cd65988d15a43b26d31b54c09011e0df387f1816d2080f"},
 ]
 
 [package.dependencies]
 httpx = ">=0.18"
-
-[package.extras]
-dev = ["pytest", "pytest-asyncio", "sanic (>=22.12)", "setuptools ; python_version > \"3.11\""]
 
 [[package]]
 name = "semantic-version"
@@ -2183,24 +2162,6 @@ tomli = {version = "*", markers = "python_version < \"3.11\""}
 
 [package.extras]
 dev = ["furo (>=2024.05.06)", "nox", "packaging", "sphinx (>=5)", "twisted"]
-
-[[package]]
-name = "tracerite"
-version = "2.6.3"
-description = "Human-readable HTML tracebacks for Python exceptions"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "tracerite-2.6.3-py3-none-any.whl", hash = "sha256:2b7dd797fad42fec4d590f2bc41b7331172fa0e4d959d6f04606eb0f76ae62e5"},
-    {file = "tracerite-2.6.3.tar.gz", hash = "sha256:72a3658e09c71ef97c424a9a1772f0069c7aa7d1189e061075286605be27efc0"},
-]
-
-[package.dependencies]
-html5tagger = ">=2.0.0"
-
-[package.extras]
-nb = ["ipykernel (>=6.29.5)", "ipywidgets (>=8.1.8)", "jupyter (>=1.1.1)", "jupyter-client (>=8.6.3)", "jupyterlab (>=4.3.8)", "notebook (>=7.3.3)", "numpy (>=2.2.6)"]
 
 [[package]]
 name = "typer"
@@ -2662,5 +2623,5 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.10,<3.15"
-content-hash = "91faff91331ba6547ee392b6f7a7e8205b6c0d760e0aeb2892b45ac5d9f9f5f1"
+python-versions = ">=3.10,<3.14"
+content-hash = "42cda626a3abc189dbddb1fc6c3f1e71d66348af56ec54fc29f343ac36fe0ea0"
