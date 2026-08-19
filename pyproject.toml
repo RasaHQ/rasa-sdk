@@ -116,7 +116,7 @@ mypy = "~2.1.0"
 sanic-testing = "~24.6.0"
 ruff = "~0.15.14"
 pytest-asyncio = "^0.23.6"
-types-protobuf = "4.25.0.20240417"
+types-protobuf = "7.34.1.20260816"
 
 [tool.poetry.group.dev.dependencies.pep440-version-utils]
 version = "~1.2.0"
