@@ -54,6 +54,15 @@
     },
   ],
   labels: ["type:dependencies"],
-  rangeStrategy: "pin",
+  // `replace` rather than `pin`: rasa-sdk is a published library, so the
+  // constraints in pyproject.toml become Requires-Dist on PyPI and are resolved
+  // in the customer's environment alongside rasa-private. Pinning them to `==`
+  // would hand customers unsatisfiable co-installs. `replace` edits a constraint
+  // only when the new version falls outside it, which is what Dependabot did
+  // here historically (e.g. mypy "^0.910" -> "^0.950"); in-range bumps move
+  // poetry.lock alone, so CI stays reproducible without narrowing what we ship.
+  // Deployed services (studio, rasa-pro-services) can keep `pin` -- nothing
+  // consumes their constraints.
+  rangeStrategy: "replace",
   semanticCommits: "disabled",
 }
