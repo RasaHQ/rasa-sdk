@@ -54,15 +54,23 @@
     },
   ],
   labels: ["type:dependencies"],
-  // `replace` rather than `pin`: rasa-sdk is a published library, so the
-  // constraints in pyproject.toml become Requires-Dist on PyPI and are resolved
-  // in the customer's environment alongside rasa-private. Pinning them to `==`
-  // would hand customers unsatisfiable co-installs. `replace` edits a constraint
-  // only when the new version falls outside it, which is what Dependabot did
-  // here historically (e.g. mypy "^0.910" -> "^0.950"); in-range bumps move
-  // poetry.lock alone, so CI stays reproducible without narrowing what we ship.
+  // Not `pin`: rasa-sdk is a published library, so the constraints in
+  // pyproject.toml become Requires-Dist on PyPI and are resolved in the
+  // customer's environment alongside rasa-private. Pinning them to `==` would
+  // hand customers unsatisfiable co-installs.
+  //
+  // `update-lockfile` rather than `replace` (or the `:preserveSemverRanges`
+  // preset, which is just `replace`): `replace` edits a constraint only when a
+  // new version falls outside it and does nothing otherwise, so in-range
+  // updates produce no PR at all and poetry.lock drifts. `update-lockfile`
+  // moves the lock for in-range versions and falls back to `replace` when a
+  // version sits outside the range -- which is what Dependabot did here
+  // historically (e.g. mypy "^0.910" -> "^0.950"). Security fixes are
+  // unaffected: Renovate switches this to `bump` for vulnerability alerts with
+  // no locked version.
+  //
   // Deployed services (studio, rasa-pro-services) can keep `pin` -- nothing
   // consumes their constraints.
-  rangeStrategy: "replace",
+  rangeStrategy: "update-lockfile",
   semanticCommits: "disabled",
 }
