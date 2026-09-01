@@ -8,18 +8,20 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class WebhookStreamEvent(_message.Message):
-    __slots__ = ("chunk_start", "chunk", "chunk_end", "final_result", "error")
+    __slots__ = ("chunk_start", "chunk", "chunk_end", "final_result", "error", "client_request")
     CHUNK_START_FIELD_NUMBER: _ClassVar[int]
     CHUNK_FIELD_NUMBER: _ClassVar[int]
     CHUNK_END_FIELD_NUMBER: _ClassVar[int]
     FINAL_RESULT_FIELD_NUMBER: _ClassVar[int]
     ERROR_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_REQUEST_FIELD_NUMBER: _ClassVar[int]
     chunk_start: ChunkStart
     chunk: Chunk
     chunk_end: ChunkEnd
     final_result: WebhookResponse
     error: StreamError
-    def __init__(self, chunk_start: _Optional[_Union[ChunkStart, _Mapping]] = ..., chunk: _Optional[_Union[Chunk, _Mapping]] = ..., chunk_end: _Optional[_Union[ChunkEnd, _Mapping]] = ..., final_result: _Optional[_Union[WebhookResponse, _Mapping]] = ..., error: _Optional[_Union[StreamError, _Mapping]] = ...) -> None: ...
+    client_request: ClientRequest
+    def __init__(self, chunk_start: _Optional[_Union[ChunkStart, _Mapping]] = ..., chunk: _Optional[_Union[Chunk, _Mapping]] = ..., chunk_end: _Optional[_Union[ChunkEnd, _Mapping]] = ..., final_result: _Optional[_Union[WebhookResponse, _Mapping]] = ..., error: _Optional[_Union[StreamError, _Mapping]] = ..., client_request: _Optional[_Union[ClientRequest, _Mapping]] = ...) -> None: ...
 
 class ChunkStart(_message.Message):
     __slots__ = ("response_id",)
@@ -64,6 +66,26 @@ class StreamChunkAck(_message.Message):
     RESPONSE_ID_FIELD_NUMBER: _ClassVar[int]
     response_id: str
     def __init__(self, response_id: _Optional[str] = ...) -> None: ...
+
+class ClientRequest(_message.Message):
+    __slots__ = ("request_id", "payload", "timeout")
+    REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    PAYLOAD_FIELD_NUMBER: _ClassVar[int]
+    TIMEOUT_FIELD_NUMBER: _ClassVar[int]
+    request_id: str
+    payload: _struct_pb2.Struct
+    timeout: float
+    def __init__(self, request_id: _Optional[str] = ..., payload: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., timeout: _Optional[float] = ...) -> None: ...
+
+class ClientReply(_message.Message):
+    __slots__ = ("request_id", "body", "error")
+    REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    BODY_FIELD_NUMBER: _ClassVar[int]
+    ERROR_FIELD_NUMBER: _ClassVar[int]
+    request_id: str
+    body: _struct_pb2.Struct
+    error: str
+    def __init__(self, request_id: _Optional[str] = ..., body: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., error: _Optional[str] = ...) -> None: ...
 
 class ActionsRequest(_message.Message):
     __slots__ = ()
