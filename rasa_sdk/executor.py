@@ -16,7 +16,6 @@ from typing import (
     Text,
     Type,
     Union,
-    cast,
 )
 from collections import namedtuple
 import types
@@ -446,7 +445,6 @@ class ActionExecutor:
             `Action` subclass class or an actual `Action` subclass.
         """
         if inspect.isclass(action):
-            action = cast(Type[Action], action)
             if action.__module__.startswith("rasa."):
                 logger.warning(f"Skipping built in Action {action}.")
                 return
