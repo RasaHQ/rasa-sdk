@@ -84,7 +84,7 @@ opentelemetry-sdk = "~1.44.0"
 opentelemetry-exporter-otlp = "~1.44.0"
 opentelemetry-api = "~1.44.0"
 grpcio = "~1.83.0"
-protobuf = "~5.29.5"
+protobuf = "~7.35.1"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
@@ -116,7 +116,7 @@ mypy = "~2.3.0"
 sanic-testing = "~24.6.0"
 ruff = "~0.15.14"
 pytest-asyncio = "^0.23.6"
-types-protobuf = "4.25.0.20240417"
+types-protobuf = "7.35.1.20260906"
 
 [tool.poetry.group.dev.dependencies.pep440-version-utils]
 version = "~1.2.0"
