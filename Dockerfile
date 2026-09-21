@@ -5,7 +5,7 @@ ARG PIP_MIN_VERSION=26.1
 # Recompute with: curl -fsSL https://bootstrap.pypa.io/get-pip.py | sha256sum
 ARG GET_PIP_SHA256=a341e1a43e38001c551a1508a73ff23636a11970b61d901d9a1cad2a18f57055
 
-FROM ubuntu:22.04 AS base
+FROM ubuntu:24.04 AS base
 
 ARG SETUPTOOLS_VERSION
 ARG PIP_MIN_VERSION
@@ -29,9 +29,9 @@ RUN apt-get update -qq \
 
 RUN curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
     && echo "${GET_PIP_SHA256}  /tmp/get-pip.py" | sha256sum --check --status \
-    && python3 /tmp/get-pip.py \
+    && python3 /tmp/get-pip.py --break-system-packages \
     && rm -f -- /tmp/get-pip.py \
-    && pip install --no-cache-dir "setuptools==${SETUPTOOLS_VERSION}"
+    && pip install --no-cache-dir --break-system-packages "setuptools==${SETUPTOOLS_VERSION}"
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
    && update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3 100
