@@ -3,7 +3,8 @@ from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
+from collections.abc import Iterable as _Iterable, Mapping as _Mapping
+from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -104,7 +105,7 @@ class Tracker(_message.Message):
     latest_action_name: str
     stack: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
     user_id: str
-    def __init__(self, sender_id: _Optional[str] = ..., slots: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., latest_message: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., events: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., paused: bool = ..., followup_action: _Optional[str] = ..., active_loop: _Optional[_Mapping[str, str]] = ..., latest_action_name: _Optional[str] = ..., stack: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., user_id: _Optional[str] = ...) -> None: ...
+    def __init__(self, sender_id: _Optional[str] = ..., slots: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., latest_message: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., events: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., paused: _Optional[bool] = ..., followup_action: _Optional[str] = ..., active_loop: _Optional[_Mapping[str, str]] = ..., latest_action_name: _Optional[str] = ..., stack: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., user_id: _Optional[str] = ...) -> None: ...
 
 class Intent(_message.Message):
     __slots__ = ("string_value", "dict_value")
