@@ -68,8 +68,23 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca  # v3.9.0
 
+      # OIDC instead of a stored PAT (INFRA-2379). `id-token: write` is already granted at
+      # workflow level for the Google Cloud auth below.
+      #
+      # The old shell login ended in `|| true`, which swallowed auth failures and surfaced
+      # them an hour later as a confusing push error. Dropped deliberately.
+      #
+      # EXPIREIN is 10800 because the Docker Hub push only completes at the end of a long
+      # build, with no second login in between -- 71 minutes on the 3.19.1 release. Job
+      # times range from 8 to 72 minutes (slowest when several releases are cut at once and
+      # their arm64 QEMU builds contend), so do not size this off a fast run.
       - name: Login to Docker Hub Registry 🔢
-        run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin || true
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: ${{ secrets.DOCKERHUB_OIDC_CONNECTIONID }}
+          DOCKERHUB_OIDC_EXPIREIN: 10800
+        with:
+          username: ${{ vars.DOCKERHUB_ORGANIZATION }}
 
       - name: Authenticate with gcloud for release registry 🎫
         id: 'auth-release'
