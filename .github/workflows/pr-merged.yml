@@ -20,7 +20,7 @@ permissions:
 jobs:
   rasa-sdk-dev-docker-image:
     name: Build Dev Docker Image and Push to AWS
-    runs-on: ubuntu-24.04
+    runs-on: warp-ubuntu-latest-x64-2x
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -43,15 +43,10 @@ jobs:
         with:
           mask-password: "true"
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@4574d27a4764455b42196d70a065bc6853246a25 # v3.4.0
+      - name: Configure WarpBuild Docker Builders
+        uses: Warpbuilds/docker-configure@ecbf49a7b0e21c97813fa9e00a689e740206dd57 # v1.1.7
         with:
-          platforms: linux/amd64,linux/arm64
-          # The latest version will lead to segmentation fault.
-          image: tonistiigi/binfmt:qemu-v7.0.0-28
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca  # v3.9.0
+          profile-name: "warp-docker-builder"
 
       - name: Build and push docker image to AWS
         run: |
