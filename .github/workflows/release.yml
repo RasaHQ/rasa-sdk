@@ -20,7 +20,6 @@ on:
 env:
   COMMIT_EMAIL: sara-tagger@users.noreply.github.com
   DEFAULT_PYTHON_VERSION: "3.10"
-  GITHUB_TOKEN: ${{ secrets.RASASDK_GITHUB_TOKEN }}
   INPUT_VERSION: ${{ github.event.inputs.version }}
   RELEASE_FOM_MAIN: ${{ github.event.inputs.fromMain }}
 
@@ -118,7 +117,7 @@ jobs:
       - name: Create pull request
         uses: devops-infra/action-pull-request@e66e2ba93519dc63b9884a26e620e2fd0cffab2c # v0.5.5
         with:
-          github_token: ${{ env.GITHUB_TOKEN }}
+          github_token: ${{ secrets.RASASDK_GITHUB_TOKEN }}
           source_branch: prepare-release-${{ env.INPUT_VERSION }}
           target_branch: ${{ env.base_branch }}
           body: "**Automated pull request for Rasa SDK release.**"
