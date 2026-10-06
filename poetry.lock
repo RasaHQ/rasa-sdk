@@ -1545,21 +1545,6 @@ http3 = ["aioquic"]
 test = ["bandit", "beautifulsoup4", "black", "chardet (==3.*)", "coverage", "docutils", "flake8", "isort (>=5.0.0)", "mypy (>=0.901,<0.910)", "pygments", "pytest (==7.1.*)", "pytest-benchmark", "pytest-sanic", "sanic-testing (>=22.9.0)", "slotscheck (>=0.8.0,<1)", "types-ujson ; sys_platform != \"win32\" and implementation_name == \"cpython\"", "uvicorn (<0.15.0)"]
 
 [[package]]
-name = "sanic-cors"
-version = "2.0.1"
-description = "A Sanic extension adding a decorator for CORS support. Based on flask-cors by Cory Dolphin."
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "Sanic-Cors-2.0.1.tar.gz", hash = "sha256:4d2f26333d49db428217814c66e89fc3df20fc62a5ab518a71fa22e2e249e19d"},
-    {file = "Sanic_Cors-2.0.1-py2.py3-none-any.whl", hash = "sha256:0c8132bed394ba86f93c03bef52787183652d96b70add4ea13c25eb98f344343"},
-]
-
-[package.dependencies]
-sanic = ">=21.9.3"
-
-[[package]]
 name = "sanic-routing"
 version = "23.12.0"
 description = "Core routing component for Sanic"
@@ -2063,4 +2048,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "dfc388c751a71b3cc59ab2d9f03718556736d9acc7d271dc7617ffb35010f581"
+content-hash = "2a7c37542213f6087092ab0b57493234c71daa609b284ead5d9b4ef707c421b9"
