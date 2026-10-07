@@ -18,20 +18,14 @@ from sanic.worker.loader import AppLoader
 # - all `pkg_resources` deprecation warning from multiple dependencies
 # - google rcp warnings (`pkg_resources.namespaces`)
 # - open telemetry (`pkg_resources`)
-# - sanic-cors (`distutils Version classes...`)
 with warnings.catch_warnings():
     warnings.filterwarnings(
         "ignore", category=DeprecationWarning, message=".*pkg_resources.*"
     )
-    warnings.filterwarnings(
-        "ignore",
-        category=DeprecationWarning,
-        message="distutils Version classes are deprecated",
-    )
-    from sanic_cors import CORS
     from sanic.request import Request
     from rasa_sdk import utils
     from rasa_sdk.cli.arguments import add_endpoint_arguments
+    from rasa_sdk.cors import configure_cors
     from rasa_sdk.constants import (
         DEFAULT_ENDPOINTS_PATH,
         DEFAULT_KEEP_ALIVE_TIMEOUT,
@@ -51,15 +45,6 @@ with warnings.catch_warnings():
     )
 
 logger = logging.getLogger(__name__)
-
-
-def configure_cors(
-    app: Sanic, cors_origins: Union[Text, List[Text], None] = ""
-) -> None:
-    """Configure CORS origins for the given app."""
-    CORS(
-        app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True
-    )
 
 
 def create_ssl_context(
