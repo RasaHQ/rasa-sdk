@@ -97,7 +97,7 @@ python_functions = "test_"
 asyncio_mode = "auto"
 
 [tool.poetry.dependencies.grpcio-tools]
-version = "~1.83.0"
+version = "~1.84.0"
 python = "<3.14"
 
 [tool.ruff.lint.pydocstyle]
