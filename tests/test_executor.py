@@ -13,7 +13,11 @@ import pytest
 from rasa_sdk import Action
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
 from rasa_sdk.types import DomainDict
-from rasa_sdk.interfaces import Tracker
+from rasa_sdk.interfaces import (
+    ClientRequestNotSupported,
+    ClientRequestTimeout,
+    Tracker,
+)
 from tests.conftest import SubclassTestActionA, SubclassTestActionB
 
 TEST_PACKAGE_BASE = "tests/executor_test_packages"
@@ -1011,3 +1015,35 @@ async def test_stream_start_resets_cancellation_state():
 
     await dispatcher.stream_start()  # second sequence begins
     assert not dispatcher.is_streaming_cancelled
+
+
+async def test_request_json_requires_stream_sink():
+    dispatcher = CollectingDispatcher()
+    with pytest.raises(ClientRequestNotSupported):
+        await dispatcher.request_json({"type": "token_refresh_required"})
+
+
+async def test_request_json_returns_body_from_complete_client_reply():
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_sink = sink.put
+
+    async def _reply() -> None:
+        event = await sink.get()
+        assert event["event"] == "client_request"
+        assert event["payload"] == {"type": "token_refresh_required"}
+        dispatcher.complete_client_reply(event["request_id"], body={"ok": True})
+
+    completer = asyncio.create_task(_reply())
+    body = await dispatcher.request_json({"type": "token_refresh_required"}, timeout=1)
+    await completer
+    assert body == {"ok": True}
+
+
+async def test_request_json_times_out_without_reply():
+    sink: asyncio.Queue = asyncio.Queue()
+    dispatcher = CollectingDispatcher()
+    dispatcher._stream_sink = sink.put
+
+    with pytest.raises(ClientRequestTimeout):
+        await dispatcher.request_json({"type": "x"}, timeout=0.05)

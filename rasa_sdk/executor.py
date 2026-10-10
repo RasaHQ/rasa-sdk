@@ -21,6 +21,7 @@ from collections import namedtuple
 import types
 import sys
 import os
+import uuid
 
 from pydantic import BaseModel, Field
 
@@ -29,9 +30,13 @@ from rasa_sdk.interfaces import (
     ActionNotFoundException,
     Action,
     ActionMissingDomainException,
+    ClientRequestFailed,
+    ClientRequestNotSupported,
+    ClientRequestTimeout,
 )
 
 from rasa_sdk import utils
+from rasa_sdk.constants import DEFAULT_CLIENT_REQUEST_TIMEOUT_SECONDS
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +89,7 @@ class CollectingDispatcher:
         # Set to True by cancel_stream() when the user interrupts (barge-in).
         # stream_chunk() checks this flag and silently drops late chunks.
         self._stream_cancelled: bool = False
+        self._pending_client_replies: Dict[Text, asyncio.Future[Dict[Text, Any]]] = {}
 
     @property
     def is_streaming_active(self) -> bool:
@@ -130,6 +136,90 @@ class CollectingDispatcher:
         need to call it directly.
         """
         self._stream_cancelled = True
+        pending = list(self._pending_client_replies.items())
+        self._pending_client_replies.clear()
+        for _request_id, future in pending:
+            if not future.done():
+                future.set_exception(
+                    ClientRequestFailed("Stream cancelled before the client replied.")
+                )
+
+    def complete_client_reply(
+        self,
+        request_id: Text,
+        body: Optional[Dict[Text, Any]] = None,
+        error: Optional[Text] = None,
+    ) -> None:
+        """Resume a waiter created by :meth:`request_json`.
+
+        Called by the transport (Direct executor or gRPC ``DeliverClientReply``)
+        when Rasa has a client reply or a failure. Reply bodies must not be
+        logged.
+
+        Args:
+            request_id: Correlation id from :meth:`request_json`.
+            body: Reply JSON when the round-trip succeeded.
+            error: Failure message when the round-trip failed (timeout, hangup).
+        """
+        future = self._pending_client_replies.pop(request_id, None)
+        if future is None or future.done():
+            return
+        if error:
+            lowered = error.lower()
+            if "timed out" in lowered or "timeout" in lowered:
+                future.set_exception(ClientRequestTimeout(error))
+            else:
+                future.set_exception(ClientRequestFailed(error))
+            return
+        future.set_result(body or {})
+
+    async def request_json(
+        self,
+        payload: Dict[Text, Any],
+        timeout: float = DEFAULT_CLIENT_REQUEST_TIMEOUT_SECONDS,
+    ) -> Dict[Text, Any]:
+        """Ask the live client for JSON and wait for the correlated reply.
+
+        Emits a ``client_request`` event on the streaming sink, then waits until
+        :meth:`complete_client_reply` is called or ``timeout`` elapses.
+
+        Args:
+            payload: JSON forwarded to the output channel (for example
+                ``{"type": "token_refresh_required"}``).
+            timeout: Seconds to wait for the client reply.
+
+        Returns:
+            The client's reply body.
+
+        Raises:
+            ClientRequestNotSupported: When no streaming sink is attached.
+            ClientRequestTimeout: When the client does not reply in time.
+            ClientRequestFailed: When Rasa reports a transport/session error.
+        """
+        if self._stream_sink is None:
+            raise ClientRequestNotSupported()
+
+        request_id = uuid.uuid4().hex
+        loop = asyncio.get_running_loop()
+        future: asyncio.Future[Dict[Text, Any]] = loop.create_future()
+        self._pending_client_replies[request_id] = future
+        await self._stream_sink(
+            {
+                "event": "client_request",
+                "request_id": request_id,
+                "payload": payload,
+                "timeout": timeout,
+            }
+        )
+        try:
+            return await asyncio.wait_for(asyncio.shield(future), timeout=timeout)
+        except asyncio.TimeoutError as exc:
+            self._pending_client_replies.pop(request_id, None)
+            if not future.done():
+                future.cancel()
+            raise ClientRequestTimeout(
+                f"Timed out after {timeout}s waiting for a client reply."
+            ) from exc
 
     def utter_message(
         self,

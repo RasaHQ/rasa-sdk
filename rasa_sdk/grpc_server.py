@@ -141,6 +141,8 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
         # Used by AckStreamChunks to reach the active dispatcher without
         # coupling the RPC handler to the WebhookStream coroutine.
         self._dispatcher_registry: Dict[str, "CollectingDispatcher"] = {}
+        # Maps client request_id → dispatcher for DeliverClientReply.
+        self._client_request_registry: Dict[str, "CollectingDispatcher"] = {}
 
     async def Actions(
         self,
@@ -382,6 +384,11 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                         )
                     elif event_type == "stream_chunk":
                         yield _build_chunk_event(chunk, current_response_id)
+                    elif event_type == "client_request":
+                        request_id = str(chunk.get("request_id") or "")
+                        if request_id:
+                            self._client_request_registry[request_id] = dispatcher
+                        yield _build_client_request_event(chunk)
                     elif event_type == "stream_end":
                         self._dispatcher_registry.pop(current_response_id, None)
                         yield action_webhook_pb2.WebhookStreamEvent(
@@ -463,6 +470,32 @@ class GRPCActionServerWebhook(action_webhook_pb2_grpc.ActionServiceServicer):
                 f"response_id='{request.response_id}'. This is normal when the "
                 "action finished streaming before the barge-in ack arrived."
             )
+        return empty_pb2.Empty()
+
+    async def DeliverClientReply(
+        self,
+        request: action_webhook_pb2.ClientReply,
+        context: grpc.aio.ServicerContext,
+    ) -> empty_pb2.Empty:
+        """Resume ``dispatcher.request_json`` with the client's reply or an error.
+
+        Args:
+            request: Correlation id plus reply body or error string.
+            context: Unused gRPC context required by the servicer API.
+
+        Returns:
+            ``google.protobuf.Empty``.
+        """
+        dispatcher = self._client_request_registry.pop(request.request_id, None)
+        if dispatcher is None:
+            logger.debug(
+                "DeliverClientReply: no waiter for request_id=%s",
+                request.request_id,
+            )
+            return empty_pb2.Empty()
+        body = MessageToDict(request.body) if request.body else {}
+        error = request.error or None
+        dispatcher.complete_client_reply(request.request_id, body=body, error=error)
         return empty_pb2.Empty()
 
 
@@ -595,6 +628,23 @@ def _build_chunk_event(
             action_webhook_pb2.Chunk(response_id=response_id),
         )
     )
+
+
+def _build_client_request_event(
+    chunk_payload: Dict[str, Any],
+) -> action_webhook_pb2.WebhookStreamEvent:
+    """Build a ``WebhookStreamEvent`` carrying a ``ClientRequest``."""
+    request_id = str(chunk_payload.get("request_id") or "")
+    timeout = float(chunk_payload.get("timeout") or 10.0)
+    payload = chunk_payload.get("payload") or {}
+    if not isinstance(payload, dict):
+        payload = {}
+    message = action_webhook_pb2.ClientRequest(
+        request_id=request_id,
+        timeout=timeout,
+    )
+    ParseDict(payload, message.payload)
+    return action_webhook_pb2.WebhookStreamEvent(client_request=message)
 
 
 def _build_empty_final_result_event() -> action_webhook_pb2.WebhookStreamEvent:
