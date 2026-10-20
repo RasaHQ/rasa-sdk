@@ -70,14 +70,14 @@ target-version = "py310"
 exclude = [ "rasa_sdk/grpc_py", "eggs", ".git", ".pytest_cache", "build", "dist", ".DS_Store",]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.15"
+python = ">=3.15,<3.16"
 coloredlogs = ">=10,<16"
 sanic = "~25.12"
 typing-extensions = "~4.16.0"
 "ruamel.yaml" = "~0.19.1"
 websockets = ">=10.0,<16"
 pluggy = "^1.0.0"
-pydantic = "~2.13.4"
+pydantic = "~2.14.0"
 grpcio-health-checking = "~1.84.0"
 opentelemetry-sdk = "~1.45.0"
 opentelemetry-exporter-otlp = "~1.45.0"
@@ -97,7 +97,7 @@ python_functions = "test_"
 asyncio_mode = "auto"
 
 [tool.poetry.dependencies.grpcio-tools]
-version = "~1.83.0"
+version = "~1.84.0"
 python = "<3.14"
 
 [tool.ruff.lint.pydocstyle]
