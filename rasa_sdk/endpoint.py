@@ -28,6 +28,7 @@ with warnings.catch_warnings():
         category=DeprecationWarning,
         message="distutils Version classes are deprecated",
     )
+    from rasa_sdk.cors import ensure_sanic_cors_origin_anchor_fix
     from sanic_cors import CORS
     from sanic.request import Request
     from rasa_sdk import utils
@@ -57,6 +58,7 @@ def configure_cors(
     app: Sanic, cors_origins: Union[Text, List[Text], None] = ""
 ) -> None:
     """Configure CORS origins for the given app."""
+    ensure_sanic_cors_origin_anchor_fix()
     CORS(
         app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True
     )

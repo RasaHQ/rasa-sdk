@@ -92,6 +92,7 @@ poetry-plugin-export = ">=1.8"
 [tool.ruff.lint]
 ignore = [ "D100", "D101", "D102", "D103", "D104", "D105", "RUF005",]
 select = [ "D", "E", "F", "W", "RUF",]
+per-file-ignores = { "rasa_sdk/grpc_server.py" = ["E402"], "rasa_sdk/tracing/config.py" = ["E402"] }
 
 [tool.pytest.ini_options]
 python_functions = "test_"
