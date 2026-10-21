@@ -7,7 +7,7 @@ import warnings
 
 from rasa_sdk.grpc_py import action_webhook_pb2 as rasa__sdk_dot_grpc__py_dot_action__webhook__pb2
 
-GRPC_GENERATED_VERSION = '1.84.0'
+GRPC_GENERATED_VERSION = '1.66.2'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -20,14 +20,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in rasa_sdk/grpc_py/action_webhook_pb2_grpc.py depends on'
+        + f' but the generated code in rasa_sdk/grpc_py/action_webhook_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class ActionServiceStub:
+class ActionServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -48,7 +48,7 @@ class ActionServiceStub:
                 _registered_method=True)
 
 
-class ActionServiceServicer:
+class ActionServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Webhook(self, request, context):
@@ -84,7 +84,7 @@ def add_ActionServiceServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class ActionService:
+class ActionService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
