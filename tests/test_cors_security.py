@@ -3,9 +3,9 @@ import re
 import sanic_cors.core as cors_core
 import sanic_cors.extension as cors_extension
 from sanic import Sanic, response
-from sanic_cors import CORS
 
 from rasa_sdk.cors import ensure_sanic_cors_origin_anchor_fix
+from rasa_sdk.endpoint import configure_cors
 
 
 def test_sanic_cors_origin_anchor_fix_blocks_prefix_bypass() -> None:
@@ -40,31 +40,25 @@ def test_sanic_cors_extension_module_uses_anchored_try_match() -> None:
 
     assert cors_extension.try_match(attacker_origin, trusted_pattern) is False
     assert cors_extension.try_match is cors_core.try_match
+    assert cors_extension.try_match("/health", "/.*") is True
 
 
-def test_cors_middleware_does_not_reflect_prefix_bypass_origin() -> None:
-    ensure_sanic_cors_origin_anchor_fix()
-
+def test_cors_middleware_anchors_regex_origins() -> None:
     app = Sanic("cors-security-test")
-    CORS(
-        app,
-        resources={r"/*": {"origins": r"https://trusted\.example\.com"}},
-        automatic_options=True,
-    )
 
-    @app.get("/")
-    async def handler(_request):
-        return response.text("ok")
+    @app.get("/health")
+    async def health(_request):
+        return response.json({"status": "ok"})
 
-    _, preflight = app.test_client.options(
-        "/",
-        headers={
-            "Origin": "https://trusted.example.com.attacker.io",
-            "Access-Control-Request-Method": "GET",
-        },
-    )
+    configure_cors(app, r"https://trusted\.example\.com")
 
-    assert (
-        preflight.headers.get("Access-Control-Allow-Origin")
-        != "https://trusted.example.com.attacker.io"
-    )
+    attacker_origin = "https://trusted.example.com.attacker.io"
+    trusted_origin = "https://trusted.example.com"
+
+    _, blocked = app.test_client.get("/health", headers={"Origin": attacker_origin})
+    assert blocked.status == 200
+    assert blocked.headers.get("Access-Control-Allow-Origin") != attacker_origin
+
+    _, allowed = app.test_client.get("/health", headers={"Origin": trusted_origin})
+    assert allowed.status == 200
+    assert allowed.headers.get("Access-Control-Allow-Origin") == trusted_origin

@@ -59,8 +59,10 @@ def configure_cors(
 ) -> None:
     """Configure CORS origins for the given app."""
     ensure_sanic_cors_origin_anchor_fix()
+    # `/*` only matches paths under re.match (the `*` quantifies `/`).
+    # Anchored try_match requires a pattern that covers the whole path.
     CORS(
-        app, resources={r"/*": {"origins": cors_origins or ""}}, automatic_options=True
+        app, resources={r"/.*": {"origins": cors_origins or ""}}, automatic_options=True
     )
 
 
