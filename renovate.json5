@@ -1,0 +1,84 @@
+// Renovate configuration for rasa-sdk (Studio-adapted, poetry-only).
+// Groups all minor/patch updates into a single PR,
+// proposed 3 times during work week, after a 3-day supply-chain release cooldown.
+// Skips majors, 0.x (unstable) packages.
+// Security (vulnerability-alert) updates are grouped, labeled
+// "type:vulnerabilities", and bypass the schedule, but keep the same 3-day
+// cooldown. They may still be constrained by packageRules below (e.g. majors /
+// 0.x disabled) unless Renovate's vulnerability path overrides those rules.
+// ENG-2854 / epic PF-1454. Dependabot remains until PF-1465.
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["config:recommended"],
+  baseBranchPatterns: [
+    "main",
+    "3.18.x",
+    "3.17.x",
+    "3.16.x",
+    "3.15.x", // drop after EoSM 2026-08-26
+  ],
+  enabledManagers: ["poetry"],
+  minimumReleaseAge: "3 days",
+  schedule: [
+    "before 4am on Monday",
+    "before 4am on Wednesday",
+    "before 4am on Friday",
+  ],
+  timezone: "UTC",
+  prConcurrentLimit: 7,
+  vulnerabilityAlerts: {
+    groupName: "security updates",
+    groupSlug: "security",
+    minimumReleaseAge: "3 days",
+    vulnerabilityFixStrategy: "lowest",
+    labels: ["type:vulnerabilities"],
+    automerge: true,
+  },
+  packageRules: [
+    {
+      matchUpdateTypes: ["major"],
+      enabled: false,
+    },
+    {
+      matchManagers: ["poetry"],
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "all poetry dependencies",
+      groupSlug: "all-poetry",
+      automerge: true,
+    },
+    {
+      // Skip packages still on 0.x versions: semver allows breaking changes
+      // in any 0.x release, so these need manual review instead.
+      matchCurrentVersion: "<1.0.0",
+      enabled: false,
+    },
+    {
+      // Poetry's `python` constraint is the library's supported runtime range
+      // (Requires-Dist on PyPI). Do not let Renovate rewrite it from unrelated
+      // datasource matches (e.g. containerbase/python-prebuild).
+      matchManagers: ["poetry"],
+      matchDepNames: ["python"],
+      enabled: false,
+    },
+  ],
+  labels: ["type:dependencies"],
+  // Not `pin`: rasa-sdk is a published library, so the constraints in
+  // pyproject.toml become Requires-Dist on PyPI and are resolved in the
+  // customer's environment alongside rasa-private. Pinning them to `==` would
+  // hand customers unsatisfiable co-installs.
+  //
+  // `update-lockfile` rather than `replace` (or the `:preserveSemverRanges`
+  // preset, which is just `replace`): `replace` edits a constraint only when a
+  // new version falls outside it and does nothing otherwise, so in-range
+  // updates produce no PR at all and poetry.lock drifts. `update-lockfile`
+  // moves the lock for in-range versions and falls back to `replace` when a
+  // version sits outside the range -- which is what Dependabot did here
+  // historically (e.g. mypy "^0.910" -> "^0.950"). Security fixes are
+  // unaffected: Renovate switches this to `bump` for vulnerability alerts with
+  // no locked version.
+  //
+  // Deployed services (studio, rasa-pro-services) can keep `pin` -- nothing
+  // consumes their constraints.
+  rangeStrategy: "update-lockfile",
+  semanticCommits: "disabled",
+}
