@@ -52,6 +52,14 @@
       matchCurrentVersion: "<1.0.0",
       enabled: false,
     },
+    {
+      // Poetry's `python` constraint is the library's supported runtime range
+      // (Requires-Dist on PyPI). Do not let Renovate rewrite it from unrelated
+      // datasource matches (e.g. containerbase/python-prebuild).
+      matchManagers: ["poetry"],
+      matchDepNames: ["python"],
+      enabled: false,
+    },
   ],
   labels: ["type:dependencies"],
   // Not `pin`: rasa-sdk is a published library, so the constraints in
