@@ -5,6 +5,10 @@ import logging
 import os
 from typing import Any, Dict, Optional, Text
 
+from rasa_sdk.grpc_dns import ensure_native_grpc_dns_resolver
+
+ensure_native_grpc_dns_resolver()
+
 import grpc
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource

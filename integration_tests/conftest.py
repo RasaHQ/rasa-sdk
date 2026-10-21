@@ -1,5 +1,9 @@
 from pathlib import Path
 
+from rasa_sdk.grpc_dns import ensure_native_grpc_dns_resolver
+
+ensure_native_grpc_dns_resolver()
+
 _CERTS_DIR = Path(__file__).parent / "grpc_server" / "setup" / "certs"
 
 

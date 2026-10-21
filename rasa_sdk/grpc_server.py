@@ -4,6 +4,10 @@ import signal
 
 import asyncio
 
+from rasa_sdk.grpc_dns import ensure_native_grpc_dns_resolver
+
+ensure_native_grpc_dns_resolver()
+
 import grpc
 import logging
 from typing import Optional, Any, Dict

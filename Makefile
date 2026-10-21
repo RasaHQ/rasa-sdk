@@ -118,6 +118,7 @@ generate-grpc:  ## generate grpc code
 	 	--grpc_python_out=. \
 	 	--pyi_out=. \
 	 	proto/action_webhook.proto
+	 poetry run python scripts/patch_grpc_stubs_dns.py
 
 check-generate-grpc-code-in-sync: generate-grpc ## check if the generated code is in sync with the proto files, it uses a helper to check if the generated code is in sync with the proto files
 	git diff --exit-code rasa_sdk/grpc_py | if [ "$$(wc -c)" -eq 0 ]; then echo "Generated code is in sync with proto files"; else echo "Generated code is not in sync with proto files"; exit 1; fi
