@@ -60,6 +60,26 @@
       matchDepNames: ["python"],
       enabled: false,
     },
+    {
+      // On 3.16.x, keep the all-poetry group but hold grpc/protobuf/OTel on the
+      // pins Rasa 3.16 co-installs with (~1.66 / ~5.29 / ~1.33). Bumping grpc
+      // in that group breaks poetry lock (grpcio-tools 1.84 needs protobuf 7).
+      // Same split as #1406: upgrade everything else in the group.
+      description: "Hold grpc/protobuf/OTel on 3.16.x; allow other all-poetry bumps",
+      matchManagers: ["poetry"],
+      matchBaseBranches: ["3.16.x"],
+      matchPackageNames: [
+        "grpcio",
+        "grpcio-tools",
+        "grpcio-health-checking",
+        "protobuf",
+        "opentelemetry-api",
+        "opentelemetry-sdk",
+        "opentelemetry-exporter-otlp",
+        "types-protobuf",
+      ],
+      enabled: false,
+    },
   ],
   labels: ["type:dependencies"],
   // Not `pin`: rasa-sdk is a published library, so the constraints in
