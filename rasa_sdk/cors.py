@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import re
-from typing import Any
+import sys
+from typing import Any, Callable
 
 _patched = False
 
@@ -14,6 +15,10 @@ def ensure_sanic_cors_origin_anchor_fix() -> None:
     if _patched:
         return
 
+    import importlib
+
+    importlib.import_module("sanic_cors.decorator")
+    importlib.import_module("sanic_cors.extension")
     import sanic_cors.core as cors_core
 
     def try_match(request_origin: Any, maybe_regex: Any) -> bool:
@@ -29,5 +34,14 @@ def ensure_sanic_cors_origin_anchor_fix() -> None:
         except AttributeError:
             return request_origin == maybe_regex
 
-    cors_core.try_match = try_match
+    _rebind_sanic_cors_try_match(try_match)
     _patched = True
+
+
+def _rebind_sanic_cors_try_match(try_match: Callable[..., bool]) -> None:
+    """Rebind ``try_match`` everywhere Sanic-Cors copied it from ``core``."""
+    for module_name, module in list(sys.modules.items()):
+        if (
+            module_name == "sanic_cors" or module_name.startswith("sanic_cors.")
+        ) and hasattr(module, "try_match"):
+            setattr(module, "try_match", try_match)
