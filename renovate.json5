@@ -60,6 +60,27 @@
       matchDepNames: ["python"],
       enabled: false,
     },
+    {
+      // rasa-private 3.16.x still pins protobuf ~5.29 and grpc ~1.66 alongside
+      // rasa-sdk. grpcio 1.84+ requires protobuf 7 (via grpcio-tools), which
+      // breaks that co-install. OTel must stay aligned with Rasa 3.16.x too.
+      // c-ares DNS risk on bundled grpc is mitigated in rasa_sdk.grpc_dns until
+      // this line moves to protobuf 7 with Rasa.
+      description: "Skip grpc/protobuf/OTel bumps on 3.16.x release line",
+      matchManagers: ["poetry"],
+      matchBaseBranches: ["3.16.x"],
+      matchPackageNames: [
+        "grpcio",
+        "grpcio-tools",
+        "grpcio-health-checking",
+        "protobuf",
+        "opentelemetry-api",
+        "opentelemetry-sdk",
+        "opentelemetry-exporter-otlp",
+        "types-protobuf",
+      ],
+      enabled: false,
+    },
   ],
   labels: ["type:dependencies"],
   // Not `pin`: rasa-sdk is a published library, so the constraints in
