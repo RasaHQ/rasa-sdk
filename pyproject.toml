@@ -70,7 +70,7 @@ target-version = "py38"
 exclude = [ "rasa_sdk/grpc_py", "eggs", ".git", ".pytest_cache", "build", "dist", ".DS_Store",]
 
 [tool.poetry.dependencies]
-python = ">3.9,<3.14"
+python = ">=3.10,<3.14"
 coloredlogs = ">=10,<16"
 sanic = "^22.12"
 typing-extensions = ">=4.1.1,<5.0.0"
@@ -84,8 +84,7 @@ opentelemetry-sdk = "~1.45.0"
 opentelemetry-exporter-otlp = "~1.45.0"
 opentelemetry-api = "~1.45.0"
 grpcio = "~1.84.0"
-protobuf = "~5.29.5"
-grpcio-tools = "~1.84.0"
+protobuf = "~7.36.0"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
@@ -97,6 +96,10 @@ select = [ "D", "E", "F", "W", "RUF",]
 [tool.pytest.ini_options]
 python_functions = "test_"
 asyncio_mode = "auto"
+
+[tool.poetry.dependencies.grpcio-tools]
+version = "~1.84.0"
+python = "<3.14"
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -114,4 +117,4 @@ mypy = "^1.14"
 sanic-testing = "~23.12.0"
 ruff = ">=0.3.5,<0.4.0"
 pytest-asyncio = "^0.23.6"
-types-protobuf = "4.25.0.20240417"
+types-protobuf = "7.35.1.20260906"
