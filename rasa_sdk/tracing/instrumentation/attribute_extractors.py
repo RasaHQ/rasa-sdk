@@ -1,6 +1,7 @@
+import asyncio
 import json
 
-from typing import Any, Dict, Text, List
+from typing import Any, Dict, Text, List, Optional
 from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
 from rasa_sdk.forms import ValidationAction
 from rasa_sdk.types import ActionCall, DomainDict
@@ -18,11 +19,15 @@ from rasa_sdk import Tracker
 def extract_attrs_for_action_executor(
     self: ActionExecutor,
     action_call: ActionCall,
+    sink: Optional[asyncio.Queue] = None,
+    dispatcher: Optional[CollectingDispatcher] = None,
 ) -> Dict[Text, Any]:
     """Extract the attributes for `ActionExecutor.run`.
 
     :param self: The `ActionExecutor` on which `run` is called.
     :param action_call: The `ActionCall` argument.
+    :param sink: The streaming output queue argument. Not used for attributes.
+    :param dispatcher: The dispatcher argument. Not used for attributes.
     :return: A dictionary containing the attributes.
     """
     attributes = {"sender_id": action_call.get("sender_id", "None")}
