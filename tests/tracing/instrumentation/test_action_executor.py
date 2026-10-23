@@ -1,3 +1,6 @@
+import asyncio
+import inspect
+
 import pytest
 
 from typing import Any, Dict, Sequence, Text, Optional, List, Callable
@@ -13,7 +16,10 @@ from tests.tracing.instrumentation.conftest import MockActionExecutor
 from rasa_sdk.types import ActionCall
 from rasa_sdk import Tracker
 from rasa_sdk.tracing.tracer_register import ActionExecutorTracerRegister
-from rasa_sdk.executor import CollectingDispatcher
+from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
+from rasa_sdk.tracing.instrumentation.attribute_extractors import (
+    extract_attrs_for_action_executor,
+)
 
 
 def get_dispatcher0():
@@ -84,6 +90,57 @@ async def test_tracing_action_executor_run(
     assert captured_span.name == "MockActionExecutor.run"
 
     assert captured_span.attributes == expected
+
+
+@pytest.mark.asyncio
+async def test_tracing_action_executor_run_with_sink_and_dispatcher(
+    tracer_provider: TracerProvider,
+    span_exporter: InMemorySpanExporter,
+    previous_num_captured_spans: int,
+) -> None:
+    component_class = MockActionExecutor
+
+    instrumentation.instrument(
+        tracer_provider,
+        action_executor_class=component_class,
+    )
+
+    mock_action_executor = component_class()
+    action_call = ActionCall(
+        {
+            "next_action": "check_balance",
+            "sender_id": "test",
+            "tracker": Tracker("test", {}, {}, [], False, None, {}, ""),
+            "version": "1.0.0",
+            "domain": {},
+        }
+    )
+    await mock_action_executor.run(
+        action_call, sink=asyncio.Queue(), dispatcher=CollectingDispatcher()
+    )
+
+    captured_spans: Sequence[ReadableSpan] = span_exporter.get_finished_spans()  # type: ignore
+
+    num_captured_spans = len(captured_spans) - previous_num_captured_spans
+    assert num_captured_spans == 1
+
+    captured_span = captured_spans[-1]
+
+    assert captured_span.attributes == {
+        "action_name": "check_balance",
+        "sender_id": "test",
+    }
+
+
+def test_action_executor_run_matches_attribute_extractor_signature() -> None:
+    # The instrumentation drops all span attributes if these argument lists diverge,
+    # so check the real `ActionExecutor` rather than the mock.
+    run_params = inspect.signature(ActionExecutor.run).parameters.keys()
+    extractor_params = inspect.signature(
+        extract_attrs_for_action_executor
+    ).parameters.keys()
+
+    assert run_params == extractor_params
 
 
 def test_instrument_action_executor_run_registers_tracer(
