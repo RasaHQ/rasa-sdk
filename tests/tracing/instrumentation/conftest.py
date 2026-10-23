@@ -1,11 +1,12 @@
+import asyncio
 import pytest
-from typing import Any, Dict, Text, List
+from typing import Any, Dict, Text, List, Optional
 
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from rasa_sdk.executor import ActionExecutor
+from rasa_sdk.executor import ActionExecutor, CollectingDispatcher
 from rasa_sdk.types import ActionCall
 
 
@@ -44,7 +45,12 @@ class MockActionExecutor(ActionExecutor):
                 f"instrumentation needs to be adapted!"
             )
 
-    async def run(self, action_call: ActionCall) -> None:
+    async def run(
+        self,
+        action_call: ActionCall,
+        sink: Optional[asyncio.Queue] = None,
+        dispatcher: Optional[CollectingDispatcher] = None,
+    ) -> None:
         pass
 
     @staticmethod
