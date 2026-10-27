@@ -1,0 +1,7 @@
+tracing:
+  - type: jaeger
+    host: localhost
+    port: 4317
+  - type: otlp
+    endpoint: localhost:4317
+    insecure: true

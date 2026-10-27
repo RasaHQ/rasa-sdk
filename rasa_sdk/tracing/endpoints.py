@@ -1,12 +1,17 @@
 import logging
 
 import os
-from typing import Any, Dict, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 import rasa_sdk.utils
 
 
 logger = logging.getLogger(__name__)
 DEFAULT_ENCODING = "utf-8"
+TRACING_TYPE_LANGFUSE = "langfuse"
+
+
+class DuplicateTracingConfigException(Exception):
+    """Raised when more than one tracing backend is configured."""
 
 
 def read_endpoint_config(
@@ -39,6 +44,63 @@ def read_endpoint_config(
             )
         )
         return None
+
+
+def read_tracing_endpoint_config(
+    filename: Text, endpoint_type: Text
+) -> Optional["EndpointConfig"]:
+    """Read the tracing backend configuration from an endpoints file.
+
+    The tracing section can be a single mapping or a list of mappings. Langfuse
+    entries are skipped, as Langfuse tracing is handled by the Rasa server only.
+
+    Args:
+        filename: the endpoint config file to read
+        endpoint_type: the key of the tracing section
+
+    Returns:
+        The tracing backend configuration if exactly one exists, `None` otherwise.
+
+    Raises:
+        DuplicateTracingConfigException: if more than one tracing backend
+            (other than Langfuse) is configured.
+    """
+    if not filename:
+        return None
+
+    try:
+        content = rasa_sdk.utils.read_file(filename)
+        content = rasa_sdk.utils.read_yaml(content)
+    except FileNotFoundError:
+        logger.error(
+            "Failed to read endpoint configuration from {}. No such file.".format(
+                os.path.abspath(filename)
+            )
+        )
+        return None
+
+    config = content.get(endpoint_type)
+    if config is None:
+        return None
+
+    items = config if isinstance(config, list) else [config]
+    tracing_configs: List[EndpointConfig] = [
+        EndpointConfig.from_dict(item)
+        for item in items
+        if item.get("type") != TRACING_TYPE_LANGFUSE
+    ]
+
+    if not tracing_configs:
+        return None
+
+    if len(tracing_configs) > 1:
+        types = ", ".join(str(cfg.type) for cfg in tracing_configs)
+        raise DuplicateTracingConfigException(
+            f"Multiple tracing backends ({types}) found in "
+            f"{os.path.abspath(filename)}. Only one tracing backend is supported."
+        )
+
+    return tracing_configs[0]
 
 
 class EndpointConfig:
