@@ -10,7 +10,7 @@ from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExport
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from rasa_sdk.tracing.endpoints import EndpointConfig, read_endpoint_config
+from rasa_sdk.tracing.endpoints import EndpointConfig, read_tracing_endpoint_config
 from rasa_sdk.tracing.instrumentation import instrumentation
 from rasa_sdk.executor import ActionExecutor
 from rasa_sdk.forms import ValidationAction, FormValidationAction
@@ -54,11 +54,11 @@ def get_tracer_provider(endpoints_file: Text) -> Optional[TracerProvider]:
         tracing backend.
     :return: The `TracingProvider` to be used for all subsequent tracing.
     """
-    cfg = read_endpoint_config(endpoints_file, ENDPOINTS_TRACING_KEY)
+    cfg = read_tracing_endpoint_config(endpoints_file, ENDPOINTS_TRACING_KEY)
 
     if not cfg:
         logger.info(
-            f"No endpoint for tracing type available in {endpoints_file},"
+            f"No endpoint for tracing type available in {endpoints_file}, "
             f"tracing will not be configured."
         )
         return None
