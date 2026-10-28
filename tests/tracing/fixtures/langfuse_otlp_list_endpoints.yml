@@ -1,0 +1,8 @@
+tracing:
+  - type: langfuse
+    host: https://cloud.langfuse.com
+    public_key: public-key
+    private_key: private-key
+  - type: otlp
+    endpoint: localhost:4317
+    insecure: true
