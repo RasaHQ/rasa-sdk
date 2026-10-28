@@ -17,6 +17,11 @@ https://github.com/RasaHQ/rasa/tree/main/changelog/ . -->
 
 <!-- TOWNCRIER -->
 
+## [3.17.4] - 2026-10-28
+                        
+Rasa_Sdk 3.17.4 (2026-10-28)                             
+### Bugfixes
+- [#1469](https://github.com/rasahq/rasa-sdk/issues/1469): The action server no longer crashes at startup with `TypeError: ... argument after ** must be a mapping, not list` when `tracing` in `endpoints.yml` is a list. It accepts a single mapping or a list, ignores `langfuse` entries (Langfuse tracing is handled by the Rasa server), and uses the `jaeger` or `otlp` entry. Configuring more than one `jaeger`/`otlp` backend raises an error, as on the Rasa server.
 ## [3.17.3] - 2026-10-08
                         
 Rasa_Sdk 3.17.3 (2026-10-08)                             
