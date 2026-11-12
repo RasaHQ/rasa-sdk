@@ -39,7 +39,7 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
 FROM base AS python_builder
 
 ARG PIP_MIN_VERSION
-ARG POETRY_VERSION=2.1.2
+ARG POETRY_VERSION=2.4.3
 
 # install poetry
 # keep this in sync with the version in pyproject.toml and Dockerfile
