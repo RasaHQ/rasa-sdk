@@ -1964,27 +1964,6 @@ tomli = {version = "*", markers = "python_version < \"3.11\""}
 
 [package.extras]
 dev = ["furo (>=2024.5.6)", "nox", "packaging", "sphinx (>=5)", "twisted"]
-<<<<<<< HEAD
-=======
-
-[[package]]
-name = "tracerite"
-version = "2.6.3"
-description = "Human-readable HTML tracebacks for Python exceptions"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "tracerite-2.6.3-py3-none-any.whl", hash = "sha256:2b7dd797fad42fec4d590f2bc41b7331172fa0e4d959d6f04606eb0f76ae62e5"},
-    {file = "tracerite-2.6.3.tar.gz", hash = "sha256:72a3658e09c71ef97c424a9a1772f0069c7aa7d1189e061075286605be27efc0"},
-]
-
-[package.dependencies]
-html5tagger = ">=2.0.0"
-
-[package.extras]
-nb = ["ipykernel (>=6.29.5)", "ipywidgets (>=8.1.8)", "jupyter (>=1.1.1)", "jupyter-client (>=8.6.3)", "jupyterlab (>=4.3.8)", "notebook (>=7.3.3)", "numpy (>=2.2.6)"]
->>>>>>> d046242 (Upgrade poetry to 2.4.3 (#1487))
 
 [[package]]
 name = "typer"
