@@ -1,5 +1,5 @@
 # Keep this in sync with the version pinned in poetry.lock
-ARG SETUPTOOLS_VERSION=83.0.0
+ARG SETUPTOOLS_VERSION=82.0.1
 # Minimum pip version
 ARG PIP_MIN_VERSION=26.1
 # Recompute with: curl -fsSL https://bootstrap.pypa.io/get-pip.py | sha256sum
