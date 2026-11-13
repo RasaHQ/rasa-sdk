@@ -24,8 +24,12 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
 
 FROM base AS python_builder
 
+<<<<<<< HEAD
 ARG PIP_MIN_VERSION
 ARG POETRY_VERSION=2.1.2
+=======
+ARG POETRY_VERSION=2.4.3
+>>>>>>> d046242 (Upgrade poetry to 2.4.3 (#1487))
 
 # hadolint ignore=DL3008
 RUN apt-get update -qq \

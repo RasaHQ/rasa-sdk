@@ -1,9 +1,9 @@
 # Keep this in sync with the version pinned in poetry.lock
-ARG SETUPTOOLS_VERSION=82.0.1
+ARG SETUPTOOLS_VERSION=83.0.0
 # Minimum pip version
 ARG PIP_MIN_VERSION=26.1
 # Recompute with: curl -fsSL https://bootstrap.pypa.io/get-pip.py | sha256sum
-ARG GET_PIP_SHA256=f4448a01e3ab2914c65f4ca59d4cacba6b2dbde19a483fbac46587f8bbaff424
+ARG GET_PIP_SHA256=356e0d0de21cdc348c3394084d90939b85e4246c4d14c76aee6ca4f46646ea98
 
 FROM ubuntu:22.04 AS base
 
@@ -38,7 +38,7 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
 FROM base AS python_builder
 
 ARG PIP_MIN_VERSION
-ARG POETRY_VERSION=2.1.2
+ARG POETRY_VERSION=2.4.3
 
 # install poetry
 # keep this in sync with the version in pyproject.toml and Dockerfile
