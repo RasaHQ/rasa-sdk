@@ -7,6 +7,7 @@ from rasa_sdk.knowledge_base.utils import (
     get_attribute_slots,
     reset_attribute_slots,
     get_object_name,
+    resolve_mention,
     SLOT_MENTION,
     SLOT_OBJECT_TYPE,
     SLOT_LAST_OBJECT,
@@ -130,6 +131,38 @@ def test_get_object_name(slots, use_last_object_mention, expected_object_name):
     )
 
     assert actual_object_name == expected_object_name
+
+
+@pytest.mark.parametrize(
+    "mention,listed_objects,expected_object_name",
+    [
+        ("1", ["Restaurant-1", "Restaurant-2"], "Restaurant-1"),
+        ("2", ["Restaurant-1", "Restaurant-2"], "Restaurant-2"),
+        ("3", ["Restaurant-1", "Restaurant-2"], None),
+        ("10", ["Restaurant-1", "Restaurant-2"], None),
+        ("LAST", ["Restaurant-1", "Restaurant-2"], "Restaurant-2"),
+    ],
+)
+def test_resolve_mention_out_of_range_ordinal(
+    mention, listed_objects, expected_object_name
+):
+    ordinal_mention_mapping = {
+        "1": lambda lst: lst[0],
+        "2": lambda lst: lst[1],
+        "3": lambda lst: lst[2],
+        "10": lambda lst: lst[9],
+        "LAST": lambda lst: lst[-1],
+    }
+    slots = {
+        SLOT_MENTION: mention,
+        SLOT_OBJECT_TYPE: "restaurant",
+        SLOT_LISTED_OBJECTS: listed_objects,
+        SLOT_LAST_OBJECT: listed_objects[-1],
+        SLOT_LAST_OBJECT_TYPE: "restaurant",
+    }
+    tracker = Tracker("default", slots, {}, [], False, None, {}, "action_listen")
+
+    assert resolve_mention(tracker, ordinal_mention_mapping) == expected_object_name
 
 
 @pytest.mark.parametrize(
