@@ -103,14 +103,14 @@ files = [
 
 [[package]]
 name = "certifi"
-version = "2025.10.5"
+version = "2026.11.20"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "dev"]
 files = [
-    {file = "certifi-2025.10.5-py3-none-any.whl", hash = "sha256:0f212c2744a9bb6de0c56639a6f68afe01ecd92d91f14ae897c4fe7bbeeef0de"},
-    {file = "certifi-2025.10.5.tar.gz", hash = "sha256:47c09d31ccf2acf0be3f701ea53595ee7e0b8fa08801c6624be771df09ae7b43"},
+    {file = "certifi-2026.11.20-py3-none-any.whl", hash = "sha256:7422df25243767b9877031a2248cb14d09ddac9beee846f4cef3d5c9191d488f"},
+    {file = "certifi-2026.11.20.tar.gz", hash = "sha256:af1cb240a8133f105aa52684a3a3258339d7f2fd0bd4e2812698ff5cf5588c4e"},
 ]
 
 [[package]]
@@ -486,7 +486,7 @@ files = [
 
 [package.dependencies]
 grpcio = ">=1.66.2"
-protobuf = ">=5.26.1,<6.0dev"
+protobuf = ">=5.26.1,<6.0.dev0"
 
 [[package]]
 name = "grpcio-tools"
@@ -555,7 +555,7 @@ files = [
 
 [package.dependencies]
 grpcio = ">=1.66.2"
-protobuf = ">=5.26.1,<6.0dev"
+protobuf = ">=5.26.1,<6.0.dev0"
 setuptools = "*"
 
 [[package]]
@@ -2396,4 +2396,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "bac2f3db597f5e3a9efb1135cffecb2ba3ddcaa9576bc4385b3e48e2e27aecb4"
+content-hash = "59a3f047088fd2b24068a06cdd848341b05610d07c18cc57efb17830b9980f9a"
