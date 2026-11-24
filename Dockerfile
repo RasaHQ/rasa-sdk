@@ -47,6 +47,8 @@ ENV POETRY_VERSION=$POETRY_VERSION
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sSL https://install.python-poetry.org | python
 ENV PATH="/root/.local/bin:/opt/venv/bin:${PATH}"
+# Installed into Poetry's environment, not declared in pyproject.toml; see setup-python-env.
+RUN poetry self add "poetry-plugin-export==1.10.2"
 
 # install dependencies
 COPY . /app/
