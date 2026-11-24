@@ -39,7 +39,7 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100 \
 FROM base AS python_builder
 
 ARG PIP_MIN_VERSION
-ARG POETRY_VERSION=2.4.3
+ARG POETRY_VERSION=2.5.2
 
 # install poetry
 # keep this in sync with the version in pyproject.toml and Dockerfile
@@ -47,6 +47,8 @@ ENV POETRY_VERSION=$POETRY_VERSION
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sSL https://install.python-poetry.org | python
 ENV PATH="/root/.local/bin:/opt/venv/bin:${PATH}"
+# Installed into Poetry's environment, not declared in pyproject.toml; see setup-python-env.
+RUN poetry self add "poetry-plugin-export==1.10.2"
 
 # install dependencies
 COPY . /app/
