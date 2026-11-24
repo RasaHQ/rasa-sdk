@@ -2,11 +2,5 @@
 # has time to pull a compromised upload before it reaches poetry.lock. Keep the
 # value in sync with `minimumReleaseAge` in renovate.json5. To take an urgent
 # fix early, list the package in `min-release-age-exclude`.
-#
-# virtualenv is exempt because Poetry installs its own plugins from unlocked
-# dependencies, and `poetry install` fails while the cooldown hides a fresh
-# virtualenv release. Remove this exemption if poetry-plugin-export stops being
-# a requires-plugins entry in pyproject.toml.
 [solver]
 min-release-age = 3
-min-release-age-exclude = ["virtualenv"]
