@@ -83,6 +83,7 @@ opentelemetry-sdk = "~1.45.1"
 opentelemetry-exporter-otlp = "~1.45.1"
 opentelemetry-api = "~1.45.1"
 grpcio = "~1.83.0"
+certifi = ">=2026.10.19"  # GHSA-6q48-6c7w-9gw2 (compromised emSign root CAs)
 protobuf = "~7.35.1"
 
 [tool.poetry.requires-plugins]
