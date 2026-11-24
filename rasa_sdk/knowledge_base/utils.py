@@ -87,7 +87,12 @@ def resolve_mention(
 
     if listed_items and mention in ordinal_mention_mapping:
         idx_function = ordinal_mention_mapping[mention]
-        return idx_function(listed_items)
+        try:
+            return idx_function(listed_items)
+        except IndexError:
+            # the user referred to a position beyond the listed objects,
+            # e.g. "the third one" after only two were listed
+            return None
 
     # NOTE:
     # for now we just assume that if the user refers to an object, for
