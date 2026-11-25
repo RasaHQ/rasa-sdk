@@ -98,6 +98,12 @@ you have to install Poetry first. This is how it can be done:
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
+Then install the Poetry plugin used to export requirements into Poetry's environment:
+
+```
+poetry self add "poetry-plugin-export==1.10.2"
+```
+
 There are several other ways to install Poetry. Please, follow
 [the official guide](https://python-poetry.org/docs/#installation) to see all possible options.
 

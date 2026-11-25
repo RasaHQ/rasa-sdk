@@ -1,0 +1,6 @@
+# Dependency cooldown: the solver ignores releases younger than 3 days, so PyPI
+# has time to pull a compromised upload before it reaches poetry.lock. Keep the
+# value in sync with `minimumReleaseAge` in renovate.json5. To take an urgent
+# fix early, list the package in `min-release-age-exclude`.
+[solver]
+min-release-age = 3
