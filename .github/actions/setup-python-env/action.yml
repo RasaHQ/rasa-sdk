@@ -29,6 +29,13 @@ runs:
           virtualenvs-in-project: true
           installer-parallel: true
       
+      # Poetry resolves its own plugins from unlocked dependencies, so install
+      # the plugin into Poetry's environment rather than declaring it in
+      # pyproject.toml. Otherwise the cooldown can block a fresh release there.
+      - name: Install Poetry plugins 🔌
+        run: poetry self add "poetry-plugin-export==1.10.2"
+        shell: bash
+
       # Load cached venv if cache exists
       - name: Load cached venv
         id: cached-poetry-dependencies

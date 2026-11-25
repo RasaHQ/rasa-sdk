@@ -86,9 +86,6 @@ grpcio = "~1.84.0"
 certifi = ">=2026.10.19"  # GHSA-6q48-6c7w-9gw2 (compromised emSign root CAs)
 protobuf = "~7.36.0"
 
-[tool.poetry.requires-plugins]
-poetry-plugin-export = ">=1.8"
-
 [tool.ruff.lint]
 ignore = [ "D100", "D101", "D102", "D103", "D104", "D105", "RUF005",]
 select = [ "D", "E", "F", "W", "RUF",]
