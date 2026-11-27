@@ -95,7 +95,7 @@ python_functions = "test_"
 asyncio_mode = "auto"
 
 [tool.poetry.dependencies.grpcio-tools]
-version = "~1.84.0"
+version = "~1.85.0"
 python = "<3.14"
 
 [tool.ruff.lint.pydocstyle]
@@ -113,7 +113,7 @@ mypy = "~2.4.0"
 sanic-testing = "~24.6.0"
 ruff = "~0.15.14"
 pytest-asyncio = "^0.23.6"
-types-protobuf = "7.35.1.20260906"
+types-protobuf = "7.35.1.20261122"
 
 [tool.poetry.group.dev.dependencies.pep440-version-utils]
 version = "~1.2.0"
