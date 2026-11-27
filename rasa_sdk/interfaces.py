@@ -401,6 +401,58 @@ class ActionNotFoundException(Exception):
         return self.message
 
 
+class ClientRequestNotSupported(Exception):
+    """Raised when ``request_json`` is used on a unary (non-streaming) transport."""
+
+    def __init__(self, message: Optional[Text] = None) -> None:
+        """Create the exception.
+
+        Args:
+            message: Optional detail. A default explains the streaming requirement.
+        """
+        self.message = message or (
+            "dispatcher.request_json() requires a streaming action transport "
+            "(gRPC WebhookStream or in-process actions). HTTP action servers "
+            "cannot send messages until the action returns."
+        )
+
+    def __str__(self) -> Text:
+        """Return the string representation of the exception."""
+        return self.message
+
+
+class ClientRequestTimeout(Exception):
+    """Raised when the client does not reply before ``request_json`` times out."""
+
+    def __init__(self, message: Optional[Text] = None) -> None:
+        """Create the exception.
+
+        Args:
+            message: Optional detail including the timeout duration.
+        """
+        self.message = message or "Timed out waiting for a client reply."
+
+    def __str__(self) -> Text:
+        """Return the string representation of the exception."""
+        return self.message
+
+
+class ClientRequestFailed(Exception):
+    """Raised when Rasa reports that the client request could not be completed."""
+
+    def __init__(self, message: Optional[Text] = None) -> None:
+        """Create the exception.
+
+        Args:
+            message: Error string from the Rasa executor (no secret values).
+        """
+        self.message = message or "Client request failed."
+
+    def __str__(self) -> Text:
+        """Return the string representation of the exception."""
+        return self.message
+
+
 ACTION_MISSING_DOMAIN_DEFAULT_MESSAGE = (
     "Missing domain context, assistant will retry the request and include "
     "the domain in the request payload. For more information please see "
